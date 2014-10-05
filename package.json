@@ -1,0 +1,24 @@
+{
+  "name": "lemon",
+  "version": "0.0.0",
+  "description": "Learning Machine",
+  "main": "index.js",
+  "repository": {
+    "type": "git",
+    "url": "/Volumes/Learning Machine Source/git/lemon"
+  },
+  "author": "spinnytea <spinnytea@gmail.com>",
+  "private": true,
+  "devDependencies": {
+    "chai": "^1.9.1",
+    "gulp": "^3.8.6",
+    "gulp-jshint": "^1.8.3",
+    "gulp-mocha": "^0.5.2",
+    "jshint-stylish": "^0.4.0"
+  },
+  "dependencies": {
+    "lodash": "^2.4.1",
+    "priorityqueuejs": "^0.2.0",
+    "q": "^1.0.1"
+  }
+}
