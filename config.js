@@ -1,7 +1,12 @@
 'use strict';
 module.exports = {
-  idea_location: '/Volumes/MyPassport/lime database',
+  // the database
+  data: {
+    // the root location of the database
+    location: '/Volumes/MyPassport/lime database',
 
-  // enable _testing functions
-  test_mode: true,
+    // a settings file store in the database
+    // "config" is static; settings can be updated
+    settings: undefined,
+  },
 };
