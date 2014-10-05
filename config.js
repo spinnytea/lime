@@ -4,9 +4,12 @@ module.exports = {
   data: {
     // the root location of the database
     location: '/Volumes/MyPassport/lime database',
-
-    // a settings file store in the database
-    // "config" is static; settings can be updated
-    settings: undefined,
   },
+
+  // a settings file store in the database
+  // "config" is static; settings can be updated
+  settings: undefined,
 };
+
+// FIXME save and load from data.location
+module.exports.settings = {};
