@@ -1,5 +1,6 @@
 'use strict';
 var _ = require('lodash');
+var fs = require('fs');
 var config = require('../../../config');
 var ids = require('../ids');
 
@@ -41,8 +42,21 @@ exports.create = function(data) {
   return new ProxyIdea(core.id);
 };
 exports.save = function(idea) {
+  if((idea.id in memory) && !_.isEmpty(idea.data()))
+    fs.writeFileSync(filepath(idea.id, 'data'), JSON.stringify(idea.data()), {encoding:'utf8'});
 };
 exports.load = function(id) {
+  if(!(id in memory)) {
+    var data;
+    var dataPath = filepath(id, 'data');
+    if(fs.existsSync(dataPath))
+      data = JSON.parse(fs.readFileSync(dataPath, {encoding:'utf8'}));
+
+    var core = new CoreIdea(id, data);
+    memory[id] = core;
+  }
+
+  return new ProxyIdea(id);
 };
 exports.close = function(idea) {
   // TODO test if idea

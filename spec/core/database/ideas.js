@@ -1,6 +1,7 @@
 'use strict';
 /* global describe, it, beforeEach, afterEach */
 var expect = require('chai').expect;
+var fs = require('fs');
 var config = require('../../../config');
 var ideas = require('../../../src/core/database/ideas');
 
@@ -12,8 +13,19 @@ function doCreate(data) {
 doCreate.count = 0;
 function doDelete(id) {
   doDelete.count++;
+  deleteFile(id, 'data');
+}
+function deleteFile(id, which) {
+  var path = filepath(id, which);
+  if(fs.existsSync(path))
+    fs.unlinkSync(path);
 }
 doDelete.count = 0;
+// Copied from the src / I need this to test but it shouldn't be global
+function filepath(id, which) {
+  return config.data.location + '/' + id + '_' + which + '.json';
+}
+
 
 describe('ideas', function() {
   beforeEach(function() {
@@ -89,9 +101,41 @@ describe('ideas', function() {
       doDelete(idea.id);
     });
 
-    it.skip('update');
+    describe('save / load', function() {
+      it('no data', function() {
+        var idea = doCreate();
 
-    it.skip('read');
+        ideas.save(idea);
+
+        expect(fs.existsSync(filepath(idea.id, 'data'))).to.equal(false);
+
+        ideas.close(idea);
+        ideas.load(idea.id); // the proxy will still work
+
+        expect(idea.data()).to.deep.equal({});
+
+        doDelete(idea.id);
+      });
+
+      it('with data', function() {
+        var data = { 'things': -1 };
+        var idea = doCreate(data);
+
+        ideas.save(idea);
+        expect(fs.existsSync(filepath(idea.id, 'data'))).to.equal(true);
+
+        ideas.close(idea);
+        ideas.load(idea.id); // the proxy will still work
+
+        expect(idea.data()).to.deep.equal(data);
+
+        doDelete(idea.id);
+      });
+
+      it.skip('load: loaded');
+
+      it.skip('save: unloaded');
+    });
 
     it.skip('close');
   }); // end crud
