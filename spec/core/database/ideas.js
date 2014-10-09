@@ -66,22 +66,25 @@ describe('ideas', function() {
       doDelete(idea.id);
     });
 
-    it.skip('update closed', function() {
-      var data = { 'things': 3.14 };
+    it('update closed', function() {
       var idea = doCreate();
       expect(idea.data()).to.deep.equal({});
 
       ideas.close(idea);
-      idea.update(data);
+      idea.update({ 'things': 3.14 });
+      expect(idea.data()).to.deep.equal({ 'things': 3.14 });
 
-      expect(idea.data()).to.deep.equal(data);
+      ideas.close(idea);
+      idea.update({ 'objects': 2.7 });
+      expect(idea.data()).to.deep.equal({ 'things': 3.14, 'objects': 2.7 });
+
       doDelete(idea.id);
     });
 
-    it.skip('data closed', function() {
+    it('data closed', function() {
       var data = { 'things': 3.14 };
       var idea = doCreate(data);
-      expect(idea.data()).to.deep.equal({});
+      expect(idea.data()).to.deep.equal(data);
 
       ideas.close(idea);
 
@@ -132,11 +135,35 @@ describe('ideas', function() {
         doDelete(idea.id);
       });
 
-      it.skip('load: loaded');
+      it('save: unloaded', function() {
+        var idea = doCreate({ 'things': 42 });
+        ideas.close(idea);
+        ideas.save(idea);
+        doDelete(idea.id);
+      });
 
-      it.skip('save: unloaded');
+      it('load: loaded', function() {
+        var idea = doCreate();
+        ideas.load(idea);
+        doDelete(idea.id);
+      });
+
+      it('invalid arg', function() {
+        expect(function() { ideas.save(); }).to.throw();
+        expect(function() { ideas.save(10); }).to.throw();
+
+        expect(function() { ideas.load(); }).to.throw();
+        expect(function() { ideas.load(10); }).to.throw();
+      });
+    }); // end save / load
+
+    it('close', function() {
+      expect(function() { ideas.close(); }).to.throw();
+      expect(function() { ideas.close(10); }).to.throw();
+
+      var idea = doCreate();
+      expect(function() { ideas.close(idea); }).to.not.throw();
+      doDelete(idea.id);
     });
-
-    it.skip('close');
   }); // end crud
 }); // end ideas

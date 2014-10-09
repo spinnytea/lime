@@ -25,9 +25,11 @@ function CoreIdea(id, data) {
 /* this just has pass through functions to access the singleton */
 function ProxyIdea(id) { this.id = id; }
 ProxyIdea.prototype.update = function(data) {
+  exports.load(this.id);
   _.merge(memory[this.id].data, data);
 };
 ProxyIdea.prototype.data = function() {
+  exports.load(this.id);
   return _.clone(memory[this.id].data);
 };
 
@@ -42,10 +44,18 @@ exports.create = function(data) {
   return new ProxyIdea(core.id);
 };
 exports.save = function(idea) {
+  if(!(idea instanceof ProxyIdea))
+    throw new TypeError('can only close ideas');
+
   if((idea.id in memory) && !_.isEmpty(idea.data()))
     fs.writeFileSync(filepath(idea.id, 'data'), JSON.stringify(idea.data()), {encoding:'utf8'});
 };
 exports.load = function(id) {
+  if(id instanceof ProxyIdea)
+    id = id.id;
+  else if(typeof id !== 'string')
+    throw new TypeError('can only close ideas');
+
   if(!(id in memory)) {
     var data;
     var dataPath = filepath(id, 'data');
@@ -59,7 +69,9 @@ exports.load = function(id) {
   return new ProxyIdea(id);
 };
 exports.close = function(idea) {
-  // TODO test if idea
+  if(!(idea instanceof ProxyIdea))
+    throw new TypeError('can only close ideas');
+
   exports.save(idea);
   delete memory[idea.id];
 };
