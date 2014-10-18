@@ -38,12 +38,12 @@ describe('ideas', function() {
   });
 
   it('init', function() {
-    expect(config.data.location).to.be.ok;
+    expect(config.data.location).to.be.a('string');
     expect(Object.keys(ideas)).to.deep.equal(['create', 'save', 'load', 'close']);
 //    expect(Object.keys(ideas).map(function(key) { return typeof ideas[key]; })).to.deep.equal(['function', 'function', 'function', 'function']);
   });
 
-  describe('proxy idea', function() {
+  describe('ProxyIdea', function() {
     it('new', function() {
       var idea = doCreate();
 
@@ -91,7 +91,7 @@ describe('ideas', function() {
       expect(idea.data()).to.deep.equal(data);
       doDelete(idea.id);
     });
-  }); // end proxy idea
+  }); // end ProxyIdea
 
   describe('crud', function() {
     it('create', function() {

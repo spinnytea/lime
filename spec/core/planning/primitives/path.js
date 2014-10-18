@@ -1,0 +1,153 @@
+'use strict';
+/* global describe, it */
+var _ = require('lodash');
+var expect = require('chai').expect;
+var Path = require('../../../../src/core/planning/primitives/path');
+var NumberSlide = require('../NumberSlide');
+
+describe('path',  function() {
+  var fourG = new NumberSlide.State([[1, 2], [3, 0]]);
+  var fourA = new NumberSlide.State([[1, 2], [3, 0]]);
+  var fourB = new NumberSlide.State([[1, 2], [0, 3]]);
+  var fourC = new NumberSlide.State([[2, 0], [3, 1]]);
+
+  var sixG = new NumberSlide.State([[1, 2], [3, 4], [5, 0]]);
+  var sixA = new NumberSlide.State([[1, 2], [3, 4], [5, 0]]);
+  var sixB = new NumberSlide.State([[2, 3],
+                                    [0, 1],
+                                    [5, 4]]);
+
+  it('init', function() {
+    expect(Path).to.have.property('Path');
+    expect(Path).to.have.property('Action');
+    expect(Path).to.have.property('State');
+
+    // TODO should this be a standard test in path?
+    // (it is here as an example)
+    var state = new Path.State();
+    var nsState = new NumberSlide.State();
+    _.forIn(state, function(ignore, key) {
+      expect(nsState).to.have.property(key);
+    });
+  });
+
+  describe('NumberSlideAction', function() {
+    // it.skip('cost');
+
+    it('apply', function() {
+      var before = _.cloneDeep(fourB.numbers);
+      var action = fourB.actions()[1];
+      expect(action.dir).to.equal('right');
+
+      // solve the puzzle
+      expect(action.apply(fourB).numbers).to.deep.equal(fourG.numbers);
+
+      // apply shouldn't change the original
+      expect(fourB.numbers).to.deep.equal(before);
+      expect(action.apply(fourB).numbers).to.deep.equal(fourG.numbers);
+    });
+  }); // end NumberSlideAction
+
+  describe('NumberSlideState', function() {
+    it('find', function() {
+      fourG.find(1, function(y, x) {
+        expect(y).to.equal(0);
+        expect(x).to.equal(0);
+      });
+      fourG.find(2, function(y, x) {
+        expect(y).to.equal(0);
+        expect(x).to.equal(1);
+      });
+      fourG.find(3, function(y, x) {
+        expect(y).to.equal(1);
+        expect(x).to.equal(0);
+      });
+      fourG.find(4, function(y, x) {
+        expect(y).to.equal(1);
+        expect(x).to.equal(1);
+      });
+      sixG.find(6, function(y, x) {
+        expect(y).to.equal(2);
+        expect(x).to.equal(1);
+      });
+    });
+
+    it('distance', function() {
+      expect(fourG.distance(fourG)).to.equal(0);
+      expect(fourA.distance(fourG)).to.equal(0);
+      expect(fourG.distance(fourA)).to.equal(0);
+      // two neighboring numbers are swapped
+      expect(fourB.distance(fourG)).to.equal(2);
+      expect(fourG.distance(fourB)).to.equal(2);
+      // distances: {1: 2, 2: 1, 3: 0, 4: 1}
+      expect(fourC.distance(fourG)).to.equal(4);
+      expect(fourG.distance(fourC)).to.equal(4);
+
+      expect(sixG.distance(sixG)).to.equal(0);
+      expect(sixA.distance(sixG)).to.equal(0);
+      expect(sixB.distance(sixG)).to.equal(8);
+    });
+
+    it.skip('distance: Infinity');
+
+    it('actions', function() {
+      expect(fourA._actions).to.be.null;
+
+      expect(fourA.actions().length).to.equal(2);
+      expect(sixB.actions().length).to.equal(3);
+
+      expect(_.pluck(fourA.actions(), 'dir')).to.deep.equal(['up', 'left']);
+      expect(_.pluck(sixB.actions(), 'dir')).to.deep.equal(['up', 'down', 'right']);
+    });
+
+    it('matches', function() {
+      expect(fourG.matches(fourG)).to.be.true;
+      expect(fourA.matches(fourG)).to.be.true;
+      expect(fourB.matches(fourG)).to.be.false;
+      expect(fourC.matches(fourG)).to.be.false;
+
+      expect(sixG.matches(sixG)).to.be.true;
+      expect(sixA.matches(sixG)).to.be.true;
+      expect(sixB.matches(sixG)).to.be.false;
+    });
+  }); // end NumberSlideState
+
+  describe('Path', function() {
+    it('constructor', function() {
+      var action = fourB.actions()[1];
+      var path = new Path.Path([fourB, fourG], [action], fourG);
+
+      expect(path.states).to.deep.equal([fourB, fourG]);
+      expect(path.actions).to.deep.equal([action]);
+      expect(path.goal).to.equal(fourG);
+      expect(path.cost).to.equal(1);
+      expect(path.last).to.equal(fourG);
+      expect(path.distFromGoal).to.equal(0);
+    });
+
+    it.skip('cost'); // we need an action that has a complex cost to test this properly
+
+    it.skip('distFromGoal');
+
+    it('add', function() {
+      // prep
+      var states = [fourB, fourG];
+      var right = fourB.actions()[1];
+      var left = fourG.actions()[1];
+      var actions = [right];
+      var path = new Path.Path(states, actions, fourG);
+
+      // action
+      var next = path.add(fourB, left);
+
+      // tests
+      expect(next).to.not.equal(path);
+      expect(next.states).to.deep.equal([fourB, fourG, fourB]);
+      expect(next.actions).to.deep.equal([right, left]);
+      expect(next.goal).to.equal(fourG);
+      expect(next.cost).to.equal(2);
+      expect(next.last).to.equal(fourB);
+      expect(next.distFromGoal).to.equal(2);
+    });
+  }); // end Path
+}); // end path
