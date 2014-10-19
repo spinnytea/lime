@@ -61,7 +61,7 @@ NumberSlideState.prototype.distance = function(to) {
   var total = 0;
 
   // iterate over my numbers
-  _.forEach(this.numbers, function(col, y) { _.forEach(col, function(num, x) {
+  this.numbers.forEach(function(row, y) { row.forEach(function(num, x) {
 
       to.find(num, function(ty, tx) {
         total += Math.abs(tx - x) + Math.abs(ty - y);
@@ -98,8 +98,10 @@ NumberSlideState.prototype.matches = function(state) {
 // this will only call the callback once, on the first value it finds
 NumberSlideState.prototype.find = function(val, callback) {
   var keepGoing = true;
-  _.forEach(this.numbers, function(col, y) {
-    _.forEach(col, function(num, x) {
+
+  // every allows us to exit early if we return false (forEach does not)
+  this.numbers.every(function(row, y) {
+    row.every(function(num, x) {
       if(val === num) {
         callback(y, x);
         keepGoing = false;
