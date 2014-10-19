@@ -1,9 +1,11 @@
 'use strict';
 /* global describe, it, beforeEach, afterEach */
+var _ = require('lodash');
 var expect = require('chai').expect;
 var fs = require('fs');
 var config = require('../../../config');
 var ideas = require('../../../src/core/database/ideas');
+var links = require('../../../src/core/database/links');
 
 // proxy functions so I can keep track of items the test create and delete
 function doCreate(data) {
@@ -14,11 +16,12 @@ doCreate.count = 0;
 function doDelete(id) {
   doDelete.count++;
   deleteFile(id, 'data');
+  deleteFile(id, 'links');
 }
 function deleteFile(id, which) {
   var path = filepath(id, which);
   if(fs.existsSync(path))
-    fs.unlinkSync(path);
+    fs.unlink(path);
 }
 doDelete.count = 0;
 // Copied from the src / I need this to test but it shouldn't be global
@@ -90,6 +93,32 @@ describe('ideas', function() {
 
       expect(idea.data()).to.deep.equal(data);
       doDelete(idea.id);
+    });
+
+    it('links', function() {
+      var ideaA = doCreate();
+      var ideaB = doCreate();
+      ideas.close(ideaA);
+      ideas.close(ideaB);
+
+      // links are closed; this link still work
+      ideaA.link(links.list.thought_description, ideaB);
+      ideas.close(ideaA);
+      ideas.close(ideaB);
+
+      expect(fs.existsSync(filepath(ideaA.id, 'links'))).to.equal(true);
+      expect(fs.existsSync(filepath(ideaB.id, 'links'))).to.equal(true);
+
+      // links are closed; get should still work
+      expect(_.pluck(ideaA.link(links.list.thought_description), 'id')).to.deep.equal([ideaB.id]);
+      expect(_.pluck(ideaB.link(links.list.thought_description.opposite), 'id')).to.deep.equal([ideaA.id]);
+
+      // error cases
+      expect(function() { ideaA.link(); }).to.throw(TypeError);
+      expect(function() { ideaA.link('thing'); }).to.throw(TypeError);
+
+      doDelete(ideaA.id);
+      doDelete(ideaB.id);
     });
   }); // end ProxyIdea
 
