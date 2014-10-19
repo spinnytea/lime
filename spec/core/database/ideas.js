@@ -113,12 +113,17 @@ describe('ideas', function() {
       expect(_.pluck(ideaA.link(links.list.thought_description), 'id')).to.deep.equal([ideaB.id]);
       expect(_.pluck(ideaB.link(links.list.thought_description.opposite), 'id')).to.deep.equal([ideaA.id]);
 
-      // error cases
+      doDelete(ideaA.id);
+      doDelete(ideaB.id);
+    });
+
+    it('links: invalid arg', function() {
+      var ideaA = doCreate();
+
       expect(function() { ideaA.link(); }).to.throw(TypeError);
       expect(function() { ideaA.link('thing'); }).to.throw(TypeError);
 
       doDelete(ideaA.id);
-      doDelete(ideaB.id);
     });
   }); // end ProxyIdea
 
@@ -179,16 +184,16 @@ describe('ideas', function() {
 
       it('invalid arg', function() {
         expect(function() { ideas.save(); }).to.throw();
-        expect(function() { ideas.save(10); }).to.throw();
+        expect(function() { ideas.save('1 smoothie lifetime'); }).to.throw();
 
         expect(function() { ideas.load(); }).to.throw();
-        expect(function() { ideas.load(10); }).to.throw();
+        expect(function() { ideas.load(1); }).to.throw();
       });
     }); // end save / load
 
     it('close', function() {
       expect(function() { ideas.close(); }).to.throw();
-      expect(function() { ideas.close(10); }).to.throw();
+      expect(function() { ideas.close('1 smoothie lifetime'); }).to.throw();
 
       var idea = doCreate();
       expect(function() { ideas.close(idea); }).to.not.throw();
