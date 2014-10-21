@@ -95,36 +95,43 @@ describe('ideas', function() {
       doDelete(idea.id);
     });
 
-    it('links', function() {
-      var ideaA = doCreate();
-      var ideaB = doCreate();
-      ideas.close(ideaA);
-      ideas.close(ideaB);
+    describe('links', function() {
+      var ideaA, ideaB;
 
-      // links are closed; this link still work
-      ideaA.link(links.list.thought_description, ideaB);
-      ideas.close(ideaA);
-      ideas.close(ideaB);
+      afterEach(function() {
+        if(ideaA) doDelete(ideaA.id);
+        if(ideaB) doDelete(ideaB.id);
+      });
 
-      expect(fs.existsSync(filepath(ideaA.id, 'links'))).to.equal(true);
-      expect(fs.existsSync(filepath(ideaB.id, 'links'))).to.equal(true);
+      it('add', function() {
+        ideaA = doCreate();
+        ideaB = doCreate();
+        ideas.close(ideaA);
+        ideas.close(ideaB);
 
-      // links are closed; get should still work
-      expect(_.pluck(ideaA.link(links.list.thought_description), 'id')).to.deep.equal([ideaB.id]);
-      expect(_.pluck(ideaB.link(links.list.thought_description.opposite), 'id')).to.deep.equal([ideaA.id]);
+        // links are closed; this link still work
+        ideaA.link(links.list.thought_description, ideaB);
+        ideas.close(ideaA);
+        ideas.close(ideaB);
 
-      doDelete(ideaA.id);
-      doDelete(ideaB.id);
-    });
+        expect(fs.existsSync(filepath(ideaA.id, 'links'))).to.equal(true);
+        expect(fs.existsSync(filepath(ideaB.id, 'links'))).to.equal(true);
+        expect(fs.existsSync(filepath(ideaA.id, 'data'))).to.equal(false);
+        expect(fs.existsSync(filepath(ideaB.id, 'data'))).to.equal(false);
 
-    it('links: invalid arg', function() {
-      var ideaA = doCreate();
+        // links are closed; get should still work
+        expect(_.pluck(ideaA.link(links.list.thought_description), 'id')).to.deep.equal([ideaB.id]);
+        expect(_.pluck(ideaB.link(links.list.thought_description.opposite), 'id')).to.deep.equal([ideaA.id]);
 
-      expect(function() { ideaA.link(); }).to.throw(TypeError);
-      expect(function() { ideaA.link('thing'); }).to.throw(TypeError);
+      });
 
-      doDelete(ideaA.id);
-    });
+      it('add: invalid arg', function() {
+        var ideaA = doCreate();
+
+        expect(function() { ideaA.link(); }).to.throw(TypeError);
+        expect(function() { ideaA.link('thing'); }).to.throw(TypeError);
+      });
+    }); // end links
   }); // end ProxyIdea
 
   describe('crud', function() {
@@ -145,6 +152,7 @@ describe('ideas', function() {
         ideas.save(idea);
 
         expect(fs.existsSync(filepath(idea.id, 'data'))).to.equal(false);
+        expect(fs.existsSync(filepath(idea.id, 'links'))).to.equal(false);
 
         ideas.close(idea);
         ideas.load(idea.id); // the proxy will still work
@@ -160,6 +168,7 @@ describe('ideas', function() {
 
         ideas.save(idea);
         expect(fs.existsSync(filepath(idea.id, 'data'))).to.equal(true);
+        expect(fs.existsSync(filepath(idea.id, 'links'))).to.equal(false);
 
         ideas.close(idea);
         ideas.load(idea.id); // the proxy will still work
