@@ -12,7 +12,6 @@ describe('ideas', function() {
   it('init', function() {
     expect(config.data.location).to.be.a('string');
     expect(Object.keys(ideas)).to.deep.equal(['create', 'save', 'load', 'close']);
-//    expect(Object.keys(ideas).map(function(key) { return typeof ideas[key]; })).to.deep.equal(['function', 'function', 'function', 'function']);
   });
 
   describe('ProxyIdea', function() {
