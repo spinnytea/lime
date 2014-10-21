@@ -1,45 +1,14 @@
 'use strict';
-/* global describe, it, beforeEach, afterEach */
+/* global describe, it */
 var _ = require('lodash');
 var expect = require('chai').expect;
 var fs = require('fs');
 var config = require('../../../config');
 var ideas = require('../../../src/core/database/ideas');
 var links = require('../../../src/core/database/links');
-
-// proxy functions so I can keep track of items the test create and delete
-function doCreate(data) {
-  doCreate.count++;
-  return ideas.create(data);
-}
-doCreate.count = 0;
-function doDelete(id) {
-  doDelete.count++;
-  deleteFile(id, 'data');
-  deleteFile(id, 'links');
-}
-function deleteFile(id, which) {
-  var path = filepath(id, which);
-  if(fs.existsSync(path))
-    fs.unlink(path);
-}
-doDelete.count = 0;
-// Copied from the src / I need this to test but it shouldn't be global
-function filepath(id, which) {
-  return config.data.location + '/' + id + '_' + which + '.json';
-}
-
+var tools = require('../testingTools');
 
 describe('ideas', function() {
-  beforeEach(function() {
-    doCreate.count = 0;
-    doDelete.count = 0;
-  });
-  afterEach(function() {
-    // TODO this masks any error that occurs during the test
-//    expect(doDelete.count).to.equal(doCreate.count);
-  });
-
   it('init', function() {
     expect(config.data.location).to.be.a('string');
     expect(Object.keys(ideas)).to.deep.equal(['create', 'save', 'load', 'close']);
@@ -48,29 +17,26 @@ describe('ideas', function() {
 
   describe('ProxyIdea', function() {
     it('new', function() {
-      var idea = doCreate();
+      var idea = tools.ideas.create();
 
       expect(Object.keys(idea)).to.deep.equal(['id']);
       expect(idea.update).to.be.a('function');
       expect(idea.data).to.be.a('function');
-
-      doDelete(idea.id);
     });
 
     it('update', function() {
       var data = { 'things': 3.14 };
-      var idea = doCreate();
+      var idea = tools.ideas.create();
       expect(idea.data()).to.deep.equal({});
 
       idea.update(data);
 
       expect(idea.data()).to.deep.equal(data); // deep equal
       expect(idea.data()).to.not.equal(data); // not shallow equal (it's a different object)
-      doDelete(idea.id);
     });
 
     it('update closed', function() {
-      var idea = doCreate();
+      var idea = tools.ideas.create();
       expect(idea.data()).to.deep.equal({});
 
       ideas.close(idea);
@@ -80,32 +46,24 @@ describe('ideas', function() {
       ideas.close(idea);
       idea.update({ 'objects': 2.7 });
       expect(idea.data()).to.deep.equal({ 'things': 3.14, 'objects': 2.7 });
-
-      doDelete(idea.id);
     });
 
     it('data closed', function() {
       var data = { 'things': 3.14 };
-      var idea = doCreate(data);
+      var idea = tools.ideas.create(data);
       expect(idea.data()).to.deep.equal(data);
 
       ideas.close(idea);
 
       expect(idea.data()).to.deep.equal(data);
-      doDelete(idea.id);
     });
 
     describe('links', function() {
       var ideaA, ideaB;
 
-      afterEach(function() {
-        if(ideaA) doDelete(ideaA.id);
-        if(ideaB) doDelete(ideaB.id);
-      });
-
       it('add', function() {
-        ideaA = doCreate();
-        ideaB = doCreate();
+        ideaA = tools.ideas.create();
+        ideaB = tools.ideas.create();
         ideas.close(ideaA);
         ideas.close(ideaB);
 
@@ -114,10 +72,10 @@ describe('ideas', function() {
         ideas.close(ideaA);
         ideas.close(ideaB);
 
-        expect(fs.existsSync(filepath(ideaA.id, 'links'))).to.equal(true);
-        expect(fs.existsSync(filepath(ideaB.id, 'links'))).to.equal(true);
-        expect(fs.existsSync(filepath(ideaA.id, 'data'))).to.equal(false);
-        expect(fs.existsSync(filepath(ideaB.id, 'data'))).to.equal(false);
+        expect(fs.existsSync(tools.ideas.filepath(ideaA.id, 'links'))).to.equal(true);
+        expect(fs.existsSync(tools.ideas.filepath(ideaB.id, 'links'))).to.equal(true);
+        expect(fs.existsSync(tools.ideas.filepath(ideaA.id, 'data'))).to.equal(false);
+        expect(fs.existsSync(tools.ideas.filepath(ideaB.id, 'data'))).to.equal(false);
 
         // links are closed; get should still work
         expect(_.pluck(ideaA.link(links.list.thought_description), 'id')).to.deep.equal([ideaB.id]);
@@ -126,7 +84,7 @@ describe('ideas', function() {
       });
 
       it('add: invalid arg', function() {
-        var ideaA = doCreate();
+        var ideaA = tools.ideas.create();
 
         expect(function() { ideaA.link(); }).to.throw(TypeError);
         expect(function() { ideaA.link('thing'); }).to.throw(TypeError);
@@ -135,60 +93,57 @@ describe('ideas', function() {
   }); // end ProxyIdea
 
   describe('crud', function() {
-    it('create', function() {
-      var idea = doCreate();
-      expect(idea.data()).to.deep.equal({});
-      doDelete(idea.id);
+    describe('create', function() {
+      it('empty', function() {
+        var idea = tools.ideas.create();
+        expect(idea.data()).to.deep.equal({});
+      });
 
-      idea = doCreate({ 'things': 2.7 });
-      expect(idea.data()).to.deep.equal({ 'things': 2.7 });
-      doDelete(idea.id);
+      it('w/ data', function() {
+        var idea = tools.ideas.create({ 'things': 2.7 });
+        expect(idea.data()).to.deep.equal({ 'things': 2.7 });
+      });
     });
 
     describe('save / load', function() {
       it('no data', function() {
-        var idea = doCreate();
+        var idea = tools.ideas.create();
 
         ideas.save(idea);
 
-        expect(fs.existsSync(filepath(idea.id, 'data'))).to.equal(false);
-        expect(fs.existsSync(filepath(idea.id, 'links'))).to.equal(false);
+        expect(fs.existsSync(tools.ideas.filepath(idea.id, 'data'))).to.equal(false);
+        expect(fs.existsSync(tools.ideas.filepath(idea.id, 'links'))).to.equal(false);
 
         ideas.close(idea);
         ideas.load(idea.id); // the proxy will still work
 
         expect(idea.data()).to.deep.equal({});
-
-        doDelete(idea.id);
       });
 
       it('with data', function() {
         var data = { 'things': -1 };
-        var idea = doCreate(data);
+        var idea = tools.ideas.create(data);
 
         ideas.save(idea);
-        expect(fs.existsSync(filepath(idea.id, 'data'))).to.equal(true);
-        expect(fs.existsSync(filepath(idea.id, 'links'))).to.equal(false);
+        expect(fs.existsSync(tools.ideas.filepath(idea.id, 'data'))).to.equal(true);
+        expect(fs.existsSync(tools.ideas.filepath(idea.id, 'links'))).to.equal(false);
 
         ideas.close(idea);
         ideas.load(idea.id); // the proxy will still work
 
         expect(idea.data()).to.deep.equal(data);
-
-        doDelete(idea.id);
       });
 
       it('save: unloaded', function() {
-        var idea = doCreate({ 'things': 42 });
+        var idea = tools.ideas.create({ 'things': 42 });
         ideas.close(idea);
         ideas.save(idea);
-        doDelete(idea.id);
       });
 
       it('load: loaded', function() {
-        var idea = doCreate();
+        var idea = tools.ideas.create();
         ideas.load(idea);
-        doDelete(idea.id);
+        ideas.load(idea);
       });
 
       it('invalid arg', function() {
@@ -204,9 +159,8 @@ describe('ideas', function() {
       expect(function() { ideas.close(); }).to.throw();
       expect(function() { ideas.close('1 smoothie lifetime'); }).to.throw();
 
-      var idea = doCreate();
+      var idea = tools.ideas.create();
       expect(function() { ideas.close(idea); }).to.not.throw();
-      doDelete(idea.id);
     });
   }); // end crud
 }); // end ideas
