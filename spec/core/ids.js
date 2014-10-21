@@ -12,9 +12,11 @@ var tokens = [
 
 describe('ids', function() {
   it('init', function() {
-    expect(ids).to.be.an('object');
-    expect(ids.next).to.be.a('function');
+    // this is assumed by ids; we can't really do anything but ensure it's existence
     expect(config.settings.ids).to.be.an('object');
+
+    expect(ids.next).to.be.a('function');
+    expect(ids.next.anonymous).to.be.a('function');
   });
 
   it('increment', function() {
@@ -56,4 +58,15 @@ describe('ids', function() {
     delete config.settings.ids.testing;
     expect(config.settings.ids).to.be.ok;
   }); // end increment
+
+  it('anonymous', function() {
+    var keysBefore = Object.keys(config.settings.ids);
+
+    var id = ids.next.anonymous();
+    expect(id).to.equal(tokens[1]);
+    id = ids.next.anonymous(id);
+    expect(id).to.equal(tokens[2]);
+
+    expect(Object.keys(config.settings.ids)).to.deep.equal(keysBefore);
+  });
 });

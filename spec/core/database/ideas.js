@@ -10,7 +10,10 @@ var tools = require('../testingTools');
 
 describe('ideas', function() {
   it('init', function() {
+    // this is assumed by ideas; we can't really do anything but ensure it's existence
     expect(config.data.location).to.be.a('string');
+
+    // this is to ensure we test everything
     expect(Object.keys(ideas)).to.deep.equal(['create', 'save', 'load', 'close']);
   });
 

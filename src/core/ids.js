@@ -48,3 +48,10 @@ exports.next = function(id) {
   // save and return the new id
   return (config.settings.ids[id] = increment(nextID, nextID.length - 1));
 };
+
+// if nextID is undefined, it will start from scratch
+// if nextID is defined, it must be an id previously returned
+exports.next.anonymous = function(nextID) {
+  nextID = nextID || tokens[0];
+  return increment(nextID, nextID.length - 1);
+};
