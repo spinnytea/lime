@@ -138,19 +138,14 @@ describe('subgraph', function() {
 
         expect(sg.vertices[m].idea.id).to.equal(mark.id);
         expect(sg.vertices[a].idea.id).to.equal(apple.id);
-      });
 
-      it('exact: basic search no match', function() {
-        var mark = tools.ideas.create();
-        var apple = tools.ideas.create({'thing': 3.14});
-        mark.link(links.list.thought_description, apple);
-
-        var sg = new subgraph.Subgraph();
-        var m = sg.addVertex(subgraph.matcher.id, mark.id);
-        var a = sg.addVertex(subgraph.matcher.data.exact, {'thing': 2.71});
+        // fail
+        sg = new subgraph.Subgraph();
+        m = sg.addVertex(subgraph.matcher.id, mark.id);
+        a = sg.addVertex(subgraph.matcher.data.exact, {'thing': 2.71});
         sg.addEdge(m, links.list.thought_description, a);
 
-        var result = subgraph.search(sg);
+        result = subgraph.search(sg);
         expect(result.length).to.equal(0);
       });
 
@@ -168,7 +163,28 @@ describe('subgraph', function() {
         expect(idea.data()).to.deep.equal({'thing1': 3.14, 'thing2': 2.71});
       });
 
-      it.skip('similar: basic search');
+      it('similar: basic search', function() {
+        var mark = tools.ideas.create();
+        var apple = tools.ideas.create({'thing1': 3.14, 'thing2': 2.71});
+        mark.link(links.list.thought_description, apple);
+
+        var sg = new subgraph.Subgraph();
+        var m = sg.addVertex(subgraph.matcher.id, mark.id);
+        var a = sg.addVertex(subgraph.matcher.data.similar, {'thing1': 3.14});
+        sg.addEdge(m, links.list.thought_description, a);
+
+        var result = subgraph.search(sg);
+        expect(result.length).to.equal(1);
+
+        // fail
+        sg = new subgraph.Subgraph();
+        m = sg.addVertex(subgraph.matcher.id, mark.id);
+        a = sg.addVertex(subgraph.matcher.data.similar, {'asdfasdfasdf': 1234});
+        sg.addEdge(m, links.list.thought_description, a);
+
+        result = subgraph.search(sg);
+        expect(result.length).to.equal(0);
+      });
     }); // end data
   }); // end matchers
 
