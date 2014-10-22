@@ -91,6 +91,10 @@ exports.matcher = {
 
 
 // find a list of subgraphs in the database that matches the supplied subgraph
+//
+// use Prim's algorithm to expand the know subgraph
+// we are trying to identify all of the vertices
+// we use edges to find new ones
 exports.search = function(subgraph) {
   if(!(subgraph instanceof Subgraph))
     return [];
@@ -161,8 +165,18 @@ exports.search = function(subgraph) {
   // base case
   // there are no edges that can be expanded
   if(nextSteps.length === 0) {
-    if(!subgraph.edges.every(function(edge) { return edge.src.idea && edge.dst.idea; }))
+    // check all vertices to ensure they all have ideas defined
+    var allVertices = true;
+    _.forIn(subgraph.vertices, function(v) {
+      if(v.idea) return true;
+      return (allVertices = false);
+    });
+    if(!allVertices)
       return [];
+
+//    if(!subgraph.edges.every(function(edge) { return edge.src.idea && edge.dst.idea; }))
+//      return [];
+
     subgraph.concrete = true;
     return [ subgraph ];
   } else {
