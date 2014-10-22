@@ -96,6 +96,8 @@ exports.search = function(subgraph) {
     return [];
   if(subgraph.edges.length === 0)
     return [subgraph];
+  if(subgraph.concrete)
+    return [subgraph];
 
   var selectedEdge;
   var selectedBranches;
@@ -108,7 +110,7 @@ exports.search = function(subgraph) {
 
     if(isSrc ^ isDst) {
 
-      var currBranches = (isSrc ? (currEdge.src.idea.link(currEdge.link)) : (currEdge.dst.idea.link(currEdge.link.opposing)) );
+      var currBranches = (isSrc ? (currEdge.src.idea.link(currEdge.link)) : (currEdge.dst.idea.link(currEdge.link.opposite)) );
 
       if(!selectedEdge) {
         selectedEdge = currEdge;

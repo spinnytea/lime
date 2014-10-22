@@ -1,8 +1,7 @@
 'use strict';
-/* global describe, it */
+/* global describe, it, beforeEach, afterEach */
 var _ = require('lodash');
 var expect = require('chai').expect;
-var ideas = require('../../../src/core/database/ideas');
 var links = require('../../../src/core/database/links');
 var subgraph = require('../../../src/core/database/subgraph');
 var tools = require('../testingTools');
@@ -18,7 +17,7 @@ describe('subgraph', function() {
 
   describe('Subgraph', function() {
     it('addVertex', function() {
-      var idea = ideas.create();
+      var idea = tools.ideas.create();
 
       var sg = new subgraph.Subgraph();
       var a = sg.addVertex(subgraph.matcher.id, idea.id);
@@ -73,8 +72,8 @@ describe('subgraph', function() {
     });
 
     it('id: basic search', function() {
-      var mark = ideas.create();
-      var apple = ideas.create();
+      var mark = tools.ideas.create();
+      var apple = tools.ideas.create();
       mark.link(links.list.thought_description, apple);
 
       var sg = new subgraph.Subgraph();
@@ -97,8 +96,8 @@ describe('subgraph', function() {
     });
 
     it('filler: basic search', function() {
-      var mark = ideas.create();
-      var apple = ideas.create();
+      var mark = tools.ideas.create();
+      var apple = tools.ideas.create();
       mark.link(links.list.thought_description, apple);
 
       var sg = new subgraph.Subgraph();
@@ -124,8 +123,8 @@ describe('subgraph', function() {
       });
 
       it('exact: basic search', function() {
-        var mark = ideas.create();
-        var apple = ideas.create({'thing': 3.14});
+        var mark = tools.ideas.create();
+        var apple = tools.ideas.create({'thing': 3.14});
         mark.link(links.list.thought_description, apple);
 
         var sg = new subgraph.Subgraph();
@@ -142,8 +141,8 @@ describe('subgraph', function() {
       });
 
       it('exact: basic search no match', function() {
-        var mark = ideas.create();
-        var apple = ideas.create({'thing': 3.14});
+        var mark = tools.ideas.create();
+        var apple = tools.ideas.create({'thing': 3.14});
         mark.link(links.list.thought_description, apple);
 
         var sg = new subgraph.Subgraph();
@@ -182,32 +181,135 @@ describe('subgraph', function() {
       expect(subgraph.search(sg)).to.deep.equal([sg]);
     });
 
-    it.skip('no id matchers');
+    it('no id matchers', function() {
+        var sg = new subgraph.Subgraph();
+        var a = sg.addVertex(subgraph.matcher.filler);
+        var b = sg.addVertex(subgraph.matcher.filler);
+        sg.addEdge(a, links.list.thought_description, b);
+
+        expect(subgraph.search(sg)).to.deep.equal([]);
+    });
 
     describe('clauses', function() {
       describe('selectedEdge', function() {
-        it.skip('isSrc && !isDst');
+        var mark, apple;
+        var sg, m, a;
+        beforeEach(function() {
+          mark = tools.ideas.create();
+          apple = tools.ideas.create();
+          mark.link(links.list.thought_description, apple);
+        });
 
-        it.skip('!isSrc && isDst');
+        afterEach(function() {
+          expect(subgraph.search(sg)).to.deep.equal([sg]);
+          expect(sg.concrete).to.equal(true);
+          expect(sg.vertices[m].idea).to.deep.equal(mark);
+          expect(sg.vertices[a].idea).to.deep.equal(apple);
+        });
 
-        it.skip('isSrc && isDst');
+        it('isSrc && !isDst', function() {
+          sg = new subgraph.Subgraph();
+          m = sg.addVertex(subgraph.matcher.id, mark);
+          a = sg.addVertex(subgraph.matcher.filler);
+          sg.addEdge(m, links.list.thought_description, a);
+        });
+
+        it('!isSrc && isDst', function() {
+          sg = new subgraph.Subgraph();
+          m = sg.addVertex(subgraph.matcher.filler);
+          a = sg.addVertex(subgraph.matcher.id, apple);
+          sg.addEdge(m, links.list.thought_description, a);
+        });
+
+        it('isSrc && isDst', function() {
+          sg = new subgraph.Subgraph();
+          m = sg.addVertex(subgraph.matcher.id, mark);
+          a = sg.addVertex(subgraph.matcher.id, apple);
+          sg.addEdge(m, links.list.thought_description, a);
+        });
       }); // end selectedEdge
 
       describe('expand branches', function() {
-        it.skip('0');
+        it('0', function() {
+          var mark = tools.ideas.create();
 
-        it.skip('1');
+          var sg = new subgraph.Subgraph();
+          var m = sg.addVertex(subgraph.matcher.id, mark);
+          var a = sg.addVertex(subgraph.matcher.filler);
+          sg.addEdge(m, links.list.thought_description, a);
 
-        it.skip('many');
+          expect(subgraph.search(sg)).to.deep.equal([]);
+        });
+
+        it('1', function() {
+          var mark = tools.ideas.create();
+          var apple = tools.ideas.create();
+          mark.link(links.list.thought_description, apple);
+
+          var sg = new subgraph.Subgraph();
+          var m = sg.addVertex(subgraph.matcher.id, mark);
+          var a = sg.addVertex(subgraph.matcher.filler);
+          sg.addEdge(m, links.list.thought_description, a);
+
+          expect(subgraph.search(sg)).to.deep.equal([sg]);
+        });
+
+        it('many', function() {
+          var mark = tools.ideas.create();
+          var apple = tools.ideas.create();
+          var banana = tools.ideas.create();
+          mark.link(links.list.thought_description, apple);
+          mark.link(links.list.thought_description, banana);
+
+          var sg = new subgraph.Subgraph();
+          var m = sg.addVertex(subgraph.matcher.id, mark);
+          var a = sg.addVertex(subgraph.matcher.filler);
+          sg.addEdge(m, links.list.thought_description, a);
+
+          var results = subgraph.search(sg);
+          expect(results.length).to.equal(2);
+
+          var one = results[0];
+          expect(one).to.not.equal(sg);
+          expect(one.vertices[m].idea).to.deep.equal(mark);
+          expect(one.vertices[a].idea).to.deep.equal(apple);
+
+          var two = results[1];
+          expect(two).to.not.equal(sg);
+          expect(two.vertices[m].idea).to.deep.equal(mark);
+          expect(two.vertices[a].idea).to.deep.equal(banana);
+        });
       }); // end expand branches
 
       describe('nextSteps', function() {
-        it.skip('none: fail');
+        // general case for no IDs, or no edges to expand
+//        it.skip('none: fail');
 
-        it.skip('none: success');
+        // general case for end of recursion, all edges have been expanded, === concrete
+//        it.skip('none: success');
 
-        it.skip('some');
-      });
+        // general recursive case
+        it('some', function() {
+          var mark = tools.ideas.create();
+          var apple = tools.ideas.create();
+          var price = tools.ideas.create({value: 10});
+          mark.link(links.list.thought_description, apple);
+          apple.link(links.list.thought_description, price);
+
+          var sg = new subgraph.Subgraph();
+          var m = sg.addVertex(subgraph.matcher.id, mark);
+          var a = sg.addVertex(subgraph.matcher.filler);
+          var p = sg.addVertex(subgraph.matcher.data.similar, {value: 10});
+          sg.addEdge(m, links.list.thought_description, a);
+          sg.addEdge(a, links.list.thought_description, p);
+
+          expect(subgraph.search(sg)).to.deep.equal([sg]);
+          expect(sg.vertices[m].idea).to.deep.equal(mark);
+          expect(sg.vertices[a].idea).to.deep.equal(apple);
+          expect(sg.vertices[p].idea).to.deep.equal(price);
+        });
+      }); // end nextSteps
+
     }); // end clauses
   }); // end search
 }); // end subgraph
