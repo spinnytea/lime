@@ -82,7 +82,7 @@ exports.load = function(id) {
   if(id instanceof ProxyIdea)
     id = id.id;
   else if(typeof id !== 'string')
-    throw new TypeError('can only close ideas');
+    throw new TypeError('can only load ideas');
 
   if(!(id in memory)) {
     var data;

@@ -94,6 +94,8 @@ describe('ideas', function() {
     }); // end links
   }); // end ProxyIdea
 
+  it.skip('ideas.proxy'); // TODO update subgraph to use this instead of ideas.load
+
   describe('crud', function() {
     describe('create', function() {
       it('empty', function() {
