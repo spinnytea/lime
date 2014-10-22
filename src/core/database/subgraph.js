@@ -95,7 +95,7 @@ exports.search = function(subgraph) {
   if(!(subgraph instanceof Subgraph))
     return [];
   if(subgraph.edges.length === 0)
-    return [];
+    return [subgraph];
 
   var selectedEdge;
   var selectedBranches;
