@@ -7,6 +7,7 @@ describe('links', function() {
   it('init', function() {
     // this is to ensure we test everything
     expect(Object.keys(links)).to.deep.equal(['list']);
+    expect(Object.keys(links.list).length).to.be.gt(0); // the keys don't matter, just so long as they are enumerable
   });
 
   it('list', function() {

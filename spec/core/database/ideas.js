@@ -85,6 +85,24 @@ describe('ideas', function() {
 
       });
 
+      it('remove', function() {
+        ideaA = tools.ideas.create();
+        ideaB = tools.ideas.create();
+        ideaA.link(links.list.thought_description, ideaB);
+        ideas.close(ideaA);
+        ideas.close(ideaB);
+
+        expect(fs.existsSync(tools.ideas.filepath(ideaA.id, 'links'))).to.equal(true);
+        expect(fs.existsSync(tools.ideas.filepath(ideaB.id, 'links'))).to.equal(true);
+
+        ideaA.unlink(links.list.thought_description, ideaB);
+        ideas.save(ideaA);
+        ideas.save(ideaB);
+
+        expect(fs.existsSync(tools.ideas.filepath(ideaA.id, 'links'))).to.equal(false);
+        expect(fs.existsSync(tools.ideas.filepath(ideaB.id, 'links'))).to.equal(false);
+      });
+
       it('add: invalid arg', function() {
         var ideaA = tools.ideas.create();
 

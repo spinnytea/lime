@@ -219,8 +219,8 @@ describe('subgraph', function() {
         afterEach(function() {
           expect(subgraph.search(sg)).to.deep.equal([sg]);
           expect(sg.concrete).to.equal(true);
-          expect(sg.vertices[m].idea).to.deep.equal(mark);
-          expect(sg.vertices[a].idea).to.deep.equal(apple);
+          expect(sg.vertices[m].idea.id).to.deep.equal(mark.id);
+          expect(sg.vertices[a].idea.id).to.deep.equal(apple.id);
         });
 
         it('isSrc && !isDst', function() {
@@ -287,13 +287,13 @@ describe('subgraph', function() {
 
           var one = results[0];
           expect(one).to.not.equal(sg);
-          expect(one.vertices[m].idea).to.deep.equal(mark);
-          expect(one.vertices[a].idea).to.deep.equal(apple);
+          expect(one.vertices[m].idea.id).to.deep.equal(mark.id);
+          expect(one.vertices[a].idea.id).to.deep.equal(apple.id);
 
           var two = results[1];
           expect(two).to.not.equal(sg);
-          expect(two.vertices[m].idea).to.deep.equal(mark);
-          expect(two.vertices[a].idea).to.deep.equal(banana);
+          expect(two.vertices[m].idea.id).to.deep.equal(mark.id);
+          expect(two.vertices[a].idea.id).to.deep.equal(banana.id);
         });
       }); // end expand branches
 
@@ -320,9 +320,9 @@ describe('subgraph', function() {
           sg.addEdge(a, links.list.thought_description, p);
 
           expect(subgraph.search(sg)).to.deep.equal([sg]);
-          expect(sg.vertices[m].idea).to.deep.equal(mark);
-          expect(sg.vertices[a].idea).to.deep.equal(apple);
-          expect(sg.vertices[p].idea).to.deep.equal(price);
+          expect(sg.vertices[m].idea.id).to.deep.equal(mark.id);
+          expect(sg.vertices[a].idea.id).to.deep.equal(apple.id);
+          expect(sg.vertices[p].idea.id).to.deep.equal(price.id);
         });
       }); // end nextSteps
     }); // end clauses

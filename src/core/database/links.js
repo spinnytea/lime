@@ -13,7 +13,7 @@ function create(name) {
   Object.defineProperty(opp, 'opposite', { get: function() { return link; } });
 
   // add the link to the list
-  Object.defineProperty(exports.list, name, { get: function() { return link; } });
+  Object.defineProperty(exports.list, name, { enumerable: true, get: function() { return link; } });
 }
 
 exports.list = {};

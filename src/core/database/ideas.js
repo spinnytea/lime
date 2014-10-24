@@ -58,6 +58,30 @@ ProxyIdea.prototype.link = function(link, idea) {
     return [];
   }
 };
+ProxyIdea.prototype.unlink = function(link, idea) {
+  if(typeof link !== 'object' || !link.name || !link.opposite)
+    throw new TypeError('link must be a link');
+  idea = exports.load(idea);
+  exports.load(this.id);
+
+  // remove the idea from this
+  var list = memory[this.id].links[link.name];
+  list.splice(list.indexOf(idea.id), 1);
+  if(list.length === 0) {
+    // overloading list for the delete
+    list = memory[this.id].links;
+    delete list[link.name];
+  }
+
+  // remove this from the idea
+  list = memory[idea.id].links[link.opposite.name];
+  list.splice(list.indexOf(this.id), 1);
+  if(list.length === 0) {
+    // overloading list for the delete
+    list = memory[idea.id].links;
+    delete list[link.opposite.name];
+  }
+};
 
 //
 // exported interface
@@ -79,6 +103,8 @@ exports.save = function(idea) {
       fs.writeFileSync(filepath(idea.id, 'data'), JSON.stringify(core.data), {encoding:'utf8'});
     if(!_.isEmpty(core.links))
       fs.writeFileSync(filepath(idea.id, 'links'), JSON.stringify(core.links), {encoding:'utf8'});
+    else if(fs.existsSync(filepath(idea.id, 'links')))
+      fs.unlink(filepath(idea.id, 'links'));
   }
 };
 exports.load = function(id) {
