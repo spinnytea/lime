@@ -325,7 +325,10 @@ describe('subgraph', function() {
           expect(sg.vertices[p].idea).to.deep.equal(price);
         });
       }); // end nextSteps
-
     }); // end clauses
   }); // end search
+
+  describe('matchSubgraph', function() {
+    it.skip('matchSubgraph');
+  }); // end matchSubgraph
 }); // end subgraph

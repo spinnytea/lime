@@ -1,4 +1,7 @@
 'use strict';
+// these are the vertices of the though graph
+// this is how all the data is stored
+
 var _ = require('lodash');
 var fs = require('fs');
 var config = require('../../../config');

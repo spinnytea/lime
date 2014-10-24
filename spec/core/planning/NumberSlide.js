@@ -1,11 +1,8 @@
 'use strict';
-var _ = require('lodash');
-
-//
-// this file implements State and Action so we can perform a plan with A* (astar)
+// this implements State and Action so we can perform a plan with A* (astar)
 // here we have a number slide game
 // 0 is the position we can slide around
-//
+var _ = require('lodash');
 
 var DIRECTIONS = Object.freeze({
   up: 'up',
@@ -13,6 +10,10 @@ var DIRECTIONS = Object.freeze({
   left: 'left',
   right: 'right',
 });
+
+//
+//
+//
 
 var NumberSlideAction = exports.Action = function(dir) {
   this.dir = dir;

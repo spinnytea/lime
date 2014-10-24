@@ -60,7 +60,7 @@ describe('ideas', function() {
       expect(idea.data()).to.deep.equal(data);
     });
 
-    describe('links', function() {
+    describe('link', function() {
       var ideaA, ideaB;
 
       it('add', function() {

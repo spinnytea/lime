@@ -1,4 +1,6 @@
 'use strict';
+// link ideas together
+// these are the edges of the graph
 
 function create(name) {
   var link = {};

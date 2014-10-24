@@ -38,6 +38,8 @@ Path.prototype.add = function(state, action) {
 
 // These are like abstract classes in Javas
 // They are a description of what needs to be implemented for Path to work
+// They shouldn't actually be created, this is just an example/documentation for implementing them
+// See: /spec/core/planning/NumberSlide.js for a practical example
 
 var Action = exports.Action = function() {};
 var State = exports.State = function() {};
