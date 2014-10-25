@@ -36,21 +36,22 @@ ProxyIdea.prototype.data = function() {
   exports.load(this.id);
   return _.cloneDeep(memory[this.id].data);
 };
+// @param link: links.list.thought_description
+// @param idea: ProxyIdea or string
 ProxyIdea.prototype.link = function(link, idea) {
-  if(typeof link !== 'object' || !link.name || !link.opposite)
+  if(typeof link !== 'object' || !link.name || !link.opposite.name)
     throw new TypeError('link must be a link');
 
   exports.load(this.id);
 
   if(idea) {
-    if(!(idea instanceof ProxyIdea))
-      throw new TypeError('must be a ProxyIdea');
-    exports.load(idea.id);
+    var id = idea.id || idea;
+    exports.load(id);
 
     // ensure the links for this type has been created
     // add the id to the list
-    (memory[this.id].links[link.name] = memory[this.id].links[link.name] || []).push(idea.id);
-    (memory[idea.id].links[link.opposite.name] = memory[idea.id].links[link.opposite.name] || []).push(this.id);
+    (memory[this.id].links[link.name] = memory[this.id].links[link.name] || []).push(id);
+    (memory[id].links[link.opposite.name] = memory[id].links[link.opposite.name] || []).push(this.id);
   } else {
     var ret = memory[this.id].links[link.name];
     if(ret)
@@ -58,10 +59,12 @@ ProxyIdea.prototype.link = function(link, idea) {
     return [];
   }
 };
+// @param link: links.list.thought_description
+// @param idea: ProxyIdea or string
 ProxyIdea.prototype.unlink = function(link, idea) {
-  if(typeof link !== 'object' || !link.name || !link.opposite)
+  if(typeof link !== 'object' || !link.name || !link.opposite.name)
     throw new TypeError('link must be a link');
-  idea = exports.load(idea);
+  idea = exports.load(idea); // if idea is a string, it will return as an idea
   exports.load(this.id);
 
   // remove the idea from this
@@ -94,23 +97,23 @@ exports.create = function(data) {
   return new ProxyIdea(core.id);
 };
 exports.save = function(idea) {
-  if(!(idea instanceof ProxyIdea))
-    throw new TypeError('can only close ideas');
+  var id = idea.id || idea;
+  if(!_.isString(id))
+    throw new TypeError('can only save ideas');
 
-  var core = memory[idea.id];
+  var core = memory[id];
   if(core) {
     if(!_.isEmpty(core.data))
-      fs.writeFileSync(filepath(idea.id, 'data'), JSON.stringify(core.data), {encoding:'utf8'});
+      fs.writeFileSync(filepath(id, 'data'), JSON.stringify(core.data), {encoding:'utf8'});
     if(!_.isEmpty(core.links))
-      fs.writeFileSync(filepath(idea.id, 'links'), JSON.stringify(core.links), {encoding:'utf8'});
-    else if(fs.existsSync(filepath(idea.id, 'links')))
-      fs.unlink(filepath(idea.id, 'links'));
+      fs.writeFileSync(filepath(id, 'links'), JSON.stringify(core.links), {encoding:'utf8'});
+    else if(fs.existsSync(filepath(id, 'links')))
+      fs.unlink(filepath(id, 'links'));
   }
 };
-exports.load = function(id) {
-  if(id instanceof ProxyIdea)
-    id = id.id;
-  else if(typeof id !== 'string')
+exports.load = function(idea) {
+  var id = idea.id || idea;
+  if(!_.isString(id))
     throw new TypeError('can only load ideas');
 
   if(!(id in memory)) {
@@ -131,9 +134,10 @@ exports.load = function(id) {
   return new ProxyIdea(id);
 };
 exports.close = function(idea) {
-  if(!(idea instanceof ProxyIdea))
+  var id = idea.id || idea;
+  if(!_.isString(id))
     throw new TypeError('can only close ideas');
 
   exports.save(idea);
-  delete memory[idea.id];
+  delete memory[id];
 };

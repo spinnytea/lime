@@ -191,7 +191,7 @@ describe('subgraph', function() {
   describe('search', function() {
     it('nothing to do', function() {
       // invalid subgraph
-      expect(subgraph.search()).to.deep.equal([]);
+      expect(function() { subgraph.search(); }).to.throw(TypeError);
 
       var sg = new subgraph.Subgraph();
       expect(subgraph.search(sg)).to.deep.equal([sg]);

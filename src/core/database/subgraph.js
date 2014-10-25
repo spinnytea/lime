@@ -96,11 +96,7 @@ exports.matcher = {
 // we are trying to identify all of the vertices
 // we use edges to find new ones
 exports.search = function(subgraph) {
-  if(!(subgraph instanceof Subgraph))
-    return [];
-  if(subgraph.edges.length === 0)
-    return [subgraph];
-  if(subgraph.concrete)
+  if(subgraph.edges.length === 0 || subgraph.concrete)
     return [subgraph];
 
   var selectedEdge;

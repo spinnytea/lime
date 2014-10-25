@@ -70,7 +70,7 @@ describe('ideas', function() {
         ideas.close(ideaB);
 
         // links are closed; this link still work
-        ideaA.link(links.list.thought_description, ideaB);
+        ideaA.link(links.list.thought_description, ideaB); // link be idea
         ideas.close(ideaA);
         ideas.close(ideaB);
 
@@ -85,10 +85,10 @@ describe('ideas', function() {
 
       });
 
-      it('remove', function() {
+      it.only('remove', function() {
         ideaA = tools.ideas.create();
         ideaB = tools.ideas.create();
-        ideaA.link(links.list.thought_description, ideaB);
+        ideaA.link(links.list.thought_description, ideaB.id); // link by id
         ideas.close(ideaA);
         ideas.close(ideaB);
 
@@ -170,7 +170,8 @@ describe('ideas', function() {
 
       it('invalid arg', function() {
         expect(function() { ideas.save(); }).to.throw();
-        expect(function() { ideas.save('1 smoothie lifetime'); }).to.throw();
+        expect(function() { ideas.save(10); }).to.throw();
+        expect(function() { ideas.save({foo: 10}); }).to.throw();
 
         expect(function() { ideas.load(); }).to.throw();
         expect(function() { ideas.load(1); }).to.throw();
@@ -179,10 +180,12 @@ describe('ideas', function() {
 
     it('close', function() {
       expect(function() { ideas.close(); }).to.throw();
-      expect(function() { ideas.close('1 smoothie lifetime'); }).to.throw();
+      expect(function() { ideas.close(10); }).to.throw();
+      expect(function() { ideas.close({ foo: '1 smoothie lifetime' }); }).to.throw();
 
       var idea = tools.ideas.create();
       expect(function() { ideas.close(idea); }).to.not.throw();
+      expect(function() { ideas.close('a'); }).to.not.throw();
     });
   }); // end crud
 }); // end ideas
