@@ -68,7 +68,7 @@ exports.Subgraph = Subgraph;
 exports.matcher = {
   id: function(idea, matchData) {
     // XXX this could be an empty object
-    return matchData === idea.id;
+    return (matchData.id || matchData) === idea.id;
   },
   filler: function() {
     return true;
@@ -134,6 +134,7 @@ exports.search = function(subgraph) {
     }
   }); // end edges.forEach
 
+  // expand the edge
   if(selectedEdge) {
     // pick the vertex to expand
     var vertex = _.isUndefined(selectedEdge.src.idea) ? selectedEdge.src : selectedEdge.dst;
@@ -158,7 +159,7 @@ exports.search = function(subgraph) {
     }
   }
 
-  // base case
+  // recurse
   // there are no edges that can be expanded
   if(nextSteps.length === 0) {
     // check all vertices to ensure they all have ideas defined
@@ -180,9 +181,102 @@ exports.search = function(subgraph) {
     // TODO lodash accumulator
     var ret = [];
     nextSteps.forEach(function(sg) {
-      ret.push.apply(ret, exports.search(sg));
+      Array.prototype.push.apply(ret, exports.search(sg));
     });
     return ret;
   }
 
 }; // end exports.search
+
+// use subgraphOuter as a base
+// does subgraphInner fit inside of subgraphOuter?
+// (basically a subgraph match on two subgraphs)
+exports.match = function(subgraphOuter, subgraphInner) {
+  if(!subgraphOuter.concrete)
+    throw new RangeError('the outer subgraph must be concrete before you can match against it');
+  if(subgraphInner.edges.length === 0)
+    return [];
+
+  return subgraphMatch(_.clone(subgraphOuter.edges), _.clone(subgraphInner.edges), {});
+//  .filter(function(map) {
+//    return Object.keys(map).length === Object.keys(subgraphInner.vertices).length;
+//  });
+}; // end exports.match
+
+// okay, so this is actually the function that does the matching
+// (subgraphMatch is the recursive case, exports.match is the seed case)
+//
+// map[inner.vertex_id] = outer.vertex_id;
+// we will typically use the inner subgraph to find the indices of the outer map
+// match all of the innerEdges to the outerEdges
+function subgraphMatch(outerEdges, innerEdges, vertexMap) {
+  // pick the best inner edge
+  // (this should help us reduce the number of branches)
+  var innerEdge = innerEdges.reduce(function(prev, curr) {
+    if(prev === null || curr.pref > prev.pref)
+      return curr;
+    return prev;
+  }, null);
+  innerEdges.splice(innerEdges.indexOf(innerEdge), 1);
+
+  var srcId = innerEdge.src.vertex_id;
+  var dstId = innerEdge.dst.vertex_id;
+  var srcMapped = (srcId in vertexMap);
+  var dstMapped = (dstId in vertexMap);
+  var mapValues = _.values(vertexMap);
+
+  // find all matching outer edges
+  var matches = outerEdges.filter(function(currEdge) {
+    // skip the vertices that are mapped to something different
+    if(srcMapped) {
+      if(vertexMap[srcId] !== currEdge.src.vertex_id)
+        return false;
+    } else {
+      // currEdge src is mapped to a different inner id
+      if(mapValues.indexOf(currEdge.src.vertex_id) !== -1)
+        return false;
+    }
+    if(dstMapped) {
+      if(vertexMap[dstId] !== currEdge.dst.vertex_id)
+        return false;
+    } else {
+      // currEdge dst is mapped to a different inner id
+      if(mapValues.indexOf(currEdge.dst.vertex_id) !== -1)
+        return false;
+    }
+
+    return innerEdge.link === currEdge.link &&
+      innerEdge.src.matches(currEdge.src.idea, innerEdge.src.matchData) &&
+      innerEdge.dst.matches(currEdge.dst.idea, innerEdge.dst.matchData);
+  });
+
+  // recurse
+  if(matches.length === 0)
+    return [];
+
+  return matches.map(function(outerEdge) {
+    // update the new matches
+    var newMap = _.clone(vertexMap);
+    newMap[innerEdge.src.vertex_id] = outerEdge.src.vertex_id;
+    newMap[innerEdge.dst.vertex_id] = outerEdge.dst.vertex_id;
+
+    // shallow copy the outer/inner without the current match
+    var newOuter = outerEdges.filter(function(e) { return e !== outerEdge; });
+    var newInner = innerEdges.filter(function(e) { return e !== innerEdge; });
+
+
+    if(newInner.length === 0)
+      // base case
+      // if there are no more inner edges to match, then our vertex map is complete
+      return [newMap];
+    else
+      // recursive case
+      // get a list of
+      return subgraphMatch(newOuter, newInner, newMap);
+  }).reduce(function(list, match) {
+    // combine the matches into a single list
+    Array.prototype.push.apply(list, match);
+    return list;
+  }, []);
+
+} // end subgraphMatch
