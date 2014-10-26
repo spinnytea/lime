@@ -354,8 +354,8 @@ describe('subgraph', function() {
         var sg = new subgraph.Subgraph();
         var _m = sg.addVertex(subgraph.matcher.id, mark);
         var _a = sg.addVertex(subgraph.matcher.filler);
+        sg.addEdge(_m, links.list.thought_description, _a, 1);
         sg.addEdge(_m, links.list.thought_description, sg.addVertex(subgraph.matcher.filler));
-        sg.addEdge(_m, links.list.thought_description, _a);
 
         var result = subgraph.match(outer, sg);
 
@@ -366,8 +366,8 @@ describe('subgraph', function() {
         var sg = new subgraph.Subgraph();
         var _m = sg.addVertex(subgraph.matcher.id, mark);
         var _a = sg.addVertex(subgraph.matcher.filler);
+        sg.addEdge(_m, links.list.thought_description, _a, 1);
         sg.addEdge(sg.addVertex(subgraph.matcher.filler), links.list.thought_description, _a);
-        sg.addEdge(_m, links.list.thought_description, _a);
 
         var result = subgraph.match(outer, sg);
 
@@ -378,7 +378,7 @@ describe('subgraph', function() {
         var sg = new subgraph.Subgraph();
         var _m = sg.addVertex(subgraph.matcher.id, mark);
         var _a = sg.addVertex(subgraph.matcher.filler);
-        sg.addEdge(sg.addVertex(subgraph.matcher.filler), links.list.thought_description, sg.addVertex(subgraph.matcher.filler));
+        sg.addEdge(sg.addVertex(subgraph.matcher.filler), links.list.thought_description, sg.addVertex(subgraph.matcher.filler), 1);
         sg.addEdge(_m, links.list.thought_description, _a);
 
         var result = subgraph.match(outer, sg);
