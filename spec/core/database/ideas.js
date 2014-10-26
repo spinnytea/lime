@@ -85,7 +85,7 @@ describe('ideas', function() {
 
       });
 
-      it.only('remove', function() {
+      it('remove', function() {
         ideaA = tools.ideas.create();
         ideaB = tools.ideas.create();
         ideaA.link(links.list.thought_description, ideaB.id); // link by id
