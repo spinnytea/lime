@@ -354,6 +354,13 @@ describe('subgraph', function() {
       expect(outer.concrete).to.equal(true);
     });
 
+    it('nothing to do', function() {
+      expect(function() { subgraph.match(); }).to.throw(Error);
+      expect(function() { subgraph.match(outer); }).to.throw(Error);
+
+      expect(subgraph.match(outer, new subgraph.Subgraph())).to.deep.equal([]);
+    });
+
     // how do you even test srcMapped, !srcMapped, dstMapped, !dstMapped
     it.skip('match filter');
 
