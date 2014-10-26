@@ -350,13 +350,41 @@ describe('subgraph', function() {
     });
 
     describe('match filter', function() {
-      it.skip('srcMapped');
+      it('srcMapped', function() {
+        var sg = new subgraph.Subgraph();
+        var _m = sg.addVertex(subgraph.matcher.id, mark);
+        var _a = sg.addVertex(subgraph.matcher.filler);
+        sg.addEdge(_m, links.list.thought_description, sg.addVertex(subgraph.matcher.filler));
+        sg.addEdge(_m, links.list.thought_description, _a);
 
-      it.skip('!srcMapped');
+        var result = subgraph.match(outer, sg);
 
-      it.skip('dstMapped');
+        expect(result.length).to.equal(0);
+      });
 
-      it.skip('!dstMapped');
+      it('dstMapped', function() {
+        var sg = new subgraph.Subgraph();
+        var _m = sg.addVertex(subgraph.matcher.id, mark);
+        var _a = sg.addVertex(subgraph.matcher.filler);
+        sg.addEdge(sg.addVertex(subgraph.matcher.filler), links.list.thought_description, _a);
+        sg.addEdge(_m, links.list.thought_description, _a);
+
+        var result = subgraph.match(outer, sg);
+
+        expect(result.length).to.equal(0);
+      });
+
+      it('!srcMapped, !dstMapped', function() {
+        var sg = new subgraph.Subgraph();
+        var _m = sg.addVertex(subgraph.matcher.id, mark);
+        var _a = sg.addVertex(subgraph.matcher.filler);
+        sg.addEdge(sg.addVertex(subgraph.matcher.filler), links.list.thought_description, sg.addVertex(subgraph.matcher.filler));
+        sg.addEdge(_m, links.list.thought_description, _a);
+
+        var result = subgraph.match(outer, sg);
+
+        expect(result.length).to.equal(0);
+      });
 
       it.skip('not match');
 
@@ -381,7 +409,25 @@ describe('subgraph', function() {
       expect(result[0][_p]).to.equal(p);
     });
 
-    it.skip('success multiple');
+    it('success multiple', function() {
+      var sg = new subgraph.Subgraph();
+      var x = sg.addVertex(subgraph.matcher.filler);
+      var y = sg.addVertex(subgraph.matcher.filler);
+      sg.addEdge(x, links.list.thought_description, y);
+
+      var result = subgraph.match(outer, sg);
+      expect(result.length).to.equal(2);
+
+      var res = result[0]; // not sure which is which
+      expect(Object.keys(res).length).to.equal(2);
+      expect(res[x]).to.equal(m);
+      expect(res[y]).to.equal(a);
+
+      res = result[1]; // not sure which is which
+      expect(Object.keys(res).length).to.equal(2);
+      expect(res[x]).to.equal(a);
+      expect(res[y]).to.equal(p);
+    });
 
     it.skip('disjoint graph');
 
