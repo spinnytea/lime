@@ -39,3 +39,15 @@ BlueprintAction.prototype.runBlueprint = function() {
 };
 
 exports.BlueprintAction = BlueprintAction;
+
+
+// @param state: subgraph
+function BlueprintState(subgraph) {
+  this.subgraph = subgraph;
+}
+
+BlueprintState.prototype.matches = function(blueprintstate) {
+  return subgraph.match(this.subgraph, blueprintstate.subgraph).length > 0;
+};
+
+exports.BlueprintState = BlueprintState;
