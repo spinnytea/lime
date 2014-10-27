@@ -46,6 +46,8 @@ exports.value = function() {
   return { bl: bl, l: l, r: r, br: br };
 };
 
+// add these two values
+// n1 + n2
 exports.combine = function(n1, n2) {
   if(!isNumber(n1) || !isNumber(n2))
     return undefined;
@@ -58,6 +60,26 @@ exports.combine = function(n1, n2) {
       bl: (n1.value.bl && n2.value.bl),
       l: (n1.value.l + n2.value.l),
       r: (n1.value.r + n2.value.r),
+      br: (n1.value.br && n2.value.br),
+    },
+    unit: n1.unit,
+  };
+};
+
+// subtract these two values
+// n1 - n2
+exports.remove = function(n1, n2) {
+  if(!isNumber(n1) || !isNumber(n2))
+    return undefined;
+  if(n1.unit !== n2.unit)
+    return undefined;
+
+  return {
+    type: typeName,
+    value: {
+      bl: (n1.value.bl && n2.value.bl),
+      l: (n1.value.l - n2.value.l),
+      r: (n1.value.r - n2.value.r),
       br: (n1.value.br && n2.value.br),
     },
     unit: n1.unit,
