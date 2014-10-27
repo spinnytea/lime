@@ -194,10 +194,27 @@ exports.search = function(subgraph) {
 exports.match = function(subgraphOuter, subgraphInner) {
   if(!subgraphOuter.concrete)
     throw new RangeError('the outer subgraph must be concrete before you can match against it');
-  if(subgraphInner.edges.length === 0)
+
+  // if there are no vertices, return nothing
+  var numVertices = Object.keys(subgraphInner.vertices).length;
+  if(numVertices === 0)
     return [];
 
-  return subgraphMatch(_.clone(subgraphOuter.edges), _.clone(subgraphInner.edges), {});
+  // pre-fill a vertex map with identified thoughts
+  var vertexMap = {};
+
+  // if there are no edges, return the map
+  if(subgraphInner.edges.length === 0) {
+    if(Object.keys(vertexMap).length === numVertices)
+      return [vertexMap];
+    return [];
+  }
+
+  // with this information, fill out the map using the edges
+  // (note: there may not yet be any edges specified)
+  return subgraphMatch(_.clone(subgraphOuter.edges), _.clone(subgraphInner.edges), vertexMap).filter(function(map) {
+    return Object.keys(map).length === numVertices;
+  });
 //  .filter(function(map) {
 //    return Object.keys(map).length === Object.keys(subgraphInner.vertices).length;
 //  });

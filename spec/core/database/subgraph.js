@@ -423,6 +423,8 @@ describe('subgraph', function() {
         });
       }); // end nextSteps
     }); // end clauses
+
+    it.skip('multi-part search'); // search, add vertices/edges, search again
   }); // end search
 
   describe('match', function() {
@@ -501,7 +503,15 @@ describe('subgraph', function() {
       expect(res[y]).to.equal(p);
     });
 
-    it.skip('only id');
+    it.skip('only id', function() {
+      var sg = new subgraph.Subgraph();
+      var _m = sg.addVertex(subgraph.matcher.id, mark);
+
+      var result = subgraph.match(outer, sg);
+
+      expect(result.length).to.equal(1);
+      expect(result[0][_m]).to.equal(m);
+    });
 
     it.skip('only filler');
 
