@@ -28,6 +28,24 @@ function isNumber(obj) {
   return true;
 }
 
+// construct a value object (for ease)
+// (see the spec for examples)
+exports.value = function() {
+  var l = arguments[0];
+  var r, bl, br;
+  if(typeof arguments[1] === 'number') {
+    r = arguments[1];
+    bl = typeof arguments[2] === 'boolean' ? arguments[2] : true;
+    br = typeof arguments[3] === 'boolean' ? arguments[3] : bl;
+  } else {
+    r = arguments[0];
+    bl = typeof arguments[1] === 'boolean' ? arguments[1] : true;
+    br = typeof arguments[2] === 'boolean' ? arguments[2] : bl;
+  }
+
+  return { bl: bl, l: l, r: r, br: br };
+};
+
 exports.combine = function(n1, n2) {
   if(!isNumber(n1) || !isNumber(n2))
     return undefined;
