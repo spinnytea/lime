@@ -211,6 +211,16 @@ describe('subgraph', function() {
         expect(subgraph.search(sg)).to.deep.equal([]);
     });
 
+    it.skip('only id');
+
+    it.skip('only filler');
+
+    it.skip('disjoint + id');
+
+    it.skip('disjoint + filler');
+
+    it.skip('disjoint');
+
     describe('clauses', function() {
       describe('selectedEdge', function() {
         var mark, apple;
@@ -409,8 +419,14 @@ describe('subgraph', function() {
       expect(res[y]).to.equal(p);
     });
 
-    it.skip('disjoint graph');
+    it.skip('only id');
 
-    it.skip('lone vertex');
+    it.skip('only filler');
+
+    it.skip('disjoint + lone id');
+
+    it.skip('disjoint + lone filler');
+
+    it.skip('disjoint');
   }); // end matchSubgraph
 }); // end subgraph
