@@ -85,3 +85,17 @@ exports.remove = function(n1, n2) {
     unit: n1.unit,
   };
 };
+
+// abs(n1 - n2)
+exports.difference = function(n1, n2) {
+  if(!isNumber(n1) || !isNumber(n2))
+    return undefined;
+  if(n1.unit !== n2.unit)
+    return undefined;
+
+  if(n1.value.r < n2.value.l)
+    return n2.value.l - n1.value.r;
+  if(n2.value.r < n1.value.l)
+    return n1.value.l - n2.value.r;
+  return 0;
+};

@@ -16,7 +16,8 @@ describe.only('number', function() {
   var wrongUnit = _.merge(num(1), {unit:'imaunit'});
 
   it('init', function() {
-    expect(Object.keys(number)).to.deep.equal(['value', 'combine', 'remove']);
+    // this is to ensure we test everything
+    expect(Object.keys(number)).to.deep.equal(['value', 'combine', 'remove', 'difference']);
   });
 
   it('isNumber', function() {
@@ -76,5 +77,23 @@ describe.only('number', function() {
     expect(number.remove(num(0), num(3, true, false))).to.deep.equal(num(-3, true, false));
     expect(number.remove(num(1), num(4, false, true))).to.deep.equal(num(-3, false, true));
     expect(number.remove(num(3, true, false), num(4, false, true))).to.deep.equal(num(-1, false));
+  });
+
+  it('difference', function() {
+    expect(number.difference()).to.equal(undefined);
+    expect(number.difference(num(1))).to.equal(undefined);
+    expect(number.difference(num(1), wrongUnit)).to.equal(undefined);
+
+    expect(number.difference(num(1), num(1))).to.equal(0);
+    expect(number.difference(num(3), num(1))).to.equal(2);
+    expect(number.difference(num(1), num(10))).to.equal(9);
+
+    expect(number.difference(num(1, 3), num(-1))).to.equal(2);
+    expect(number.difference(num(1, 3), num(0))).to.equal(1);
+    expect(number.difference(num(1, 3), num(1))).to.equal(0);
+    expect(number.difference(num(1, 3), num(2))).to.equal(0);
+    expect(number.difference(num(1, 3), num(3))).to.equal(0);
+    expect(number.difference(num(1, 3), num(4))).to.equal(1);
+    expect(number.difference(num(1, 3), num(5))).to.equal(2);
   });
 });
