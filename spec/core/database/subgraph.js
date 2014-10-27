@@ -211,15 +211,97 @@ describe('subgraph', function() {
         expect(subgraph.search(sg)).to.deep.equal([]);
     });
 
-    it.skip('only id');
+    it('only id', function() {
+      var mark = tools.ideas.create();
+      var sg = new subgraph.Subgraph();
+      sg.addVertex(subgraph.matcher.id, mark);
 
-    it.skip('only filler');
+      expect(subgraph.search(sg)).to.deep.equal([sg]);
+      expect(sg.concrete).to.equal(true);
+    });
 
-    it.skip('disjoint + id');
+    it('only filler', function() {
+      var sg = new subgraph.Subgraph();
+      sg.addVertex(subgraph.matcher.filler);
 
-    it.skip('disjoint + filler');
+      expect(subgraph.search(sg)).to.deep.equal([]);
+      expect(sg.concrete).to.equal(false);
+    });
 
-    it.skip('disjoint');
+    it('disjoint + id', function() {
+      var mark = tools.ideas.create();
+      var apple = tools.ideas.create();
+      var price = tools.ideas.create({value: 10});
+      mark.link(links.list.thought_description, apple);
+      apple.link(links.list.thought_description, price);
+
+      var sg = new subgraph.Subgraph();
+      var m = sg.addVertex(subgraph.matcher.id, mark);
+      var a = sg.addVertex(subgraph.matcher.filler);
+      var p = sg.addVertex(subgraph.matcher.id, price);
+      sg.addEdge(m, links.list.thought_description, a);
+
+      expect(subgraph.search(sg)).to.deep.equal([sg]);
+      expect(sg.concrete).to.equal(true);
+      expect(sg.vertices[m].idea.id).to.deep.equal(mark.id);
+      expect(sg.vertices[a].idea.id).to.deep.equal(apple.id);
+      expect(sg.vertices[p].idea.id).to.deep.equal(price.id);
+    });
+
+    it('disjoint + filler', function() {
+      var mark = tools.ideas.create();
+      var apple = tools.ideas.create();
+      var price = tools.ideas.create({value: 10});
+      mark.link(links.list.thought_description, apple);
+      apple.link(links.list.thought_description, price);
+
+      var sg = new subgraph.Subgraph();
+      var m = sg.addVertex(subgraph.matcher.id, mark);
+      var a = sg.addVertex(subgraph.matcher.filler);
+      sg.addVertex(subgraph.matcher.data.similar, {value: 10});
+      sg.addEdge(m, links.list.thought_description, a);
+
+      expect(subgraph.search(sg)).to.deep.equal([]);
+      expect(sg.concrete).to.equal(false);
+    });
+
+    it('disjoint', function() {
+      var mark = tools.ideas.create();
+      var apple = tools.ideas.create();
+      var price = tools.ideas.create({value: 10});
+      mark.link(links.list.thought_description, apple);
+      apple.link(links.list.thought_description, price);
+      var banana = tools.ideas.create();
+      var bprice = tools.ideas.create({value: 20});
+      banana.link(links.list.thought_description, bprice);
+
+      var sg = new subgraph.Subgraph();
+      var m = sg.addVertex(subgraph.matcher.id, mark);
+      var a = sg.addVertex(subgraph.matcher.filler);
+      var p = sg.addVertex(subgraph.matcher.data.similar, {value: 10});
+      sg.addEdge(m, links.list.thought_description, a);
+      sg.addEdge(a, links.list.thought_description, p);
+      var bp = sg.addVertex(subgraph.matcher.data.similar, {value: 20});
+
+      // save the setup so far
+      var sg2 = sg.copy();
+
+
+      // add a filler search for the banana to the first graph
+      var b = sg.addVertex(subgraph.matcher.filler);
+      sg.addEdge(b, links.list.thought_description, bp);
+      // this doesn't work
+      expect(subgraph.search(sg)).to.deep.equal([]);
+      expect(sg.concrete).to.equal(false);
+
+
+      // add an id search for the banana to the second graph
+      b = sg2.addVertex(subgraph.matcher.id, banana);
+      sg2.addEdge(b, links.list.thought_description, bp);
+      // this does work
+      expect(subgraph.search(sg2)).to.deep.equal([sg2]);
+      expect(sg2.concrete).to.equal(true);
+    });
 
     describe('clauses', function() {
       describe('selectedEdge', function() {
