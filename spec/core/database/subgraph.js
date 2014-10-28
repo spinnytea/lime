@@ -203,12 +203,12 @@ describe('subgraph', function() {
     });
 
     it('no id matchers', function() {
-        var sg = new subgraph.Subgraph();
-        var a = sg.addVertex(subgraph.matcher.filler);
-        var b = sg.addVertex(subgraph.matcher.filler);
-        sg.addEdge(a, links.list.thought_description, b);
+      var sg = new subgraph.Subgraph();
+      var a = sg.addVertex(subgraph.matcher.filler);
+      var b = sg.addVertex(subgraph.matcher.filler);
+      sg.addEdge(a, links.list.thought_description, b);
 
-        expect(subgraph.search(sg)).to.deep.equal([]);
+      expect(subgraph.search(sg)).to.deep.equal([]);
     });
 
     it('only id', function() {
@@ -424,7 +424,30 @@ describe('subgraph', function() {
       }); // end nextSteps
     }); // end clauses
 
-    it.skip('multi-part search'); // search, add vertices/edges, search again
+    it('multi-part search', function() {
+      var mark = tools.ideas.create();
+      var apple = tools.ideas.create();
+      var price = tools.ideas.create({value: 10});
+      mark.link(links.list.thought_description, apple);
+      apple.link(links.list.thought_description, price);
+
+      // search, add vertices/edges, search again
+      var sg = new subgraph.Subgraph();
+      var m = sg.addVertex(subgraph.matcher.id, mark);
+      var a = sg.addVertex(subgraph.matcher.filler);
+      sg.addEdge(m, links.list.thought_description, a);
+
+      expect(subgraph.search(sg)).to.deep.equal([sg]);
+      expect(sg.concrete).to.equal(true);
+
+      // add more criteria
+      var p = sg.addVertex(subgraph.matcher.data.similar, {value: 10});
+      sg.addEdge(a, links.list.thought_description, p);
+
+      expect(sg.concrete).to.equal(false);
+      expect(subgraph.search(sg)).to.deep.equal([sg]);
+      expect(sg.concrete).to.equal(true);
+    });
   }); // end search
 
   describe('match', function() {
@@ -545,6 +568,36 @@ describe('subgraph', function() {
       expect(result.length).to.equal(0);
     });
 
-    it.skip('disjoint');
+    it('disjoint', function() {
+      var banana = tools.ideas.create();
+      var bprice = tools.ideas.create({value: 20});
+      banana.link(links.list.thought_description, bprice);
+
+      var b = outer.addVertex(subgraph.matcher.id, banana);
+      var bp = outer.addVertex(subgraph.matcher.data.similar, {value: 20});
+      outer.addEdge(b, links.list.thought_description, bp);
+      subgraph.search(outer);
+
+      expect(outer.concrete).to.equal(true);
+
+
+      var sg = new subgraph.Subgraph();
+      var _m = sg.addVertex(subgraph.matcher.id, mark);
+      var _a = sg.addVertex(subgraph.matcher.filler);
+      var _p = sg.addVertex(subgraph.matcher.data.similar, {value: 10});
+      sg.addEdge(_m, links.list.thought_description, _a);
+      sg.addEdge(_a, links.list.thought_description, _p);
+      var _b = sg.addVertex(subgraph.matcher.filler);
+      var _bp = sg.addVertex(subgraph.matcher.data.similar, {value: 20});
+      sg.addEdge(_b, links.list.thought_description, _bp);
+
+      var result = subgraph.match(outer, sg);
+      expect(result.length).to.equal(1);
+      expect(result[0][_m]).to.equal(m);
+      expect(result[0][_a]).to.equal(a);
+      expect(result[0][_p]).to.equal(p);
+      expect(result[0][_b]).to.equal(b);
+      expect(result[0][_bp]).to.equal(bp);
+    });
   }); // end matchSubgraph
 }); // end subgraph

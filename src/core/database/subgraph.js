@@ -46,6 +46,8 @@ Subgraph.prototype.addVertex = function(matcher, matchData) {
 
   if(matcher === exports.matcher.id)
     this.vertices[id].idea = ideas.load(matchData);
+  else
+    this.concrete = false;
 
   return id;
 };
@@ -59,6 +61,7 @@ Subgraph.prototype.addEdge = function(src, link, dst, pref) {
     dst: this.vertices[dst],
     pref: (pref || 0),
   });
+  this.concrete = false;
 };
 
 exports.Subgraph = Subgraph;
