@@ -20,6 +20,7 @@ describe('number', function() {
     expect(Object.keys(number)).to.deep.equal(['value', 'combine', 'remove', 'difference']);
   });
 
+  // TODO should this throw an exception?
   it('isNumber', function() {
     // is number isn't exposed, so we need to first make sure the combine works
     // (if this test fails here, then it's not this test's fault)
@@ -58,6 +59,7 @@ describe('number', function() {
   it('combine', function() {
     expect(number.combine()).to.equal(undefined);
     expect(number.combine(num(1))).to.equal(undefined);
+    // TODO should this throw an exception?
     expect(number.combine(num(1), wrongUnit)).to.equal(undefined);
 
     expect(number.combine(num(1), num(1))).to.deep.equal(num(2));
