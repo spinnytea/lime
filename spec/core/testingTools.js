@@ -37,6 +37,10 @@ exports.ideas.create = function(data) {
 
   return ret;
 };
+// manually clean up an idea when we are done with it
+exports.ideas.clean = function(idea) {
+  created.push(idea.id || idea);
+};
 // Copied from the src ideas / I need this to test but it shouldn't be global on ideas
 exports.ideas.filepath = function(id, which) {
   return config.data.location + '/' + id + '_' + which + '.json';
