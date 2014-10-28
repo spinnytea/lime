@@ -12,7 +12,7 @@ function num() {
   };
 }
 
-describe.only('number', function() {
+describe('number', function() {
   var wrongUnit = _.merge(num(1), {unit:'imaunit'});
 
   it('init', function() {
@@ -96,4 +96,4 @@ describe.only('number', function() {
     expect(number.difference(num(1, 3), num(4))).to.equal(1);
     expect(number.difference(num(1, 3), num(5))).to.equal(2);
   });
-});
+}); // end number

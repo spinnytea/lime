@@ -94,6 +94,7 @@ ProxyIdea.prototype.unlink = function(link, idea) {
 exports.create = function(data) {
   var core = new CoreIdea(ids.next(NEXT_ID), data);
   memory[core.id] = core;
+  if(data) exports.save(core.id);
   return new ProxyIdea(core.id);
 };
 exports.save = function(idea) {

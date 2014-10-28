@@ -1,4 +1,6 @@
 'use strict';
+// this represents how much there is of something
+// e.g. '13.5 meters' or '22.3124 psi'
 // all numbers are a range of possible values
 
 var typeName = 'lime_number';
@@ -93,9 +95,14 @@ exports.difference = function(n1, n2) {
   if(n1.unit !== n2.unit)
     return undefined;
 
+  // if n2 is entirely larger than n1
   if(n1.value.r < n2.value.l)
     return n2.value.l - n1.value.r;
+
+  // if n1 is entirely larger than n2
   if(n2.value.r < n1.value.l)
     return n1.value.l - n2.value.r;
+
+  // the effective difference is zero
   return 0;
 };
