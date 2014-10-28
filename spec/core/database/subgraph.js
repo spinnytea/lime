@@ -428,12 +428,12 @@ describe('subgraph', function() {
   }); // end search
 
   describe('match', function() {
-    var mark;
+    var mark, apple, price;
     var outer, m, a, p;
     beforeEach(function() {
       mark = tools.ideas.create();
-      var apple = tools.ideas.create();
-      var price = tools.ideas.create({value: 10});
+      apple = tools.ideas.create();
+      price = tools.ideas.create({value: 10});
       mark.link(links.list.thought_description, apple);
       apple.link(links.list.thought_description, price);
 
@@ -503,21 +503,47 @@ describe('subgraph', function() {
       expect(res[y]).to.equal(p);
     });
 
-    it.skip('only id', function() {
+    it('only id', function() {
       var sg = new subgraph.Subgraph();
       var _m = sg.addVertex(subgraph.matcher.id, mark);
 
       var result = subgraph.match(outer, sg);
-
       expect(result.length).to.equal(1);
       expect(result[0][_m]).to.equal(m);
     });
 
-    it.skip('only filler');
+    it('only filler', function() {
+      var sg = new subgraph.Subgraph();
+      sg.addVertex(subgraph.matcher.filler);
 
-    it.skip('disjoint + lone id');
+      var result = subgraph.match(outer, sg);
+      expect(result.length).to.equal(0);
+    });
 
-    it.skip('disjoint + lone filler');
+    it('disjoint + lone id', function() {
+      var sg = new subgraph.Subgraph();
+      var _m = sg.addVertex(subgraph.matcher.id, mark);
+      var _a = sg.addVertex(subgraph.matcher.filler);
+      var _p = sg.addVertex(subgraph.matcher.id, price);
+      sg.addEdge(_m, links.list.thought_description, _a);
+
+      var result = subgraph.match(outer, sg);
+      expect(result.length).to.equal(1);
+      expect(result[0][_m]).to.equal(m);
+      expect(result[0][_a]).to.equal(a);
+      expect(result[0][_p]).to.equal(p);
+    });
+
+    it('disjoint + lone filler', function() {
+      var sg = new subgraph.Subgraph();
+      var _m = sg.addVertex(subgraph.matcher.id, mark);
+      var _a = sg.addVertex(subgraph.matcher.filler);
+      sg.addVertex(subgraph.matcher.data.similar, {value: 10});
+      sg.addEdge(_m, links.list.thought_description, _a);
+
+      var result = subgraph.match(outer, sg);
+      expect(result.length).to.equal(0);
+    });
 
     it.skip('disjoint');
   }); // end matchSubgraph

@@ -202,6 +202,16 @@ exports.match = function(subgraphOuter, subgraphInner) {
 
   // pre-fill a vertex map with identified thoughts
   var vertexMap = {};
+  _.forEach(subgraphInner.vertices, function(vi) {
+    if(vi.idea) {
+      _.forEach(subgraphOuter.vertices, function(vo) {
+        // outer is concrete; vo.idea exists
+        if(vi.idea.id === vo.idea.id) {
+          vertexMap[vi.vertex_id] = vo.vertex_id;
+        }
+      });
+    }
+  });
 
   // if there are no edges, return the map
   if(subgraphInner.edges.length === 0) {
