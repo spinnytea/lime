@@ -225,12 +225,10 @@ exports.match = function(subgraphOuter, subgraphInner) {
 
   // with this information, fill out the map using the edges
   // (note: there may not yet be any edges specified)
-  return subgraphMatch(_.clone(subgraphOuter.edges), _.clone(subgraphInner.edges), vertexMap).filter(function(map) {
-    return Object.keys(map).length === numVertices;
-  });
-//  .filter(function(map) {
-//    return Object.keys(map).length === Object.keys(subgraphInner.vertices).length;
-//  });
+  return subgraphMatch(_.clone(subgraphOuter.edges), _.clone(subgraphInner.edges), vertexMap)
+    .filter(function(map) {
+      return Object.keys(map).length === numVertices;
+    });
 }; // end exports.match
 
 // okay, so this is actually the function that does the matching
@@ -308,5 +306,4 @@ function subgraphMatch(outerEdges, innerEdges, vertexMap) {
     Array.prototype.push.apply(list, match);
     return list;
   }, []);
-
 } // end subgraphMatch
