@@ -2,6 +2,7 @@
 var _ = require('lodash');
 var ideas = require('./ideas');
 var ids = require('../ids');
+var number = require('../planning/primitives/number');
 
 // this is an overlay on the idea database
 // it is a proxy or wrapper around the idea graph
@@ -20,7 +21,7 @@ function Subgraph() {
   // - all of the vertices have a specific ID
   // false
   // - is it a description of something to find
-  this.concrete = false;
+  this.concrete = true;
 }
 Subgraph.prototype.copy = function() {
   var sg = new Subgraph();
@@ -39,13 +40,24 @@ Subgraph.prototype.addVertex = function(matcher, matchData) {
   var id = (this.prevVertexId = ids.next.anonymous(this.prevVertexId));
   this.vertices[id] = {
     vertex_id: id,
+
+    // this is how we are going to match an idea in the search and match
     matches: matcher,
     matchData: matchData,
-    idea: undefined, // this is what we are ultimately trying to find
+
+    // this is what we are ultimately trying to find with a subgraph search
+    idea: undefined,
+
+    // this is for the rewrite
+    // if undefined, it hasn't be fetched
+    // otherwise, it's the value of idea.data() before we tried to change it
+    data: undefined,
   };
 
   if(matcher === exports.matcher.id)
     this.vertices[id].idea = ideas.load(matchData);
+  else
+    this.concrete = false;
 
   return id;
 };
@@ -59,6 +71,7 @@ Subgraph.prototype.addEdge = function(src, link, dst, pref) {
     dst: this.vertices[dst],
     pref: (pref || 0),
   });
+  this.concrete = false;
 };
 
 exports.Subgraph = Subgraph;
@@ -96,7 +109,7 @@ exports.matcher = {
 // we are trying to identify all of the vertices
 // we use edges to find new ones
 exports.search = function(subgraph) {
-  if(subgraph.edges.length === 0 || subgraph.concrete)
+  if(subgraph.concrete)
     return [subgraph];
 
   var selectedEdge;
@@ -194,13 +207,38 @@ exports.search = function(subgraph) {
 exports.match = function(subgraphOuter, subgraphInner) {
   if(!subgraphOuter.concrete)
     throw new RangeError('the outer subgraph must be concrete before you can match against it');
-  if(subgraphInner.edges.length === 0)
+
+  // if there are no vertices, return nothing
+  var numVertices = Object.keys(subgraphInner.vertices).length;
+  if(numVertices === 0)
     return [];
 
-  return subgraphMatch(_.clone(subgraphOuter.edges), _.clone(subgraphInner.edges), {});
-//  .filter(function(map) {
-//    return Object.keys(map).length === Object.keys(subgraphInner.vertices).length;
-//  });
+  // pre-fill a vertex map with identified thoughts
+  var vertexMap = {};
+  _.forEach(subgraphInner.vertices, function(vi) {
+    if(vi.idea) {
+      _.forEach(subgraphOuter.vertices, function(vo) {
+        // outer is concrete; vo.idea exists
+        if(vi.idea.id === vo.idea.id) {
+          vertexMap[vi.vertex_id] = vo.vertex_id;
+        }
+      });
+    }
+  });
+
+  // if there are no edges, return the map
+  if(subgraphInner.edges.length === 0) {
+    if(Object.keys(vertexMap).length === numVertices)
+      return [vertexMap];
+    return [];
+  }
+
+  // with this information, fill out the map using the edges
+  // (note: there may not yet be any edges specified)
+  return subgraphMatch(_.clone(subgraphOuter.edges), _.clone(subgraphInner.edges), vertexMap)
+    .filter(function(map) {
+      return Object.keys(map).length === numVertices;
+    });
 }; // end exports.match
 
 // okay, so this is actually the function that does the matching
@@ -278,5 +316,71 @@ function subgraphMatch(outerEdges, innerEdges, vertexMap) {
     Array.prototype.push.apply(list, match);
     return list;
   }, []);
-
 } // end subgraphMatch
+
+
+// @param transitions: an array of transitions
+//  - { vertex_id: id, replace: number }
+//  - { vertex_id: id, combine: number }
+//  - { vertex_id: id, replace: discrete }
+// @param actual: boolean (default: false)
+//  - if true, write the updates to the data; if false, write the updates to the cache
+// @return
+//  - if actual, return this
+//  - if !actual, return the new subgraph
+//  - if unable to perform rewrite, return undefined
+exports.rewrite = function(subgraph, transitions, actual) {
+  if(!subgraph.concrete)
+    return undefined;
+
+  actual = (actual === true);
+
+  // if this is the actual transition, we apply it to this object
+  // if this is a theoretical transition, we apply it to a copy
+  if(!actual)
+    subgraph = subgraph.copy();
+
+  // validate transitions
+  if(!transitions.every(function(t) {
+    var v = subgraph.vertices[t.vertex_id];
+    if(v) {
+      // if a transition hasn't been specified, there is nothing to do
+      if(!(t.replace || t.combine))
+        return false;
+
+      var d = v.idea.data();
+      // if there is no data, there is nothing to change
+      if(Object.keys(d).length === 0)
+        return false;
+      v.data = d;
+
+      if(t.replace) {
+        if(v.data.unit !== t.replace.unit)
+          return false;
+      } else {
+        if(v.data.unit !== t.combine.unit || !number.isNumber(v.data) || !number.isNumber(t.combine))
+          return false;
+      }
+
+
+      return true;
+    }
+    return false;
+  })) return undefined;
+
+  // apply transitions
+  transitions.forEach(function(t) {
+    var v = subgraph.vertices[t.vertex_id];
+
+    if(t.replace) {
+      _.merge(v.data, t.replace);
+    } else {
+      _.merge(v.data, number.combine(v.data, t.combine));
+    }
+
+    if(actual)
+      v.idea.update(v.data);
+  });
+
+  return subgraph;
+}; // end rewrite
