@@ -354,8 +354,14 @@ exports.rewrite = function(subgraph, transitions, actual) {
         return false;
       v.data = d;
 
-      if(v.data.unit !== (t.replace ? t.replace.unit : t.combine.unit))
-        return false;
+      if(t.replace) {
+        if(v.data.unit !== t.replace.unit)
+          return false;
+      } else {
+        if(v.data.unit !== t.combine.unit || !number.isNumber(v.data) || !number.isNumber(t.combine))
+          return false;
+      }
+
 
       return true;
     }

@@ -667,6 +667,9 @@ describe('subgraph', function() {
       // don't update the id
       expect(sg.vertices[p].idea.data()).to.deep.equal(priceData);
       expect(sg2.vertices[p].idea.data()).to.deep.equal(priceData);
+
+      sg2 = subgraph.rewrite(sg, [{vertex_id: w, combine: wumpusData }]);
+      expect(sg2).to.equal(undefined);
     });
 
     it.skip('actual');
