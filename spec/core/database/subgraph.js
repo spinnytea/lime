@@ -2,14 +2,16 @@
 /* global describe, it, beforeEach, afterEach */
 var _ = require('lodash');
 var expect = require('chai').expect;
+var discrete = require('../../../src/core/planning/primitives/discrete');
 var links = require('../../../src/core/database/links');
+var number = require('../../../src/core/planning/primitives/number');
 var subgraph = require('../../../src/core/database/subgraph');
 var tools = require('../testingTools');
 
 describe('subgraph', function() {
   it('init', function() {
     // this is to ensure we test everything
-    expect(Object.keys(subgraph)).to.deep.equal(['Subgraph', 'matcher', 'search', 'match']);
+    expect(Object.keys(subgraph)).to.deep.equal(['Subgraph', 'matcher', 'search', 'match', 'rewrite']);
     expect(Object.keys(subgraph.Subgraph.prototype)).to.deep.equal(['copy', 'addVertex', 'addEdge']);
     expect(Object.keys(subgraph.matcher)).to.deep.equal(['id', 'filler', 'data']);
     expect(Object.keys(subgraph.matcher.data)).to.deep.equal(['exact', 'similar']);
@@ -600,4 +602,73 @@ describe('subgraph', function() {
       expect(result[0][_bp]).to.equal(bp);
     });
   }); // end matchSubgraph
+
+  describe('rewrite', function() {
+    var boolean, money, price, wumpus;
+    var sg, p, w;
+    var priceData, wumpusData;
+    beforeEach(function() {
+      boolean = discrete.definitions.create(['true', 'false']);
+      tools.ideas.clean(boolean);
+      money = tools.ideas.create();
+
+      priceData = { value: number.value(10), unit: money.id };
+      price = tools.ideas.create(priceData);
+      wumpusData = { value: 'true', unit: boolean.id };
+      wumpus = tools.ideas.create(wumpusData);
+
+      sg = new subgraph.Subgraph();
+      p = sg.addVertex(subgraph.matcher.id, price);
+      w = sg.addVertex(subgraph.matcher.id, wumpus);
+    });
+
+    it('false starts', function() {
+      // not concrete
+      sg.addVertex(subgraph.matcher.filler);
+      expect(sg.concrete).to.equal(false);
+      expect(subgraph.rewrite(sg)).to.equal(undefined);
+    });
+
+    it('valildate transitions', function() {
+      expect(subgraph.rewrite(sg, ['!@#$ not an id'])).to.equal(undefined);
+
+    });
+
+    it('!actual', function() {
+      var priceUpdate = { value: number.value(20), unit: money.id };
+      var wumpusUpdate = { value: 'true', unit: boolean.id };
+
+      var sg2 = subgraph.rewrite(sg, [{vertex_id: p, replace: priceUpdate }]);
+      expect(sg2).to.be.ok;
+      expect(sg2).to.not.equal(sg);
+      // update the new value
+      expect(sg.vertices[p].data).to.equal(undefined);
+      expect(sg2.vertices[p].data).to.deep.equal(priceUpdate);
+      // don't update the id
+      expect(sg.vertices[p].idea.data()).to.deep.equal(priceData);
+      expect(sg2.vertices[p].idea.data()).to.deep.equal(priceData);
+
+      sg2 = subgraph.rewrite(sg, [{vertex_id: w, replace: wumpusUpdate }]);
+      expect(sg2).to.be.ok;
+      expect(sg2).to.not.equal(sg);
+      // update the new value
+      expect(sg.vertices[w].data).to.equal(undefined);
+      expect(sg2.vertices[w].data).to.deep.equal(wumpusUpdate);
+      // don't update the id
+      expect(sg.vertices[w].idea.data()).to.deep.equal(wumpusData);
+      expect(sg2.vertices[w].idea.data()).to.deep.equal(wumpusUpdate);
+
+      sg2 = subgraph.rewrite(sg, [{vertex_id: p, combine: priceUpdate }]);
+      expect(sg2).to.be.ok;
+      expect(sg2).to.not.equal(sg);
+      // update the new value
+      expect(sg.vertices[p].data).to.equal(undefined);
+      expect(sg2.vertices[p].data).to.deep.equal({ type: 'lime_number', value: number.value(30), unit: money.id });
+      // don't update the id
+      expect(sg.vertices[p].idea.data()).to.deep.equal(priceData);
+      expect(sg2.vertices[p].idea.data()).to.deep.equal(priceData);
+    });
+
+    it.skip('actual');
+  }); // end rewrite
 }); // end subgraph

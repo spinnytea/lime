@@ -2,6 +2,7 @@
 var _ = require('lodash');
 var ideas = require('./ideas');
 var ids = require('../ids');
+var number = require('../planning/primitives/number');
 
 // this is an overlay on the idea database
 // it is a proxy or wrapper around the idea graph
@@ -20,7 +21,7 @@ function Subgraph() {
   // - all of the vertices have a specific ID
   // false
   // - is it a description of something to find
-  this.concrete = false;
+  this.concrete = true;
 }
 Subgraph.prototype.copy = function() {
   var sg = new Subgraph();
@@ -39,9 +40,18 @@ Subgraph.prototype.addVertex = function(matcher, matchData) {
   var id = (this.prevVertexId = ids.next.anonymous(this.prevVertexId));
   this.vertices[id] = {
     vertex_id: id,
+
+    // this is how we are going to match an idea in the search and match
     matches: matcher,
     matchData: matchData,
-    idea: undefined, // this is what we are ultimately trying to find
+
+    // this is what we are ultimately trying to find with a subgraph search
+    idea: undefined,
+
+    // this is for the rewrite
+    // if undefined, it hasn't be fetched
+    // otherwise, it's the value of idea.data() before we tried to change it
+    data: undefined,
   };
 
   if(matcher === exports.matcher.id)
@@ -307,3 +317,64 @@ function subgraphMatch(outerEdges, innerEdges, vertexMap) {
     return list;
   }, []);
 } // end subgraphMatch
+
+
+// @param transitions: an array of transitions
+//  - { vertex_id: id, replace: number }
+//  - { vertex_id: id, combine: number }
+//  - { vertex_id: id, replace: discrete }
+// @param actual: boolean (default: false)
+//  - if true, write the updates to the data; if false, write the updates to the cache
+// @return
+//  - if actual, return this
+//  - if !actual, return the new subgraph
+//  - if unable to perform rewrite, return undefined
+exports.rewrite = function(subgraph, transitions, actual) {
+  if(!subgraph.concrete)
+    return undefined;
+
+  actual = (actual === true);
+
+  // if this is the actual transition, we apply it to this object
+  // if this is a theoretical transition, we apply it to a copy
+  if(!actual)
+    subgraph = subgraph.copy();
+
+  // validate transitions
+  if(!transitions.every(function(t) {
+    var v = subgraph.vertices[t.vertex_id];
+    if(v) {
+      // if a transition hasn't been specified, there is nothing to do
+      if(!(t.replace || t.combine))
+        return false;
+
+      var d = v.idea.data();
+      // if there is no data, there is nothing to change
+      if(Object.keys(d).length === 0)
+        return false;
+      v.data = d;
+
+      if(v.data.unit !== (t.replace ? t.replace.unit : t.combine.unit))
+        return false;
+
+      return true;
+    }
+    return false;
+  })) return undefined;
+
+  // apply transitions
+  transitions.forEach(function(t) {
+    var v = subgraph.vertices[t.vertex_id];
+
+    if(t.replace) {
+      _.merge(v.data, t.replace);
+    } else {
+      _.merge(v.data, number.combine(v.data, t.combine));
+    }
+
+    if(actual)
+      v.idea.update(v.data);
+  });
+
+  return subgraph;
+}; // end rewrite
