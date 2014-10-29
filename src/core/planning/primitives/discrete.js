@@ -17,7 +17,7 @@ var typeName = 'lime_discrete';
 //   type (optional)
 //   value
 //   unit
-function isDiscrete(obj) {
+exports.isDiscrete = function(obj) {
   if(typeof obj !== 'object')
     return false;
 
@@ -36,11 +36,11 @@ function isDiscrete(obj) {
 
   obj.type = typeName;
   return true;
-}
+};
 
 // { type, unit, value }
 exports.difference = function(d1, d2) {
-  if(!isDiscrete(d1) || !isDiscrete(d2))
+  if(!exports.isDiscrete(d1) || !exports.isDiscrete(d2))
     return undefined;
   if(d1.unit !== d2.unit)
     return undefined;

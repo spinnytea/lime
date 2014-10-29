@@ -9,7 +9,7 @@ var typeName = 'lime_number';
 //   bl, br: is the number bounded left or right? true = '[', false = '('
 //   l, r: the min/max of the value
 // unit: idea.id
-function isNumber(obj) {
+exports.isNumber = function(obj) {
   if(typeof obj !== 'object')
     return false;
 
@@ -28,7 +28,7 @@ function isNumber(obj) {
 
   obj.type = typeName;
   return true;
-}
+};
 
 // construct a value object (for ease)
 // (see the spec for examples)
@@ -51,7 +51,7 @@ exports.value = function() {
 // add these two values
 // n1 + n2
 exports.combine = function(n1, n2) {
-  if(!isNumber(n1) || !isNumber(n2))
+  if(!exports.isNumber(n1) || !exports.isNumber(n2))
     return undefined;
   if(n1.unit !== n2.unit)
     return undefined;
@@ -71,7 +71,7 @@ exports.combine = function(n1, n2) {
 // subtract these two values
 // n1 - n2
 exports.remove = function(n1, n2) {
-  if(!isNumber(n1) || !isNumber(n2))
+  if(!exports.isNumber(n1) || !exports.isNumber(n2))
     return undefined;
   if(n1.unit !== n2.unit)
     return undefined;
@@ -90,7 +90,7 @@ exports.remove = function(n1, n2) {
 
 // abs(n1 - n2)
 exports.difference = function(n1, n2) {
-  if(!isNumber(n1) || !isNumber(n2))
+  if(!exports.isNumber(n1) || !exports.isNumber(n2))
     return undefined;
   if(n1.unit !== n2.unit)
     return undefined;

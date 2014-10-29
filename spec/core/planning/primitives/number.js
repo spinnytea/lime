@@ -17,27 +17,27 @@ describe('number', function() {
 
   it('init', function() {
     // this is to ensure we test everything
-    expect(Object.keys(number)).to.deep.equal(['value', 'combine', 'remove', 'difference']);
+    expect(Object.keys(number)).to.deep.equal(['isNumber', 'value', 'combine', 'remove', 'difference']);
   });
 
   // TODO should this throw an exception?
   it('isNumber', function() {
-    // is number isn't exposed, so we need to first make sure the combine works
-    // (if this test fails here, then it's not this test's fault)
-    expect(number.combine(num(1), num(1))).to.deep.equal(num(2));
+    expect(number.isNumber(undefined)).to.equal(false);
+    expect(number.isNumber({})).to.equal(false);
+//    expect(number.isNumber({ type: 'lime_number' })).to.equal(false);
+    expect(number.isNumber({ value: { bl: 'true', l: 1, r: 1, br: true }, unit: 'test' })).to.equal(false);
+    expect(number.isNumber({ value: { l: 1, r: 1, br: true }, unit: 'test' })).to.equal(false);
+    expect(number.isNumber({ value: { bl: true, r: 1, br: true }, unit: 'test' })).to.equal(false);
+    expect(number.isNumber({ value: { bl: true, l: 1, br: true }, unit: 'test' })).to.deep.equal(false);
+    expect(number.isNumber({ value: { bl: true, l: 1, r: 1 }, unit: 'test' })).to.deep.equal(false);
+    expect(number.isNumber({ value: { bl: true, l: 1, r: 1, br: true } })).to.deep.equal(false);
 
-    expect(number.combine(num(1), undefined)).to.equal(undefined);
-    expect(number.combine(num(1), {})).to.equal(undefined);
-    expect(number.combine(num(1), { value: { bl: 'true', l: 1, r: 1, br: true }, unit: 'test' })).to.equal(undefined);
-    expect(number.combine(num(1), { value: { l: 1, r: 1, br: true }, unit: 'test' })).to.equal(undefined);
-    expect(number.combine(num(1), { value: { bl: true, r: 1, br: true }, unit: 'test' })).to.equal(undefined);
-    expect(number.combine(num(1), { value: { bl: true, l: 1, br: true }, unit: 'test' })).to.deep.equal(undefined);
-    expect(number.combine(num(1), { value: { bl: true, l: 1, r: 1 }, unit: 'test' })).to.deep.equal(undefined);
-    expect(number.combine(num(1), { value: { bl: true, l: 1, r: 1, br: true } })).to.deep.equal(undefined);
-
-    expect(number.combine(num(1), num(0))).to.deep.equal(num(1));
-    expect(number.combine(num(1), { value: { bl: true, l: 1, r: 1, br: true }, unit: 'test' })).to.deep.equal(num(2));
+    expect(number.isNumber(num(0))).to.deep.equal(true);
+    expect(number.isNumber({ value: { bl: true, l: 1, r: 1, br: true }, unit: 'test' })).to.deep.equal(true);
   });
+
+  it.skip('isNumber: type only');
+  it.skip('isNumber: cycle type/value/unit');
 
   it('value', function() {
     // test our gen function, since it is complex, and we use it a lot

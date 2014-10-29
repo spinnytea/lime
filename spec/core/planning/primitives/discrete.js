@@ -7,39 +7,31 @@ var tools = require('../../testingTools');
 describe('discrete', function() {
   it('init', function() {
     // this is to ensure we test everything
-    expect(Object.keys(discrete)).to.deep.equal(['difference', 'definitions']);
+    expect(Object.keys(discrete)).to.deep.equal(['isDiscrete', 'difference', 'definitions']);
     expect(Object.keys(discrete.definitions)).to.deep.equal(['create']);
   });
 
   // TODO should this throw an exception?
   it('isDiscrete', function() {
     var boolean = discrete.definitions.create(['true', 'false']);
-    var t = {value: 'true', unit: boolean.id};
 
-    // is discrete isn't exposed, so we need to first make sure the difference works
-    // (if this test fails here, then it's not this test's fault)
-    expect(discrete.difference(t, t)).to.equal(0);
+    expect(discrete.isDiscrete(undefined)).to.equal(false);
+    expect(discrete.isDiscrete({})).to.equal(false);
+//    expect(discrete.isDiscrete({ type: 'lime_discrete' })).to.equal(false);
+    expect(discrete.isDiscrete({ value: 'true' })).to.equal(false);
+    expect(discrete.isDiscrete({ unit: boolean.id })).to.equal(false);
 
-    expect(discrete.difference(t, undefined)).to.equal(undefined);
-    expect(discrete.difference(t, {})).to.equal(undefined);
-    expect(discrete.difference(t, { type: 'lime_discrete' })).to.equal(undefined);
-    expect(discrete.difference(t, { value: 'true' })).to.equal(undefined);
-    expect(discrete.difference(t, { unit: boolean.id })).to.equal(undefined);
+    expect(discrete.isDiscrete({ type: 'wrong type', value: 'true', unit: boolean.id })).to.equal(false);
+    expect(discrete.isDiscrete({ value: 'wrong value', unit: boolean.id })).to.equal(false);
+    expect(discrete.isDiscrete({ value: 'true', unit: 'wrong unit' })).to.equal(false);
 
-    expect(discrete.difference(t, { type: 'wrong type', value: 'true', unit: boolean.id })).to.equal(undefined);
-    expect(discrete.difference(t, { value: 'wrong value', unit: boolean.id })).to.equal(undefined);
-    expect(discrete.difference(t, { value: 'true', unit: 'wrong unit' })).to.equal(undefined);
-
-    expect(discrete.difference(t, { value: 'true', unit: boolean.id })).to.equal(0);
-    expect(discrete.difference(t, { type: 'lime_discrete', value: 'true', unit: boolean.id })).to.equal(0);
-
-    // fills in the type for later
-    var val = { type: '', value: 'false', unit: boolean.id };
-    expect(discrete.difference(t, val)).to.equal(1);
-    expect(val.type).to.equal('lime_discrete');
+    expect(discrete.isDiscrete({ value: 'true', unit: boolean.id })).to.equal(true);
+    expect(discrete.isDiscrete({ type: 'lime_discrete', value: 'true', unit: boolean.id })).to.equal(true);
 
     tools.ideas.clean(boolean);
   });
+
+  it.skip('isDiscrete: type only');
 
   it('difference', function() {
     var boolean = discrete.definitions.create(['true', 'false']);
