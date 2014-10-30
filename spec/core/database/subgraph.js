@@ -499,6 +499,9 @@ describe('subgraph', function() {
       var _a = sg.addVertex(subgraph.matcher.filler);
       sg.addEdge(_m, links.list.thought_description, _a);
       sg.addEdge(_a, links.list.thought_description, _p);
+      expect(m).to.not.equal(_m);
+      expect(a).to.not.equal(_a);
+      expect(p).to.not.equal(_p);
 
       var result = subgraph.match(outer, sg);
       expect(result.length).to.equal(1);
@@ -506,6 +509,15 @@ describe('subgraph', function() {
       expect(result[0][_m]).to.equal(m);
       expect(result[0][_a]).to.equal(a);
       expect(result[0][_p]).to.equal(p);
+
+      _.forEach(result[0], function(outer, inner) {
+        // make sure the forEach works as expected
+        // I mean, it does, but I just want the copy-pasta example
+        // like, I know how this works, but it's still nice to have overkill
+        expect(result[0][inner]).to.equal(outer);
+        // this is to ensure our test works
+        expect(result[0][outer]).to.not.equal(inner);
+      });
     });
 
     it('success multiple', function() {

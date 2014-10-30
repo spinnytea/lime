@@ -5,7 +5,7 @@ var blueprint = require('../../../src/core/planning/primitives/blueprint');
 var serialplan = require('../../../src/core/planning/serialplan');
 var actuator = require('../../../src/core/planning/actuator');
 
-describe.only('serialplan', function() {
+describe('serialplan', function() {
   it('init', function() {
     expect(serialplan.SerialAction).to.be.a('function');
     expect(actuator.ActuatorAction).to.be.a('function');
@@ -20,5 +20,5 @@ describe.only('serialplan', function() {
 
   it.skip('blueprint.BlueprintAction is a path.Action');
 
-  it.skip('blueprint.BlueprintAction is a path.State');
+  it.skip('blueprint.BlueprintState is a path.State');
 });
