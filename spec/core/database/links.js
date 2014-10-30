@@ -17,4 +17,8 @@ describe('links', function() {
     expect(function() { links.list.thought_description = 'stuff'; }).to.throw(Error);
     expect(function() { links.list.thought_description.name = 'stuff'; }).to.throw(Error);
   });
-});
+
+  describe('type_of', function() {
+    it.skip('hierarchy');
+  }); // end type_of
+}); // end links
