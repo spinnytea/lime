@@ -5,7 +5,14 @@
 // Other classes should:
 //   function SerialPlan() { blueprint.BlueprintAction.call(this); }
 //   _.extend(SerialPlan.prototype, blueprint.BlueprintAction.prototype);
+var _ = require('lodash');
 var subgraph = require('../../database/subgraph');
+
+// when we try to calculate or estimate a distance,
+// if there is an error,
+// then we will add/return this number
+var DISTANCE_ERROR = Infinity;
+var DISTANCE_DEFAULT = 1;
 
 function BlueprintAction() {
   this.requirements = new subgraph.Subgraph();
@@ -43,8 +50,28 @@ exports.BlueprintAction = BlueprintAction;
 
 // @param state: subgraph
 function BlueprintState(subgraph) {
+  if(!subgraph.concrete)
+    throw new RangeError('blueprint states must be concrete');
   this.subgraph = subgraph;
 }
+
+BlueprintState.prototype.distance = function(to) {
+  var result = subgraph.match(this.subgraph, to.subgraph);
+  if(result.length === 0)
+    return DISTANCE_ERROR;
+
+  var min = DISTANCE_ERROR;
+  result.forEach(function(vertexMap) {
+    var cost = 0;
+    _.forEach(vertexMap, function(outer, inner) {
+      var o = this.subgraph.vertices[outer];
+      var i = to.subgraph.vertices[inner];
+    });
+    if(cost < min)
+      min = cost;
+  });
+  return min;
+};
 
 BlueprintState.prototype.matches = function(blueprintstate) {
   return subgraph.match(this.subgraph, blueprintstate.subgraph).length > 0;
