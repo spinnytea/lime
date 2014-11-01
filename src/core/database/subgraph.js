@@ -95,9 +95,7 @@ exports.matcher = {
 
       // matchData should be contained within data
       var data = idea.data();
-      var d2 = _.cloneDeep(data);
-      _.merge(d2, matchData);
-      return _.isEqual(data, d2);
+      return _.isEqual(data, _.merge(_.cloneDeep(data), matchData));
     },
   },
 };
@@ -378,6 +376,9 @@ exports.rewrite = function(subgraph, transitions, actual) {
     }
 
     if(actual)
+      // FIXME should combine use "update?" or should I perform a combine on the raw
+      // - do I need to guarantee that v.data and v.idea.data() before combine have a number.difference of 0
+      // - more strictly, should they be _.isEqual?
       v.idea.update(v.data);
   });
 
