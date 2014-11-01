@@ -28,6 +28,7 @@ Subgraph.prototype.copy = function() {
   sg.prevVertexId = this.prevVertexId;
   _.forIn(this.vertices, function(v) {
     sg.vertices[v.vertex_id] = _.clone(v);
+    sg.vertices[v.vertex_id].data = _.cloneDeep(v.data);
   });
   this.edges.forEach(function(e) {
     sg.addEdge(e.src.vertex_id, e.link, e.dst.vertex_id, e.pref);
@@ -348,11 +349,13 @@ exports.rewrite = function(subgraph, transitions, actual) {
       if(!(t.replace || t.combine))
         return false;
 
-      var d = v.idea.data();
-      // if there is no data, there is nothing to change
-      if(Object.keys(d).length === 0)
-        return false;
-      v.data = d;
+      if(v.data === undefined) {
+        var d = v.idea.data();
+        // if there is no data, there is nothing to change
+        if(Object.keys(d).length === 0)
+          return false;
+        v.data = d;
+      }
 
       if(t.replace) {
         if(v.data.unit !== t.replace.unit)
@@ -361,7 +364,6 @@ exports.rewrite = function(subgraph, transitions, actual) {
         if(v.data.unit !== t.combine.unit || !number.isNumber(v.data) || !number.isNumber(t.combine))
           return false;
       }
-
 
       return true;
     }
@@ -379,6 +381,9 @@ exports.rewrite = function(subgraph, transitions, actual) {
     }
 
     if(actual)
+      // FIXME should combine use "update?" or should I perform a combine on the raw
+      // - do I need to guarantee that v.data and v.idea.data() before combine have a number.difference of 0
+      // - more strictly, should they be _.isEqual?
       v.idea.update(v.data);
   });
 
