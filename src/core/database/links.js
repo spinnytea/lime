@@ -18,3 +18,13 @@ function create(name) {
 
 exports.list = {};
 create('thought_description');
+
+// apple
+//  machintosh --typeof_of-> apple
+//  gala       --typeof_of-> apple
+//
+// mark --typeof_of-> person
+// mark --has-> apple
+// person --can_has-> apple
+create('type_of');
+//create('has');

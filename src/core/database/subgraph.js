@@ -28,6 +28,7 @@ Subgraph.prototype.copy = function() {
   sg.prevVertexId = this.prevVertexId;
   _.forIn(this.vertices, function(v) {
     sg.vertices[v.vertex_id] = _.clone(v);
+    sg.vertices[v.vertex_id].data = _.cloneDeep(v.data);
   });
   this.edges.forEach(function(e) {
     sg.addEdge(e.src.vertex_id, e.link, e.dst.vertex_id, e.pref);
@@ -346,11 +347,13 @@ exports.rewrite = function(subgraph, transitions, actual) {
       if(!(t.replace || t.combine))
         return false;
 
-      var d = v.idea.data();
-      // if there is no data, there is nothing to change
-      if(Object.keys(d).length === 0)
-        return false;
-      v.data = d;
+      if(v.data === undefined) {
+        var d = v.idea.data();
+        // if there is no data, there is nothing to change
+        if(Object.keys(d).length === 0)
+          return false;
+        v.data = d;
+      }
 
       if(t.replace) {
         if(v.data.unit !== t.replace.unit)
