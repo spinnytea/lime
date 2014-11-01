@@ -362,7 +362,6 @@ exports.rewrite = function(subgraph, transitions, actual) {
           return false;
       }
 
-
       return true;
     }
     return false;
