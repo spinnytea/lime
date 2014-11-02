@@ -27,11 +27,14 @@ Subgraph.prototype.copy = function() {
   var sg = new Subgraph();
   sg.prevVertexId = this.prevVertexId;
   _.forIn(this.vertices, function(v) {
-    sg.vertices[v.vertex_id] = _.clone(v);
+    var copy = _.clone(v);
+    sg.vertices[v.vertex_id] = copy;
 
     // we need to copy the current state
     // (we can't just reload the data from idea)
-    sg.vertices[v.vertex_id].data = _.cloneDeep(v.data);
+    copy._data = _.cloneDeep(v._data);
+
+    Object.defineProperty(copy, 'data', { get: function() { return loadVertexData(copy); } });
   });
   this.edges.forEach(function(e) {
     sg.addEdge(e.src.vertex_id, e.link, e.dst.vertex_id, e.pref);
@@ -59,8 +62,10 @@ Subgraph.prototype.addVertex = function(matcher, matchData, transitionable) {
     // this is for the rewrite
     // if undefined, it hasn't be fetched
     // otherwise, it's the value of idea.data() before we tried to change it
-    data: undefined,
+    _data: undefined,
   };
+  var v = this.vertices[id];
+  Object.defineProperty(v, 'data', { get: function() { return loadVertexData(v); } });
 
   if(matcher === exports.matcher.id)
     this.vertices[id].idea = ideas.load(matchData);
@@ -81,6 +86,26 @@ Subgraph.prototype.addEdge = function(src, link, dst, pref) {
   });
   this.concrete = false;
 };
+
+// returns undefined if there is no data, or the object if there is
+function loadVertexData(v) {
+  if(v._data === null) {
+    return undefined;
+  } else if(v._data === undefined) {
+    // try loading the data
+    var d = v.idea.data();
+    if(Object.keys(d).length === 0) {
+      // cach the result
+      v._data = null;
+      return undefined;
+    } else {
+      v._data = d;
+      return v._data;
+    }
+  } else {
+    return v._data;
+  }
+}
 
 exports.Subgraph = Subgraph;
 
@@ -357,14 +382,9 @@ exports.rewrite = function(subgraph, transitions, actual) {
       if(!v.transitionable)
         return false;
 
-      // load the data if it has not been already
-      if(v.data === undefined) {
-        var d = v.idea.data();
-        // if there is no data, there is nothing to change
-        if(Object.keys(d).length === 0)
-          return false;
-        v.data = d;
-      }
+      // if there is no data, then there is nothing to transition
+      if(v.data === undefined)
+        return false;
 
       // verify the transition data
       if(t.replace) {

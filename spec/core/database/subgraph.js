@@ -667,7 +667,7 @@ describe('subgraph', function() {
         expect(sg2).to.be.ok;
         expect(sg2).to.not.equal(sg);
         // update the new value
-        expect(sg.vertices[p].data).to.equal(undefined);
+        expect(sg.vertices[p]._data).to.equal(undefined);
         expect(sg2.vertices[p].data).to.deep.equal(priceUpdate);
         // don't update the id
         expect(sg.vertices[p].idea.data()).to.deep.equal(priceData);
@@ -678,7 +678,7 @@ describe('subgraph', function() {
         expect(sg3).to.not.equal(sg);
         expect(sg3).to.not.equal(sg2);
         // update the new value
-        expect(sg.vertices[p].data).to.equal(undefined);
+        expect(sg.vertices[p]._data).to.equal(undefined);
         expect(sg2.vertices[p].data).to.deep.equal(priceUpdate);
         expect(sg3.vertices[p].data).to.deep.equal(priceUpdate2);
         // don't update the id
@@ -692,7 +692,7 @@ describe('subgraph', function() {
         expect(sg2).to.be.ok;
         expect(sg2).to.not.equal(sg);
         // update the new value
-        expect(sg.vertices[w].data).to.equal(undefined);
+        expect(sg.vertices[w]._data).to.equal(undefined);
         expect(sg2.vertices[w].data).to.deep.equal(wumpusUpdate);
         // don't update the id
         expect(sg.vertices[w].idea.data()).to.deep.equal(wumpusData);
@@ -703,7 +703,7 @@ describe('subgraph', function() {
         expect(sg3).to.not.equal(sg);
         expect(sg3).to.not.equal(sg2);
         // update the new value
-        expect(sg.vertices[w].data).to.equal(undefined);
+        expect(sg.vertices[w]._data).to.equal(undefined);
         expect(sg2.vertices[w].data).to.deep.equal(wumpusUpdate);
         expect(sg3.vertices[w].data).to.deep.equal(wumpusUpdate2);
         // don't update the id
@@ -719,9 +719,8 @@ describe('subgraph', function() {
         expect(sg2).to.be.ok;
         expect(sg2).to.not.equal(sg);
         expect(sg2.vertices[p]).to.not.equal(sg.vertices[p]);
-        expect(sg2.vertices[p].data).to.not.equal(sg.vertices[p].data);
         // update the new value
-        expect(sg.vertices[p].data).to.equal(undefined);
+        expect(sg.vertices[p]._data).to.equal(undefined);
         expect(sg2.vertices[p].data).to.deep.equal({ type: 'lime_number', value: number.value(30), unit: money.id });
         // don't update the id
         expect(sg.vertices[p].idea.data()).to.deep.equal(priceData);
@@ -734,7 +733,7 @@ describe('subgraph', function() {
         expect(sg3.vertices[p]).to.not.equal(sg2.vertices[p]);
         expect(sg3.vertices[p].data).to.not.equal(sg2.vertices[p].data);
         // update the new value
-        expect(sg.vertices[p].data).to.equal(undefined);
+        expect(sg.vertices[p]._data).to.equal(undefined);
         expect(sg2.vertices[p].data).to.deep.equal({ type: 'lime_number', value: number.value(30), unit: money.id });
         expect(sg3.vertices[p].data).to.deep.equal({ type: 'lime_number', value: number.value(60), unit: money.id });
         // don't update the id
