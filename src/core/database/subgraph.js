@@ -289,7 +289,7 @@ function subgraphMatch(outerEdges, innerEdges, vertexMap) {
         return false;
     }
 
-    return innerEdge.link === currEdge.link &&
+    return innerEdge.link === currEdge.link && innerEdge.transitionable === currEdge.transitionable &&
       innerEdge.src.matches(currEdge.src.idea, innerEdge.src.matchData) &&
       innerEdge.dst.matches(currEdge.dst.idea, innerEdge.dst.matchData);
   });
