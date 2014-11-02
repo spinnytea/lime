@@ -7,6 +7,8 @@
 //   _.extend(SerialPlan.prototype, blueprint.BlueprintAction.prototype);
 var _ = require('lodash');
 var subgraph = require('../../database/subgraph');
+var number = require('./number');
+var discrete = require('./discrete');
 
 // when we try to calculate or estimate a distance,
 // if there is an error,
@@ -45,7 +47,7 @@ BlueprintAction.prototype.runBlueprint = function() {
   throw new Error(this.constructor.name + ' does not implement runBlueprint');
 };
 
-exports.BlueprintAction = BlueprintAction;
+exports.Action = BlueprintAction;
 
 
 // @param state: subgraph
@@ -66,6 +68,36 @@ BlueprintState.prototype.distance = function(to) {
     _.forEach(vertexMap, function(outer, inner) {
       var o = this.subgraph.vertices[outer];
       var i = to.subgraph.vertices[inner];
+
+      if(o.transitionable !== i.transitionable) {
+        cost += DISTANCE_ERROR;
+        // no need to check other vertices in this map
+        return false;
+      } else if(o.transitionable) {
+        // check the values
+
+        var diff;
+        if(number.isNumber(o.data)) {
+          diff = number.difference(o.data, i.data);
+          if(diff === undefined) {
+            cost += DISTANCE_ERROR;
+            // no need to check other vertices in this map
+            return false;
+          }
+          cost += diff;
+        } else if(discrete.isDiscrete(o.data)) {
+          diff = discrete.difference(o.data, i.data);
+          if(diff === undefined) {
+            cost += DISTANCE_ERROR;
+            // no need to check other vertices in this map
+            return false;
+          }
+          cost += diff;
+        } else {
+          if(!_.isEqual(o.data, i.data))
+            cost += DISTANCE_DEFAULT;
+        }
+      }
     });
     if(cost < min)
       min = cost;
@@ -77,4 +109,4 @@ BlueprintState.prototype.matches = function(blueprintstate) {
   return subgraph.match(this.subgraph, blueprintstate.subgraph).length > 0;
 };
 
-exports.BlueprintState = BlueprintState;
+exports.State = BlueprintState;

@@ -4,7 +4,7 @@
 var _ = require('lodash');
 var blueprint = require('./primitives/blueprint');
 
-function SerialAction() { blueprint.BlueprintAction.call(this); }
-_.extend(SerialAction.prototype, blueprint.BlueprintAction.prototype);
+function SerialAction() { blueprint.Action.call(this); }
+_.extend(SerialAction.prototype, blueprint.Action.prototype);
 
-exports.SerialAction = SerialAction;
+exports.Action = SerialAction;

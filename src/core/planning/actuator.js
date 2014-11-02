@@ -6,7 +6,7 @@
 var _ = require('lodash');
 var blueprint = require('./primitives/blueprint');
 
-function ActuatorAction() { blueprint.BlueprintAction.call(this); }
-_.extend(ActuatorAction.prototype, blueprint.BlueprintAction.prototype);
+function ActuatorAction() { blueprint.Action.call(this); }
+_.extend(ActuatorAction.prototype, blueprint.Action.prototype);
 
-exports.ActuatorAction = ActuatorAction;
+exports.Action = ActuatorAction;
