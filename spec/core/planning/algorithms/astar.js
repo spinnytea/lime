@@ -12,9 +12,12 @@ describe('astar', function() {
   it('init', function() {
     expect(astar).to.have.property('search');
     expect(config.data.astar_max_paths).to.be.a('number');
-    expect(NumberSlide).to.have.property('Action');
-    expect(NumberSlide).to.have.property('State');
     expect(path).to.have.property('Path');
+
+    expect(NumberSlide.Action).to.be.a('function');
+    expect(NumberSlide.State).to.be.a('function');
+    expect(_.intersection(Object.keys(NumberSlide.Action.prototype), Object.keys(path.Action.prototype))).to.deep.equal(Object.keys(path.Action.prototype));
+    expect(_.intersection(Object.keys(NumberSlide.State.prototype), Object.keys(path.State.prototype))).to.deep.equal(Object.keys(path.State.prototype));
   });
 
     // I'm not sure how to test this, really

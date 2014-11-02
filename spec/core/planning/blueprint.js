@@ -8,6 +8,7 @@ describe.skip('blueprint', function() {
     it('init', function() {
       // this is to ensure we test everything
       expect(Object.keys(blueprint.Action.prototype)).to.deep.equal([]);
+//      expect(_.intersection(Object.keys(NumberSlide.Action.prototype), Object.keys(path.Action.prototype))).to.deep.equal(Object.keys(path.Action.prototype));
     });
   });
 
@@ -15,6 +16,7 @@ describe.skip('blueprint', function() {
     it('init', function() {
       // this is to ensure we test everything
       expect(Object.keys(blueprint.State.prototype)).to.deep.equal([]);
+//      expect(_.intersection(Object.keys(NumberSlide.State.prototype), Object.keys(path.State.prototype))).to.deep.equal(Object.keys(path.State.prototype));
     });
   });
 
