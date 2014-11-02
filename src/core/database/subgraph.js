@@ -28,6 +28,9 @@ Subgraph.prototype.copy = function() {
   sg.prevVertexId = this.prevVertexId;
   _.forIn(this.vertices, function(v) {
     sg.vertices[v.vertex_id] = _.clone(v);
+
+    // we need to copy the current state
+    // (we can't just reload the data from idea)
     sg.vertices[v.vertex_id].data = _.cloneDeep(v.data);
   });
   this.edges.forEach(function(e) {
@@ -36,8 +39,11 @@ Subgraph.prototype.copy = function() {
   sg.concrete = this.concrete;
   return sg;
 };
-// exports.matcher or equivalent
-Subgraph.prototype.addVertex = function(matcher, matchData) {
+// @param matcher: exports.matcher or equivalent
+// @param matchData: passed to the matcher
+// @param transitionable: is this part of a transition (subgraph.rewrite, blueprints, etc)
+//  - subgraph.rewrite(transitions);
+Subgraph.prototype.addVertex = function(matcher, matchData, transitionable) {
   var id = (this.prevVertexId = ids.next.anonymous(this.prevVertexId));
   this.vertices[id] = {
     vertex_id: id,
@@ -45,6 +51,7 @@ Subgraph.prototype.addVertex = function(matcher, matchData) {
     // this is how we are going to match an idea in the search and match
     matches: matcher,
     matchData: matchData,
+    transitionable: (transitionable === true),
 
     // this is what we are ultimately trying to find with a subgraph search
     idea: undefined,
@@ -347,6 +354,10 @@ exports.rewrite = function(subgraph, transitions, actual) {
       if(!(t.replace || t.combine))
         return false;
 
+      if(!v.transitionable)
+        return false;
+
+      // load the data if it has not been already
       if(v.data === undefined) {
         var d = v.idea.data();
         // if there is no data, there is nothing to change
@@ -355,6 +366,7 @@ exports.rewrite = function(subgraph, transitions, actual) {
         v.data = d;
       }
 
+      // verify the transition data
       if(t.replace) {
         if(v.data.unit !== t.replace.unit)
           return false;

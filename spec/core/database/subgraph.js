@@ -631,8 +631,8 @@ describe('subgraph', function() {
       wumpus = tools.ideas.create(wumpusData);
 
       sg = new subgraph.Subgraph();
-      p = sg.addVertex(subgraph.matcher.id, price);
-      w = sg.addVertex(subgraph.matcher.id, wumpus);
+      p = sg.addVertex(subgraph.matcher.id, price, true);
+      w = sg.addVertex(subgraph.matcher.id, wumpus, true);
 
       priceUpdate = { value: number.value(20), unit: money.id };
       priceUpdate2 = { value: number.value(30), unit: money.id };
