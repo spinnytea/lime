@@ -1,27 +1,31 @@
 'use strict';
 /* global describe, it */
+var _ = require('lodash');
 var expect = require('chai').expect;
 var blueprint = require('../../../../src/core/planning/primitives/blueprint');
+var path = require('../../../../src/core/planning/primitives/path');
 
-describe.skip('blueprint', function() {
+describe('blueprint', function() {
   describe('Action', function() {
     it('init', function() {
       // this is to ensure we test everything
-      expect(Object.keys(blueprint.Action.prototype)).to.deep.equal([]);
-//      expect(_.intersection(Object.keys(NumberSlide.Action.prototype), Object.keys(path.Action.prototype))).to.deep.equal(Object.keys(path.Action.prototype));
+//      expect(Object.keys(blueprint.Action.prototype)).to.deep.equal([]);
+      expect(_.intersection(Object.keys(blueprint.Action.prototype), Object.keys(path.Action.prototype))).to.deep.equal(Object.keys(path.Action.prototype));
     });
   });
 
   describe('State', function() {
     it('init', function() {
       // this is to ensure we test everything
-      expect(Object.keys(blueprint.State.prototype)).to.deep.equal([]);
-//      expect(_.intersection(Object.keys(NumberSlide.State.prototype), Object.keys(path.State.prototype))).to.deep.equal(Object.keys(path.State.prototype));
+//      expect(Object.keys(blueprint.State.prototype)).to.deep.equal([]);
+      expect(_.intersection(Object.keys(blueprint.State.prototype), Object.keys(path.State.prototype))).to.deep.equal(Object.keys(path.State.prototype));
     });
   });
 
   it.skip('blueprint.BlueprintAction is a path.Action'); // combine with init
   it.skip('blueprint.BlueprintState is a path.State'); // combine with init
+
+  it.skip('blueprint.BlueprintAction cost: error checking?');
 
   it.skip('blueprint.BlueprintState distance');
   it.skip('blueprint.BlueprintState distance: this needs a complete context upgrade');

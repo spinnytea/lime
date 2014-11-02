@@ -1,5 +1,6 @@
 'use strict';
 /* global describe, it */
+var _ = require('lodash');
 var expect = require('chai').expect;
 var blueprint = require('../../../src/core/planning/primitives/blueprint');
 var serialplan = require('../../../src/core/planning/serialplan');
@@ -11,19 +12,22 @@ describe('blueprint chain', function() {
     expect(blueprint.Action).to.be.a('function');
     expect(serialplan.Action).to.be.a('function');
     expect(actuator.Action).to.be.a('function');
-    expect(Object.keys(blueprint.Action.prototype)).to.deep.equal(['runCost', 'tryTransition', 'runBlueprint']);
-    expect(Object.keys(serialplan.Action.prototype)).to.deep.equal(['runCost', 'tryTransition', 'runBlueprint']);
-    expect(Object.keys(actuator.Action.prototype)).to.deep.equal(['runCost', 'tryTransition', 'runBlueprint']);
+    var proto = ['runCost', 'tryTransition', 'runBlueprint', 'cost', 'apply'];
+    expect(Object.keys(blueprint.Action.prototype)).to.deep.equal(proto);
+    expect(Object.keys(serialplan.Action.prototype)).to.deep.equal(proto);
+    expect(Object.keys(actuator.Action.prototype)).to.deep.equal(proto);
 
     // instance
     var ba = new blueprint.Action();
     var sa = new serialplan.Action();
     var aa = new actuator.Action();
-    expect(Object.keys(ba)).to.deep.equal(['requirements']);
-    expect(Object.keys(sa)).to.deep.equal(['requirements']);
-    expect(Object.keys(aa)).to.deep.equal(['requirements']);
+    var params = ['requirements'];
+    expect(Object.keys(ba)).to.deep.equal(params);
+    expect(_.intersection(Object.keys(sa), params)).to.deep.equal(params);
+    expect(_.intersection(Object.keys(aa), params)).to.deep.equal(params);
 
     // this isn't implemented by serialplan
+    expect(function() { ba.tryTransition(); }).to.throw('BlueprintAction does not implement tryTransition');
     expect(function() { sa.tryTransition(); }).to.throw('SerialAction does not implement tryTransition');
   });
 });

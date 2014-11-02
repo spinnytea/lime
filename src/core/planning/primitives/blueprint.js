@@ -1,10 +1,5 @@
 'use strict';
 // this class defines an Action and State that can be used by a Path
-//
-// In java terms, this in an "abstract class"
-// Other classes should:
-//   function SerialPlan() { blueprint.BlueprintAction.call(this); }
-//   _.extend(SerialPlan.prototype, blueprint.BlueprintAction.prototype);
 var _ = require('lodash');
 var subgraph = require('../../database/subgraph');
 var number = require('./number');
@@ -16,6 +11,11 @@ var discrete = require('./discrete');
 var DISTANCE_ERROR = Infinity;
 var DISTANCE_DEFAULT = 1;
 
+// The Action prototype is meant to be overridden
+// In java terms, this in an "abstract class"
+// Inheriting prototypes should:
+//   function SerialPlan() { blueprint.BlueprintAction.call(this); }
+//   _.extend(SerialPlan.prototype, blueprint.BlueprintAction.prototype);
 function BlueprintAction() {
   this.requirements = new subgraph.Subgraph();
 }
@@ -47,18 +47,32 @@ BlueprintAction.prototype.runBlueprint = function() {
   throw new Error(this.constructor.name + ' does not implement runBlueprint');
 };
 
+// path.Actions.cost
+BlueprintAction.prototype.cost = function(from, to) {
+  return from.distance(to) + this.runCost();
+};
+
+// path.Action.apply
+BlueprintAction.prototype.apply = function() {
+  throw new Error(this.constructor.name + ' does not implement apply');
+};
+
 exports.Action = BlueprintAction;
 
 
+// The State should be used by all blueprints
+// (e.g. actuator and serial plan shouldn't need their own implementation)
+//
 // @param state: subgraph
 // @param availableActions: an array of blueprint.Actions
 function BlueprintState(subgraph, availableActions) {
   if(!subgraph.concrete)
     throw new RangeError('blueprint states must be concrete');
   this.state = subgraph;
-  this.actions = availableActions;
+  this.availableActions = availableActions;
 }
 
+// path.State.distance
 BlueprintState.prototype.distance = function(to) {
   var result = subgraph.match(this.state, to.state);
   if(result.length === 0)
@@ -107,6 +121,12 @@ BlueprintState.prototype.distance = function(to) {
   return min;
 };
 
+// path.State.actions
+BlueprintState.prototype.actions = function() {
+  return this.availableActions;
+};
+
+// path.State.matches
 BlueprintState.prototype.matches = function(blueprintstate) {
   return subgraph.match(this.state, blueprintstate.subgraph).length > 0;
 };

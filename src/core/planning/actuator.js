@@ -6,7 +6,16 @@
 var _ = require('lodash');
 var blueprint = require('./primitives/blueprint');
 
-function ActuatorAction() { blueprint.Action.call(this); }
+// @param transitions: subgraph.rewrite.transitions
+function ActuatorAction(transitions) {
+  blueprint.Action.call(this);
+
+  this.transitions = transitions;
+}
 _.extend(ActuatorAction.prototype, blueprint.Action.prototype);
+
+ActuatorAction.prototype.runCost = function() {
+  return this.transitions.length;
+};
 
 exports.Action = ActuatorAction;
