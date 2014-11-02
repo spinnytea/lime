@@ -68,6 +68,43 @@ describe('subgraph', function() {
       sg.addEdge(a, links.list.thought_description, b);
       expect(sg.copy()).to.deep.equal(sg);
     });
+
+    describe('loadVertexData', function() {
+      it('with data', function() {
+        var data = { somat: 42 };
+        var idea = tools.ideas.create(data);
+        var sg = new subgraph.Subgraph();
+        var a = sg.addVertex(subgraph.matcher.id, idea.id);
+        expect(sg.concrete).to.equal(true);
+        var v = sg.vertices[a];
+
+        // before we load data
+        expect(v._data).to.equal(undefined);
+
+        // the data is loaded
+        expect(v.data).to.deep.equal(data);
+
+        // after we load data
+        expect(v._data).to.deep.equal(data);
+      });
+
+      it('without data', function() {
+        var idea = tools.ideas.create();
+        var sg = new subgraph.Subgraph();
+        var a = sg.addVertex(subgraph.matcher.id, idea.id);
+        expect(sg.concrete).to.equal(true);
+        var v = sg.vertices[a];
+
+        // before we load data
+        expect(v._data).to.equal(undefined);
+
+        // the data is loaded
+        expect(v.data).to.equal(undefined);
+
+        // after we load data
+        expect(v._data).to.equal(null);
+      });
+    }); // end loadVertexData
   }); // end Subgraph
 
   describe('matchers', function() {
