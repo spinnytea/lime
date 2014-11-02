@@ -1,7 +1,7 @@
 'use strict';
 /* global describe, it */
 var expect = require('chai').expect;
-var blueprint = require('../../../src/core/planning/primitives/blueprint');
+var blueprint = require('../../../../src/core/planning/primitives/blueprint');
 
 describe.skip('blueprint', function() {
   describe('Action', function() {

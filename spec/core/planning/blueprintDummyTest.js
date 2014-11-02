@@ -5,7 +5,7 @@ var blueprint = require('../../../src/core/planning/primitives/blueprint');
 var serialplan = require('../../../src/core/planning/serialplan');
 var actuator = require('../../../src/core/planning/actuator');
 
-describe.only('blueprint chain', function() {
+describe('blueprint chain', function() {
   it('inheritance', function() {
     // constructor
     expect(blueprint.Action).to.be.a('function');
