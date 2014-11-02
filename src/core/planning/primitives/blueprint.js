@@ -51,14 +51,16 @@ exports.Action = BlueprintAction;
 
 
 // @param state: subgraph
-function BlueprintState(subgraph) {
+// @param availableActions: an array of blueprint.Actions
+function BlueprintState(subgraph, availableActions) {
   if(!subgraph.concrete)
     throw new RangeError('blueprint states must be concrete');
-  this.subgraph = subgraph;
+  this.state = subgraph;
+  this.actions = availableActions;
 }
 
 BlueprintState.prototype.distance = function(to) {
-  var result = subgraph.match(this.subgraph, to.subgraph);
+  var result = subgraph.match(this.state, to.state);
   if(result.length === 0)
     return DISTANCE_ERROR;
 
@@ -66,8 +68,8 @@ BlueprintState.prototype.distance = function(to) {
   result.forEach(function(vertexMap) {
     var cost = 0;
     _.forEach(vertexMap, function(outer, inner) {
-      var o = this.subgraph.vertices[outer];
-      var i = to.subgraph.vertices[inner];
+      var o = this.state.vertices[outer];
+      var i = to.state.vertices[inner];
 
       if(o.transitionable !== i.transitionable) {
         cost += DISTANCE_ERROR;
@@ -106,7 +108,7 @@ BlueprintState.prototype.distance = function(to) {
 };
 
 BlueprintState.prototype.matches = function(blueprintstate) {
-  return subgraph.match(this.subgraph, blueprintstate.subgraph).length > 0;
+  return subgraph.match(this.state, blueprintstate.subgraph).length > 0;
 };
 
 exports.State = BlueprintState;
