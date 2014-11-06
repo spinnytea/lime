@@ -650,6 +650,12 @@ describe('subgraph', function() {
       expect(result[0][_b]).to.equal(b);
       expect(result[0][_bp]).to.equal(bp);
     });
+
+    it.skip('outer larger than inner');
+
+    // inner larger than outer should never be satisfiable
+    // does this even need to be a test?
+    it.skip('inner larger than outer');
   }); // end matchSubgraph
 
   describe('rewrite', function() {

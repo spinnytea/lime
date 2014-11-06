@@ -354,6 +354,7 @@ function subgraphMatch(outerEdges, innerEdges, vertexMap) {
 //  - { vertex_id: id, replace: number }
 //  - { vertex_id: id, combine: number }
 //  - { vertex_id: id, replace: discrete }
+//  - AC: actuator.runBlueprint depends on this structure
 // @param actual: boolean (default: false)
 //  - if true, write the updates to the data; if false, write the updates to the cache
 // @return

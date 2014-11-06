@@ -17,6 +17,10 @@ var DISTANCE_DEFAULT = 1;
 //   function SerialPlan() { blueprint.BlueprintAction.call(this); }
 //   _.extend(SerialPlan.prototype, blueprint.BlueprintAction.prototype);
 function BlueprintAction() {
+  // the requirements tell us what is needed to match a state
+  // they say "we can take action in this situtation"
+  // if the state matches the requirements, the action can be performed
+  // (these statements are intentionally redundant)
   this.requirements = new subgraph.Subgraph();
 }
 
@@ -35,15 +39,39 @@ BlueprintAction.prototype.runCost = function() {
 // when planning, we need to check to see if we can make a transition
 // this does not actually take action (this does not apply action to the real world)
 // this performs a thought experiment with the actions, it updates an isolated graph, but not change data in the world
-// (Pro Tip: this will probably be some value stored in a temporary subgraph)
-BlueprintAction.prototype.tryTransition = function() {
+//
+// how this works:
+// - call subgraph.match and collect the possible transitions
+// - for more complicated actions, this may branch or iterate, or whatever
+//
+// why this is important
+// - requirements tells us what is needed in a state
+// - this tryTransitions basically says "and this is how the state maps to the requirements"
+//
+// this should always return an array; an array of what should be handled by the extending prototype
+// (e.g. actuator.runBlueprint will consume results from actuator.tryTransition)
+//
+// @param state: a BlueprintState
+BlueprintAction.prototype.tryTransition = function(state) {
+  // I can't get jshint it ignore the unused param
+  // but I want the param as documentation
+  void(state);
+
   throw new Error(this.constructor.name + ' does not implement tryTransition');
 };
 
 // run the Blueprint
 // this isn't planning; actually follow the plan
 // (this is not a drill)
-BlueprintAction.prototype.runBlueprint = function() {
+//
+// @param glue: a result of tryTransition
+// @param state: a BlueprintState
+BlueprintAction.prototype.runBlueprint = function(state, glue) {
+  // I can't get jshint it ignore the unused param
+  // but I want the param as documentation
+  void(state);
+  void(glue);
+
   throw new Error(this.constructor.name + ' does not implement runBlueprint');
 };
 
