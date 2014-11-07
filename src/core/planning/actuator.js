@@ -3,6 +3,8 @@
 // this is what we will use to update our internal thought graph
 // when we create this class, we still need a callback that will affect the actual world
 // - (e.g. the "turn motor" function)
+//
+// If you want this action to interact with the world, replace the actionImpl function
 var _ = require('lodash');
 var blueprint = require('./primitives/blueprint');
 var subgraph = require('../database/subgraph');
@@ -32,7 +34,29 @@ ActuatorAction.prototype.tryTransition = function(state) {
 };
 
 // blueprint.runBlueprint
-ActuatorAction.prototype.runBlueprint = function() {
+ActuatorAction.prototype.runBlueprint = function(state, glue) {
+  // build a new transition map using the glue
+  // I don't want to get into the muddy details of what is in a transition
+  // but we need to swap out the vertex_id
+  var ts = this.transitions.map(function(t) {
+    t = _.clone(t);
+    t.vertex_id = glue[t.vertex_id];
+    return t;
+  });
+
+  // interact with the world
+  this.actionImpl();
+
+  console.log();
+
+  // predict the outcome (update what we thing is true)
+  // apply the action through to the thought graph
+  if(subgraph.rewrite(state.state, ts, true) === undefined)
+    throw new Error('rewrite failed');
 };
+
+// no op function
+// this should replaced by anything that wants to actually do work
+ActuatorAction.prototype.actionImpl = function() {};
 
 exports.Action = ActuatorAction;

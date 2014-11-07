@@ -16,6 +16,7 @@ var DISTANCE_DEFAULT = 1;
 // Inheriting prototypes should:
 //   function SerialPlan() { blueprint.BlueprintAction.call(this); }
 //   _.extend(SerialPlan.prototype, blueprint.BlueprintAction.prototype);
+// TODO rename the the functions - runCost, tryTransition, runBlueprint
 function BlueprintAction() {
   // the requirements tell us what is needed to match a state
   // they say "we can take action in this situtation"
@@ -52,6 +53,7 @@ BlueprintAction.prototype.runCost = function() {
 // (e.g. actuator.runBlueprint will consume results from actuator.tryTransition)
 //
 // @param state: a BlueprintState
+// @return an array of glue objects (an array of inputs meant for runBlueprint)
 BlueprintAction.prototype.tryTransition = function(state) {
   // I can't get jshint it ignore the unused param
   // but I want the param as documentation

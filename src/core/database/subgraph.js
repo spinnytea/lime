@@ -355,6 +355,7 @@ function subgraphMatch(outerEdges, innerEdges, vertexMap) {
 //  - { vertex_id: id, combine: number }
 //  - { vertex_id: id, replace: discrete }
 //  - AC: actuator.runBlueprint depends on this structure
+//  - AC: actuator.runBlueprint does a _.clone() on each object, and replaces vertex_id
 // @param actual: boolean (default: false)
 //  - if true, write the updates to the data; if false, write the updates to the cache
 // @return
@@ -380,8 +381,10 @@ exports.rewrite = function(subgraph, transitions, actual) {
       if(!(t.replace || t.combine))
         return false;
 
-      if(!v.transitionable)
+      if(!v.transitionable) {
+        console.log('cannot rewrite; v is not transitionable');
         return false;
+      }
 
       // if there is no data, then there is nothing to transition
       if(v.data === undefined)
@@ -399,7 +402,7 @@ exports.rewrite = function(subgraph, transitions, actual) {
       return true;
     }
     return false;
-  })) return undefined;
+  })) return undefined; // if not all of the transitions are correct, return undefined
 
   // apply transitions
   transitions.forEach(function(t) {
