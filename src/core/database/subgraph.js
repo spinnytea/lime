@@ -236,7 +236,10 @@ exports.search = function(subgraph) {
 // use subgraphOuter as a base
 // does subgraphInner fit inside of subgraphOuter?
 // (basically a subgraph match on two subgraphs)
-exports.match = function(subgraphOuter, subgraphInner) {
+// @param unitOnly is specific to transitionable vertices and blueprint.tryTransition
+// - when we need to see if a transition is possible, the match needs to see if we can combine the values
+// - this boils down to "do the units match"
+exports.match = function(subgraphOuter, subgraphInner, unitOnly) {
   if(!subgraphOuter.concrete)
     throw new RangeError('the outer subgraph must be concrete before you can match against it');
 
@@ -244,6 +247,8 @@ exports.match = function(subgraphOuter, subgraphInner) {
   var numVertices = Object.keys(subgraphInner.vertices).length;
   if(numVertices === 0)
     return [];
+
+  unitOnly = (unitOnly === true);
 
   // pre-fill a vertex map with identified thoughts
   var vertexMap = {};
@@ -260,7 +265,10 @@ exports.match = function(subgraphOuter, subgraphInner) {
             possible = false;
           } else if(vi.transitionable) {
             // if they are both transitionable, then the values must match
-            if(discrete.difference(vo.data, vi.data) !== 0 && number.difference(vo.data, vi.data) !== 0)
+            if(unitOnly && vo.data.unit !== vi.data.unit)
+              possible = false;
+
+            if(!unitOnly && discrete.difference(vo.data, vi.data) !== 0 && number.difference(vo.data, vi.data) !== 0)
               possible = false;
           }
         }
@@ -282,7 +290,7 @@ exports.match = function(subgraphOuter, subgraphInner) {
 
   // with this information, fill out the map using the edges
   // (note: there may not yet be any edges specified)
-  return subgraphMatch(_.clone(subgraphOuter.edges), _.clone(subgraphInner.edges), vertexMap)
+  return subgraphMatch(_.clone(subgraphOuter.edges), _.clone(subgraphInner.edges), vertexMap, unitOnly)
     .filter(function(map) {
       return Object.keys(map).length === numVertices;
     });
@@ -294,7 +302,7 @@ exports.match = function(subgraphOuter, subgraphInner) {
 // map[inner.vertex_id] = outer.vertex_id;
 // we will typically use the inner subgraph to find the indices of the outer map
 // match all of the innerEdges to the outerEdges
-function subgraphMatch(outerEdges, innerEdges, vertexMap) {
+function subgraphMatch(outerEdges, innerEdges, vertexMap, unitOnly) {
   // pick the best inner edge
   // (this should help us reduce the number of branches)
   var innerEdge = innerEdges.reduce(function(prev, curr) {
@@ -332,7 +340,9 @@ function subgraphMatch(outerEdges, innerEdges, vertexMap) {
 
     // if both edges are transitionable, then the data must match
     if(innerEdge.transitionable && currEdge.transitionable) {
-      if(discrete.difference(innerEdge.data, currEdge.data) !== 0 && number.difference(innerEdge.data, currEdge.data) !== 0)
+      if(unitOnly && innerEdge.data.unit !== currEdge.data.unit)
+        return false;
+      if(!unitOnly && discrete.difference(innerEdge.data, currEdge.data) !== 0 && number.difference(innerEdge.data, currEdge.data) !== 0)
         return false;
     }
 
@@ -362,7 +372,7 @@ function subgraphMatch(outerEdges, innerEdges, vertexMap) {
     else
       // recursive case
       // get a list of
-      return subgraphMatch(newOuter, newInner, newMap);
+      return subgraphMatch(newOuter, newInner, newMap, unitOnly);
   }).reduce(function(list, match) {
     // combine the matches into a single list
     Array.prototype.push.apply(list, match);

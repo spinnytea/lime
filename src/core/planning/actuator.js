@@ -30,7 +30,7 @@ ActuatorAction.prototype.tryTransition = function(state) {
   // (the entire state does not need to be contained within the requirements)
   // likewise, when we index by the transition vertex_id, it will be with the requirements
   // (the result of matches is map[inner] = outer)
-  return subgraph.match(state.state, this.requirements);
+  return subgraph.match(state.state, this.requirements, true);
 };
 
 // blueprint.runBlueprint
@@ -47,12 +47,21 @@ ActuatorAction.prototype.runBlueprint = function(state, glue) {
   // interact with the world
   this.actionImpl();
 
-  console.log();
-
   // predict the outcome (update what we thing is true)
   // apply the action through to the thought graph
   if(subgraph.rewrite(state.state, ts, true) === undefined)
     throw new Error('rewrite failed');
+};
+
+// path.apply
+ActuatorAction.prototype.apply = function(state, glue) {
+  var ts = this.transitions.map(function(t) {
+    t = _.clone(t);
+    t.vertex_id = glue[t.vertex_id];
+    return t;
+  });
+
+  return new blueprint.State(subgraph.rewrite(state.state, ts, false), state.availableActions);
 };
 
 // no op function
