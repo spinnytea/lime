@@ -495,14 +495,15 @@ describe('subgraph', function() {
     beforeEach(function() {
       mark = tools.ideas.create();
       apple = tools.ideas.create();
-      price = tools.ideas.create({value: 10});
+      var money = tools.ideas.create();
+      price = tools.ideas.create({value: number.value(10), unit: money.id});
       mark.link(links.list.thought_description, apple);
       apple.link(links.list.thought_description, price);
 
       outer = new subgraph.Subgraph();
       m = outer.addVertex(subgraph.matcher.id, mark);
       a = outer.addVertex(subgraph.matcher.filler);
-      p = outer.addVertex(subgraph.matcher.data.similar, {value: 10});
+      p = outer.addVertex(subgraph.matcher.data.similar, {value: number.value(10)}, true);
       outer.addEdge(m, links.list.thought_description, a);
       outer.addEdge(a, links.list.thought_description, p);
 
@@ -531,7 +532,7 @@ describe('subgraph', function() {
 
     it('success single', function() {
       var sg = new subgraph.Subgraph();
-      var _p = sg.addVertex(subgraph.matcher.data.similar, {value: 10});
+      var _p = sg.addVertex(subgraph.matcher.data.similar, {value: number.value(10)});
       var _m = sg.addVertex(subgraph.matcher.id, mark);
       var _a = sg.addVertex(subgraph.matcher.filler);
       sg.addEdge(_m, links.list.thought_description, _a);
@@ -598,7 +599,7 @@ describe('subgraph', function() {
       var sg = new subgraph.Subgraph();
       var _m = sg.addVertex(subgraph.matcher.id, mark);
       var _a = sg.addVertex(subgraph.matcher.filler);
-      var _p = sg.addVertex(subgraph.matcher.id, price);
+      var _p = sg.addVertex(subgraph.matcher.id, price, true);
       sg.addEdge(_m, links.list.thought_description, _a);
 
       var result = subgraph.match(outer, sg);
@@ -635,7 +636,7 @@ describe('subgraph', function() {
       var sg = new subgraph.Subgraph();
       var _m = sg.addVertex(subgraph.matcher.id, mark);
       var _a = sg.addVertex(subgraph.matcher.filler);
-      var _p = sg.addVertex(subgraph.matcher.data.similar, {value: 10});
+      var _p = sg.addVertex(subgraph.matcher.data.similar, {value: number.value(10)});
       sg.addEdge(_m, links.list.thought_description, _a);
       sg.addEdge(_a, links.list.thought_description, _p);
       var _b = sg.addVertex(subgraph.matcher.filler);
@@ -650,6 +651,11 @@ describe('subgraph', function() {
       expect(result[0][_b]).to.equal(b);
       expect(result[0][_bp]).to.equal(bp);
     });
+
+    // transitionable vertices must match by value
+    it.skip('transitionable: vertex with idea'); // test exports.match
+
+    it.skip('transitionable: vertex without idea'); // test subgraphMatch
 
     it.skip('outer larger than inner');
 

@@ -58,6 +58,7 @@ Action.prototype.cost = function(from, to) {
 // this will create a new state, but not actually interact with the world.
 // @param from: a State to apply this Action to
 // @return a new State
+// TODO rename this function
 Action.prototype.apply = function(from) {
   return new State();
 };
@@ -72,6 +73,9 @@ State.prototype.distance = function(to) {
 };
 
 // @return an array of all the possible actions from this state
+//
+// alt: return an array of { action: a, glue: g }
+// - used by blueprint.State.actions, blueprint.Action.apply
 State.prototype.actions = function() {
   return [];
 };

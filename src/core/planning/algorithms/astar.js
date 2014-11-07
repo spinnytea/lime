@@ -33,8 +33,12 @@ exports.search = function(start, goal) {
 
     var nextActions = path.last.actions();
     for(var i=0; i<nextActions.length; i++) {
-      var action = nextActions[i];
-      frontier.enq(path.add(action.apply(path.last), action));
+      var next = nextActions[i];
+      if(next.action && next.glue) {
+        frontier.enq(path.add(next.action.apply(path.last, next.glue), next.action));
+      } else {
+        frontier.enq(path.add(next.apply(path.last), next));
+      }
     }
   }
 

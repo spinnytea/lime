@@ -2,6 +2,7 @@
 var _ = require('lodash');
 var ideas = require('./ideas');
 var ids = require('../ids');
+var discrete = require('../planning/primitives/discrete');
 var number = require('../planning/primitives/number');
 
 // this is an overlay on the idea database
@@ -246,16 +247,31 @@ exports.match = function(subgraphOuter, subgraphInner) {
 
   // pre-fill a vertex map with identified thoughts
   var vertexMap = {};
+  var possible = true;
   _.forEach(subgraphInner.vertices, function(vi) {
     if(vi.idea) {
       _.forEach(subgraphOuter.vertices, function(vo) {
         // outer is concrete; vo.idea exists
         if(vi.idea.id === vo.idea.id) {
           vertexMap[vi.vertex_id] = vo.vertex_id;
+
+          if(vi.transitionable !== vo.transitionable) {
+            // if one is transitionable, they both must be transitionable
+            possible = false;
+          } else if(vi.transitionable) {
+            // if they are both transitionable, then the values must match
+            if(discrete.difference(vo.data, vi.data) !== 0 && number.difference(vo.data, vi.data) !== 0)
+              possible = false;
+          }
         }
+        return possible;
       });
     }
+    return possible;
   });
+
+  if(!possible)
+    return [];
 
   // if there are no edges, return the map
   if(subgraphInner.edges.length === 0) {
@@ -314,6 +330,12 @@ function subgraphMatch(outerEdges, innerEdges, vertexMap) {
         return false;
     }
 
+    // if both edges are transitionable, then the data must match
+    if(innerEdge.transitionable && currEdge.transitionable) {
+      if(discrete.difference(innerEdge.data, currEdge.data) !== 0 && number.difference(innerEdge.data, currEdge.data) !== 0)
+        return false;
+    }
+
     return innerEdge.link === currEdge.link && innerEdge.transitionable === currEdge.transitionable &&
       innerEdge.src.matches(currEdge.src.idea, innerEdge.src.matchData) &&
       innerEdge.dst.matches(currEdge.dst.idea, innerEdge.dst.matchData);
@@ -332,7 +354,6 @@ function subgraphMatch(outerEdges, innerEdges, vertexMap) {
     // shallow copy the outer/inner without the current match
     var newOuter = outerEdges.filter(function(e) { return e !== outerEdge; });
     var newInner = innerEdges.filter(function(e) { return e !== innerEdge; });
-
 
     if(newInner.length === 0)
       // base case

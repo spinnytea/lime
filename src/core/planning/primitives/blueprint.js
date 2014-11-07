@@ -104,7 +104,8 @@ function BlueprintState(subgraph, availableActions) {
 
 // path.State.distance
 BlueprintState.prototype.distance = function(to) {
-  var result = subgraph.match(this.state, to.state);
+  var that = this;
+  var result = subgraph.match(that.state, to.state);
   if(result.length === 0)
     return DISTANCE_ERROR;
 
@@ -112,7 +113,7 @@ BlueprintState.prototype.distance = function(to) {
   result.forEach(function(vertexMap) {
     var cost = 0;
     _.forEach(vertexMap, function(outer, inner) {
-      var o = this.state.vertices[outer];
+      var o = that.state.vertices[outer];
       var i = to.state.vertices[inner];
 
       if(o.transitionable !== i.transitionable) {
@@ -153,12 +154,20 @@ BlueprintState.prototype.distance = function(to) {
 
 // path.State.actions
 BlueprintState.prototype.actions = function() {
-  return this.availableActions;
+  var that = this;
+  var ret = [];
+  // the actions need relate to this state
+  this.availableActions.forEach(function(action) {
+    action.tryTransition(that).forEach(function(glue) {
+      ret.push({ action: action, glue: glue });
+    });
+  });
+  return ret;
 };
 
 // path.State.matches
 BlueprintState.prototype.matches = function(blueprintstate) {
-  return subgraph.match(this.state, blueprintstate.subgraph).length > 0;
+  return subgraph.match(this.state, blueprintstate.state).length > 0;
 };
 
 exports.State = BlueprintState;

@@ -15,7 +15,7 @@ describe('blueprint chain', function() {
     var proto = ['runCost', 'tryTransition', 'runBlueprint', 'cost', 'apply'];
     expect(Object.keys(blueprint.Action.prototype)).to.deep.equal(proto);
     expect(Object.keys(serialplan.Action.prototype)).to.deep.equal(proto);
-    expect(Object.keys(actuator.Action.prototype)).to.deep.equal(proto);
+    expect(_.intersection(Object.keys(actuator.Action.prototype), proto)).to.deep.equal(proto);
 
     // instance
     var ba = new blueprint.Action();
