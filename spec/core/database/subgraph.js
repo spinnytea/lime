@@ -654,17 +654,82 @@ describe('subgraph', function() {
       expect(result[0][_bp]).to.equal(bp);
     });
 
-    // transitionable vertices must match by value
-    it.skip('transitionable: vertex with idea'); // test exports.match
-
-    it.skip('transitionable: vertex without idea'); // test subgraphMatch
-
-    it.skip('outer larger than inner');
+    // it shouldn't matter that the outer is larger
+    // but the point is that the vertexMap will match all vertices in the inner map
+    // ... this happens a lot; we don't need to test this specifically
+//    it.skip('outer larger than inner');
 
     // inner larger than outer should never be satisfiable
     // does this even need to be a test?
-    it.skip('inner larger than outer');
-  }); // end matchSubgraph
+    // ... no
+//    it.skip('inner larger than outer');
+  }); // end match
+  describe('match', function() {
+    // transitionable vertices must match by value
+    describe('transitionable', function() {
+      // test exports.match
+      // vertex with idea
+      // verify the transitionable rules in exports.match
+      it('pre-match', function() {
+        var idea = tools.ideas.create();
+        var outer = new subgraph.Subgraph();
+        var o = outer.addVertex(subgraph.matcher.id, idea);
+        var inner = new subgraph.Subgraph();
+        var i = inner.addVertex(subgraph.matcher.id, idea);
+
+        // if both are not transitionable, then data doesn't matter
+        expect(outer.vertices[o].transitionable).to.equal(false);
+        expect(inner.vertices[i].transitionable).to.equal(false);
+        expect(subgraph.match(outer, inner).length).to.equal(1);
+
+        // if one is transitionable, then it shouldn't match
+        outer.vertices[o].transitionable = true;
+        expect(subgraph.match(outer, inner).length).to.equal(0);
+        expect(subgraph.match(inner, outer).length).to.equal(0);
+
+        // now with both transitionable, we need to test based on data (unit)
+        inner.vertices[i].transitionable = true;
+
+        // neither have data, so it's okay
+        expect(subgraph.match(outer, inner, true).length).to.equal(1);
+        expect(subgraph.match(outer, inner, false).length).to.equal(1);
+
+        // if only one has a unit, then it should still match
+        // AC: this is because we want to be able to use replace on anything
+        // if we know ahead of time that we are going to use combine, then we can fail now
+        // but, this shouldn't ever happen in practice
+        outer.vertices[o]._data = { value: number.value(10), unit: 'a' };
+        expect(outer.vertices[o].data).to.deep.equal({ value: number.value(10), unit: 'a' });
+        expect(subgraph.match(outer, inner, true).length).to.equal(1);
+        expect(subgraph.match(inner, outer, true).length).to.equal(1);
+        expect(subgraph.match(outer, inner, false).length).to.equal(1);
+        expect(subgraph.match(inner, outer, false).length).to.equal(1);
+
+        // when the units match, then we should have a match... if the values match
+        inner.vertices[i]._data = { value: number.value(10), unit: 'a' };
+        expect(subgraph.match(outer, inner, true).length).to.equal(1);
+        expect(subgraph.match(inner, outer, true).length).to.equal(1);
+        expect(subgraph.match(outer, inner, false).length).to.equal(1);
+        expect(subgraph.match(inner, outer, false).length).to.equal(1);
+        inner.vertices[i]._data = { value: number.value(20), unit: 'a' };
+        expect(subgraph.match(outer, inner, true).length).to.equal(1);
+        expect(subgraph.match(inner, outer, true).length).to.equal(1);
+        expect(subgraph.match(outer, inner, false).length).to.equal(0);
+        expect(subgraph.match(inner, outer, false).length).to.equal(0);
+
+        // and mismatched units should of course not match
+        inner.vertices[i]._data = { value: number.value(0), unit: 'b' };
+        expect(subgraph.match(outer, inner, true).length).to.equal(0);
+        expect(subgraph.match(inner, outer, true).length).to.equal(0);
+        expect(subgraph.match(outer, inner, false).length).to.equal(0);
+        expect(subgraph.match(inner, outer, false).length).to.equal(0);
+      });
+
+      // vertex without idea
+      // verify the transitionable rules in subgraphMatch
+      it.skip('subgraphMatch');
+    }); // end transitionable
+  }); // end match (part 2)
 
   describe('rewrite', function() {
     var boolean, money, price, wumpus;
