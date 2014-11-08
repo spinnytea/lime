@@ -14,9 +14,14 @@ describe('blueprint', function() {
   describe('Action', function() {
     it('init', function() {
       // this is to ensure we test everything
-//      expect(Object.keys(blueprint.Action.prototype)).to.deep.equal([]);
+      expect(Object.keys(blueprint.Action.prototype)).to.deep.equal(['runCost', 'tryTransition', 'runBlueprint', 'cost', 'apply']);
       expect(_.intersection(Object.keys(blueprint.Action.prototype), Object.keys(path.Action.prototype))).to.deep.equal(Object.keys(path.Action.prototype));
     });
+
+    // there isn't anything to test here
+    // cost is the only function that lives in blueprint.Action
+    // - and even that is build on runCost
+    // the rest are meant to be overridden
   });
 
   describe('State', function() {
@@ -26,6 +31,14 @@ describe('blueprint', function() {
       expect(_.intersection(Object.keys(blueprint.State.prototype), Object.keys(path.State.prototype))).to.deep.equal(Object.keys(path.State.prototype));
     });
 
+    it.skip('blueprint.BlueprintState distance: this needs a complete context upgrade');
+    // like, seriously. What does the distance even mean?
+    // it is it primitive distance? like the change in price?
+    // does difference in price have the same weight as difference in count?
+    // what about type difference? how far is an apple from a pear? they are both fruits?
+    // does this even matter? this should be part of the searching
+    // maybe if the search says "this idea must be a fruit" then so long as it matches, then the distance is zero?
+    // does this mean that primitive distance is the only thing that matters?
     describe('distance', function() {
       // only objects that transition need a distance
       // if two vertices match and aren't both transitionable or not ... actually, the subgraph won't match this
@@ -190,24 +203,12 @@ describe('blueprint', function() {
       // the point of this isn't to unit test the actuator
     });
 
-    // do we need to actually test this? it's so simple
-    // AC: subgraph.match(unitOnly: false)
-    it.skip('matches');
+    describe('matches', function() {
+      it.skip('AC: subgraph.match(unitOnly: false)');
+
+      // try to match subgraphs with 00, 01, 10, 11 transitionable states
+      // ... or is it fine having the if statement in the blueprint.State.distance?
+      it.skip('AC: subgraph.match: i.transitionable === o.transitionable');
+    }); // end matches
   }); // end State
-
-  it.skip('blueprint.BlueprintAction cost: error checking?');
-
-  it.skip('blueprint.BlueprintState distance');
-  it.skip('blueprint.BlueprintState distance: this needs a complete context upgrade');
-  // like, seriously. What does the distance even mean?
-  // it is it primitive distance? like the change in price?
-  // does difference in price have the same weight as difference in count?
-  // what about type difference? how far is an apple from a pear? they are both fruits?
-  // does this even matter? this should be part of the searching
-  // maybe if the search says "this idea must be a fruit" then so long as it matches, then the distance is zero?
-  // does this mean that primitive distance is the only thing that matters?
-
-  it.skip('AC: subgraph.match: i.transitionable === o.transitionable');
-  // try to match subgraphs with 00, 01, 10, 11 transitionable states
-  // ... or is it fine having the if statement in the blueprint.State.distance?
-});
+}); // end blueprint
