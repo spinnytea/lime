@@ -503,7 +503,7 @@ describe('subgraph', function() {
       outer = new subgraph.Subgraph();
       m = outer.addVertex(subgraph.matcher.id, mark);
       a = outer.addVertex(subgraph.matcher.filler);
-      p = outer.addVertex(subgraph.matcher.data.similar, {value: number.value(10)}, true);
+      p = outer.addVertex(subgraph.matcher.data.similar, {value: number.value(10)});
       outer.addEdge(m, links.list.thought_description, a);
       outer.addEdge(a, links.list.thought_description, p);
 
@@ -601,7 +601,7 @@ describe('subgraph', function() {
       var sg = new subgraph.Subgraph();
       var _m = sg.addVertex(subgraph.matcher.id, mark);
       var _a = sg.addVertex(subgraph.matcher.filler);
-      var _p = sg.addVertex(subgraph.matcher.id, price, true);
+      var _p = sg.addVertex(subgraph.matcher.id, price);
       sg.addEdge(_m, links.list.thought_description, _a);
 
       var result = subgraph.match(outer, sg);
@@ -727,7 +727,47 @@ describe('subgraph', function() {
 
       // vertex without idea
       // verify the transitionable rules in subgraphMatch
-      it.skip('subgraphMatch');
+      it('subgraphMatch', function() {
+        var id1 = tools.ideas.create();
+        var id2 = tools.ideas.create();
+        var id3 = tools.ideas.create();
+        id1.link(links.list.thought_description, id2);
+        id1.link(links.list.thought_description, id3);
+
+        var outer = new subgraph.Subgraph();
+        var o1 = outer.addVertex(subgraph.matcher.id, id1);
+        var o2 = outer.addVertex(subgraph.matcher.id, id2, false);
+        var o3 = outer.addVertex(subgraph.matcher.id, id3, false);
+        outer.addEdge(o1, links.list.thought_description, o2);
+        outer.addEdge(o1, links.list.thought_description, o3);
+        expect(subgraph.search(outer).length).to.equal(1);
+
+        var inner = new subgraph.Subgraph();
+        var i = inner.addVertex(subgraph.matcher.filler);
+        inner.addEdge(inner.addVertex(subgraph.matcher.id, id1), links.list.thought_description, i);
+
+        // we can only match things with similar transitions
+        expect(outer.vertices[o2].transitionable).to.equal(false);
+        expect(outer.vertices[o3].transitionable).to.equal(false);
+        expect(inner.vertices[i].transitionable).to.equal(false);
+        expect(subgraph.match(outer, inner).length).to.equal(2);
+        outer.vertices[o2].transitionable = true;
+        expect(subgraph.match(outer, inner).length).to.equal(1);
+        outer.vertices[o3].transitionable = true;
+        expect(subgraph.match(outer, inner).length).to.equal(0);
+
+        // if transitionable is true for both, the unit checking starts to get interesting
+        // if units are not defined, then unitOnly must match (because I want to replace)
+        inner.vertices[i].transitionable = true;
+        expect(subgraph.match(outer, inner).length).to.equal(2);
+
+        // when we define units for both, now they must start matching
+        outer.vertices[o2]._data = { value: number.value(10), unit: id1.id };
+        outer.vertices[o3]._data = { value: number.value(10), unit: id2.id };
+        inner.vertices[i]._data = { value: number.value(20), unit: id1.id };
+        expect(subgraph.match(outer, inner, true).length).to.equal(1);
+        expect(subgraph.match(outer, inner, false).length).to.equal(0);
+      });
     }); // end transitionable
   }); // end match (part 2)
 

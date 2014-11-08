@@ -259,24 +259,7 @@ exports.match = function(subgraphOuter, subgraphInner, unitOnly) {
         // outer is concrete; vo.idea exists
         if(vi.idea.id === vo.idea.id) {
           vertexMap[vi.vertex_id] = vo.vertex_id;
-
-          if(vi.transitionable !== vo.transitionable) {
-            // if one is transitionable, they both must be transitionable
-            possible = false;
-          } else if(vi.transitionable) {
-            // if they are both transitionable, then the values must match
-            // XXX maybe make this more complicate to account for non-unit transitionable data
-            // - but where is the use case?
-            // - and then what do we use as our rough estimate
-            // - (the value doesn't match, but we CAN transition)
-            // - (if it doesn't have a unit, what other fuzzy matching would we perform)
-            // - (if it doesn't have a unit, what what's the point of unitOnly?)
-            if(unitOnly && vo.data && vi.data && vo.data.unit !== vi.data.unit)
-              possible = false;
-
-            if(!unitOnly && vo.data && vi.data && discrete.difference(vo.data, vi.data) !== 0 && number.difference(vo.data, vi.data) !== 0)
-              possible = false;
-          }
+          possible = vertexTransitionableAcceptable(vo, vi, unitOnly);
         }
         return possible;
       });
@@ -344,15 +327,13 @@ function subgraphMatch(outerEdges, innerEdges, vertexMap, unitOnly) {
         return false;
     }
 
-    // if both edges are transitionable, then the data must match
-    if(innerEdge.transitionable && currEdge.transitionable) {
-      if(unitOnly && innerEdge.data.unit !== currEdge.data.unit)
-        return false;
-      if(!unitOnly && discrete.difference(innerEdge.data, currEdge.data) !== 0 && number.difference(innerEdge.data, currEdge.data) !== 0)
-        return false;
-    }
+    // check the transitionability of both src and dst
+    if(!vertexTransitionableAcceptable(currEdge.src, innerEdge.src, unitOnly))
+      return false;
+    if(!vertexTransitionableAcceptable(currEdge.dst, innerEdge.dst, unitOnly))
+      return false;
 
-    return innerEdge.link === currEdge.link && innerEdge.transitionable === currEdge.transitionable &&
+    return innerEdge.link === currEdge.link &&
       innerEdge.src.matches(currEdge.src.idea, innerEdge.src.matchData) &&
       innerEdge.dst.matches(currEdge.dst.idea, innerEdge.dst.matchData);
   });
@@ -385,6 +366,27 @@ function subgraphMatch(outerEdges, innerEdges, vertexMap, unitOnly) {
     return list;
   }, []);
 } // end subgraphMatch
+
+function vertexTransitionableAcceptable(vo, vi, unitOnly) {
+  if(vi.transitionable !== vo.transitionable) {
+    // if one is transitionable, they both must be transitionable
+    return false;
+  } else if(vi.transitionable) {
+    // if they are both transitionable, then the values must match
+    // XXX maybe make this more complicate to account for non-unit transitionable data
+    // - but where is the use case?
+    // - and then what do we use as our rough estimate
+    // - (the value doesn't match, but we CAN transition)
+    // - (if it doesn't have a unit, what other fuzzy matching would we perform)
+    // - (if it doesn't have a unit, what what's the point of unitOnly?)
+    if(unitOnly && vo.data && vi.data && vo.data.unit !== vi.data.unit)
+      return false;
+
+    if(!unitOnly && vo.data && vi.data && number.difference(vo.data, vi.data) !== 0 && discrete.difference(vo.data, vi.data) !== 0)
+      return false;
+  }
+  return true;
+}
 
 
 // @param transitions: an array of transitions
