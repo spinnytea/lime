@@ -75,10 +75,10 @@ describe('ideas', function() {
         ideas.close(ideaB);
 
         q.all([
-          tools.ideas.exists(ideaA.id, 'links'),
-          tools.ideas.exists(ideaB.id, 'links'),
-          tools.ideas.exists(ideaA.id, 'data'),
-          tools.ideas.exists(ideaB.id, 'data'),
+          tools.ideas.exists(ideaA.id, 'links', true),
+          tools.ideas.exists(ideaB.id, 'links', true),
+          tools.ideas.exists(ideaA.id, 'data', false),
+          tools.ideas.exists(ideaB.id, 'data', false),
         ]).then(function(results) {
           expect(results).to.deep.equal([true, true, false, false]);
 
@@ -96,8 +96,8 @@ describe('ideas', function() {
         ideas.close(ideaB);
 
         q.all([
-          tools.ideas.exists(ideaA.id, 'links'),
-          tools.ideas.exists(ideaB.id, 'links'),
+          tools.ideas.exists(ideaA.id, 'links', true),
+          tools.ideas.exists(ideaB.id, 'links', true),
         ]).then(function(results) {
           expect(results).to.deep.equal([true, true]);
 
@@ -106,8 +106,8 @@ describe('ideas', function() {
           ideas.save(ideaB);
 
           return q.all([
-            tools.ideas.exists(ideaA.id, 'links'),
-            tools.ideas.exists(ideaB.id, 'links'),
+            tools.ideas.exists(ideaA.id, 'links', false),
+            tools.ideas.exists(ideaB.id, 'links', false),
           ]);
         }).then(function(results) {
           expect(results).to.deep.equal([false, false]);
@@ -145,8 +145,8 @@ describe('ideas', function() {
         ideas.save(idea);
 
         q.all([
-          tools.ideas.exists(idea.id, 'data'),
-          tools.ideas.exists(idea.id, 'links'),
+          tools.ideas.exists(idea.id, 'data', false),
+          tools.ideas.exists(idea.id, 'links', false),
         ]).then(function(results) {
           expect(results).to.deep.equal([false, false]);
 
@@ -163,8 +163,8 @@ describe('ideas', function() {
 
         ideas.save(idea);
         q.all([
-          tools.ideas.exists(idea.id, 'data'),
-          tools.ideas.exists(idea.id, 'links'),
+          tools.ideas.exists(idea.id, 'data', true),
+          tools.ideas.exists(idea.id, 'links', false),
         ]).then(function(results) {
           expect(results).to.deep.equal([true, false]);
 

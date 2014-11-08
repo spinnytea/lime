@@ -46,13 +46,18 @@ exports.ideas.clean = function(idea) {
 exports.ideas.filepath = function(id, which) {
   return config.data.location + '/' + id + '_' + which + '.json';
 };
-exports.ideas.exists = function(id, which) {
+// address a race condition
+// - if the file existance doesn't match what we expect
+// - then try again in a little bit and just return that
+exports.ideas.exists = function(id, which, expected) {
   var deferred = q.defer();
-  if(!fs.existsSync(exports.ideas.filepath(id, which)))
-    deferred.resolve(false);
-  else {
-    // TODO check after some time
-    deferred.resolve(true);
+  var filepath = exports.ideas.filepath(id, which);
+  if(expected === fs.existsSync(filepath)) {
+    deferred.resolve(expected);
+  } else {
+    setTimeout(function() {
+      deferred.resolve(fs.existsSync(filepath));
+    }, 500);
   }
   return deferred.promise;
 };
