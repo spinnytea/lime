@@ -167,6 +167,8 @@ BlueprintState.prototype.actions = function() {
   var that = this;
   var ret = [];
   // the actions need relate to this state
+  // XXX should I just explode the possible actions to begin with?
+  // - or cache the results from the first run?
   this.availableActions.forEach(function(action) {
     action.tryTransition(that).forEach(function(glue) {
       ret.push({ action: action, glue: glue });

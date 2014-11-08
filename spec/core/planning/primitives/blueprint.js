@@ -2,6 +2,7 @@
 /* global describe, it, beforeEach */
 var _ = require('lodash');
 var expect = require('chai').expect;
+var actuator = require('../../../../src/core/planning/actuator');
 var blueprint = require('../../../../src/core/planning/primitives/blueprint');
 var discrete = require('../../../../src/core/planning/primitives/discrete');
 var number = require('../../../../src/core/planning/primitives/number');
@@ -161,7 +162,33 @@ describe('blueprint', function() {
       });
     }); // end distance
 
-    it.skip('actions');
+    it('actions', function() {
+      var idea_1 = tools.ideas.create();
+
+      var bs = new blueprint.State(new subgraph.Subgraph(), []);
+      var a = new actuator.Action();
+      var a_i1 = a.requirements.addVertex(subgraph.matcher.id, idea_1, true);
+      a.transitions.push({vertex_id: a_i1, replace: { thing: 42 }});
+
+      // no actions and no state
+      expect(bs.actions()).to.deep.equal([]);
+
+      // what happens when you have actions but no prereqs
+      // there is no match in the reqs
+      bs.availableActions.push(a);
+      expect(bs.actions()).to.deep.equal([]);
+
+      // now if we have something in the state, but no actions
+      bs.availableActions.splice(0);
+      bs.state.addVertex(subgraph.matcher.id, idea_1, true);
+      expect(bs.actions()).to.deep.equal([]);
+
+      // and finally, if there is a state and action
+      bs.availableActions.push(a);
+      expect(bs.actions().length).to.equal(1);
+
+      // the point of this isn't to unit test the actuator
+    });
 
     it.skip('matches');
   }); // end State
