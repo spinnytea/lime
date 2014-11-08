@@ -47,7 +47,7 @@ describe('ideas', function() {
 
       ideas.close(idea);
       idea.update({ 'objects': 2.7 });
-      expect(idea.data()).to.deep.equal({ 'things': 3.14, 'objects': 2.7 });
+      expect(idea.data()).to.deep.equal({ 'objects': 2.7 });
     });
 
     it('data closed', function() {

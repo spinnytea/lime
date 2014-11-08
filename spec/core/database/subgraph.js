@@ -868,7 +868,13 @@ describe('subgraph', function() {
         expect(sg3.vertices[w].idea.data()).to.deep.equal(wumpusData);
       });
 
-      it.skip('replace anything');
+      it('replace anything', function() {
+        var sg2 = subgraph.rewrite(sg, [{vertex_id: p, replace: { thing: 42 } }]);
+        expect(sg2).to.be.ok;
+        expect(sg2).to.not.equal(sg);
+        expect(sg.vertices[p]._data).to.equal(undefined);
+        expect(sg2.vertices[p].data).to.deep.equal({ thing: 42 });
+      });
 
       it('combine number', function() {
         var sg2 = subgraph.rewrite(sg, [{vertex_id: p, combine: priceUpdate }]);

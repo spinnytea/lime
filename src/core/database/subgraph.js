@@ -379,11 +379,13 @@ function vertexTransitionableAcceptable(vo, vi, unitOnly) {
     // - (the value doesn't match, but we CAN transition)
     // - (if it doesn't have a unit, what other fuzzy matching would we perform)
     // - (if it doesn't have a unit, what what's the point of unitOnly?)
-    if(unitOnly && vo.data && vi.data && vo.data.unit !== vi.data.unit)
-      return false;
+    if(vo.data && vo.data.unit && vi.data && vi.data.unit) {
+      if(unitOnly && vo.data.unit !== vi.data.unit)
+        return false;
 
-    if(!unitOnly && vo.data && vi.data && number.difference(vo.data, vi.data) !== 0 && discrete.difference(vo.data, vi.data) !== 0)
-      return false;
+      if(!unitOnly && number.difference(vo.data, vi.data) !== 0 && discrete.difference(vo.data, vi.data) !== 0)
+        return false;
+    }
   }
   return true;
 }
@@ -431,7 +433,7 @@ exports.rewrite = function(subgraph, transitions, actual) {
 
       // verify the transition data
       if(t.replace) {
-        if(v.data.unit !== t.replace.unit)
+        if(v.data.unit && t.replace.unit && v.data.unit !== t.replace.unit)
           return false;
       } else {
         if(v.data.unit !== t.combine.unit || !number.isNumber(v.data) || !number.isNumber(t.combine))
@@ -448,9 +450,9 @@ exports.rewrite = function(subgraph, transitions, actual) {
     var v = subgraph.vertices[t.vertex_id];
 
     if(t.replace) {
-      _.merge(v.data, t.replace);
+      v._data = t.replace;
     } else {
-      _.merge(v.data, number.combine(v.data, t.combine));
+      v._data = number.combine(v.data, t.combine);
     }
 
     if(actual)

@@ -30,7 +30,7 @@ function CoreIdea(id, data, links) {
 function ProxyIdea(id) { this.id = id; }
 ProxyIdea.prototype.update = function(data) {
   exports.load(this.id);
-  _.merge(memory[this.id].data, data);
+  memory[this.id].data = data;
 };
 ProxyIdea.prototype.data = function() {
   exports.load(this.id);
