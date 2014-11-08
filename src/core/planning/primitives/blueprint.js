@@ -179,7 +179,7 @@ BlueprintState.prototype.actions = function() {
 
 // path.State.matches
 BlueprintState.prototype.matches = function(blueprintstate) {
-  return subgraph.match(this.state, blueprintstate.state).length > 0;
+  return subgraph.match(this.state, blueprintstate.state, false).length > 0;
 };
 
 exports.State = BlueprintState;

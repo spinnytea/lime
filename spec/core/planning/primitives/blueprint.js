@@ -190,6 +190,8 @@ describe('blueprint', function() {
       // the point of this isn't to unit test the actuator
     });
 
+    // do we need to actually test this? it's so simple
+    // AC: subgraph.match(unitOnly: false)
     it.skip('matches');
   }); // end State
 
