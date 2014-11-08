@@ -7,8 +7,9 @@ var files = ['config.js', 'spec/**/*.js', 'src/core/**/*.js'];
 gulp.task('run-mocha', ['jshint'], function() {
   return gulp.src(['spec/**/*.js'], {read: false})
     .pipe(mocha({reporter: 'nyan'}));
-//    .pipe(mocha({reporter: 'list'}));
-    // XXX look into HTMLCov + node-jsconverage
+    // pro tip:
+    //   reporter: 'list'
+    //   gulp run-mocha | grep '-' | grep -v 'ms'
 });
 
 gulp.task('jshint', [], function () {
