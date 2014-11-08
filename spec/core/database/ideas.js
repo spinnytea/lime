@@ -1,8 +1,8 @@
 'use strict';
 /* global describe, it */
 var _ = require('lodash');
+var q = require('q');
 var expect = require('chai').expect;
-var fs = require('fs');
 var config = require('../../../config');
 var ideas = require('../../../src/core/database/ideas');
 var links = require('../../../src/core/database/links');
@@ -63,7 +63,7 @@ describe('ideas', function() {
     describe('link', function() {
       var ideaA, ideaB;
 
-      it('add', function() {
+      it('add', function(done) {
         ideaA = tools.ideas.create();
         ideaB = tools.ideas.create();
         ideas.close(ideaA);
@@ -74,33 +74,44 @@ describe('ideas', function() {
         ideas.close(ideaA);
         ideas.close(ideaB);
 
-        expect(fs.existsSync(tools.ideas.filepath(ideaA.id, 'links'))).to.equal(true);
-        expect(fs.existsSync(tools.ideas.filepath(ideaB.id, 'links'))).to.equal(true);
-        expect(fs.existsSync(tools.ideas.filepath(ideaA.id, 'data'))).to.equal(false);
-        expect(fs.existsSync(tools.ideas.filepath(ideaB.id, 'data'))).to.equal(false);
+        q.all([
+          tools.ideas.exists(ideaA.id, 'links', true),
+          tools.ideas.exists(ideaB.id, 'links', true),
+          tools.ideas.exists(ideaA.id, 'data', false),
+          tools.ideas.exists(ideaB.id, 'data', false),
+        ]).then(function(results) {
+          expect(results).to.deep.equal([true, true, false, false]);
 
-        // links are closed; get should still work
-        expect(_.pluck(ideaA.link(links.list.thought_description), 'id')).to.deep.equal([ideaB.id]);
-        expect(_.pluck(ideaB.link(links.list.thought_description.opposite), 'id')).to.deep.equal([ideaA.id]);
-
+          // links are closed; get should still work
+          expect(_.pluck(ideaA.link(links.list.thought_description), 'id')).to.deep.equal([ideaB.id]);
+          expect(_.pluck(ideaB.link(links.list.thought_description.opposite), 'id')).to.deep.equal([ideaA.id]);
+        }).done(done, done);
       });
 
-      it('remove', function() {
+      it('remove', function(done) {
         ideaA = tools.ideas.create();
         ideaB = tools.ideas.create();
         ideaA.link(links.list.thought_description, ideaB.id); // link by id
         ideas.close(ideaA);
         ideas.close(ideaB);
 
-        expect(fs.existsSync(tools.ideas.filepath(ideaA.id, 'links'))).to.equal(true);
-        expect(fs.existsSync(tools.ideas.filepath(ideaB.id, 'links'))).to.equal(true);
+        q.all([
+          tools.ideas.exists(ideaA.id, 'links', true),
+          tools.ideas.exists(ideaB.id, 'links', true),
+        ]).then(function(results) {
+          expect(results).to.deep.equal([true, true]);
 
-        ideaA.unlink(links.list.thought_description, ideaB);
-        ideas.save(ideaA);
-        ideas.save(ideaB);
+          ideaA.unlink(links.list.thought_description, ideaB);
+          ideas.save(ideaA);
+          ideas.save(ideaB);
 
-        expect(fs.existsSync(tools.ideas.filepath(ideaA.id, 'links'))).to.equal(false);
-        expect(fs.existsSync(tools.ideas.filepath(ideaB.id, 'links'))).to.equal(false);
+          return q.all([
+            tools.ideas.exists(ideaA.id, 'links', false),
+            tools.ideas.exists(ideaB.id, 'links', false),
+          ]);
+        }).then(function(results) {
+          expect(results).to.deep.equal([false, false]);
+        }).done(done, done);
       });
 
       it('add: invalid arg', function() {
@@ -128,32 +139,40 @@ describe('ideas', function() {
     });
 
     describe('save / load', function() {
-      it('no data', function() {
+      it('no data', function(done) {
         var idea = tools.ideas.create();
 
         ideas.save(idea);
 
-        expect(fs.existsSync(tools.ideas.filepath(idea.id, 'data'))).to.equal(false);
-        expect(fs.existsSync(tools.ideas.filepath(idea.id, 'links'))).to.equal(false);
+        q.all([
+          tools.ideas.exists(idea.id, 'data', false),
+          tools.ideas.exists(idea.id, 'links', false),
+        ]).then(function(results) {
+          expect(results).to.deep.equal([false, false]);
 
-        ideas.close(idea);
-        ideas.load(idea.id); // the proxy will still work
+          ideas.close(idea);
+          ideas.load(idea.id); // the proxy will still work
 
-        expect(idea.data()).to.deep.equal({});
+          expect(idea.data()).to.deep.equal({});
+        }).done(done, done);
       });
 
-      it('with data', function() {
+      it('with data', function(done) {
         var data = { 'things': -1 };
         var idea = tools.ideas.create(data);
 
         ideas.save(idea);
-        expect(fs.existsSync(tools.ideas.filepath(idea.id, 'data'))).to.equal(true);
-        expect(fs.existsSync(tools.ideas.filepath(idea.id, 'links'))).to.equal(false);
+        q.all([
+          tools.ideas.exists(idea.id, 'data', true),
+          tools.ideas.exists(idea.id, 'links', false),
+        ]).then(function(results) {
+          expect(results).to.deep.equal([true, false]);
 
-        ideas.close(idea);
-        ideas.load(idea.id); // the proxy will still work
+          ideas.close(idea);
+          ideas.load(idea.id); // the proxy will still work
 
-        expect(idea.data()).to.deep.equal(data);
+          expect(idea.data()).to.deep.equal(data);
+        }).done(done, done);
       });
 
       it('save: unloaded', function() {

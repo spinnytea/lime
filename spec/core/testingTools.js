@@ -2,6 +2,7 @@
 /* global beforeEach, afterEach */
 var _ = require('lodash');
 var fs = require('fs');
+var q = require('q');
 var config = require('../../config');
 var ideas = require('../../src/core/database/ideas');
 var links = require('../../src/core/database/links');
@@ -44,6 +45,21 @@ exports.ideas.clean = function(idea) {
 // Copied from the src ideas / I need this to test but it shouldn't be global on ideas
 exports.ideas.filepath = function(id, which) {
   return config.data.location + '/' + id + '_' + which + '.json';
+};
+// address a race condition
+// - if the file existance doesn't match what we expect
+// - then try again in a little bit and just return that
+exports.ideas.exists = function(id, which, expected) {
+  var deferred = q.defer();
+  var filepath = exports.ideas.filepath(id, which);
+  if(expected === fs.existsSync(filepath)) {
+    deferred.resolve(expected);
+  } else {
+    setTimeout(function() {
+      deferred.resolve(fs.existsSync(filepath));
+    }, 500);
+  }
+  return deferred.promise;
 };
 
 
