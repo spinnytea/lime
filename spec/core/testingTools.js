@@ -2,6 +2,7 @@
 /* global beforeEach, afterEach */
 var _ = require('lodash');
 var fs = require('fs');
+var q = require('q');
 var config = require('../../config');
 var ideas = require('../../src/core/database/ideas');
 var links = require('../../src/core/database/links');
@@ -44,6 +45,16 @@ exports.ideas.clean = function(idea) {
 // Copied from the src ideas / I need this to test but it shouldn't be global on ideas
 exports.ideas.filepath = function(id, which) {
   return config.data.location + '/' + id + '_' + which + '.json';
+};
+exports.ideas.exists = function(id, which) {
+  var deferred = q.defer();
+  if(!fs.existsSync(exports.ideas.filepath(id, which)))
+    deferred.resolve(false);
+  else {
+    // TODO check after some time
+    deferred.resolve(true);
+  }
+  return deferred.promise;
 };
 
 
