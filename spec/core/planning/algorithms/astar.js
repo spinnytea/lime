@@ -34,7 +34,7 @@ describe('astar', function() {
 
       var path = astar.search(start, goal);
 
-      expect(path).to.not.be.undefined;
+      expect(path).to.be.ok;
       expect(path.states).to.deep.equal([start, goal]);
       expect(path.actions).to.deep.equal([right]);
     });
@@ -43,6 +43,7 @@ describe('astar', function() {
       var goal = new NumberSlide.State([[1, 2], [3, 0]]);
       var path = astar.search(goal, goal);
 
+      expect(path).to.be.ok;
       expect(path.states).to.deep.equal([goal]);
       expect(path.actions).to.deep.equal([]);
     });
@@ -56,6 +57,7 @@ describe('astar', function() {
                                          [0, 4, 8]]);
       var path = astar.search(start, goal);
 
+      expect(path).to.be.ok;
       expect(path.states[0].numbers).to.deep.equal(start.numbers);
       expect(_.last(path.states).numbers).to.deep.equal(goal.numbers);
       expect(_.pluck(path.actions, 'dir')).to.deep.equal(['right', 'up', 'up', 'right',

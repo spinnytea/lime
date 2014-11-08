@@ -26,6 +26,9 @@ describe('number', function() {
     expect(number.isNumber({})).to.equal(false);
 //    expect(number.isNumber({ type: 'lime_number' })).to.equal(false);
     expect(number.isNumber({ value: { bl: 'true', l: 1, r: 1, br: true }, unit: 'test' })).to.equal(false);
+    expect(number.isNumber({ value: { bl: true, l: 1, r: 1, br: true } })).to.deep.equal(false);
+    expect(number.isNumber({ unit: 'test' })).to.equal(false);
+
     expect(number.isNumber({ value: { l: 1, r: 1, br: true }, unit: 'test' })).to.equal(false);
     expect(number.isNumber({ value: { bl: true, r: 1, br: true }, unit: 'test' })).to.equal(false);
     expect(number.isNumber({ value: { bl: true, l: 1, br: true }, unit: 'test' })).to.deep.equal(false);
@@ -35,9 +38,7 @@ describe('number', function() {
     expect(number.isNumber(num(0))).to.deep.equal(true);
     expect(number.isNumber({ value: { bl: true, l: 1, r: 1, br: true }, unit: 'test' })).to.deep.equal(true);
   });
-
   it.skip('isNumber: type only');
-  it.skip('isNumber: cycle type/value/unit');
 
   it('value', function() {
     // test our gen function, since it is complex, and we use it a lot

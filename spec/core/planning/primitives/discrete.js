@@ -30,7 +30,6 @@ describe('discrete', function() {
 
     tools.ideas.clean(boolean);
   });
-
   it.skip('isDiscrete: type only');
 
   it('difference', function() {
