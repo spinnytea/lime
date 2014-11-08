@@ -265,10 +265,16 @@ exports.match = function(subgraphOuter, subgraphInner, unitOnly) {
             possible = false;
           } else if(vi.transitionable) {
             // if they are both transitionable, then the values must match
-            if(unitOnly && vo.data.unit !== vi.data.unit)
+            // XXX maybe make this more complicate to account for non-unit transitionable data
+            // - but where is the use case?
+            // - and then what do we use as our rough estimate
+            // - (the value doesn't match, but we CAN transition)
+            // - (if it doesn't have a unit, what other fuzzy matching would we perform)
+            // - (if it doesn't have a unit, what what's the point of unitOnly?)
+            if(unitOnly && vo.data && vi.data && vo.data.unit !== vi.data.unit)
               possible = false;
 
-            if(!unitOnly && discrete.difference(vo.data, vi.data) !== 0 && number.difference(vo.data, vi.data) !== 0)
+            if(!unitOnly && vo.data && vi.data && discrete.difference(vo.data, vi.data) !== 0 && number.difference(vo.data, vi.data) !== 0)
               possible = false;
           }
         }

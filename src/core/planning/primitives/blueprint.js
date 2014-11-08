@@ -105,7 +105,7 @@ function BlueprintState(subgraph, availableActions) {
 // path.State.distance
 BlueprintState.prototype.distance = function(to) {
   var that = this;
-  var result = subgraph.match(that.state, to.state);
+  var result = subgraph.match(that.state, to.state, true);
   if(result.length === 0)
     return DISTANCE_ERROR;
 
@@ -132,6 +132,11 @@ BlueprintState.prototype.distance = function(to) {
             return false;
           }
           cost += diff;
+        } else if(number.isNumber(i.data)) {
+            // one is a number and the other is not
+            cost += DISTANCE_ERROR;
+            // no need to check other vertices in this map
+            return false;
         } else if(discrete.isDiscrete(o.data)) {
           diff = discrete.difference(o.data, i.data);
           if(diff === undefined) {
@@ -140,6 +145,11 @@ BlueprintState.prototype.distance = function(to) {
             return false;
           }
           cost += diff;
+        } else if(discrete.isDiscrete(i.data)) {
+            // one is a discrete and the other is not
+            cost += DISTANCE_ERROR;
+            // no need to check other vertices in this map
+            return false;
         } else {
           if(!_.isEqual(o.data, i.data))
             cost += DISTANCE_DEFAULT;

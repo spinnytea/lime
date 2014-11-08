@@ -588,6 +588,8 @@ describe('subgraph', function() {
     });
 
     it('only filler', function() {
+      // there are no edges to connect the filler thought to the rest of the graph
+      // there's no context to explain where or how it relates to anything
       var sg = new subgraph.Subgraph();
       sg.addVertex(subgraph.matcher.filler);
 
