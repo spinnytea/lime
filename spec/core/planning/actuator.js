@@ -27,7 +27,7 @@ describe('actuator', function() {
 
   describe('mock data', function() {
     var money, price; // our idea graph is .. money
-    var bs, sg, p; // a blueprint with a state with a price
+    var bs, p; // a blueprint with a state with a price
     var a, a_p, actionImplCount; // an action that requires a price
     beforeEach(function() {
       // init some data
@@ -46,7 +46,7 @@ describe('actuator', function() {
       // create a state
       // our state is a price of 10
       // and something else random
-      sg = new subgraph.Subgraph();
+      var sg = new subgraph.Subgraph();
       sg.addVertex(subgraph.matcher.id, money); // this is just to make our tests more valid (see p !== a_p)
       p = sg.addVertex(subgraph.matcher.id, price, true);
       bs = new blueprint.State(sg, [a]);
@@ -73,7 +73,7 @@ describe('actuator', function() {
       expect(result.length).to.equal(1);
       a.runBlueprint(bs, result[0]);
 
-      expect(sg.vertices[p].data).to.deep.equal(expectedData); // vertex data is updated
+      expect(bs.state.vertices[p].data).to.deep.equal(expectedData); // vertex data is updated
       expect(price.data()).to.deep.equal(expectedData); // idea data has not
       expect(actionImplCount).to.equal(1); // action has been called
     });
@@ -105,8 +105,7 @@ describe('actuator', function() {
       expect(astar).to.have.property('search');
 
       var goal = new blueprint.State(bs.state.copy(), bs.availableActions);
-      goal.state.vertices[p].data.value.l = 50;
-      goal.state.vertices[p].data.value.r = 50;
+      goal.state.vertices[p].data = { value: number.value(50), unit: money.id };
 
       expect(bs.state.vertices[p].data).to.deep.equal({ value: number.value(10), unit: money.id });
       expect(goal.state.vertices[p].data).to.deep.equal({ value: number.value(50), unit: money.id });
