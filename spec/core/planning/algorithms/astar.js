@@ -64,7 +64,23 @@ describe('astar', function() {
         'down', 'left', 'up', 'left', 'down', 'down', 'right', 'right']);
     });
 
-    it.skip('frontier too large');
+    it('frontier too large', function() {
+      var before = config.data.astar_max_paths;
+      expect(before).to.be.gt(10);
+      var goal =  new NumberSlide.State([[1, 2, 3, 4, 0]]);
+      var start =  new NumberSlide.State([[0, 1, 2, 3, 4]]);
+
+      var path = astar.search(start, goal);
+      expect(path).to.be.ok;
+      expect(_.pluck(path.actions, 'dir')).to.deep.equal([ 'right', 'right', 'right', 'right' ]);
+
+      config.data.astar_max_paths = 2;
+      path = astar.search(start, goal);
+      expect(path).to.not.be.ok;
+
+      // reset the config from before the test
+      config.data.astar_max_paths = before;
+    });
 
     it.skip('no solution');
   }); // end search
