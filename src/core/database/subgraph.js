@@ -69,7 +69,7 @@ Subgraph.prototype.addVertex = function(matcher, matchData, transitionable) {
   Object.defineProperty(v, 'data', { get: function() { return loadVertexData(v); } });
 
   if(matcher === exports.matcher.id)
-    this.vertices[id].idea = ideas.load(matchData);
+    this.vertices[id].idea = ideas.proxy(matchData);
   else
     this.concrete = false;
 

@@ -14,7 +14,7 @@ describe('ideas', function() {
     expect(config.data.location).to.be.a('string');
 
     // this is to ensure we test everything
-    expect(Object.keys(ideas)).to.deep.equal(['create', 'save', 'load', 'close']);
+    expect(Object.keys(ideas)).to.deep.equal(['create', 'save', 'load', 'proxy', 'close']);
   });
 
   describe('ProxyIdea', function() {
@@ -123,7 +123,21 @@ describe('ideas', function() {
     }); // end links
   }); // end ProxyIdea
 
-  it.skip('ideas.proxy'); // TODO update subgraph to use this instead of ideas.load
+  it('ideas.proxy', function() {
+    expect(function() { ideas.proxy(); }).to.throw(TypeError);
+    expect(function() { ideas.proxy(true); }).to.throw(TypeError);
+
+    // there really isn't a way for me to properly test this
+    // I have been avoiding adding a handle to the internal memory object
+    // there really isn't a way to test that nothing was loaded
+    // so... whatevs
+
+    var idea = tools.ideas.create();
+    ideas.close(idea);
+    var proxy = ideas.proxy(idea);
+
+    expect(proxy.id).to.equal(idea.id);
+  });
 
   describe('crud', function() {
     describe('create', function() {

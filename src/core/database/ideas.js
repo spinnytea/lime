@@ -134,6 +134,12 @@ exports.load = function(idea) {
 
   return new ProxyIdea(id);
 };
+exports.proxy = function(idea) {
+  var id = idea.id || idea;
+  if(!_.isString(id))
+    throw new TypeError('can only save ideas');
+  return new ProxyIdea(id);
+};
 exports.close = function(idea) {
   var id = idea.id || idea;
   if(!_.isString(id))
