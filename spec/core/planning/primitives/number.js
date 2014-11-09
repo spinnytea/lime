@@ -31,7 +31,7 @@ describe('number', function() {
     // the point of the type is to short circuit the tests
     // and it's an identifier of the type
     // if the other values aren't there then there is a larger problem
-    expect(number.isNumber({ type: 'lime_number' })).to.equal(false);
+    expect(number.isNumber({ type: 'lime_number' })).to.equal(true);
 
     expect(number.isNumber({ value: { l: 1, r: 1, br: true }, unit: 'test' })).to.equal(false);
     expect(number.isNumber({ value: { bl: true, r: 1, br: true }, unit: 'test' })).to.equal(false);
