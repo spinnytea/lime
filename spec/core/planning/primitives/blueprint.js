@@ -29,6 +29,8 @@ describe('blueprint', function() {
       // this is to ensure we test everything
       expect(Object.keys(blueprint.State.prototype)).to.deep.equal(['distance', 'actions', 'matches']);
       expect(_.intersection(Object.keys(blueprint.State.prototype), Object.keys(path.State.prototype))).to.deep.equal(Object.keys(path.State.prototype));
+
+      // there is no need to test matches; it's too simple
     });
 
     it.skip('blueprint.BlueprintState distance: this needs a complete context upgrade');
@@ -202,13 +204,5 @@ describe('blueprint', function() {
 
       // the point of this isn't to unit test the actuator
     });
-
-    describe('matches', function() {
-      it.skip('AC: subgraph.match(unitOnly: false)');
-
-      // try to match subgraphs with 00, 01, 10, 11 transitionable states
-      // ... or is it fine having the if statement in the blueprint.State.distance?
-      it.skip('AC: subgraph.match: i.transitionable === o.transitionable');
-    }); // end matches
   }); // end State
 }); // end blueprint

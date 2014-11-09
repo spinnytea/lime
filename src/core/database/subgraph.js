@@ -239,6 +239,7 @@ exports.search = function(subgraph) {
 // @param unitOnly is specific to transitionable vertices and blueprint.tryTransition
 // - when we need to see if a transition is possible, the match needs to see if we can combine the values
 // - this boils down to "do the units match"
+// AC: subgraph.match: i.transitionable === o.transitionable
 exports.match = function(subgraphOuter, subgraphInner, unitOnly) {
   if(!subgraphOuter.concrete)
     throw new RangeError('the outer subgraph must be concrete before you can match against it');

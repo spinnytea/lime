@@ -178,6 +178,7 @@ BlueprintState.prototype.actions = function() {
 };
 
 // path.State.matches
+// AC: subgraph.match(unitOnly: false)
 BlueprintState.prototype.matches = function(blueprintstate) {
   return subgraph.match(this.state, blueprintstate.state, false).length > 0;
 };
