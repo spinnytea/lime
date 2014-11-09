@@ -82,6 +82,12 @@ describe('astar', function() {
       config.data.astar_max_paths = before;
     });
 
-    it.skip('no solution');
+    it('no solution', function() {
+      var goal =  new NumberSlide.State([[1, 2, 3, 4, 0]]);
+      var start =  new NumberSlide.State([[0, 1, 4, 2, 3]]);
+      var path = astar.search(start, goal);
+
+      expect(path).to.not.be.ok;
+    });
   }); // end search
 }); // end astar

@@ -7,6 +7,9 @@ exports.data = {
   location: '/Volumes/MyPassport/lime database',
 
   // TODO astar_max_paths is an initial seed value, can/should we adjust it at runtime? Or does this operate at too low of a level
+  // XXX if we increase this number
+  // - we should add some logic to prevent duplicate states
+  // - (maybe we should anyway?)
   astar_max_paths: 100,
 };
 
