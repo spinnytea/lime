@@ -57,7 +57,8 @@ var NumberSlideState = exports.State = function(numbers) {
 };
 
 // calculate the manhattan distance of all the numbers
-// XXX error checking? (to instanceof NumberSlideState) && (this.length === to.length)
+// ? error checking? (to instanceof NumberSlideState) && (this.length === to.length)
+//   - dude, this is for testing, not production
 NumberSlideState.prototype.distance = function(to) {
   var total = 0;
 

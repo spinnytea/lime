@@ -30,4 +30,6 @@ describe('blueprint chain', function() {
     expect(function() { ba.tryTransition(); }).to.throw('BlueprintAction does not implement tryTransition');
     expect(function() { sa.tryTransition(); }).to.throw('SerialAction does not implement tryTransition');
   });
+
+  it.skip('save / load');
 });

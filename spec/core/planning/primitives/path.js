@@ -2,6 +2,7 @@
 /* global describe, it */
 var _ = require('lodash');
 var expect = require('chai').expect;
+var astar = require('../../../../src/core/planning/algorithms/astar');
 var Path = require('../../../../src/core/planning/primitives/path');
 var NumberSlide = require('../NumberSlide');
 
@@ -87,8 +88,9 @@ describe('path',  function() {
       expect(sixA.distance(sixG)).to.equal(0);
       expect(sixB.distance(sixG)).to.equal(8);
     });
-
-    it.skip('distance: Infinity');
+    // no need to test/create a distance of infinity for invalid states
+    // this is just for testing; it doesn't need to be perfectly resilient
+//    it.skip('distance: Infinity');
 
     it('actions', function() {
       expect(fourA._actions).to.be.null;
@@ -125,9 +127,27 @@ describe('path',  function() {
       expect(path.distFromGoal).to.equal(0);
     });
 
-    it.skip('cost'); // we need an action that has a complex cost to test this properly
+    it('cost / distanceFromGoal', function() {
+      var goal =  new NumberSlide.State([[1, 2, 3],
+                                         [4, 5, 6],
+                                         [7, 8, 0]]);
+      var start = new NumberSlide.State([[2, 6, 5],
+                                         [1, 7, 3],
+                                         [0, 4, 8]]);
+      var path = astar.search(start, goal);
 
-    it.skip('distFromGoal');
+      // there are twelve steps to solve this plan
+      expect(path.actions.length).to.equal(12);
+      // each number slide action costs 1
+      expect(path.cost).to.equal(12);
+      expect(path.distFromGoal).to.equal(0);
+
+      path = new Path.Path([start], [], goal);
+      expect(path.cost).to.equal(0); // we didn't do anything yet
+      expect(path.distFromGoal).to.equal(14);
+      expect(start.distance(goal)).to.equal(14); // how many things are out of place and by how far
+
+    }); // we need an action that has a complex cost to test this properly
 
     it('add', function() {
       // prep
