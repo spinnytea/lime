@@ -12,7 +12,6 @@ describe('actuator', function() {
   it('init', function() {
     // this is to ensure we test everything
     expect(Object.keys(actuator.Action.prototype)).to.deep.equal(['runCost', 'tryTransition', 'runBlueprint', 'cost', 'apply', 'actionImpl']);
-    // no need to test cost
   });
 
   it('runCost', function() {
@@ -78,6 +77,8 @@ describe('actuator', function() {
       expect(price.data()).to.deep.equal(expectedData); // idea data has not
       expect(actionImplCount).to.equal(1); // action has been called
     });
+
+    it.skip('cost');
 
     it('apply', function() {
       expect(actionImplCount).to.equal(0);

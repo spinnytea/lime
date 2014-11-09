@@ -94,7 +94,11 @@ exports.Action = BlueprintAction;
 // (e.g. actuator and serial plan shouldn't need their own implementation)
 //
 // @param state: subgraph
+//  - this state is a theoretical situation
+//  - it may be based on reality (idea.idata())
+//  - it may transition into an alternate reality (vertex.data)
 // @param availableActions: an array of blueprint.Actions
+//  - these should be actions that make sense to take in this context
 function BlueprintState(subgraph, availableActions) {
   if(!subgraph.concrete)
     throw new RangeError('blueprint states must be concrete');

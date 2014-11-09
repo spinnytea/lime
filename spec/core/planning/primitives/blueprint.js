@@ -83,8 +83,8 @@ describe('blueprint', function() {
         // init a to have a value, and b to not
         // one is a number, the other is not a number
         // how do we resolve this? the data must be invalid
-        a.state.vertices[_a]._data = n_10;
-        b.state.vertices[_b]._data = undefined;
+        a.state.vertices[_a].data = n_10;
+        b.state.vertices[_b].data = undefined;
         expect(a.state.vertices[_a].data).to.deep.equal(n_10);
         expect(b.state.vertices[_b].data).to.deep.equal(undefined);
         expect(a.distance(b)).to.equal(Infinity);
@@ -92,17 +92,17 @@ describe('blueprint', function() {
         expect(b.distance(a)).to.equal(Infinity);
 
         // if we have some data in b that isn't a number, it should be the same result
-        b.state.vertices[_b]._data = thing;
+        b.state.vertices[_b].data = thing;
         expect(b.state.vertices[_b].data).to.deep.equal(thing);
         expect(a.distance(b)).to.equal(Infinity);
         expect(b.distance(a)).to.equal(Infinity);
 
         // if we put a number in b, our distance should work
-        b.state.vertices[_b]._data = n_10;
+        b.state.vertices[_b].data = n_10;
         expect(b.state.vertices[_b].data).to.deep.equal(n_10);
         expect(a.distance(b)).to.equal(0);
         expect(b.distance(a)).to.equal(0);
-        b.state.vertices[_b]._data = n_20;
+        b.state.vertices[_b].data = n_20;
         expect(b.state.vertices[_b].data).to.deep.equal(n_20);
         expect(a.distance(b)).to.equal(10);
         expect(b.distance(a)).to.equal(10);
@@ -111,6 +111,7 @@ describe('blueprint', function() {
       it('discrete', function() {
         var thing = { thing: 42 };
         var boolean = discrete.definitions.create(['true', 'false']);
+        tools.ideas.clean(boolean);
         var t = { value: 'true', unit: boolean.id };
         var f = { value: 'false', unit: boolean.id };
         var _a = a.state.addVertex(subgraph.matcher.id, idea, true);
@@ -119,8 +120,8 @@ describe('blueprint', function() {
         // init a to have a value, and b to not
         // one is a discrete, the other is not a discrete
         // how do we resolve this? the data must be invalid
-        a.state.vertices[_a]._data = t;
-        b.state.vertices[_b]._data = undefined;
+        a.state.vertices[_a].data = t;
+        b.state.vertices[_b].data = undefined;
         expect(a.state.vertices[_a].data).to.deep.equal(t);
         expect(b.state.vertices[_b].data).to.deep.equal(undefined);
         expect(a.distance(b)).to.equal(Infinity);
@@ -128,17 +129,17 @@ describe('blueprint', function() {
         expect(b.distance(a)).to.equal(Infinity);
 
         // if we have some data in b that isn't discrete, it should be the same result
-        b.state.vertices[_b]._data = thing;
+        b.state.vertices[_b].data = thing;
         expect(b.state.vertices[_b].data).to.deep.equal(thing);
         expect(a.distance(b)).to.equal(Infinity);
         expect(b.distance(a)).to.equal(Infinity);
 
         // if we put a discrete in b, our distance should work
-        b.state.vertices[_b]._data = t;
+        b.state.vertices[_b].data = t;
         expect(b.state.vertices[_b].data).to.deep.equal(t);
         expect(a.distance(b)).to.equal(0);
         expect(b.distance(a)).to.equal(0);
-        b.state.vertices[_b]._data = f;
+        b.state.vertices[_b].data = f;
         expect(b.state.vertices[_b].data).to.deep.equal(f);
         expect(a.distance(b)).to.equal(1);
         expect(b.distance(a)).to.equal(1);
@@ -150,27 +151,27 @@ describe('blueprint', function() {
         var _a = a.state.addVertex(subgraph.matcher.id, idea, true);
         var _b = b.state.addVertex(subgraph.matcher.id, idea, true);
 
-        a.state.vertices[_a]._data = undefined;
-        b.state.vertices[_b]._data = undefined;
+        a.state.vertices[_a].data = undefined;
+        b.state.vertices[_b].data = undefined;
 
         // they are both transitionable and the data matches
         // (even though the data is undefined, it's the same)
         expect(a.distance(b)).to.equal(0);
 
         // so change the data in one of them
-        b.state.vertices[_b]._data = t_1;
+        b.state.vertices[_b].data = t_1;
         expect(b.state.vertices[_b].data).to.deep.equal(t_1);
         expect(a.distance(b)).to.equal(1);
         expect(b.distance(a)).to.equal(1);
 
         // and data in both
-        a.state.vertices[_a]._data = t_2;
+        a.state.vertices[_a].data = t_2;
         expect(a.state.vertices[_a].data).to.deep.equal(t_2);
         expect(a.distance(b)).to.equal(1);
         expect(b.distance(a)).to.equal(1);
 
         // and matching data
-        a.state.vertices[_a]._data = t_1;
+        a.state.vertices[_a].data = t_1;
         expect(a.state.vertices[_a].data).to.deep.equal(t_1);
         expect(a.distance(b)).to.equal(0);
         expect(b.distance(a)).to.equal(0);

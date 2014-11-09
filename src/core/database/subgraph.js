@@ -35,7 +35,10 @@ Subgraph.prototype.copy = function() {
     // (we can't just reload the data from idea)
     copy._data = _.cloneDeep(v._data);
 
-    Object.defineProperty(copy, 'data', { get: function() { return loadVertexData(copy); } });
+    Object.defineProperty(copy, 'data', {
+      get: function() { return loadVertexData(copy); },
+      set: function(value) { copy._data = value; },
+    });
   });
   this.edges.forEach(function(e) {
     sg.addEdge(e.src.vertex_id, e.link, e.dst.vertex_id, e.pref);
@@ -49,7 +52,7 @@ Subgraph.prototype.copy = function() {
 //  - subgraph.rewrite(transitions);
 Subgraph.prototype.addVertex = function(matcher, matchData, transitionable) {
   var id = (this.prevVertexId = ids.next.anonymous(this.prevVertexId));
-  this.vertices[id] = {
+  var v = this.vertices[id] = {
     vertex_id: id,
 
     // this is how we are going to match an idea in the search and match
@@ -65,8 +68,10 @@ Subgraph.prototype.addVertex = function(matcher, matchData, transitionable) {
     // otherwise, it's the value of idea.data() before we tried to change it
     _data: undefined,
   };
-  var v = this.vertices[id];
-  Object.defineProperty(v, 'data', { get: function() { return loadVertexData(v); } });
+  Object.defineProperty(v, 'data', {
+    get: function() { return loadVertexData(v); },
+    set: function(value) { v._data = value; },
+  });
 
   if(matcher === exports.matcher.id)
     this.vertices[id].idea = ideas.proxy(matchData);
@@ -451,9 +456,9 @@ exports.rewrite = function(subgraph, transitions, actual) {
     var v = subgraph.vertices[t.vertex_id];
 
     if(t.replace) {
-      v._data = t.replace;
+      v.data = t.replace;
     } else {
-      v._data = number.combine(v.data, t.combine);
+      v.data = number.combine(v.data, t.combine);
     }
 
     if(actual)

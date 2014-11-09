@@ -13,6 +13,7 @@ function ActuatorAction() {
   blueprint.Action.call(this);
 
   // subgraph.rewrite.transitions
+  // how does this actuator affect the world
   this.transitions = [];
 }
 _.extend(ActuatorAction.prototype, blueprint.Action.prototype);
