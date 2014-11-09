@@ -7,10 +7,11 @@ var blueprint = require('./primitives/blueprint');
 
 // @param plans: blueprint.Action
 //  - the steps that make up this macro action
-function SerialAction(plans) {
+function SerialAction(plans, requirements) {
   blueprint.Action.call(this);
 
   this.plans = plans;
+  this.requirements = requirements;
 
   // add the cost of all the plans
   // if there is no cost (~no plans), then add a deterrent cost
@@ -39,5 +40,5 @@ exports.create = function(start, goal) {
   if(path.actions.length === 1)
     return path.actions[0];
 
-  return new SerialAction(path.actions);
+  return new SerialAction(path.actions, start.state);
 };

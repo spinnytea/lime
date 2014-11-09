@@ -79,6 +79,8 @@ BlueprintAction.prototype.runBlueprint = function(state, glue) {
 
 // path.Actions.cost
 BlueprintAction.prototype.cost = function(from, to) {
+  if(subgraph.match(from.state, this.requirements).length === 0)
+    return Infinity;
   return from.distance(to) + this.runCost();
 };
 

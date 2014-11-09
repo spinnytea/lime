@@ -79,6 +79,7 @@ describe('actuator', function() {
     });
 
     it.skip('cost');
+    it.skip('cost: when action cannot be applied');
 
     it('apply', function() {
       expect(actionImplCount).to.equal(0);

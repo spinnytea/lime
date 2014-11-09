@@ -73,16 +73,39 @@ describe('serialplan', function() {
     expect(sp).to.be.ok;
     expect(sp.plans.length).to.equal(0);
     expect(sp.runCost()).to.equal(1);
+    expect(sp.cost(start, goal)).to.equal(2); // start:0 goal:1 + runCost()
   });
 
   describe('SerialPlan', function() {
-    it.skip('runCost');
+    it('runCost', function() {
+      var sp = serialplan.create(start, goal);
+      expect(sp.runCost()).to.equal(5);
+
+      sp = serialplan.create(start, start);
+      expect(sp.runCost()).to.equal(1);
+    });
 
     it.skip('tryTransition');
 
     it.skip('runBlueprint');
 
-    it.skip('cost');
+    it('cost', function() {
+      var sp = serialplan.create(start, goal);
+      expect(sp.cost(start, goal)).to.equal(10);
+
+      // so start cannot get to the goal
+      goal.state.vertices[state_count].transitionable = false;
+      expect(sp.cost(start, goal)).to.equal(Infinity);
+      goal.state.vertices[state_count].transitionable = true;
+
+      // this plan cannot use the 'goal' as a starting point
+      // ~~ sp can only do a cost(x, y) where x.matches(sp.reqs)
+      expect(sp.cost(goal, goal)).to.equal(Infinity);
+
+      // this plan has nothing to do, but it should still have some kind of cost
+      sp = serialplan.create(start, start);
+      expect(sp.cost(start, start)).to.equal(1);
+    });
 
     it.skip('apply');
 
