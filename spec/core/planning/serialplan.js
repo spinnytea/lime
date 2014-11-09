@@ -29,26 +29,63 @@ describe('serialplan', function() {
     state_count = sg.addVertex(subgraph.matcher.id, count, true);
     start = new blueprint.State(sg, [a]);
 
-    goal = new blueprint.State(sg.copy(), []);
+    goal = new blueprint.State(sg.copy(), [a]);
     goal.state.vertices[state_count].data = { value: number.value(5), unit: count_unit.id };
   });
 
   it('init', function() {
     // this is to ensure we test everything
+    expect(Object.keys(serialplan)).to.deep.equal(['Action', 'create']);
     expect(Object.keys(serialplan.Action.prototype)).to.deep.equal(['runCost', 'tryTransition', 'runBlueprint', 'cost', 'apply']);
   });
 
-  it.skip('create serial plan');
+  it('create', function() {
+    // standard case, success
+    var sp = serialplan.create(start, goal);
+    expect(sp).to.be.ok;
+    expect(sp.plans.length).to.equal(5);
 
-  it.skip('runCost');
+    // there is no way to create a plan to get here
+    sp = serialplan.create(goal, start);
+    expect(sp).to.not.be.ok;
 
-  it.skip('tryTransition');
+    // only one step away
+    goal.state.vertices[state_count].data.value = number.value(1);
+    sp = serialplan.create(start, goal);
+    expect(sp).to.be.ok;
+    expect(sp).to.equal(a);
 
-  it.skip('runBlueprint');
 
-  it.skip('cost');
+    // right now, it creates a serial plan with no actions
+    // do we want to return undefined?
+    // - no because undefined usually indicates an error, or that we can't get from one place to the next
+    // so instead, we create a false runCost
+    // we shouldn't use this plan to get from A to A, because that's a waste of time
+    //
+    // we should check to see if we even need to make a plan before we try to make one
+    // but if we do (for some unforseen reason), I don't want to return undefined, nor throw an exception, nor even make an impossibly large plan
+    // you are already at the goal
+    // if you are using SP to get no where, well, it's better to just increase the runCost
+    // searching for a plan should exclude this because it's a waste (but not a blocker)
+    //
+    // as you can probably tell, there isn't yet a definitive answer
+    sp = serialplan.create(start, start);
+    expect(sp).to.be.ok;
+    expect(sp.plans.length).to.equal(0);
+    expect(sp.runCost()).to.equal(1);
+  });
 
-  it.skip('apply');
+  describe('SerialPlan', function() {
+    it.skip('runCost');
 
-  it.skip('nested blueprint cost');
+    it.skip('tryTransition');
+
+    it.skip('runBlueprint');
+
+    it.skip('cost');
+
+    it.skip('apply');
+
+    it.skip('nested blueprint cost');
+  }); // end SerialPlan
 }); // end serialplan
