@@ -17,9 +17,13 @@ describe('discrete', function() {
 
     expect(discrete.isDiscrete(undefined)).to.equal(false);
     expect(discrete.isDiscrete({})).to.equal(false);
-//    expect(discrete.isDiscrete({ type: 'lime_discrete' })).to.equal(false);
     expect(discrete.isDiscrete({ value: 'true' })).to.equal(false);
     expect(discrete.isDiscrete({ unit: boolean.id })).to.equal(false);
+
+    // the point of the type is to short circuit the tests
+    // and it's an identifier of the type
+    // if the other values aren't there then there is a larger problem
+    expect(discrete.isDiscrete({ type: 'lime_discrete' })).to.equal(true);
 
     expect(discrete.isDiscrete({ type: 'wrong type', value: 'true', unit: boolean.id })).to.equal(false);
     expect(discrete.isDiscrete({ value: 'wrong value', unit: boolean.id })).to.equal(false);
@@ -30,7 +34,6 @@ describe('discrete', function() {
 
     tools.ideas.clean(boolean);
   });
-  it.skip('isDiscrete: type only');
 
   it('difference', function() {
     var boolean = discrete.definitions.create(['true', 'false']);
