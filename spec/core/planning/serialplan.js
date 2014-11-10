@@ -4,6 +4,7 @@ var _ = require('lodash');
 var expect = require('chai').expect;
 var actuator = require('../../../src/core/planning/actuator');
 var blueprint = require('../../../src/core/planning/primitives/blueprint');
+var links = require('../../../src/core/database/links');
 var number = require('../../../src/core/planning/primitives/number');
 var serialplan = require('../../../src/core/planning/serialplan');
 var subgraph = require('../../../src/core/database/subgraph');
@@ -15,20 +16,42 @@ describe('serialplan', function() {
   var start, state_count, goal;
   beforeEach(function() {
     // our state, just a simple object with a value of 0
+    // athing -> count
+    var athing = tools.ideas.create();
     var count_unit = tools.ideas.create();
     count = tools.ideas.create({ value: number.value(0), unit: count_unit.id });
+    athing.link(links.list.thought_description, count);
+
 
     // an action that adds one to our value
     // it doesn't DO anything, but we should keep track of how many times it has been called
+    //
+    // since this action can be applied to any count..
+    // athing -> {value: ...}
     a = new actuator.Action();
-    a_c = a.requirements.addVertex(subgraph.matcher.id, count, true);
+    a_c = a.requirements.addVertex(subgraph.matcher.data.number, { value: number.value(0, 10), unit: count_unit.id }, true);
+    a.requirements.addEdge(
+      a.requirements.addVertex(subgraph.matcher.id, athing),
+      links.list.thought_description,
+      a_c
+    );
     a.transitions.push({ vertex_id: a_c, combine: { value: number.value(1), unit: count_unit.id } });
     actionImplCount = 0;
     a.actionImpl = function() { actionImplCount++; }; // XXX is this check necessary?
 
+
+    // the state is based on concrete ideas
+    // athing -> count
     var sg = new subgraph.Subgraph();
     sg.addVertex(subgraph.matcher.id, count_unit);
     state_count = sg.addVertex(subgraph.matcher.id, count, true);
+    sg.addEdge(
+      sg.addVertex(subgraph.matcher.id, athing),
+      links.list.thought_description,
+      state_count
+    );
+    expect(subgraph.search(sg)).to.deep.equal([sg]);
+    expect(sg.concrete).to.equal(true);
     start = new blueprint.State(sg, [a]);
 
     goal = new blueprint.State(sg.copy(), [a]);
@@ -36,6 +59,11 @@ describe('serialplan', function() {
 
     // we need these to be different values to check our tryTansitions result
     expect(a_c).to.not.equal(state_count);
+
+    // I had a bit of debugging (needed a new matcher: number)
+    // so I'm just gonna leave this in
+    // the requirements need to match the initial state
+    expect(subgraph.match(sg, a.requirements).length).to.equal(1);
   });
 
   it('init', function() {

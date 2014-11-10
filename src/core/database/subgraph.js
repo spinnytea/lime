@@ -97,6 +97,8 @@ Subgraph.prototype.addEdge = function(src, link, dst, pref) {
 function loadVertexData(v) {
   if(v._data === null) {
     return undefined;
+  } else if(v.idea === undefined) {
+    return undefined;
   } else if(v._data === undefined) {
     // try loading the data
     var d = v.idea.data();
@@ -135,6 +137,10 @@ exports.matcher = {
       // matchData should be contained within data
       var data = idea.data();
       return _.isEqual(data, _.merge(_.cloneDeep(data), matchData));
+    },
+    number: function(idea, matchData) {
+      var data = idea.data();
+      return number.difference(data, matchData) === 0;
     },
   },
 };

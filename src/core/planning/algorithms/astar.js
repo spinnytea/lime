@@ -19,6 +19,8 @@ exports.search = function(start, goal) {
   var numPathsExpanded = 0;
 
   while(!frontier.isEmpty()) {
+    // js hint loopfunc: true
+//    console.log(frontier._elements.map(function(path) { return path.cost + path.distFromGoal; }));
     var path = frontier.deq();
 
     // do we win?
@@ -38,13 +40,17 @@ exports.search = function(start, goal) {
     // I can get around this by setting the execution scope of the function when I call it, but that's just confusing
     // (and jshint thinks it might be a strict violation)
     // so.. I have to use a for() loop
+    //
+    // apply all of the available actions to the selected path
     var nextActions = path.last.actions();
     for(var i=0; i<nextActions.length; i++) {
       var next = nextActions[i];
       if(next.action && next.glue) {
         // TODO remove action/glue from the return
         // - incorporate glue into the action (this means making a copy of the actions)
-        frontier.enq(path.add(next.action.apply(path.last, next.glue), next.action));
+        var p = path.add(next.action.apply(path.last, next.glue), next.action);
+        if(path.cost + path.distFromGoal !== Infinity)
+          frontier.enq(p);
       } else {
         frontier.enq(path.add(next.apply(path.last), next));
       }
