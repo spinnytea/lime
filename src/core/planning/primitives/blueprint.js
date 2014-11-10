@@ -85,6 +85,7 @@ BlueprintAction.prototype.cost = function(from, to) {
 };
 
 // path.Action.apply
+// run the action internally (thought experiment), but don't actually interact with the world
 BlueprintAction.prototype.apply = function() {
   throw new Error(this.constructor.name + ' does not implement apply');
 };

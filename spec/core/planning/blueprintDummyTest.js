@@ -28,7 +28,9 @@ describe('blueprint chain', function() {
 
     // this isn't implemented by serialplan
     expect(function() { ba.tryTransition(); }).to.throw('BlueprintAction does not implement tryTransition');
-    expect(function() { sa.tryTransition(); }).to.throw('SerialAction does not implement tryTransition');
+
+    // this method is now implemented, but this is what it looked like before we did
+//    expect(function() { sa.tryTransition(); }).to.throw('SerialAction does not implement tryTransition');
   });
 
   it.skip('save / load');

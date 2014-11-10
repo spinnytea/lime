@@ -1,5 +1,6 @@
 'use strict';
 /* global describe, it, beforeEach */
+var _ = require('lodash');
 var expect = require('chai').expect;
 var actuator = require('../../../src/core/planning/actuator');
 var blueprint = require('../../../src/core/planning/primitives/blueprint');
@@ -26,11 +27,15 @@ describe('serialplan', function() {
     a.actionImpl = function() { actionImplCount++; };
 
     var sg = new subgraph.Subgraph();
+    sg.addVertex(subgraph.matcher.id, count_unit);
     state_count = sg.addVertex(subgraph.matcher.id, count, true);
     start = new blueprint.State(sg, [a]);
 
     goal = new blueprint.State(sg.copy(), [a]);
     goal.state.vertices[state_count].data = { value: number.value(5), unit: count_unit.id };
+
+    // we need these to be different values to check our tryTansitions result
+    expect(a_c).to.not.equal(state_count);
   });
 
   it('init', function() {
@@ -85,7 +90,26 @@ describe('serialplan', function() {
       expect(sp.runCost()).to.equal(1);
     });
 
-    it.skip('tryTransition');
+    it('tryTransition', function() {
+      var sp = serialplan.create(start, goal);
+      var glues = sp.tryTransition(start);
+
+      expect(glues.length).to.equal(1); // there is only possible path
+      expect(glues[0].length).to.equal(sp.plans.length); // there are 5 steps in the path
+      // each of these has a mapping from a_c to state_count
+      expect(_.pluck(glues[0], a_c)).to.deep.equal([state_count, state_count, state_count, state_count, state_count]);
+
+      // we should be able to try our transition from the goal
+      // (this is just trying things out; doesn't mean it will take us places)
+      glues = sp.tryTransition(goal);
+      expect(glues.length).to.equal(1);
+      expect(_.pluck(glues[0], a_c)).to.deep.equal([state_count, state_count, state_count, state_count, state_count]);
+
+      // something we can't apply the transition to
+      // so the array is empty
+      glues = sp.tryTransition(new blueprint.State(new subgraph.Subgraph(), []));
+      expect(glues).to.deep.equal([]);
+    });
 
     it.skip('runBlueprint');
 
