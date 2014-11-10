@@ -97,9 +97,11 @@ Subgraph.prototype.addEdge = function(src, link, dst, pref) {
 function loadVertexData(v) {
   if(v._data === null) {
     return undefined;
+  } else if(v._data !== undefined) {
+    return v._data;
   } else if(v.idea === undefined) {
     return undefined;
-  } else if(v._data === undefined) {
+  } else {
     // try loading the data
     var d = v.idea.data();
     if(Object.keys(d).length === 0) {
@@ -110,8 +112,6 @@ function loadVertexData(v) {
       v._data = d;
       return v._data;
     }
-  } else {
-    return v._data;
   }
 }
 

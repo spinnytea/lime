@@ -14,7 +14,7 @@ describe('subgraph', function() {
     expect(Object.keys(subgraph)).to.deep.equal(['Subgraph', 'matcher', 'search', 'match', 'rewrite']);
     expect(Object.keys(subgraph.Subgraph.prototype)).to.deep.equal(['copy', 'addVertex', 'addEdge']);
     expect(Object.keys(subgraph.matcher)).to.deep.equal(['id', 'filler', 'data']);
-    expect(Object.keys(subgraph.matcher.data)).to.deep.equal(['exact', 'similar']);
+    expect(Object.keys(subgraph.matcher.data)).to.deep.equal(['exact', 'similar', 'number']);
   });
 
   describe('Subgraph', function() {
@@ -229,6 +229,10 @@ describe('subgraph', function() {
         result = subgraph.search(sg);
         expect(result.length).to.equal(0);
       });
+
+      it.skip('number: function');
+
+      it.skip('number: basic search');
     }); // end data
   }); // end matchers
 
