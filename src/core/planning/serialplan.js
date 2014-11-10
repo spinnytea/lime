@@ -94,6 +94,20 @@ SerialAction.prototype.tryTransition = function(state) {
   return currList.map(function(curr) { return curr.glues; });
 };
 
+// blueprint.runBlueprint
+SerialAction.prototype.runBlueprint = function(state, glue) {
+  this.plans.forEach(function(plan, idx) {
+    plan.runBlueprint(state, glue[idx]);
+  });
+};
+
+// path.apply
+SerialAction.prototype.apply = function(state, glue) {
+  return _.reduce(this.plans, function(result, plan, idx) {
+    return plan.apply(result, glue[idx]);
+  }, state);
+};
+
 exports.Action = SerialAction;
 
 // create a serial plan

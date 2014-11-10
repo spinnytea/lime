@@ -67,7 +67,7 @@ BlueprintAction.prototype.tryTransition = function(state) {
 // (this is not a drill)
 //
 // @param glue: a result of tryTransition
-// @param state: a BlueprintState
+// @param state: a BlueprintState (will be modified)
 BlueprintAction.prototype.runBlueprint = function(state, glue) {
   // I can't get jshint it ignore the unused param
   // but I want the param as documentation

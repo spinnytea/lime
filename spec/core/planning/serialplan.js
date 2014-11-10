@@ -24,7 +24,7 @@ describe('serialplan', function() {
     a_c = a.requirements.addVertex(subgraph.matcher.id, count, true);
     a.transitions.push({ vertex_id: a_c, combine: { value: number.value(1), unit: count_unit.id } });
     actionImplCount = 0;
-    a.actionImpl = function() { actionImplCount++; };
+    a.actionImpl = function() { actionImplCount++; }; // XXX is this check necessary?
 
     var sg = new subgraph.Subgraph();
     sg.addVertex(subgraph.matcher.id, count_unit);
@@ -93,6 +93,7 @@ describe('serialplan', function() {
     it('tryTransition', function() {
       var sp = serialplan.create(start, goal);
       var glues = sp.tryTransition(start);
+      expect(actionImplCount).to.equal(0);
 
       expect(glues.length).to.equal(1); // there is only possible path
       expect(glues[0].length).to.equal(sp.plans.length); // there are 5 steps in the path
@@ -109,9 +110,23 @@ describe('serialplan', function() {
       // so the array is empty
       glues = sp.tryTransition(new blueprint.State(new subgraph.Subgraph(), []));
       expect(glues).to.deep.equal([]);
+
+      expect(actionImplCount).to.equal(0);
     });
 
-    it.skip('runBlueprint');
+    it('runBlueprint', function() {
+      var sp = serialplan.create(start, goal);
+      var glues = sp.tryTransition(start);
+      expect(glues.length).to.equal(1);
+      expect(actionImplCount).to.equal(0);
+
+      sp.runBlueprint(start, glues[0]);
+
+      // the state and the ideas have been updated
+      expect(start.state.vertices[state_count].data.value).to.deep.equal(number.value(5));
+      expect(count.data().value).to.deep.equal(number.value(5));
+      expect(actionImplCount).to.equal(5);
+    });
 
     it('cost', function() {
       var sp = serialplan.create(start, goal);
@@ -131,7 +146,23 @@ describe('serialplan', function() {
       expect(sp.cost(start, start)).to.equal(1);
     });
 
-    it.skip('apply');
+    it('apply', function() {
+      var sp = serialplan.create(start, goal);
+      var glues = sp.tryTransition(start);
+      expect(glues.length).to.equal(1);
+      expect(actionImplCount).to.equal(0);
+
+      var result = sp.apply(start, glues[0]);
+
+      // this is a new experimental state
+      expect(result).to.not.equal(start);
+      expect(result.state.vertices[state_count].data.value).to.deep.equal(number.value(5));
+
+      // the state and the ideas have not changed
+      expect(start.state.vertices[state_count].data.value).to.deep.equal(number.value(0));
+      expect(count.data().value).to.deep.equal(number.value(0));
+      expect(actionImplCount).to.equal(0);
+    });
 
     it.skip('nested blueprint cost');
   }); // end SerialPlan
