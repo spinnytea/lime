@@ -4,6 +4,7 @@ var expect = require('chai').expect;
 var actuator = require('../../../src/core/planning/actuator');
 var astar = require('../../../src/core/planning/algorithms/astar');
 var blueprint = require('../../../src/core/planning/primitives/blueprint');
+var links = require('../../../src/core/database/links');
 var number = require('../../../src/core/planning/primitives/number');
 var subgraph = require('../../../src/core/database/subgraph');
 var tools = require('../testingTools');
@@ -28,17 +29,25 @@ describe('actuator', function() {
   describe('mock data', function() {
     var money, price; // our idea graph is .. money
     var bs, p; // a blueprint with a state with a price
-    var a, a_p, actionImplCount; // an action that requires a price
+    var a, a_a, a_p, actionImplCount; // an action that requires a price
     beforeEach(function() {
       // init some data
       // we have a price (a number with a unit)
+      var apple = tools.ideas.create();
       money = tools.ideas.create();
       price = tools.ideas.create({ value: number.value(10), unit: money.id });
+      apple.link(links.list.thought_description, price);
 
       // create an action
       // it will add 20 to the price
       a = new actuator.Action();
-      a_p = a.requirements.addVertex(subgraph.matcher.id, price, true);
+      a_p = a.requirements.addVertex(subgraph.matcher.data.number, { value: number.value(0, Infinity), unit: money.id }, true);
+      a_a = a.requirements.addVertex(subgraph.matcher.id, apple);
+      a.requirements.addEdge(
+        a_a,
+        links.list.thought_description,
+        a_p
+      );
       a.transitions.push({ vertex_id: a_p, combine: { value: number.value(20), unit: money.id } });
       actionImplCount = 0;
       a.actionImpl = function() { actionImplCount++; };
@@ -49,8 +58,14 @@ describe('actuator', function() {
       var sg = new subgraph.Subgraph();
       sg.addVertex(subgraph.matcher.id, money); // this is just to make our tests more valid (see p !== a_p)
       p = sg.addVertex(subgraph.matcher.id, price, true);
-      bs = new blueprint.State(sg, [a]);
+      sg.addEdge(
+        sg.addVertex(subgraph.matcher.id, apple),
+        links.list.thought_description,
+        p
+      );
+      expect(subgraph.search(sg)).to.deep.equal([sg]);
       expect(sg.concrete).to.equal(true);
+      bs = new blueprint.State(sg, [a]);
 
       // for many of our tests, p !== a_p, otherwise the test doesn't really make sense
       expect(p).to.not.equal(a_p);
@@ -61,7 +76,7 @@ describe('actuator', function() {
       var result = a.tryTransition(bs);
 
       expect(result.length).to.equal(1);
-      expect(Object.keys(result[0])).to.deep.equal([a_p]);
+      expect(Object.keys(result[0])).to.deep.equal([a_p, a_a]);
       expect(result[0][a_p]).to.equal(p);
       expect(actionImplCount).to.equal(0);
     });

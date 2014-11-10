@@ -19,7 +19,7 @@ describe('blueprint chain', function() {
 
     // instance
     var ba = new blueprint.Action();
-    var sa = new serialplan.Action();
+    var sa = new serialplan.Action([]);
     var aa = new actuator.Action();
     var params = ['requirements'];
     expect(Object.keys(ba)).to.deep.equal(params);

@@ -10,7 +10,9 @@ var Path = require('../primitives/path');
 exports.search = function(start, goal) {
   // the current set of paths
   var frontier = new PriorityQueue(function(a, b) {
-    return (b.cost + b.distFromGoal) - (a.cost + a.distFromGoal);
+    return (b.cost + b.distFromGoal + b.actions.length) - (a.cost + a.distFromGoal + a.actions.length);
+    // XXX I'm still not convinced it's the right move to factor in actions.length
+//    return (b.cost + b.distFromGoal) - (a.cost + a.distFromGoal);
   });
   frontier.enq(new Path.Path([start], [], goal));
 
@@ -49,7 +51,7 @@ exports.search = function(start, goal) {
         // TODO remove action/glue from the return
         // - incorporate glue into the action (this means making a copy of the actions)
         var p = path.add(next.action.apply(path.last, next.glue), next.action);
-        if(path.cost + path.distFromGoal !== Infinity)
+        if(p.cost + p.distFromGoal !== Infinity)
           frontier.enq(p);
       } else {
         frontier.enq(path.add(next.apply(path.last), next));
