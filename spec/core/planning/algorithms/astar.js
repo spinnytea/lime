@@ -52,16 +52,17 @@ describe('astar', function() {
       var goal =  new NumberSlide.State([[1, 2, 3],
                                          [4, 5, 6],
                                          [7, 8, 0]]);
-      var start = new NumberSlide.State([[2, 6, 5],
-                                         [1, 7, 3],
-                                         [0, 4, 8]]);
+      var start = new NumberSlide.State([[2, 5, 0],
+                                         [1, 6, 3],
+                                         [4, 7, 8]]);
       var path = astar.search(start, goal);
 
       expect(path).to.be.ok;
       expect(path.states[0].numbers).to.deep.equal(start.numbers);
       expect(_.last(path.states).numbers).to.deep.equal(goal.numbers);
-      expect(_.pluck(path.actions, 'dir')).to.deep.equal(['right', 'up', 'up', 'right',
-        'down', 'left', 'up', 'left', 'down', 'down', 'right', 'right']);
+      expect(_.pluck(path.actions, 'dir')).to.deep.equal([
+        'down', 'left', 'up', 'left', 'down', 'down', 'right', 'right'
+      ]);
     });
 
     it('frontier too large', function() {

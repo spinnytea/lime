@@ -131,21 +131,21 @@ describe('path',  function() {
       var goal =  new NumberSlide.State([[1, 2, 3],
                                          [4, 5, 6],
                                          [7, 8, 0]]);
-      var start = new NumberSlide.State([[2, 6, 5],
-                                         [1, 7, 3],
-                                         [0, 4, 8]]);
+      var start = new NumberSlide.State([[2, 5, 0],
+                                         [1, 6, 3],
+                                         [4, 7, 8]]);
       var path = astar.search(start, goal);
 
       // there are twelve steps to solve this plan
-      expect(path.actions.length).to.equal(12);
+      expect(path.actions.length).to.equal(8);
       // each number slide action costs 1
-      expect(path.cost).to.equal(12);
+      expect(path.cost).to.equal(8);
       expect(path.distFromGoal).to.equal(0);
 
       path = new Path.Path([start], [], goal);
       expect(path.cost).to.equal(0); // we didn't do anything yet
-      expect(path.distFromGoal).to.equal(14);
-      expect(start.distance(goal)).to.equal(14); // how many things are out of place and by how far
+      expect(path.distFromGoal).to.equal(10);
+      expect(start.distance(goal)).to.equal(10); // how many things are out of place and by how far
 
     }); // we need an action that has a complex cost to test this properly
 

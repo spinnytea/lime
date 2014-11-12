@@ -72,7 +72,7 @@ describe('serialplan', function() {
     expect(Object.keys(serialplan.Action.prototype)).to.deep.equal(['runCost', 'tryTransition', 'runBlueprint', 'cost', 'apply']);
   });
 
-  it.skip('create', function() {
+  it('create', function() {
     // standard case, success
     var sp = serialplan.create(start, goal);
     expect(sp).to.be.ok;
