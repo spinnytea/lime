@@ -151,4 +151,8 @@ describe('actuator', function() {
       expect(path.actions).to.deep.equal([a, a]);
     });
   }); // end mock data
+
+  describe('save & load', function() {
+    it.skip('loaded can be used in a plan');
+  }); // end save & load
 }); // end actuator

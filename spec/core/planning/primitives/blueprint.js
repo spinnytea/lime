@@ -11,28 +11,25 @@ var subgraph = require('../../../../src/core/database/subgraph');
 var tools = require('../../testingTools');
 
 describe('blueprint', function() {
-  describe('Action', function() {
-    it('init', function() {
-      // this is to ensure we test everything
-      expect(Object.keys(blueprint.Action.prototype)).to.deep.equal(['runCost', 'tryTransition', 'runBlueprint', 'cost', 'apply']);
-      expect(_.intersection(Object.keys(blueprint.Action.prototype), Object.keys(path.Action.prototype))).to.deep.equal(Object.keys(path.Action.prototype));
-    });
+  it('init', function() {
+    // this is to ensure we test everything
+    expect(Object.keys(blueprint)).to.deep.equal(['loaders', 'Action', 'State']);
+    // there isn't a need to test loaders directly
+    // when we test the load of actuator, serialplan, etc then loaders will be tested through them
 
+    expect(Object.keys(blueprint.Action.prototype)).to.deep.equal(['runCost', 'tryTransition', 'runBlueprint', 'cost', 'apply']);
+    expect(_.intersection(Object.keys(blueprint.Action.prototype), Object.keys(path.Action.prototype))).to.deep.equal(Object.keys(path.Action.prototype));
     // there isn't anything to test here
     // cost is the only function that lives in blueprint.Action
     // - and even that is build on runCost
     // the rest are meant to be overridden
+
+    expect(Object.keys(blueprint.State.prototype)).to.deep.equal(['distance', 'actions', 'matches']);
+    expect(_.intersection(Object.keys(blueprint.State.prototype), Object.keys(path.State.prototype))).to.deep.equal(Object.keys(path.State.prototype));
+    // there is no need to test matches; it's too simple
   });
 
   describe('State', function() {
-    it('init', function() {
-      // this is to ensure we test everything
-      expect(Object.keys(blueprint.State.prototype)).to.deep.equal(['distance', 'actions', 'matches']);
-      expect(_.intersection(Object.keys(blueprint.State.prototype), Object.keys(path.State.prototype))).to.deep.equal(Object.keys(path.State.prototype));
-
-      // there is no need to test matches; it's too simple
-    });
-
     it.skip('blueprint.BlueprintState distance: this needs a complete context upgrade');
     // like, seriously. What does the distance even mean?
     // it is it primitive distance? like the change in price?
@@ -205,5 +202,9 @@ describe('blueprint', function() {
 
       // the point of this isn't to unit test the actuator
     });
+
+    describe('save & load', function() {
+      it.skip('loaded can be used in a plan');
+    }); // end save & load
   }); // end State
 }); // end blueprint

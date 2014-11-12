@@ -70,3 +70,4 @@ ActuatorAction.prototype.apply = function(state, glue) {
 ActuatorAction.prototype.actionImpl = function() {};
 
 exports.Action = ActuatorAction;
+blueprint.loaders.ActuatorAction = ActuatorAction;

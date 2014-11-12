@@ -90,6 +90,10 @@ BlueprintAction.prototype.apply = function() {
   throw new Error(this.constructor.name + ' does not implement apply');
 };
 
+// saving and loading blueprints
+// register constructors by name so we can load saved blueprints
+exports.loaders = {};
+
 exports.Action = BlueprintAction;
 
 

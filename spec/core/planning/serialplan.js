@@ -234,5 +234,9 @@ describe('serialplan', function() {
         'SerialAction', 'SerialAction'
       ]);
     });
+
+    describe('save & load', function() {
+      it.skip('loaded can be used in a plan');
+    }); // end save & load
   }); // end SerialPlan
 }); // end serialplan
