@@ -109,6 +109,12 @@ describe('serialplan', function() {
     expect(sp.cost(start, goal)).to.equal(2); // start:0 goal:1 + runCost()
   });
 
+  // is there a way that we can determine that a solution is unreachable without running astar to oblivion?
+  // something like:
+  //  'a value needs to change, and none of our plans will change that unit'
+  //  'there is no way to change that unit in that direction'
+  it.skip('create: fail when impossible');
+
   describe('SerialPlan', function() {
     it('runCost', function() {
       var sp = serialplan.create(start, goal);

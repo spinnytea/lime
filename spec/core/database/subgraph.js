@@ -230,9 +230,42 @@ describe('subgraph', function() {
         expect(result.length).to.equal(0);
       });
 
-      it.skip('number: function');
+      it('number: function', function() {
+        var unit = tools.ideas.create();
+        var idea = tools.ideas.create({ value: number.value(10), unit: unit.id });
 
-      it.skip('number: basic search');
+        expect(subgraph.matcher.data.number(idea, { value: number.value(10), unit: unit.id })).to.equal(true);
+        expect(subgraph.matcher.data.number(idea, { value: number.value(0, 100), unit: unit.id })).to.equal(true);
+
+        expect(subgraph.matcher.data.number(idea, { value: number.value(10), unit: '_'+unit.id })).to.equal(false);
+        expect(subgraph.matcher.data.number(idea, { value: number.value(10) })).to.equal(false);
+        expect(subgraph.matcher.data.number(idea, { unit: unit.id })).to.equal(false);
+        expect(subgraph.matcher.data.number(idea)).to.equal(false);
+      });
+
+      it('number: basic search', function() {
+        var unit = tools.ideas.create();
+        var mark = tools.ideas.create();
+        var apple = tools.ideas.create({ value: number.value(2), unit: unit.id });
+        mark.link(links.list.thought_description, apple);
+
+        var sg = new subgraph.Subgraph();
+        var m = sg.addVertex(subgraph.matcher.id, mark.id);
+        var a = sg.addVertex(subgraph.matcher.data.number, { value: number.value(0, Infinity), unit: unit.id });
+        sg.addEdge(m, links.list.thought_description, a);
+
+        var result = subgraph.search(sg);
+        expect(result.length).to.equal(1);
+
+        // fail
+        sg = new subgraph.Subgraph();
+        m = sg.addVertex(subgraph.matcher.id, mark.id);
+        a = sg.addVertex(subgraph.matcher.data.number, { value: number.value(0), unit: unit.id });
+        sg.addEdge(m, links.list.thought_description, a);
+
+        result = subgraph.search(sg);
+        expect(result.length).to.equal(0);
+      });
     }); // end data
   }); // end matchers
 
@@ -523,7 +556,7 @@ describe('subgraph', function() {
     });
 
     // how do you even test srcMapped, !srcMapped, dstMapped, !dstMapped
-    it.skip('match filter');
+    it.skip('mapped branching');
 
     it('fail', function() {
       var result = subgraph.match(outer, new subgraph.Subgraph());
