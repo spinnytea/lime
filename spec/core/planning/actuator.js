@@ -60,14 +60,10 @@ describe('actuator', function() {
   });
 
   it('runCost', function() {
-    var a = new actuator.Action();
-    expect(a.runCost()).to.equal(0);
-
-    // we 'should' pass in a valid transition
-    // but then we 'should' setup everything else
-    a = new actuator.Action();
-    a.transitions.push({});
     expect(a.runCost()).to.equal(1);
+
+    a = new actuator.Action();
+    expect(a.runCost()).to.equal(0);
   });
 
   it('tryTransition', function() {
