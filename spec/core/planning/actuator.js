@@ -93,8 +93,21 @@ describe('actuator', function() {
       expect(actionImplCount).to.equal(1); // action has been called
     });
 
-    it.skip('cost');
-    it.skip('cost: when action cannot be applied');
+    it('cost', function() {
+      expect(actionImplCount).to.equal(0);
+
+      var goal = new blueprint.State(bs.state.copy(), [a]);
+      goal.state.vertices[p].data = { value: number.value(30), unit: money.id };
+
+      // distance of 20, action costs 1
+      expect(a.cost(bs, goal)).to.equal(21);
+
+      // action cannot be applied
+      a.requirements.vertices[a_p].matchData.value = number.value(0);
+      expect(a.cost(bs, goal)).to.equal(Infinity);
+
+      expect(actionImplCount).to.equal(0);
+    });
 
     it('apply', function() {
       expect(actionImplCount).to.equal(0);
