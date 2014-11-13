@@ -29,7 +29,7 @@ describe('serialplan', function() {
     // since this action can be applied to any count..
     // athing -> {value: ...}
     a = new actuator.Action();
-    a_c = a.requirements.addVertex(subgraph.matcher.data.number, { value: number.value(0, 10), unit: count_unit.id }, true);
+    a_c = a.requirements.addVertex(subgraph.matcher.number, { value: number.value(0, 10), unit: count_unit.id }, true);
     a.requirements.addEdge(
       a.requirements.addVertex(subgraph.matcher.id, athing),
       links.list.thought_description,

@@ -29,7 +29,7 @@ describe('actuator', function() {
     // create an action
     // it will add 20 to the price
     a = new actuator.Action();
-    a_p = a.requirements.addVertex(subgraph.matcher.data.number, { value: number.value(0, Infinity), unit: money.id }, true);
+    a_p = a.requirements.addVertex(subgraph.matcher.number, { value: number.value(0, Infinity), unit: money.id }, true);
     a_a = a.requirements.addVertex(subgraph.matcher.id, apple);
     a.requirements.addEdge(
       a_a,

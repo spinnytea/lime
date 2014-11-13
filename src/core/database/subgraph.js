@@ -127,21 +127,19 @@ exports.matcher = {
   filler: function() {
     return true;
   },
-  data: {
-    exact: function(idea, matchData) {
-      return _.isEqual(idea.data(), matchData);
-    },
-    similar: function(idea, matchData) {
-      // FIXME this implementation is bad and I should feel bad
 
-      // matchData should be contained within data
-      var data = idea.data();
-      return _.isEqual(data, _.merge(_.cloneDeep(data), matchData));
-    },
-    number: function(idea, matchData) {
-      var data = idea.data();
-      return number.difference(data, matchData) === 0;
-    },
+  exact: function(idea, matchData) {
+    return _.isEqual(idea.data(), matchData);
+  },
+  similar: function(idea, matchData) {
+    // FIXME this implementation is bad and I should feel bad
+    // matchData should be contained within data
+    var data = idea.data();
+    return _.isEqual(data, _.merge(_.cloneDeep(data), matchData));
+  },
+  number: function(idea, matchData) {
+    var data = idea.data();
+    return number.difference(data, matchData) === 0;
   },
 };
 

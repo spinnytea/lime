@@ -13,8 +13,7 @@ describe('subgraph', function() {
     // this is to ensure we test everything
     expect(Object.keys(subgraph)).to.deep.equal(['Subgraph', 'matcher', 'search', 'match', 'rewrite']);
     expect(Object.keys(subgraph.Subgraph.prototype)).to.deep.equal(['copy', 'addVertex', 'addEdge']);
-    expect(Object.keys(subgraph.matcher)).to.deep.equal(['id', 'filler', 'data']);
-    expect(Object.keys(subgraph.matcher.data)).to.deep.equal(['exact', 'similar', 'number']);
+    expect(Object.keys(subgraph.matcher)).to.deep.equal(['id', 'filler', 'exact', 'similar', 'number']);
   });
 
   describe('Subgraph', function() {
@@ -157,116 +156,114 @@ describe('subgraph', function() {
       expect(sg.vertices[a].idea.id).to.equal(apple.id);
     });
 
-    describe('data', function() {
-      it('exact: function', function() {
-        var idea = tools.ideas.create({'thing': 3.14});
+    it('exact: function', function() {
+      var idea = tools.ideas.create({'thing': 3.14});
 
-        expect(subgraph.matcher.data.exact(idea, {'thing': 3.14})).to.equal(true);
-        expect(subgraph.matcher.data.exact(idea, {'thing': 6.28})).to.equal(false);
-        expect(subgraph.matcher.data.exact(idea, {})).to.equal(false);
-      });
+      expect(subgraph.matcher.exact(idea, {'thing': 3.14})).to.equal(true);
+      expect(subgraph.matcher.exact(idea, {'thing': 6.28})).to.equal(false);
+      expect(subgraph.matcher.exact(idea, {})).to.equal(false);
+    });
 
-      it('exact: basic search', function() {
-        var mark = tools.ideas.create();
-        var apple = tools.ideas.create({'thing': 3.14});
-        mark.link(links.list.thought_description, apple);
+    it('exact: basic search', function() {
+      var mark = tools.ideas.create();
+      var apple = tools.ideas.create({'thing': 3.14});
+      mark.link(links.list.thought_description, apple);
 
-        var sg = new subgraph.Subgraph();
-        var m = sg.addVertex(subgraph.matcher.id, mark.id);
-        var a = sg.addVertex(subgraph.matcher.data.exact, {'thing': 3.14});
-        sg.addEdge(m, links.list.thought_description, a);
+      var sg = new subgraph.Subgraph();
+      var m = sg.addVertex(subgraph.matcher.id, mark.id);
+      var a = sg.addVertex(subgraph.matcher.exact, {'thing': 3.14});
+      sg.addEdge(m, links.list.thought_description, a);
 
-        var result = subgraph.search(sg);
-        expect(result.length).to.equal(1);
-        expect(sg).to.equal(result[0]);
+      var result = subgraph.search(sg);
+      expect(result.length).to.equal(1);
+      expect(sg).to.equal(result[0]);
 
-        expect(sg.vertices[m].idea.id).to.equal(mark.id);
-        expect(sg.vertices[a].idea.id).to.equal(apple.id);
+      expect(sg.vertices[m].idea.id).to.equal(mark.id);
+      expect(sg.vertices[a].idea.id).to.equal(apple.id);
 
-        // fail
-        sg = new subgraph.Subgraph();
-        m = sg.addVertex(subgraph.matcher.id, mark.id);
-        a = sg.addVertex(subgraph.matcher.data.exact, {'thing': 2.71});
-        sg.addEdge(m, links.list.thought_description, a);
+      // fail
+      sg = new subgraph.Subgraph();
+      m = sg.addVertex(subgraph.matcher.id, mark.id);
+      a = sg.addVertex(subgraph.matcher.exact, {'thing': 2.71});
+      sg.addEdge(m, links.list.thought_description, a);
 
-        result = subgraph.search(sg);
-        expect(result.length).to.equal(0);
-      });
+      result = subgraph.search(sg);
+      expect(result.length).to.equal(0);
+    });
 
-      it('similar: function', function() {
-        var idea = tools.ideas.create({'thing1': 3.14, 'thing2': 2.71});
+    it('similar: function', function() {
+      var idea = tools.ideas.create({'thing1': 3.14, 'thing2': 2.71});
 
-        expect(subgraph.matcher.data.similar(idea, {'thing1': 3.14})).to.equal(true);
-        expect(subgraph.matcher.data.similar(idea, {'thing2': 2.71})).to.equal(true);
-        expect(subgraph.matcher.data.similar(idea, {})).to.equal(true);
-        expect(subgraph.matcher.data.similar(idea)).to.equal(true);
-        expect(subgraph.matcher.data.similar(idea, {'thing2': 42})).to.equal(false);
-        expect(subgraph.matcher.data.similar(idea, {'others': 42})).to.equal(false);
+      expect(subgraph.matcher.similar(idea, {'thing1': 3.14})).to.equal(true);
+      expect(subgraph.matcher.similar(idea, {'thing2': 2.71})).to.equal(true);
+      expect(subgraph.matcher.similar(idea, {})).to.equal(true);
+      expect(subgraph.matcher.similar(idea)).to.equal(true);
+      expect(subgraph.matcher.similar(idea, {'thing2': 42})).to.equal(false);
+      expect(subgraph.matcher.similar(idea, {'others': 42})).to.equal(false);
 
-        // the data shouldn't have been changed after any of this
-        expect(idea.data()).to.deep.equal({'thing1': 3.14, 'thing2': 2.71});
-      });
+      // the data shouldn't have been changed after any of this
+      expect(idea.data()).to.deep.equal({'thing1': 3.14, 'thing2': 2.71});
+    });
 
-      it('similar: basic search', function() {
-        var mark = tools.ideas.create();
-        var apple = tools.ideas.create({'thing1': 3.14, 'thing2': 2.71});
-        mark.link(links.list.thought_description, apple);
+    it('similar: basic search', function() {
+      var mark = tools.ideas.create();
+      var apple = tools.ideas.create({'thing1': 3.14, 'thing2': 2.71});
+      mark.link(links.list.thought_description, apple);
 
-        var sg = new subgraph.Subgraph();
-        var m = sg.addVertex(subgraph.matcher.id, mark.id);
-        var a = sg.addVertex(subgraph.matcher.data.similar, {'thing1': 3.14});
-        sg.addEdge(m, links.list.thought_description, a);
+      var sg = new subgraph.Subgraph();
+      var m = sg.addVertex(subgraph.matcher.id, mark.id);
+      var a = sg.addVertex(subgraph.matcher.similar, {'thing1': 3.14});
+      sg.addEdge(m, links.list.thought_description, a);
 
-        var result = subgraph.search(sg);
-        expect(result.length).to.equal(1);
+      var result = subgraph.search(sg);
+      expect(result.length).to.equal(1);
 
-        // fail
-        sg = new subgraph.Subgraph();
-        m = sg.addVertex(subgraph.matcher.id, mark.id);
-        a = sg.addVertex(subgraph.matcher.data.similar, {'asdfasdfasdf': 1234});
-        sg.addEdge(m, links.list.thought_description, a);
+      // fail
+      sg = new subgraph.Subgraph();
+      m = sg.addVertex(subgraph.matcher.id, mark.id);
+      a = sg.addVertex(subgraph.matcher.similar, {'asdfasdfasdf': 1234});
+      sg.addEdge(m, links.list.thought_description, a);
 
-        result = subgraph.search(sg);
-        expect(result.length).to.equal(0);
-      });
+      result = subgraph.search(sg);
+      expect(result.length).to.equal(0);
+    });
 
-      it('number: function', function() {
-        var unit = tools.ideas.create();
-        var idea = tools.ideas.create({ value: number.value(10), unit: unit.id });
+    it('number: function', function() {
+      var unit = tools.ideas.create();
+      var idea = tools.ideas.create({ value: number.value(10), unit: unit.id });
 
-        expect(subgraph.matcher.data.number(idea, { value: number.value(10), unit: unit.id })).to.equal(true);
-        expect(subgraph.matcher.data.number(idea, { value: number.value(0, 100), unit: unit.id })).to.equal(true);
+      expect(subgraph.matcher.number(idea, { value: number.value(10), unit: unit.id })).to.equal(true);
+      expect(subgraph.matcher.number(idea, { value: number.value(0, 100), unit: unit.id })).to.equal(true);
 
-        expect(subgraph.matcher.data.number(idea, { value: number.value(10), unit: '_'+unit.id })).to.equal(false);
-        expect(subgraph.matcher.data.number(idea, { value: number.value(10) })).to.equal(false);
-        expect(subgraph.matcher.data.number(idea, { unit: unit.id })).to.equal(false);
-        expect(subgraph.matcher.data.number(idea)).to.equal(false);
-      });
+      expect(subgraph.matcher.number(idea, { value: number.value(10), unit: '_'+unit.id })).to.equal(false);
+      expect(subgraph.matcher.number(idea, { value: number.value(10) })).to.equal(false);
+      expect(subgraph.matcher.number(idea, { unit: unit.id })).to.equal(false);
+      expect(subgraph.matcher.number(idea)).to.equal(false);
+    });
 
-      it('number: basic search', function() {
-        var unit = tools.ideas.create();
-        var mark = tools.ideas.create();
-        var apple = tools.ideas.create({ value: number.value(2), unit: unit.id });
-        mark.link(links.list.thought_description, apple);
+    it('number: basic search', function() {
+      var unit = tools.ideas.create();
+      var mark = tools.ideas.create();
+      var apple = tools.ideas.create({ value: number.value(2), unit: unit.id });
+      mark.link(links.list.thought_description, apple);
 
-        var sg = new subgraph.Subgraph();
-        var m = sg.addVertex(subgraph.matcher.id, mark.id);
-        var a = sg.addVertex(subgraph.matcher.data.number, { value: number.value(0, Infinity), unit: unit.id });
-        sg.addEdge(m, links.list.thought_description, a);
+      var sg = new subgraph.Subgraph();
+      var m = sg.addVertex(subgraph.matcher.id, mark.id);
+      var a = sg.addVertex(subgraph.matcher.number, { value: number.value(0, Infinity), unit: unit.id });
+      sg.addEdge(m, links.list.thought_description, a);
 
-        var result = subgraph.search(sg);
-        expect(result.length).to.equal(1);
+      var result = subgraph.search(sg);
+      expect(result.length).to.equal(1);
 
-        // fail
-        sg = new subgraph.Subgraph();
-        m = sg.addVertex(subgraph.matcher.id, mark.id);
-        a = sg.addVertex(subgraph.matcher.data.number, { value: number.value(0), unit: unit.id });
-        sg.addEdge(m, links.list.thought_description, a);
+      // fail
+      sg = new subgraph.Subgraph();
+      m = sg.addVertex(subgraph.matcher.id, mark.id);
+      a = sg.addVertex(subgraph.matcher.number, { value: number.value(0), unit: unit.id });
+      sg.addEdge(m, links.list.thought_description, a);
 
-        result = subgraph.search(sg);
-        expect(result.length).to.equal(0);
-      });
-    }); // end data
+      result = subgraph.search(sg);
+      expect(result.length).to.equal(0);
+    });
   }); // end matchers
 
   describe('search', function() {
@@ -334,7 +331,7 @@ describe('subgraph', function() {
       var sg = new subgraph.Subgraph();
       var m = sg.addVertex(subgraph.matcher.id, mark);
       var a = sg.addVertex(subgraph.matcher.filler);
-      sg.addVertex(subgraph.matcher.data.similar, {value: 10});
+      sg.addVertex(subgraph.matcher.similar, {value: 10});
       sg.addEdge(m, links.list.thought_description, a);
 
       expect(subgraph.search(sg)).to.deep.equal([]);
@@ -354,10 +351,10 @@ describe('subgraph', function() {
       var sg = new subgraph.Subgraph();
       var m = sg.addVertex(subgraph.matcher.id, mark);
       var a = sg.addVertex(subgraph.matcher.filler);
-      var p = sg.addVertex(subgraph.matcher.data.similar, {value: 10});
+      var p = sg.addVertex(subgraph.matcher.similar, {value: 10});
       sg.addEdge(m, links.list.thought_description, a);
       sg.addEdge(a, links.list.thought_description, p);
-      var bp = sg.addVertex(subgraph.matcher.data.similar, {value: 20});
+      var bp = sg.addVertex(subgraph.matcher.similar, {value: 20});
 
       // save the setup so far
       var sg2 = sg.copy();
@@ -488,7 +485,7 @@ describe('subgraph', function() {
           var sg = new subgraph.Subgraph();
           var m = sg.addVertex(subgraph.matcher.id, mark);
           var a = sg.addVertex(subgraph.matcher.filler);
-          var p = sg.addVertex(subgraph.matcher.data.similar, {value: 10});
+          var p = sg.addVertex(subgraph.matcher.similar, {value: 10});
           sg.addEdge(m, links.list.thought_description, a);
           sg.addEdge(a, links.list.thought_description, p);
 
@@ -517,7 +514,7 @@ describe('subgraph', function() {
       expect(sg.concrete).to.equal(true);
 
       // add more criteria
-      var p = sg.addVertex(subgraph.matcher.data.similar, {value: 10});
+      var p = sg.addVertex(subgraph.matcher.similar, {value: 10});
       sg.addEdge(a, links.list.thought_description, p);
 
       expect(sg.concrete).to.equal(false);
@@ -540,7 +537,7 @@ describe('subgraph', function() {
       outer = new subgraph.Subgraph();
       m = outer.addVertex(subgraph.matcher.id, mark);
       a = outer.addVertex(subgraph.matcher.filler);
-      p = outer.addVertex(subgraph.matcher.data.similar, {value: number.value(10)});
+      p = outer.addVertex(subgraph.matcher.similar, {value: number.value(10)});
       outer.addEdge(m, links.list.thought_description, a);
       outer.addEdge(a, links.list.thought_description, p);
 
@@ -569,7 +566,7 @@ describe('subgraph', function() {
 
     it('success single', function() {
       var sg = new subgraph.Subgraph();
-      var _p = sg.addVertex(subgraph.matcher.data.similar, {value: number.value(10)});
+      var _p = sg.addVertex(subgraph.matcher.similar, {value: number.value(10)});
       var _m = sg.addVertex(subgraph.matcher.id, mark);
       var _a = sg.addVertex(subgraph.matcher.filler);
       sg.addEdge(_m, links.list.thought_description, _a);
@@ -652,7 +649,7 @@ describe('subgraph', function() {
       var sg = new subgraph.Subgraph();
       var _m = sg.addVertex(subgraph.matcher.id, mark);
       var _a = sg.addVertex(subgraph.matcher.filler);
-      sg.addVertex(subgraph.matcher.data.similar, {value: 10});
+      sg.addVertex(subgraph.matcher.similar, {value: 10});
       sg.addEdge(_m, links.list.thought_description, _a);
 
       var result = subgraph.match(outer, sg);
@@ -665,7 +662,7 @@ describe('subgraph', function() {
       banana.link(links.list.thought_description, bprice);
 
       var b = outer.addVertex(subgraph.matcher.id, banana);
-      var bp = outer.addVertex(subgraph.matcher.data.similar, {value: 20});
+      var bp = outer.addVertex(subgraph.matcher.similar, {value: 20});
       outer.addEdge(b, links.list.thought_description, bp);
       subgraph.search(outer);
 
@@ -675,11 +672,11 @@ describe('subgraph', function() {
       var sg = new subgraph.Subgraph();
       var _m = sg.addVertex(subgraph.matcher.id, mark);
       var _a = sg.addVertex(subgraph.matcher.filler);
-      var _p = sg.addVertex(subgraph.matcher.data.similar, {value: number.value(10)});
+      var _p = sg.addVertex(subgraph.matcher.similar, {value: number.value(10)});
       sg.addEdge(_m, links.list.thought_description, _a);
       sg.addEdge(_a, links.list.thought_description, _p);
       var _b = sg.addVertex(subgraph.matcher.filler);
-      var _bp = sg.addVertex(subgraph.matcher.data.similar, {value: 20});
+      var _bp = sg.addVertex(subgraph.matcher.similar, {value: 20});
       sg.addEdge(_b, links.list.thought_description, _bp);
 
       var result = subgraph.match(outer, sg);
