@@ -43,6 +43,23 @@ describe('number', function() {
     expect(number.isNumber({ value: { bl: true, l: 1, r: 1, br: true }, unit: 'test' })).to.deep.equal(true);
   });
 
+  it('isNumber; stringified', function() {
+    var val = num(Infinity);
+    expect(val.value.l).to.equal(Infinity);
+
+    // after we stringify the value, Infinity turns to null
+    val = JSON.parse(JSON.stringify(val));
+    expect(val.value.l).to.equal(null);
+
+    // after we check is number on the value, then null should become Infinity
+    expect(number.isNumber(val)).to.equal(true);
+    expect(val.value.l).to.equal(Infinity);
+
+    // after all that, we should have the original value
+    expect(val).to.deep.equal(num(Infinity));
+  });
+  it.skip('isNumber: do we need to convert number.value.l to Infinity if no type specified?');
+
   it('value', function() {
     // test our gen function, since it is complex, and we use it a lot
     expect(number.value(0)).to.deep.equal({ bl: true, l: 0, r: 0, br: true });
@@ -56,8 +73,11 @@ describe('number', function() {
     expect(number.value(0, 1, true, false)).to.deep.equal({ bl: true, l: 0, r: 1, br: false });
     expect(number.value(0, 1, false, true)).to.deep.equal({ bl: false, l: 0, r: 1, br: true });
 
-    expect(num(0)).to.deep.equal({ type: 'lime_number', value: { bl: true, l: 0, r: 0, br: true, }, unit: 'test' });
-    expect(num(0, 1, true, false)).to.deep.equal({ type: 'lime_number', value: { bl: true, l: 0, r: 1, br: false, }, unit: 'test' });
+    expect(num(0)).to.deep.equal({ type: 'lime_number', value: { bl: true, l: 0, r: 0, br: true }, unit: 'test' });
+    expect(num(0, 1, true, false)).to.deep.equal({ type: 'lime_number', value: { bl: true, l: 0, r: 1, br: false }, unit: 'test' });
+
+    // auto unbound Infinity
+    expect(number.value(Infinity, Infinity, true, true)).to.deep.equal({ bl: false, l: Infinity, r: Infinity, br: false });
   });
 
   it('combine', function() {

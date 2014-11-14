@@ -13,14 +13,31 @@ exports.isNumber = function(obj) {
   if(typeof obj !== 'object')
     return false;
 
-  if(obj.type)
-    return obj.type === typeName;
+  if(obj.type) {
+    if(obj.type === typeName) {
+      if(obj.value.l === null) {
+        if(obj.value.bl)
+          return false;
+        obj.value.l = Infinity;
+      }
+
+      if(obj.value.r === null) {
+        if(obj.value.br)
+          return false;
+        obj.value.r = Infinity;
+      }
+
+      return true;
+    } else {
+      return false;
+    }
+  }
 
   if(!(typeof obj.unit === 'string' &&
     typeof obj.value === 'object' &&
     typeof obj.value.bl === 'boolean' &&
-    typeof obj.value.l === 'number' &&
-    typeof obj.value.r === 'number' &&
+    (typeof obj.value.l === 'number' || obj.value.l === null) &&
+    (typeof obj.value.r === 'number' || obj.value.r === null) &&
     typeof obj.value.br === 'boolean' &&
     obj.value.l <= obj.value.r
   ))
@@ -44,6 +61,9 @@ exports.value = function() {
     bl = typeof arguments[1] === 'boolean' ? arguments[1] : true;
     br = typeof arguments[2] === 'boolean' ? arguments[2] : bl;
   }
+
+  if(r === Infinity) br = false;
+  if(l === Infinity) bl = false;
 
   return { bl: bl, l: l, r: r, br: br };
 };
