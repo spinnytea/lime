@@ -4,6 +4,7 @@ var _ = require('lodash');
 var expect = require('chai').expect;
 var actuator = require('../../../src/core/planning/actuator');
 var blueprint = require('../../../src/core/planning/primitives/blueprint');
+var config = require('../../../config');
 var links = require('../../../src/core/database/links');
 var number = require('../../../src/core/planning/primitives/number');
 var serialplan = require('../../../src/core/planning/serialplan');
@@ -11,6 +12,7 @@ var subgraph = require('../../../src/core/database/subgraph');
 var tools = require('../testingTools');
 
 describe('serialplan', function() {
+  it.skip('can we reduce the setup for these tests; can we use "before" instead of "beforeEach"');
   var count;
   var a, a_c, actionImplCount;
   var start, state_count, goal;
@@ -79,8 +81,12 @@ describe('serialplan', function() {
     expect(sp.plans.length).to.equal(5);
 
     // there is no way to create a plan to get here
+    // since we know this test can't finish, lets minimize the depth it has to search for our test
+    var before = config.data.astar_max_paths;
+    config.data.astar_max_paths = 10;
     sp = serialplan.create(goal, start);
     expect(sp).to.not.be.ok;
+    config.data.astar_max_paths = before;
 
     // only one step away
     goal.state.vertices[state_count].data.value = number.value(1);

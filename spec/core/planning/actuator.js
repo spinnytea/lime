@@ -10,6 +10,7 @@ var subgraph = require('../../../src/core/database/subgraph');
 var tools = require('../testingTools');
 
 describe('actuator', function() {
+  it.skip('can we reduce the setup for these tests; can we use "before" instead of "beforeEach"');
   it('init', function() {
     // this is to ensure we test everything
     expect(Object.keys(actuator.Action.prototype)).to.deep.equal(['runCost', 'tryTransition', 'runBlueprint', 'cost', 'apply', 'actionImpl']);
