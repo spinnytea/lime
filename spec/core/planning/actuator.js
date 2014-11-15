@@ -4,6 +4,7 @@ var expect = require('chai').expect;
 var actuator = require('../../../src/core/planning/actuator');
 var astar = require('../../../src/core/planning/algorithms/astar');
 var blueprint = require('../../../src/core/planning/primitives/blueprint');
+var ideas = require('../../../src/core/database/ideas');
 var links = require('../../../src/core/database/links');
 var number = require('../../../src/core/planning/primitives/number');
 var subgraph = require('../../../src/core/database/subgraph');
@@ -14,7 +15,7 @@ describe('actuator', function() {
   it('init', function() {
     // this is to ensure we test everything
     expect(Object.keys(actuator)).to.deep.equal(['Action', 'actions']);
-    expect(Object.keys(actuator.Action.prototype)).to.deep.equal(['runCost', 'tryTransition', 'runBlueprint', 'cost', 'apply']);
+    expect(Object.keys(actuator.Action.prototype)).to.deep.equal(['runCost', 'tryTransition', 'runBlueprint', 'cost', 'apply', 'save']);
   });
 
   var money, price; // our idea graph is .. money
@@ -128,6 +129,33 @@ describe('actuator', function() {
     expect(actionImplCount).to.equal(0);
   });
 
+  it('save & load', function() {
+    // before an action is saved, there is no idea
+    expect(a.idea).to.not.be.ok;
+    a.save();
+    expect(a.idea).to.be.ok;
+    // if we save again, it should use the same idea
+    var id = a.idea;
+    a.save();
+    expect(a.idea).to.equal(id);
+
+    // this is important, we need to serialize the object
+    ideas.close(id);
+
+    var loaded = blueprint.load(id);
+    expect(loaded).to.be.ok;
+
+    // this is the ultimate test of the load
+    expect(loaded).to.deep.equal(a);
+    // sans using the actuator in battle
+    expect(a.tryTransition(bs).length).to.equal(1);
+    a.runBlueprint(bs, a.tryTransition(bs)[0]);
+    expect(actionImplCount).to.equal(1);
+
+    tools.ideas.clean(id);
+  });
+  it('save & load: use loaded plan');
+
   it('basic planning', function() {
     expect(astar).to.have.property('search');
 
@@ -148,8 +176,4 @@ describe('actuator', function() {
 
     expect(path.actions).to.deep.equal([a, a]);
   });
-
-  describe('save & load', function() {
-    it.skip('loaded can be used in a plan');
-  }); // end save & load
 }); // end actuator

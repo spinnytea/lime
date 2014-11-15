@@ -9,6 +9,7 @@
 // and then set the a.action to the name of that action
 var _ = require('lodash');
 var blueprint = require('./primitives/blueprint');
+var ideas = require('../database/ideas');
 var subgraph = require('../database/subgraph');
 
 function ActuatorAction() {
@@ -74,8 +75,36 @@ ActuatorAction.prototype.apply = function(state, glue) {
   return new blueprint.State(subgraph.rewrite(state.state, ts, false), state.availableActions);
 };
 
+// blueprint.save
+ActuatorAction.prototype.save = function() {
+  var idea;
+  if(this.idea)
+    idea = ideas.load(this.idea);
+  else {
+    idea = ideas.create();
+    this.idea = idea.id;
+  }
+
+  idea.update({
+    type: 'blueprint',
+    subtype: 'ActuatorAction',
+    blueprint: {
+      idea: this.idea,
+      requirements: subgraph.stringify(this.requirements),
+      transitions: this.transitions,
+      action: this.action
+    }
+  });
+};
+
 exports.Action = ActuatorAction;
-blueprint.loaders.ActuatorAction = function() {
+blueprint.loaders.ActuatorAction = function(blueprint) {
+  var a = new ActuatorAction();
+  a.idea = blueprint.idea;
+  a.requirements = subgraph.parse(blueprint.requirements);
+  a.transitions = blueprint.transitions;
+  a.action = blueprint.action;
+  return a;
 };
 
 

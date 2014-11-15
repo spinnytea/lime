@@ -294,6 +294,10 @@ describe('subgraph', function() {
     expect(sg.concrete).to.equal(true);
     expect(sg.vertices[m].idea.id).to.equal(mark.id);
     expect(sg.vertices[a].idea.id).to.equal(apple.id);
+
+    // we can copy this for other tests
+    // (usually during debugging or something)
+    expect(subgraph.parse(subgraph.stringify(sg))).to.deep.equal(sg);
   });
 
   describe('search', function() {

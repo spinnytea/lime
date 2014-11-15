@@ -74,6 +74,7 @@ Subgraph.prototype.addVertex = function(matcher, matchData, transitionable) {
   });
 
   if(matcher === exports.matcher.id) {
+    v.matchData = (matchData.id || matchData);
     this.vertices[id].idea = ideas.proxy(matchData);
   } else {
     this.concrete = false;
@@ -130,7 +131,7 @@ exports.Subgraph = Subgraph;
 exports.matcher = {
   id: function id(idea, matchData) {
     // XXX this could be an empty object
-    return (matchData.id || matchData) === idea.id;
+    return matchData === idea.id;
   },
   filler: function filler() {
     return true;
@@ -194,6 +195,8 @@ exports.parse = function(str) {
   str.edges.forEach(function(e) {
     sg.addEdge(e.src, links.list[e.link], e.dst, e.pref);
   });
+
+  sg.concrete = str.concrete;
 
   return sg;
 };
