@@ -13,7 +13,8 @@ describe('actuator', function() {
   it.skip('can we reduce the setup for these tests; can we use "before" instead of "beforeEach"');
   it('init', function() {
     // this is to ensure we test everything
-    expect(Object.keys(actuator.Action.prototype)).to.deep.equal(['runCost', 'tryTransition', 'runBlueprint', 'cost', 'apply', 'actionImpl']);
+    expect(Object.keys(actuator)).to.deep.equal(['Action', 'actions']);
+    expect(Object.keys(actuator.Action.prototype)).to.deep.equal(['runCost', 'tryTransition', 'runBlueprint', 'cost', 'apply']);
   });
 
   var money, price; // our idea graph is .. money
@@ -39,7 +40,8 @@ describe('actuator', function() {
     );
     a.transitions.push({ vertex_id: a_p, combine: { value: number.value(20), unit: money.id } });
     actionImplCount = 0;
-    a.actionImpl = function() { actionImplCount++; };
+    actuator.actions.actuator_count_test = function() { actionImplCount++; };
+    a.action = 'actuator_count_test';
 
     // create a state
     // our state is a price of 10

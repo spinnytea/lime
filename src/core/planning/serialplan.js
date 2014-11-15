@@ -110,7 +110,9 @@ SerialAction.prototype.apply = function(state, glue) {
 };
 
 exports.Action = SerialAction;
-blueprint.loaders.SerialAction = SerialAction;
+blueprint.loaders.SerialAction = function() {
+};
+
 
 // create a serial plan
 // @param start: blueprint.State

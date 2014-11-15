@@ -39,7 +39,8 @@ describe('serialplan', function() {
     );
     a.transitions.push({ vertex_id: a_c, combine: { value: number.value(1), unit: count_unit.id } });
     actionImplCount = 0;
-    a.actionImpl = function() { actionImplCount++; }; // XXX is this check necessary?
+    actuator.actions.serialplan_count_test = function() { actionImplCount++; };
+    a.action = 'serialplan_count_test';
 
 
     // the state is based on concrete ideas

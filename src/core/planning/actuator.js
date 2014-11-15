@@ -4,7 +4,9 @@
 // when we create this class, we still need a callback that will affect the actual world
 // - (e.g. the "turn motor" function)
 //
-// If you want this action to interact with the world, replace the actionImpl function
+// If you want this action to interact with the world,
+// you need to statically register a function with actuator.actions
+// and then set the a.action to the name of that action
 var _ = require('lodash');
 var blueprint = require('./primitives/blueprint');
 var subgraph = require('../database/subgraph');
@@ -15,10 +17,16 @@ function ActuatorAction() {
   // subgraph.rewrite.transitions
   // how does this actuator affect the world
   this.transitions = [];
+
+  // the name of the action to use
+  this.action = null;
 }
 _.extend(ActuatorAction.prototype, blueprint.Action.prototype);
 
 // blueprint.runCost
+// TODO this run cost needs to be influence by the weight of the actions
+// - sand != diamond
+// - 3 oz of Carbon Fiber vs 2 lbs of Cereal
 ActuatorAction.prototype.runCost = function() {
   return this.transitions.length;
 };
@@ -46,7 +54,8 @@ ActuatorAction.prototype.runBlueprint = function(state, glue) {
   });
 
   // interact with the world
-  this.actionImpl();
+  if(this.action)
+    exports.actions[this.action]();
 
   // predict the outcome (update what we thing is true)
   // apply the action through to the thought graph
@@ -65,9 +74,11 @@ ActuatorAction.prototype.apply = function(state, glue) {
   return new blueprint.State(subgraph.rewrite(state.state, ts, false), state.availableActions);
 };
 
-// no op function
-// this should replaced by anything that wants to actually do work
-ActuatorAction.prototype.actionImpl = function() {};
-
 exports.Action = ActuatorAction;
-blueprint.loaders.ActuatorAction = ActuatorAction;
+blueprint.loaders.ActuatorAction = function() {
+};
+
+
+// due to serialization of javascript objects...
+// all action impls must be registered here
+exports.actions = {};
