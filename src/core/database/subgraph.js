@@ -2,7 +2,6 @@
 var _ = require('lodash');
 var ideas = require('./ideas');
 var links = require('./links');
-var ids = require('../ids');
 var discrete = require('../planning/primitives/discrete');
 
 // this import needs to be a different name because we have exports.matcher.number
@@ -16,9 +15,7 @@ var numnum = require('../planning/primitives/number');
 // you define the shape the graph you want to find, each node has it's own matcher
 
 function Subgraph() {
-  this.prevVertexId = undefined; // initially undefined
-
-  this.vertices = {};
+  this.vertices = [];
   this.edges = [];
 
   // true
@@ -30,8 +27,7 @@ function Subgraph() {
 }
 Subgraph.prototype.copy = function() {
   var sg = new Subgraph();
-  sg.prevVertexId = this.prevVertexId;
-  _.forIn(this.vertices, function(v) {
+  this.vertices.forEach(function(v) {
     var copy = _.clone(v);
     sg.vertices[v.vertex_id] = copy;
 
@@ -55,7 +51,7 @@ Subgraph.prototype.copy = function() {
 // @param transitionable: is this part of a transition (subgraph.rewrite, blueprints, etc)
 //  - subgraph.rewrite(transitions);
 Subgraph.prototype.addVertex = function(matcher, matchData, transitionable) {
-  var id = (this.prevVertexId = ids.next.anonymous(this.prevVertexId));
+  var id = this.vertices.length;
   var v = this.vertices[id] = {
     vertex_id: id,
 
@@ -164,7 +160,7 @@ exports.stringify = function(sg) {
 
   // convert the verticies
   // _.map will flatten it into an array, but we store the id anyway
-  sg.vertices = _.map(sg.vertices, function(v) {
+  sg.vertices = sg.vertices.map(function(v) {
     v.matches = v.matches.name;
     if(v.idea)
       v.idea = v.idea.id;
@@ -276,12 +272,10 @@ exports.search = function(subgraph) {
   // there are no edges that can be expanded
   if(nextSteps.length === 0) {
     // check all vertices to ensure they all have ideas defined
-    var allVertices = true;
-    _.forIn(subgraph.vertices, function(v) {
+    if(!subgraph.vertices.every(function(v) {
       if(v.idea) return true;
-      return (allVertices = false);
-    });
-    if(!allVertices)
+      return false;
+    }))
       return [];
 
 //    if(!subgraph.edges.every(function(edge) { return edge.src.idea && edge.dst.idea; }))
@@ -313,7 +307,7 @@ exports.match = function(subgraphOuter, subgraphInner, unitOnly) {
     throw new RangeError('the outer subgraph must be concrete before you can match against it');
 
   // if there are no vertices, return nothing
-  var numVertices = Object.keys(subgraphInner.vertices).length;
+  var numVertices = subgraphInner.vertices.length;
   if(numVertices === 0)
     return [];
 

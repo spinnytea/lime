@@ -71,7 +71,7 @@ describe('actuator', function() {
     var result = a.tryTransition(bs);
 
     expect(result.length).to.equal(1);
-    expect(Object.keys(result[0])).to.deep.equal([a_p, a_a]);
+    expect(Object.keys(result[0])).to.deep.equal([a_p+'', a_a+'']);
     expect(result[0][a_p]).to.equal(p);
     expect(actionImplCount).to.equal(0);
   });
