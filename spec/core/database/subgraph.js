@@ -11,7 +11,7 @@ var tools = require('../testingTools');
 describe('subgraph', function() {
   it('init', function() {
     // this is to ensure we test everything
-    expect(Object.keys(subgraph)).to.deep.equal(['Subgraph', 'matcher', 'search', 'match', 'rewrite']);
+    expect(Object.keys(subgraph)).to.deep.equal(['Subgraph', 'matcher', 'stringify', 'parse', 'search', 'match', 'rewrite']);
     expect(Object.keys(subgraph.Subgraph.prototype)).to.deep.equal(['copy', 'addVertex', 'addEdge']);
     expect(Object.keys(subgraph.matcher)).to.deep.equal(['id', 'filler', 'exact', 'similar', 'number']);
   });
@@ -265,6 +265,39 @@ describe('subgraph', function() {
       expect(result.length).to.equal(0);
     });
   }); // end matchers
+
+  describe('serialization', function() {
+    it('stringify & parse', function() {
+      var unit = tools.ideas.create();
+      var mark = tools.ideas.create();
+      var apple = tools.ideas.create({ value: number.value(2), unit: unit.id });
+      mark.link(links.list.thought_description, apple);
+      var sg = new subgraph.Subgraph();
+      var m = sg.addVertex(subgraph.matcher.id, mark.id);
+      var a = sg.addVertex(subgraph.matcher.number, { value: number.value(0, Infinity), unit: unit.id });
+      sg.addEdge(m, links.list.thought_description, a);
+
+      var str = subgraph.stringify(sg);
+      expect(str).to.be.ok;
+
+      var parsed = subgraph.parse(str);
+
+      // there was some issue getting the vertices in and out
+      // so let's keep this test to see if this is a problem
+      expect(parsed.vertices).to.deep.equal(sg.vertices);
+      // edges are complicated
+      // they probably won't ever be an issue
+      expect(parsed.edges).to.deep.equal(sg.edges);
+      expect(parsed).to.deep.equal(sg);
+    });
+
+    // do we need to stringify/parse before all of our other tests?
+    // do we need to stringify/parse at every stage?
+    //
+    // maybe we just need to ensure the object that comes out is identical
+    // do we need to write our own deep equality function(s)?
+    it.skip('how do we test that we can use this for anything?');
+  });
 
   describe('search', function() {
     it('nothing to do', function() {

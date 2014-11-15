@@ -1,9 +1,13 @@
 'use strict';
 var _ = require('lodash');
 var ideas = require('./ideas');
+var links = require('./links');
 var ids = require('../ids');
 var discrete = require('../planning/primitives/discrete');
-var number = require('../planning/primitives/number');
+
+// this import needs to be a different name because we have exports.matcher.number
+// we want to keep the API standard, so we can change the import in this file
+var numnum = require('../planning/primitives/number');
 
 // this is an overlay on the idea database
 // it is a proxy or wrapper around the idea graph
@@ -73,10 +77,15 @@ Subgraph.prototype.addVertex = function(matcher, matchData, transitionable) {
     set: function(value) { v._data = value; },
   });
 
-  if(matcher === exports.matcher.id)
+  if(matcher === exports.matcher.id) {
     this.vertices[id].idea = ideas.proxy(matchData);
-  else
+  } else {
     this.concrete = false;
+
+    if(matcher === exports.matcher.number)
+      // should this fail if it is not a number?
+      numnum.isNumber(matchData);
+  }
 
   return id;
 };
@@ -118,29 +127,79 @@ function loadVertexData(v) {
 exports.Subgraph = Subgraph;
 
 
-// default matchers; but you can provide your own
+// matchers
+// because of serialization, you currently cannot add your own
+// because of serialization, the functions are create with a name
+// ( e.g. id: function id() {})
 exports.matcher = {
-  id: function(idea, matchData) {
+  id: function id(idea, matchData) {
     // XXX this could be an empty object
     return (matchData.id || matchData) === idea.id;
   },
-  filler: function() {
+  filler: function filler() {
     return true;
   },
 
-  exact: function(idea, matchData) {
+  exact: function exact(idea, matchData) {
     return _.isEqual(idea.data(), matchData);
   },
-  similar: function(idea, matchData) {
+  similar: function similar(idea, matchData) {
     // FIXME this implementation is bad and I should feel bad
     // matchData should be contained within data
     var data = idea.data();
     return _.isEqual(data, _.merge(_.cloneDeep(data), matchData));
   },
-  number: function(idea, matchData) {
+  number: function number(idea, matchData) {
     var data = idea.data();
-    return number.difference(data, matchData) === 0;
+    return numnum.difference(data, matchData) === 0;
   },
+};
+
+// serialize a subgraph object
+// a straight JSON.stringify will not work
+// we need to convert some objects and methods into a static mode that we can recover later
+exports.stringify = function(sg) {
+  // create a clone so we can modify it in place
+  sg = sg.copy();
+
+  // convert the verticies
+  // _.map will flatten it into an array, but we store the id anyway
+  sg.vertices = _.map(sg.vertices, function(v) {
+    v.matches = v.matches.name;
+    if(v.idea)
+      v.idea = v.idea.id;
+    return v;
+  });
+
+  sg.edges = sg.edges.map(function(e) {
+    e.src = e.src.vertex_id;
+    e.link = e.link.name;
+    e.dst = e.dst.vertex_id;
+    return e;
+  });
+
+  return JSON.stringify(sg);
+};
+// deserialize a subgraph object
+// we need to explode the references that were collapsed into static data
+exports.parse = function(str) {
+  str = JSON.parse(str);
+  var sg = new Subgraph();
+
+  str.vertices.forEach(function(v) {
+    // XXX swap the vertex ID
+    // - or convert the vertices object to a list
+    var id = sg.addVertex(exports.matcher[v.matches], v.matchData, v.pref);
+    if(v.idea)
+      sg.vertices[id].idea = ideas.proxy(v.idea);
+    sg.vertices[id]._data = v._data;
+  });
+
+  str.edges.forEach(function(e) {
+    sg.addEdge(e.src, links.list[e.link], e.dst);
+  });
+
+  return sg;
 };
 
 
@@ -393,7 +452,7 @@ function vertexTransitionableAcceptable(vo, vi, unitOnly) {
       if(unitOnly && vo.data.unit !== vi.data.unit)
         return false;
 
-      if(!unitOnly && number.difference(vo.data, vi.data) !== 0 && discrete.difference(vo.data, vi.data) !== 0)
+      if(!unitOnly && numnum.difference(vo.data, vi.data) !== 0 && discrete.difference(vo.data, vi.data) !== 0)
         return false;
     }
   }
@@ -446,7 +505,7 @@ exports.rewrite = function(subgraph, transitions, actual) {
         if(v.data.unit && t.replace.unit && v.data.unit !== t.replace.unit)
           return false;
       } else {
-        if(v.data.unit !== t.combine.unit || !number.isNumber(v.data) || !number.isNumber(t.combine))
+        if(v.data.unit !== t.combine.unit || !numnum.isNumber(v.data) || !numnum.isNumber(t.combine))
           return false;
       }
 
@@ -462,7 +521,7 @@ exports.rewrite = function(subgraph, transitions, actual) {
     if(t.replace) {
       v.data = t.replace;
     } else {
-      v.data = number.combine(v.data, t.combine);
+      v.data = numnum.combine(v.data, t.combine);
     }
 
     if(actual)
