@@ -266,37 +266,34 @@ describe('subgraph', function() {
     });
   }); // end matchers
 
-  describe('serialization', function() {
-    it('stringify & parse', function() {
-      var unit = tools.ideas.create();
-      var mark = tools.ideas.create();
-      var apple = tools.ideas.create({ value: number.value(2), unit: unit.id });
-      mark.link(links.list.thought_description, apple);
-      var sg = new subgraph.Subgraph();
-      var m = sg.addVertex(subgraph.matcher.id, mark.id);
-      var a = sg.addVertex(subgraph.matcher.number, { value: number.value(0, Infinity), unit: unit.id });
-      sg.addEdge(m, links.list.thought_description, a);
+  it('stringify & parse', function() {
+    var unit = tools.ideas.create();
+    var mark = tools.ideas.create();
+    var apple = tools.ideas.create({ value: number.value(2), unit: unit.id });
+    mark.link(links.list.thought_description, apple);
+    var sg = new subgraph.Subgraph();
+    var m = sg.addVertex(subgraph.matcher.id, mark.id);
+    var a = sg.addVertex(subgraph.matcher.number, { value: number.value(0, Infinity), unit: unit.id });
+    sg.addEdge(m, links.list.thought_description, a);
 
-      var str = subgraph.stringify(sg);
-      expect(str).to.be.ok;
+    var str = subgraph.stringify(sg);
+    expect(str).to.be.ok;
 
-      var parsed = subgraph.parse(str);
+    var parsed = subgraph.parse(str);
 
-      // there was some issue getting the vertices in and out
-      // so let's keep this test to see if this is a problem
-      expect(parsed.vertices).to.deep.equal(sg.vertices);
-      // edges are complicated
-      // they probably won't ever be an issue
-      expect(parsed.edges).to.deep.equal(sg.edges);
-      expect(parsed).to.deep.equal(sg);
-    });
+    // there was some issue getting the vertices in and out
+    // so let's keep this test to see if this is a problem
+    expect(parsed.vertices).to.deep.equal(sg.vertices);
+    // edges are complicated
+    // they probably won't ever be an issue
+    expect(parsed.edges).to.deep.equal(sg.edges);
+    expect(parsed).to.deep.equal(sg);
 
-    // do we need to stringify/parse before all of our other tests?
-    // do we need to stringify/parse at every stage?
-    //
-    // maybe we just need to ensure the object that comes out is identical
-    // do we need to write our own deep equality function(s)?
-    it.skip('how do we test that we can use this for anything?');
+    expect(sg.concrete).to.equal(false);
+    expect(subgraph.search(sg)).to.deep.equal([sg]);
+    expect(sg.concrete).to.equal(true);
+    expect(sg.vertices[m].idea.id).to.equal(mark.id);
+    expect(sg.vertices[a].idea.id).to.equal(apple.id);
   });
 
   describe('search', function() {

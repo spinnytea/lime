@@ -57,6 +57,9 @@ describe('number', function() {
     expect(number.isNumber({ value: { bl: true, l: null, r: 1, br: true }, unit: 'test' })).to.equal(false);
   });
 
+  // do we need to convert number.value.l to Infinity if no type specified?
+  // - Yes; the type is not guaranteed
+  // TODO should bl false = -Infinity, bl true = Infinity?
   it('isNumber; stringified', function() {
     var val = num(-Infinity, Infinity);
     expect(val.value.l).to.equal(-Infinity);
@@ -72,8 +75,6 @@ describe('number', function() {
     // after all that, we should have the original value
     expect(val).to.deep.equal({ type: 'lime_number', value: { bl: false, l: -Infinity, r: Infinity, br: false }, unit: 'test' });
   });
-  it.skip('isNumber: do we need to convert number.value.l to Infinity if no type specified?');
-  it.skip('isNumber: should bl false = -Infinity, bl true = Infinity?');
 
   it('value', function() {
     // test our gen function, since it is complex, and we use it a lot
