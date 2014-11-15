@@ -185,14 +185,14 @@ exports.parse = function(str) {
   str.vertices.forEach(function(v) {
     // XXX swap the vertex ID
     // - or convert the vertices object to a list
-    var id = sg.addVertex(exports.matcher[v.matches], v.matchData, v.pref);
+    var id = sg.addVertex(exports.matcher[v.matches], v.matchData, v.transitionable);
     if(v.idea)
       sg.vertices[id].idea = ideas.proxy(v.idea);
     sg.vertices[id]._data = v._data;
   });
 
   str.edges.forEach(function(e) {
-    sg.addEdge(e.src, links.list[e.link], e.dst);
+    sg.addEdge(e.src, links.list[e.link], e.dst, e.pref);
   });
 
   return sg;

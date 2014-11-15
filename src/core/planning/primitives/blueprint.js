@@ -1,6 +1,7 @@
 'use strict';
 // this class defines an Action and State that can be used by a Path
 var _ = require('lodash');
+var ideas = require('../../database/ideas');
 var subgraph = require('../../database/subgraph');
 var number = require('./number');
 var discrete = require('./discrete');
@@ -90,9 +91,22 @@ BlueprintAction.prototype.apply = function() {
   throw new Error(this.constructor.name + ' does not implement apply');
 };
 
+// save the Action so it can be loaded using one of the blueprint.loaders
+// (e.g. ActuatorAction will need to implement save, and supply a loader)
+// Note: the data must conform to blueprint.load
+BlueprintAction.prototype.save = function() {
+  throw new Error(this.constructor.name + ' does not implement save');
+};
+
 // saving and loading blueprints
 // register constructors by name so we can load saved blueprints
 exports.loaders = {};
+exports.load = function(id) {
+  var data = ideas.load(id).data();
+  if(!(data.type === 'blueprint' && typeof data.subtype === 'string' && typeof data.blueprint === 'object'))
+    return undefined;
+  return exports.loaders[data.subtype](data.blueprint);
+};
 
 exports.Action = BlueprintAction;
 

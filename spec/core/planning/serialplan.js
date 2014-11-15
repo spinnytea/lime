@@ -72,7 +72,7 @@ describe('serialplan', function() {
   it('init', function() {
     // this is to ensure we test everything
     expect(Object.keys(serialplan)).to.deep.equal(['Action', 'create']);
-    expect(Object.keys(serialplan.Action.prototype)).to.deep.equal(['runCost', 'tryTransition', 'runBlueprint', 'cost', 'apply']);
+    expect(Object.keys(serialplan.Action.prototype)).to.deep.equal(['runCost', 'tryTransition', 'runBlueprint', 'cost', 'apply', 'save']);
   });
 
   it('create', function() {
@@ -208,6 +208,10 @@ describe('serialplan', function() {
       expect(actionImplCount).to.equal(0);
     });
 
+    it.skip('save & load', function() {
+      // TODO loaded can be used in a plan
+    });
+
     it('nested blueprint cost', function() {
       goal.state.vertices[state_count].data.value = number.value(3);
       var sp3 = serialplan.create(start, goal);
@@ -241,9 +245,5 @@ describe('serialplan', function() {
         'SerialAction', 'SerialAction'
       ]);
     });
-
-    describe('save & load', function() {
-      it.skip('loaded can be used in a plan');
-    }); // end save & load
   }); // end SerialPlan
 }); // end serialplan

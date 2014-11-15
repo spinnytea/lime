@@ -273,8 +273,8 @@ describe('subgraph', function() {
     mark.link(links.list.thought_description, apple);
     var sg = new subgraph.Subgraph();
     var m = sg.addVertex(subgraph.matcher.id, mark.id);
-    var a = sg.addVertex(subgraph.matcher.number, { value: number.value(0, Infinity), unit: unit.id });
-    sg.addEdge(m, links.list.thought_description, a);
+    var a = sg.addVertex(subgraph.matcher.number, { value: number.value(0, Infinity), unit: unit.id }, true);
+    sg.addEdge(m, links.list.thought_description, a, 1);
 
     var str = subgraph.stringify(sg);
     expect(str).to.be.ok;

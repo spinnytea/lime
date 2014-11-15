@@ -13,11 +13,11 @@ var tools = require('../../testingTools');
 describe('blueprint', function() {
   it('init', function() {
     // this is to ensure we test everything
-    expect(Object.keys(blueprint)).to.deep.equal(['loaders', 'Action', 'State']);
+    expect(Object.keys(blueprint)).to.deep.equal(['loaders', 'load', 'Action', 'State']);
     // there isn't a need to test loaders directly
     // when we test the load of actuator, serialplan, etc then loaders will be tested through them
 
-    expect(Object.keys(blueprint.Action.prototype)).to.deep.equal(['runCost', 'tryTransition', 'runBlueprint', 'cost', 'apply']);
+    expect(Object.keys(blueprint.Action.prototype)).to.deep.equal(['runCost', 'tryTransition', 'runBlueprint', 'cost', 'apply', 'save']);
     expect(_.intersection(Object.keys(blueprint.Action.prototype), Object.keys(path.Action.prototype))).to.deep.equal(Object.keys(path.Action.prototype));
     // there isn't anything to test here
     // cost is the only function that lives in blueprint.Action
@@ -27,6 +27,23 @@ describe('blueprint', function() {
     expect(Object.keys(blueprint.State.prototype)).to.deep.equal(['distance', 'actions', 'matches']);
     expect(_.intersection(Object.keys(blueprint.State.prototype), Object.keys(path.State.prototype))).to.deep.equal(Object.keys(path.State.prototype));
     // there is no need to test matches; it's too simple
+  });
+
+  // this is just a basic test
+  // it still needs to be tested for each of the implementing prototypes
+  it('load', function() {
+    var idea = tools.ideas.create({ });
+
+    var didcall = false;
+    blueprint.loaders.test = function() { didcall = true; return 'banana'; };
+    expect(didcall).to.equal(false);
+
+    expect(blueprint.load(idea.id)).to.equal(undefined);
+    expect(didcall).to.equal(false);
+
+    idea.update({ type: 'blueprint', subtype: 'test', blueprint: {} });
+    expect(blueprint.load(idea.id)).to.equal('banana');
+    expect(didcall).to.equal(true);
   });
 
   describe('State', function() {
@@ -203,8 +220,8 @@ describe('blueprint', function() {
       // the point of this isn't to unit test the actuator
     });
 
-    describe('save & load', function() {
-      it.skip('loaded can be used in a plan');
-    }); // end save & load
+//    describe('save & load', function() {
+//      it.skip('loaded can be used in a plan');
+//    }); // end save & load
   }); // end State
 }); // end blueprint
