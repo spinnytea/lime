@@ -13,35 +13,31 @@ exports.isNumber = function(obj) {
   if(typeof obj !== 'object')
     return false;
 
-  if(obj.type) {
-    if(obj.type === typeName) {
-      if(obj.value.l === null) {
-        if(obj.value.bl)
-          return false;
-        obj.value.l = Infinity;
-      }
-
-      if(obj.value.r === null) {
-        if(obj.value.br)
-          return false;
-        obj.value.r = Infinity;
-      }
-
-      return true;
-    } else {
-      return false;
-    }
-  }
-
   if(!(typeof obj.unit === 'string' &&
     typeof obj.value === 'object' &&
     typeof obj.value.bl === 'boolean' &&
     (typeof obj.value.l === 'number' || obj.value.l === null) &&
     (typeof obj.value.r === 'number' || obj.value.r === null) &&
     typeof obj.value.br === 'boolean' &&
-    obj.value.l <= obj.value.r
+    (!obj.type || obj.type === typeName) &&
+    (obj.value.l <= obj.value.r || obj.value.l === null || obj.value.r === null)
   ))
     return false;
+
+  // TODO combine this with above
+  if(obj.value.l === null || obj.value.l === -Infinity) {
+    if(obj.value.bl === true)
+      return false;
+  }
+  if(obj.value.r === null || obj.value.r === Infinity) {
+    if(obj.value.br === true)
+      return false;
+  }
+
+  if(obj.value.l === null)
+    obj.value.l = -Infinity;
+  if(obj.value.r === null)
+    obj.value.r = Infinity;
 
   obj.type = typeName;
   return true;
@@ -62,8 +58,8 @@ exports.value = function() {
     br = typeof arguments[2] === 'boolean' ? arguments[2] : bl;
   }
 
+  if(l === -Infinity) bl = false;
   if(r === Infinity) br = false;
-  if(l === Infinity) bl = false;
 
   return { bl: bl, l: l, r: r, br: br };
 };
