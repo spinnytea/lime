@@ -1,0 +1,21 @@
+Internal vs External
+  Knowledge is an internal representation, a "conceptual" representation of the world.
+  Experience is an external representation, a "practical" representation of the world.
+  --
+  Experience is what is observe, what is identified in the world. It is "this apple on the table" or "this table" "this room" "this thing"
+  Knowledge is the collected info about "every apple;" it is the generalization of all things observed.
+  --
+  Experience is the data we use after the Sensors have been processed. It is a lot of information. Not all of it will be kept after sleeping.
+  Knowledge is the data we use after the Experiences have been processed. It will be
+
+(K + S -> C) + A -> E
+  Context is the "current situation" the "relevant real world objects that exist"
+    We know things about the world (we know how to interact with apples)
+    We use our sensors to identify that we have an apple in hand.
+    Context is populated by pairing knowledge with this sensor data.
+  Actions have knowledge embedded in them (I need 30 cents to carry this out; I need to find an apple to buy).
+  The knowledge is matched up to the context, and then the actions are applied using the context.
+  This should ultimately result in more experience (what happens when I try to find an apple at the store/try to buy an apple).
+  E(C(S, K), A)
+    Experience is a function of Context and Action
+    Context is a function of Sensors and Knowledge

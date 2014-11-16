@@ -1,0 +1,285 @@
+Note: These are not he problems that I am solving
+I am creating a Learning Machine (LM) ~ I am creating something that can solve these tasks.
+During some confusion, I intermixed some "short term goals" with "use cases"
+When I get time, these should be separated out
+
+It is hard to keep from defaulting to the task of "learn English," but this is not the only worth-while goal.
+There are other tasks that (for the moment), have nothing to do with language.
+Here is a list of some tasks that are worthwhile goals; some other things to think about while putting together the individual components.
+The headings are in alphabetical order, while the problems underneath the headings are in order of (perceived) difficulty.
+
+---- The List ----
+
+Industrial Engineering
+  A factor that creates anything
+  Okay, maybe not "one" that creates "everything" but the ability to manufacture/produce
+  Think: Tony Stark's command "Build it; I'll be back in a few hours"
+
+
+Language: English
+  Learn to read/create English
+  
+  Prerequisites
+    [ ] (Sense: Text) or (Sense: Hearing)
+    [ ] Basic knowledge of words and concepts (or a way to build as you go?)
+  
+  [ ] Reading
+    - You can already break text into structures (at least somewhat)
+    [ ] Identify the ideas in the sentences
+    [ ] Put the ideas together into more complex constructions
+      - It's no longer just "red" and "apple," but a "red apple"
+      - It's not just "buying from the store" but "who bought it" and "what was bought"
+  [ ] Writing
+    - Say something intelligent
+    - You are "given the sentence"
+  [ ] Answer a question
+    - This requires you to read, think of the answer, and then say something intelligent
+    - This is just the "hook it up" stage of Reading/Writing
+
+
+Lego!!!!!
+  [ ] rubic's cube solver
+    - okay, this isn't really AI, this is just a camera and A*. But still. It would be awesome.
+    - its also a really good "stepping stone" test
+
+
+Medical Studies
+  There is a lot of research done for practicing medicine.
+  Look at "what happened" to try and explain weird things (bullet hole in front of chest, bullet hole in back, no other apparent damage)
+  Look at cause and effect "High-Dose Epinephrine" or any other case study
+  
+  Prerequisites
+    [ ] Natural Language Processor
+    [ ] Vast knowledge of words and concepts
+    [ ] Understanding of human anatomy/biology/chemistry/physics
+    [ ] Creative thinking?
+    [ ] Beautiful Pattern Matching
+    [ ] Understanding of Cause and Effect? (maybe this isn't relevant, but then again, modern medicine (and much of all of human knowledge) is based on this principle)
+
+
+Pattern Matching
+  This is mostly just "toys" ~ they are existing algorithms this just need to be implemented
+  If we can't think of a situation in which to use these, then it really shouldn't be implemented
+  This is a list intended to keep the creative (resourceful?) juices flowing.
+  
+  [ ] k-nearest neighbor (pattern matching ~ continuous)
+    - this can be used in any "experience classification" to better identify it next time
+  [ ] SVM - support vector machine
+  [ ] Maximum Likelihood + Laplace Smoothing
+  [ ] Markov Decision Process
+  [ ] k-means algorithm
+    - we can come up with an enhanced algorithm with any external classifications we may have
+  [ ] Neural Network
+    [ ] make/train a "multi-layer NN" (say, 5 NNs take different vectors, this is input to another NN which ultimately classifies)
+      - bottom layer is "does this feature exist?"
+      - top layer is "give these features, what is the category"
+  [ ] *Find features
+    - instead of "implement this," what I really need is "find features"
+    - look at a set of examples, find new features about the data that mean something
+    - this *should boil down to looking at relationships/derivatives and doing correlations on that
+  [ ] Bayesian Network
+  [ ] SOM
+
+
+Phoenix
+  This presents an interesting challenge. While I keep thinking it is quite simple, it actually requires more.
+  When you teach it to "play," set up some tutorial levels, first. Make sure to clearing think about the goal of each tutorial.
+  Since this is a programmed scenario, some of the tasks can be "hand waved" or given by the scenario. (for example, I don't need to identify objects; the api can just supply a list of them)
+  
+  This isn't a static state game like keep assuming it is. It isn't like solving a puzzle.
+  
+  [ ] Identify objects in environment
+  [ ] Identify meta data about objects (such as movement pattern)
+    [ ] Parametric movement
+    [ ] Match basic equations
+  [ ] What are my available actions
+  [ ] Insight (extrapolate vs simulate)
+    [ ] where will the enemies be after so much time?
+    [ ] what will happen to the bullet after I fire it?
+  [ ] Identify goals
+  [ ] Plan to meet goals using insight
+  
+  [ ] Tutorial Levels
+    [ ] Learn to shoot
+    [ ] Learn to move
+    [ ] Learn timing
+    [ ] Combine timing/moving, minimize cost
+
+
+Planning
+  [X] Basic Planning
+    - You are given all the actions to choose from
+    - States are represented as a "set of values"
+    [X] Create a plan
+      - Give the list of items, put them in the correct order
+    [X] Summarize the plan
+      - which value are important to the plan?
+      - what do you need to "start" and how do you "end"
+      - Basically, package it up into a new plan
+  [X] Hierarchy Planning
+    - Remember/Recall the plans so they can be used later
+    - Plan in Levels
+      - "deep down" is the physical movements (like, "turn wheels")
+      - "slightly higher" are basic tools that are useful (like, "turn left", or "go straight")
+      - "even higher" are known routes (like, "go from coffee table to doorway", or "go down hallway")
+      - "top level" are higher still (like, "go from coffee table to second bedroom")
+  [ ] Modify previous plans
+    [ ] Plans that are "close" can be adapted or reduced
+      - If we have a plan that is close enough, we could start with that?
+      - If it has extra parts we don't need, can we prune them?
+    [ ] Swap out a middle step
+      - buy banana instead of buy apple
+  [ ] Find multiple solutions to the same plan, figure out which is better
+    - Just because you find a solution to a plan, doesn't mean it's the best one.
+      - Maybe this won't be a problem after adding extra resource weights (10 pounds of gold, but gold is EXPENSIVE)
+    - Use simulation (or something else) to determine how the "other resources" are affected
+    - Select the plan that leaves you with the most future options
+
+
+Program (Programming)
+  One of the first things I wanted an AI for was to program for me.
+  I hate having to write the "same thing" over and over again.
+  I also don't like having to write the "same thing" that is just different enough that you can't make a class out of it.
+  And, even if I have a lot of lessons learned, I sometimes forget them, and I can't share them with anyone.
+  I wanted some way to record all of my knowledge in such a way that other people could use it.
+  
+  [ ] Operating System
+  [ ] Learn to Compile
+
+
+Robotic Car
+  In all cases, there is a vehicle that is driving to "get to" all the locations.
+  It has sensors to perceive the world, but only wheels to interact with it
+  Try with "steering" and "tank style". And "bicycle" (if the world is large enough).
+  
+  Prerequisites
+  [ ] Senses: Vision
+  [ ] Advanced Planning
+ 
+  [ ] Scavenger Hunt in an Unknown Environment
+    - Find all the items on the list
+  [ ] Checkpoint Driving
+    - Get to all the locations/items on the list
+    - You "know" where everything is, you just need to get to them
+  [ ] Easter Basket Hunt
+    - You know the environment you are in
+    [ ] Find an item that is in an unknown location
+    [ ] Find a list of items
+    [ ] Some items are known, some are unknown
+      - What is the best thing to do? look for the known, or just start exploring?
+  [ ] Race Track (with features!)
+    - The track you are driving on is unknown
+    - Any time you come to a "branching street," you just go straight.
+    - Features!
+      [ ] Are there hazards on the road?
+        - if you know there are not, then drive FAST!
+        - if not, then drive slow enough to avoid them
+      [ ] Are there other cars on the road? Direction?
+      [ ] Which side to stick to? (left/right/all)
+
+
+Sense: Which way is up
+  It will also help keep a "global orientation;" it will help relate "you to the world."
+  This will add wonderful context to rotate pictures so they are all "facing the same way."
+  This will help relation stereo sound to the world (sound is related to you, you are related to the world).
+
+
+Sense: Hearing
+  Is this a 0D or 1D stream? (i.e. a stream of points (0d+time), or a steam of lines(1d+time)?)
+  
+  [ ] Find microphone that I can use.
+  [ ] Record sound bytes that I can use as a test
+    - (Apple/Rubber ball/coin) hitting the (wall/carpet/tile/laminate)
+
+
+Sense: Text
+  This isn't "vision" when it is direct character feeds
+  How can we manage the text coming in?
+  
+  [ ] Identify Words / Punctuation
+    - What are the properties that define either?
+    - Mainly, figure out that "don't" is a word, even though it has punctuation
+      - Sure, we can enumerate some examples, but it needs to /extend/ the knowledge
+  [ ] Distinguish "raw text" and "programming language" and "html"
+  [ ] Identify structures (blocks) in programming language
+    - This requires knowing the grammar
+    - This is very "predictable"
+  [ ] Identify structures in raw text (sentences)
+    - This requires knowing a little bit about grammar
+    - This can be unpredictable
+
+
+Sense: Vision
+  This is a 2D stream (effectively, 3 dimensional; 2+time).  It will will aim to produce a series of 3D states.
+  
+  [ ] Features
+    - color-fill
+    - texture-fill
+    - relationship to other objects
+      - e.g. usually found with a darker border
+      - e.g. about the size of an apple
+      - the more things you can relate to, the faster/easier time you will have recognizing
+      - if you can relate to many things, then you can figure out if one is "abnormal"
+        - "it's usually about the size of an apple, but it is also about the size of everything else around it.
+           That apple looks big, because it is "bigger" than everything else it is around,
+           and is usually about their size"
+    - create a list of "smaller object" shapes to find
+      - this should be recursive, somehow
+      - identify 0D objects (points)
+      - identify 1D objects (lines; curved or straight)
+      - identify 2D objects (circles, squares, etc)
+      - identify 3D objects (box, table, wine glass, etc)
+        - these should be "objects in relationship/proportion to each other"
+        - real objects should have definite sizes (usually)
+        - internal objects should have some kind of "size distribution" (max/min/usual max/usual min/average (momentum based))
+          - this helps to "judge" relationships (about the size of a hand)
+   
+  -- the comments below this line need to be review; until then, they are to be considered "crap" --
+  
+  - Don't forget about context, it will narrow your choices
+    - if i have a red textured shirt, and i find a red textured cloth in a ball on the floor
+    - when walking outside on the grass, leaves have a characteristic color/texture
+  [ ] How can we define feature generation in terms of invariance?
+    - Scale: the size of the object is large when closer to the camera
+    - Illumination: the lighting changes the colors/reflections
+    - Rotation: given a face, it can rotate on screen (the visible plane doesn't change)
+    - Deformation: the object changes shape; some of it moves in relation to other parts
+    - Occlusion: an object may be partially covered up (something else may be in front)
+    - View Point: like rotation, but a different face; physically be in a different place while looking at an object
+  [ ] Object Recognition Level 1
+    - fixed size (the objects don't change size)
+    - fixed vantage point (you always see them from the same angle)
+    - this is mostly a primer and to figure out how to account for noise
+      - reduce "random" saturation (scan points, smooth variations in saturation)
+      - reduce "random" hue variations (scan points, smooth variations in hue)
+      - sharpen edges (when there is a large shift in hue, "un-smooth" it)
+    [ ] start by locating a single object within the image
+    [ ] then have many different objects to find, and locate them in a picture (any or all)
+    [ ] if an image isn't "fully visible" then give a % chance of it being in a certain location
+  [ ] Object Recognition Level 2
+    - improve on level 1
+    - fixed vantage point
+    - vary the sizes of the objects
+    - can we define base features?
+      - flood-fill color
+      - flood-fill color derivative (like x*dx, only x*d-color)
+      - contrast lines
+      - line shape
+      - relative location of lines
+      - contrast points
+      - relative location of contrast points
+  [ ] Object Recognition Level 3
+    - improve on level 2
+    - in this case, we need a 3D representation of the object so we can "mentally turn it"
+    [ ] given a new object, which is it most similar to
+    [ ] if we haven't "already seen" all of the angles of an object, we want to correctly identify the object even at this new angle
+
+
+Tools
+  A list of things that would be useful and "universally applicable"
+  
+  [ ] Reinforcement micro-loop
+    - reinforcement learning should be built in to the "overall process"
+      (when it makes a decision that turns out to be right, all things/steps involved should get a point (and less some points when wrong?))
+    - but there should also be "a human is in the loop" mode where it can ask for an opinion for some decision points that it is less certain about
+.

@@ -1,0 +1,33 @@
+be Minimal (stick to the Basics)
+  - the task should be accomplished with as little "human definition" as possible
+  - this assumption can be broken for "test cases," but then you need to figure out how to "hook it up" afterwards
+  - if you need to "seed" with some data, that is perfectly okay (its hard to make something when you have nothing)
+    - but when you do, make sure to create an "example" of it learning something new
+    - this example could quite possibly be incorporated into the setup
+  - for example, with Vision
+    - optimally
+      - we don't want to "code" any features
+      - we provide 10 pictures that all have apples
+      - we provide 10 pictures that all have bananas
+        - we provide 1 image that has both and say "find them"
+    - if we HAVE TO, we identify some important features, and just find those
+      - like points and lines
+      - maybe flood-fill a color and return a shape
+
+Utilize the learning model
+  - this way, anything we learn from one task can be applied to other tasks
+  - the trick then becomes proper tagging, or proper re-use of tags
+
+I am not solving problems, I am creating a program capable of solving problems
+I am not creating a program that solves problems
+I am creating a program that is capable of solving problems
+I am not solving any of the problems in "Future Test Cases"
+I am creating a program that can solve the problems in "Future Test Cases"
+  - I keep getting wrapped up in "it should do x"
+  - I need to keep focusing on "it should be capable of doing x"
+  - There IS a BIG difference
+  - The "confusing question" though is: "how deep do I go" or "do I solve the text problem / vision problem"
+    - No, that is the POINT of the Learning Machine
+    - I need to create sensors for these things, but let the LM take care of the rest
+    - I "may" pre process the images to find features, but that's as far as it should go
+      (e.g. find blobs, edges, corners, points, etc)

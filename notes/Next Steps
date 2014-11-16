@@ -1,0 +1,124 @@
++----------------------------------------------------------------------------------------+
+| When you run out of direction, look here for things you already thought of doing next. |
++----------------------------------------------------------------------------------------+
+
+I keep trying to make "the perfect LM"
+I need to take a step back, and do something practical so I feel a sense of accomplishment
+Instead of "doing it all" I will "do this one thing, while assuming some conditions"
+and then I will build up from there, or expand other parts when I feel like it.
+
+
+Wumpus
+  - make actions that are restrictive based on the situation, solve like slide puzzle
+  - make actions that are unbounded
+    - when reality doesn't match the plan, re-plan
+    - if a plan doesn't work, find the next one
+    - learn when a plan fails
+      - how do we store these Conditions?
+
+Unit Conversions
+  - We need to create some hard coded units that we can use with the raw senses
+    (this makes sense: hard coded sense, hard coded unit)
+  - create knowledge based improvements / better context (who wants to deal in sensor units for eternity)
+    basically, create unit conversions
+    - your sensor deals in mm, but you want to use km
+    - your sensor deals in colors and shape, but you want to deal in apples
+      (are these two examples fundamentally different processes?)
+
+KAEP...
+  - What can I solve with just these 4
+  - Think CLEARLY. Plan it out. You have already been fooled.
+Simulation/Extrapolation
+  - Think about how to implement these
+
+PEAS on wikipedia
+  - address each of these in philosophy
+
+SerialPlan - re-plan
+  During execution, check the end conditions
+  If they don't match, then create a new SerialPlan based on the current state
+  How much do we re-plan at a certain step before giving up?
+  How do we learn from this? (just not this with an XXX as something to come back to once we have Experience working)
+
+Make SIMPLE, logical games to utilize different components
+  Action/Planning
+    shortest path
+      [ ] maze
+
+Keep working on Experience (SimpleActionsForExperience)
+ - Sequence
+ - AbstractRegex (define generic tokens, define simple operators)
+
+
+
+
+--------
+Abstract plans
+--------
+
+:: Experience
+Planning ahead:
+  - think of desirable outcomes and how to achieve them
+  - think of undesirable outcomes and how to avoid them
+  - min-i-max problem?
+Identify (and Abstract) Sensory Input
+  - Uses sensory input to identify and abstract objects
+  - Basically, given a couple of senses, can I identify an apple?
+  - Don't use just one sense, use all that are available to be more certain.
+  - Don't do just 2 or 3 objects, start large like 15 or 100 (or everything you find in the room) different objects that appeal to the available senses.
+  - Once you can identify objects, then you can use them to build bigger plans
+When you carry out an action, how do you predict the aftermath?
+  - How do you apply cause and effect?
+  - Once I have a state, I can take an action, acquire the new state, and measure the delta
+  - Add a "expected time wait"
+  - Think about "particle filters" but for features
+
+
+:: Pattern
+Do the simple thing
+  - Give then I have a "context/state" pair, look for differences.
+  - Keep track of this as "maybe" and look for more cases that show the same thing
+  - This should be followed up with the scientific method
+Rule patterns
+  - "as long as i have enough money, the result is the same"
+Finding Labels in Raw Data
+  - Implement K-Means to handle "continuous" features
+  - what to do if there are both continuous and discrete values?
+    - ML for Discrete
+    - K-Means for Continuous
+    - ... both? ... can you just use this if there is only one kind?
+      - what about assigning "default values" for categories?
+      - if a label doesn't have a value...
+        - wait, label are states?
+        - if it is, then just apply the "default value" when absent, or the "average for the state" when present
+Bring in a Neural Network and figure out how to apply it
+  - do something with input types/output types
+  - thoughts are stored in some kind of hierarchy
+  - only use the roots as input to the net
+    - you can use some sort of discriminant Analysis or Decision Tree to figure out which are important
+  - if we have some predefined output options, then the output can help us weigh which is better
+  - we can use the output to explore other options that might be helpful
+
+
+:: Programming
+  A program is essential a giant 'action' or at least a process that contains a bunch of smaller actions
+  
+  Assumptions
+    - Ignore this question: how will it understand what is going on, if it doesn't understand the underlying concepts
+      - will I be able to explain java awt if it doesn't have an image parser?
+      - maybe this is the right place to start? (it can relate things back to circles/rectangles with fill/draw)
+  
+  [ ] Identify the "meta" associated with each token
+    - consider using http://code.google.com/p/javaparser/
+  [ ] What is the resulting "action" of methods?
+    - start by labeling some sample code
+  [ ] Build a new program based on previous experience
+
+
+:: Scientific Method for "Experience to Knowledge"
+  - Expand/Reduce the context as much as you can
+    - get as much context as you can
+    - change as little context as you can
+  - This then limits the amount that you can extend this knowledge
+  - Must do more tests to on current knowledge to see if you can extend it further
+  - This doesn't "prove" anything, but it is a means to find more things to explore

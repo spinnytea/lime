@@ -1,0 +1,46 @@
+Pattern
+  This operates on senses and context sequences.
+  It mines labels/rules from raw experience.
+
+Experience
+  Direct observations about the world.
+  Always dealing in the definite (i.e. real objects) ("this apple" "that store")
+  --
+  (Just a note; don't take this too far)
+  This is kept as long as one of 2 conditions are me (once neither of these are true, it can be forgotten):
+    1) The object is currently "testable" - you can acquire the object, and "do something with it"
+       Test something about it: What does it look like, what does it sound like, is it rotten, etc.
+    2) You have learned something conceptual about it that hasn't been re-learned by something else more relevant (sooner, still acquirable).
+  --
+  I feel like there needs to be 2 kinds to experience, each for object->meta and meta->object
+    1) object->meta
+       This is basically the "experience->pattern" arc
+       This is object recognition in raw data
+       I usually like to "just assume that this works"
+       --
+       This needs to be able to ask if the what it found was correct (to verify what it sees is an apple by using other senses to observe it and/or trying to interact with it)
+       --
+       This has "Fog of War" model as opposed to needing to learn object persistence. Although, it needs to find the objects in the first place...
+    2) meta->object
+       This is when using your actions to interface with the world - How did things turn out?
+       This is a "larger experience" with the world that I been mostly thinking about
+  --
+  This seems like experience can be some serialized variable that isn't linked ... but there will probably be some dependent relationships that show up.
+   - What if the raw input is determined to be "malfunctional"?
+   - What if identifying an apple influences identifying a pear (oops, that's a nose)
+
+Action
+  Actuators onto the world.
+  Turns knowledge into something that affects the world/state.
+
+Knowledge
+  Internal representation of the world.
+  Always dealing in the indefinite (i.e. object concepts) ("an apple" "some money")
+
+Context
+  "Current Experience" or "what is with me now"
+  This is a list of current resources/attributes (I am at home, I have 1 apple, I have 120 cents)
+
+Simulation
+  "Project what will happen"
+  What is the impact of my action?
