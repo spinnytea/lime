@@ -44,7 +44,7 @@ exports.ideas.clean = function(idea) {
 };
 // Copied from the src ideas / I need this to test but it shouldn't be global on ideas
 exports.ideas.filepath = function(id, which) {
-  return config.data.location + '/' + id + '_' + which + '.json';
+  return config.settings.location + '/' + id + '_' + which + '.json';
 };
 // address a race condition
 // - if the file existance doesn't match what we expect

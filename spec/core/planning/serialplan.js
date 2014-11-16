@@ -84,11 +84,11 @@ describe('serialplan', function() {
 
     // there is no way to create a plan to get here
     // since we know this test can't finish, lets minimize the depth it has to search for our test
-    var before = config.data.astar_max_paths;
-    config.data.astar_max_paths = 10;
+    var before = config.settings.astar_max_paths;
+    config.settings.astar_max_paths = 10;
     sp = serialplan.create(goal, start);
     expect(sp).to.not.be.ok;
-    config.data.astar_max_paths = before;
+    config.settings.astar_max_paths = before;
 
     // only one step away
     goal.state.vertices[state_count].data.value = number.value(1);
@@ -121,7 +121,7 @@ describe('serialplan', function() {
   // something like:
   //  'a value needs to change, and none of our plans will change that unit'
   //  'there is no way to change that unit in that direction'
-  it.skip('create: fail when impossible');
+  it.skip('create: fail early when impossible?');
 
   describe('SerialPlan', function() {
     it('runCost', function() {

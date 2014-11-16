@@ -13,7 +13,7 @@ var tokens = [
 describe('ids', function() {
   it('init', function() {
     // this is assumed by ids; we can't really do anything but ensure it's existence
-    expect(config.settings.ids).to.be.an('object');
+    expect(config.data.ids).to.be.an('object');
 
     expect(ids.next).to.be.a('function');
     expect(ids.next.anonymous).to.be.a('function');
@@ -21,7 +21,7 @@ describe('ids', function() {
 
   it('increment', function() {
     // the value should not be defined
-    expect(config.settings.ids.testing).to.not.be.ok;
+    expect(config.data.ids.testing).to.not.be.ok;
 
     // an id must be supplied to next
     expect(function() { ids.next(); }).to.throw(TypeError);
@@ -31,7 +31,7 @@ describe('ids', function() {
 			expect(ids.next('testing')).to.equal(token);
 		});
 
-    expect(config.settings.ids.testing).to.equal('z');
+    expect(config.data.ids.testing).to.equal('z');
 
 		// set of double digits
 		tokens.slice(1).forEach(function(i) {
@@ -40,7 +40,7 @@ describe('ids', function() {
       });
 		});
 
-    expect(config.settings.ids.testing).to.equal('zz');
+    expect(config.data.ids.testing).to.equal('zz');
 
 		// set of triple digits
 		tokens.slice(1).forEach(function(i) {
@@ -51,22 +51,22 @@ describe('ids', function() {
       });
 		});
 
-    expect(config.settings.ids.testing).to.equal('zzz');
+    expect(config.data.ids.testing).to.equal('zzz');
     expect(ids.next('testing')).to.equal('1000');
-    expect(config.settings.ids.testing).to.equal('1000');
+    expect(config.data.ids.testing).to.equal('1000');
 
-    delete config.settings.ids.testing;
-    expect(config.settings.ids).to.be.ok;
+    delete config.data.ids.testing;
+    expect(config.data.ids).to.be.ok;
   }); // end increment
 
   it('anonymous', function() {
-    var keysBefore = Object.keys(config.settings.ids);
+    var keysBefore = Object.keys(config.data.ids);
 
     var id = ids.next.anonymous();
     expect(id).to.equal(tokens[1]);
     id = ids.next.anonymous(id);
     expect(id).to.equal(tokens[2]);
 
-    expect(Object.keys(config.settings.ids)).to.deep.equal(keysBefore);
+    expect(Object.keys(config.data.ids)).to.deep.equal(keysBefore);
   });
 });

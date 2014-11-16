@@ -2,8 +2,8 @@
 var config = require('../../config');
 
 // ensure settings has a place for ids
-if(!config.settings.ids)
-  config.settings.ids = {};
+if(!config.data.ids)
+  config.data.ids = {};
 
 var tokens = [
 	'0', '1', '2', '3', '4', '5', '6', '7', '8', '9', // numbers
@@ -43,10 +43,10 @@ exports.next = function(id) {
 
   // load the id saved in settings
   // or create it if it doesn't exist
-  var nextID = config.settings.ids[id] || tokens[0];
+  var nextID = config.data.ids[id] || tokens[0];
 
   // save and return the new id
-  return (config.settings.ids[id] = increment(nextID, nextID.length - 1));
+  return (config.data.ids[id] = increment(nextID, nextID.length - 1));
 };
 
 // if nextID is undefined, it will start from scratch

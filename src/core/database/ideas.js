@@ -16,7 +16,7 @@ var memory = {};
 
 // create a path/filename for an idea
 function filepath(id, which) {
-  return config.data.location + '/' + id + '_' + which + '.json';
+  return config.settings.location + '/' + id + '_' + which + '.json';
 }
 
 /* this is the singleton that we will keep an internal reference to */

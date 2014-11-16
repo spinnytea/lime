@@ -32,7 +32,7 @@ exports.search = function(start, goal) {
 
     // exit early?
     numPathsExpanded++;
-    if(numPathsExpanded > config.data.astar_max_paths)
+    if(numPathsExpanded > config.settings.astar_max_paths)
       return undefined;
 
 

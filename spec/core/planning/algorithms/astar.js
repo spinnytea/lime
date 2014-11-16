@@ -11,7 +11,7 @@ var NumberSlide = require('../NumberSlide');
 describe('astar', function() {
   it('init', function() {
     expect(astar).to.have.property('search');
-    expect(config.data.astar_max_paths).to.be.a('number');
+    expect(config.settings.astar_max_paths).to.be.a('number');
     expect(path).to.have.property('Path');
 
     expect(NumberSlide.Action).to.be.a('function');
@@ -66,7 +66,7 @@ describe('astar', function() {
     });
 
     it('frontier too large', function() {
-      var before = config.data.astar_max_paths;
+      var before = config.settings.astar_max_paths;
       expect(before).to.be.gt(10);
       var goal =  new NumberSlide.State([[1, 2, 3, 4, 0]]);
       var start =  new NumberSlide.State([[0, 1, 2, 3, 4]]);
@@ -75,12 +75,12 @@ describe('astar', function() {
       expect(path).to.be.ok;
       expect(_.pluck(path.actions, 'dir')).to.deep.equal([ 'right', 'right', 'right', 'right' ]);
 
-      config.data.astar_max_paths = 2;
+      config.settings.astar_max_paths = 2;
       path = astar.search(start, goal);
       expect(path).to.not.be.ok;
 
       // reset the config from before the test
-      config.data.astar_max_paths = before;
+      config.settings.astar_max_paths = before;
     });
 
     it('no solution', function() {
