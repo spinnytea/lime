@@ -9,10 +9,11 @@ var NumberSlide = require('../NumberSlide');
 
 
 describe('astar', function() {
-  it('init', function() {
-    expect(astar).to.have.property('search');
+  it.only('init', function() {
     expect(config.settings.astar_max_paths).to.be.a('number');
-    expect(path).to.have.property('Path');
+
+    expect(Object.keys(astar)).to.deep.equal(['search']);
+    expect(Object.keys(path)).to.deep.equal(['Path', 'Action', 'State']);
 
     expect(NumberSlide.Action).to.be.a('function');
     expect(NumberSlide.State).to.be.a('function');
