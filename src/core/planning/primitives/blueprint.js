@@ -94,6 +94,7 @@ BlueprintAction.prototype.apply = function() {
 // save the Action so it can be loaded using one of the blueprint.loaders
 // (e.g. ActuatorAction will need to implement save, and supply a loader)
 // Note: the data must conform to blueprint.load
+// @return the id that the plan is saved to (probably also recorded under bp.idea)
 BlueprintAction.prototype.save = function() {
   throw new Error(this.constructor.name + ' does not implement save');
 };

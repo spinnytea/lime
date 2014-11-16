@@ -148,13 +148,12 @@ describe('actuator', function() {
     // this is the ultimate test of the load
     expect(loaded).to.deep.equal(a);
     // sans using the actuator in battle
-    expect(a.tryTransition(bs).length).to.equal(1);
-    a.runBlueprint(bs, a.tryTransition(bs)[0]);
+    expect(loaded.tryTransition(bs).length).to.equal(1);
+    loaded.runBlueprint(bs, loaded.tryTransition(bs)[0]);
     expect(actionImplCount).to.equal(1);
 
     tools.ideas.clean(id);
   });
-  it('save & load: use loaded plan');
 
   it('basic planning', function() {
     expect(astar).to.have.property('search');

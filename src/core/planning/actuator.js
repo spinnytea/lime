@@ -95,6 +95,8 @@ ActuatorAction.prototype.save = function() {
       action: this.action
     }
   });
+
+  return this.idea;
 };
 
 exports.Action = ActuatorAction;

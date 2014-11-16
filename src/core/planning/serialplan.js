@@ -7,6 +7,7 @@
 var _ = require('lodash');
 var astar = require('./algorithms/astar');
 var blueprint = require('./primitives/blueprint');
+var ideas = require('../database/ideas');
 
 // @param plans: blueprint.Action
 //  - the steps that make up this macro action
@@ -109,8 +110,37 @@ SerialAction.prototype.apply = function(state, glue) {
   }, state);
 };
 
+SerialAction.prototype.save = function() {
+  var idea;
+  if(this.idea)
+    idea = ideas.load(this.idea);
+  else {
+    idea = ideas.create();
+    this.idea = idea.id;
+  }
+
+  idea.update({
+    type: 'blueprint',
+    subtype: 'SerialAction',
+    blueprint: {
+      idea: this.idea,
+      plans: this.plans.map(function(p) { return p.save(); }),
+      // we can derive the requirements from the first plan
+//      requirements: subgraph.stringify(this.requirements),
+      // fact is, we can just derive anything from the plan list
+//      _myRunCost: this._myRunCost,
+    }
+  });
+
+  return this.idea;
+};
+
 exports.Action = SerialAction;
-blueprint.loaders.SerialAction = function() {
+blueprint.loaders.SerialAction = function(bp) {
+  var plans = bp.plans.map(function(id) { return blueprint.load(id); });
+  var sa = new SerialAction(plans);
+  sa.idea = bp.idea;
+  return sa;
 };
 
 

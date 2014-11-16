@@ -5,6 +5,7 @@ var expect = require('chai').expect;
 var actuator = require('../../../src/core/planning/actuator');
 var blueprint = require('../../../src/core/planning/primitives/blueprint');
 var config = require('../../../config');
+var ideas = require('../../../src/core/database/ideas');
 var links = require('../../../src/core/database/links');
 var number = require('../../../src/core/planning/primitives/number');
 var serialplan = require('../../../src/core/planning/serialplan');
@@ -208,9 +209,38 @@ describe('serialplan', function() {
       expect(actionImplCount).to.equal(0);
     });
 
-    it.skip('save & load', function() {
-      // TODO loaded can be used in a plan
+    it('save & load', function() {
+      var sp = serialplan.create(start, goal);
+      expect(sp).to.be.ok;
+
+      // okay, so we save the plan for the first time
+      // it should generate an idea
+      expect(sp.idea).to.not.be.ok;
+      sp.save();
+      expect(sp.idea).to.be.ok;
+      // but it shouldn't create a new one
+      var id = sp.idea;
+      sp.save();
+      expect(sp.idea).to.equal(id);
+
+      // this is important
+      // we need to serialize the object and reload it
+      ideas.close(id);
+
+      var loaded = blueprint.load(id);
+      expect(loaded).to.be.ok;
+
+      // this is the ultimate test of the load
+      expect(loaded).to.deep.equal(sp);
+      // sans using the actuator in battle
+      expect(loaded.tryTransition(start).length).to.equal(1);
+      loaded.runBlueprint(start, loaded.tryTransition(start)[0]);
+      expect(actionImplCount).to.equal(5);
+
+      tools.ideas.clean(id);
     });
+    it.skip('blueprint.load: cache currently loaded plans');
+    // check sp.plans[0] === sp.plans[1]
 
     it('nested blueprint cost', function() {
       goal.state.vertices[state_count].data.value = number.value(3);
