@@ -45,3 +45,28 @@ gulp.task('jshint', [], function () {
 gulp.task('test', ['run-mocha'], function() {
   gulp.watch(files, ['run-mocha']);
 });
+
+
+//
+// targets for the use cases
+//
+var browserify = require('gulp-browserify');
+
+gulp.task('use-jshint', [], function() {
+  return gulp.src(['use/server/**/*.js', 'use/client/js/**/*.js']).pipe(jshint())
+    .pipe(jshint.reporter('jshint-stylish'))
+    .pipe(jshint.reporter('fail'));
+});
+gulp.task('use-browserify', ['use-jshint'], function() {
+  gulp.src('use/client/js/index.js')
+    .pipe(browserify({
+      debug: true,
+      shim: {
+        'angular': {
+          path: 'bower_components/angular/angular.js',
+          exports: 'angular',
+        },
+      },
+    }))
+    .pipe(gulp.dest('use/client'));
+});
