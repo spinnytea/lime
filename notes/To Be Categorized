@@ -1,0 +1,30 @@
+On Programming
+  One of the things I want to do ASAP is programming.
+  I want to teach the LM to write code, so I don't have to.
+  But, for it to be able to write code, it needs to understand the concepts code represents
+   - numbers, strings
+   - loops, branching
+  And it also needs to be able to, ya know, read and write code.
+  Reading and Writing code has the advantage that I can use a strict parser for it.
+  But that doesn't change the fact that it needs to understand/simplify what it's doing.
+  And honestly, if I want to tell it to write a new program, I want to tell it in english.
+  So reading and writing in language is a must.
+  But first you need to understand the domain (this is starting to get circular, i know)
+  ---
+  So, first it needs to be able to read and write.
+  It needs to be able to express what it knows, and think in hypotheticals
+  To read something and build a model of something it doesn't know (to be verified later)
+  ---
+  So, let's go back to our wumpus example.
+  A simulated environment with limited information.
+  We can start to having it write out what it knows
+   - "I am in Room A"
+   - "Room A is connected to Room B. Room B is connected to Room C. The Wumpus is in Room C"
+  It can read using that format. (we can start with a strict parser, and expand from there)
+  It can write using that format.
+  It only needs enough language to express the world.
+  I can start teaching it new words.
+   - "This map is symmetrical"
+   - "This map is in a strict grid pattern" (maybe that doesn't make sense, or is too obvious, but it's still something)
+  This language may not carry much information, but it's a start so I can understand the complexities
+  It's a first step towards learning how to represent the real world.
