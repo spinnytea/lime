@@ -66,6 +66,11 @@ gulp.task('use-browserify', ['use-jshint'], function() {
           path: 'bower_components/angular/angular.js',
           exports: 'angular',
         },
+        'angular-route': {
+          path: 'bower_components/angular-route/angular-route.js',
+          exports: 'ngRoute',
+          depends: { angular: 'angular' }
+        },
       },
     }))
     .pipe(gulp.dest('use/client'));
