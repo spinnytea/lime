@@ -3,7 +3,14 @@
     <!-- index.js is build with browserify -->
     <script src="./index.js"></script>
 </head>
-<body>
+<body data-ng-app="lime.client">
+
+
 <h1>What's the Wumpus</h1>
+
+<div data-ng-controller="lime.client.wumpus.container">
+    {{name}}
+</div>
+
 </body>
 </html>
