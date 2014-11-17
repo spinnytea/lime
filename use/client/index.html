@@ -1,11 +1,18 @@
 <html>
 <head>
+    <link rel="stylesheet" href="../../bower_components/bootstrap/dist/css/bootstrap.min.css">
+    <script src="../../bower_components/jquery/dist/jquery.min.js"></script>
+    <script src="../../bower_components/bootstrap/dist/js/bootstrap.min.js"></script>
+
     <!-- index.js is build with browserify -->
     <script src="./index.js"></script>
 </head>
-<body data-ng-app="lime.client">
+<body class="container" data-ng-app="lime.client" data-ng-controller="contentController">
 
-<a href="#wumpus">What's the Wumpus</a>
+<div data-ng-show="showMenu">
+    <h1>Menu</h1>
+    <a href="#wumpus">What's the Wumpus</a>
+</div>
 
 <div data-ng-view></div>
 
