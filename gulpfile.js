@@ -50,17 +50,37 @@ gulp.task('test', ['run-mocha'], function() {
 //
 // targets for the use cases
 //
-var browserify = require('gulp-browserify');
+var browserify = require('browserify');
+var buffer = require('vinyl-buffer');
+var source = require('vinyl-source-stream');
+var watchify = require('watchify');
 
 gulp.task('use-jshint', [], function() {
   return gulp.src(['use/server/**/*.js', 'use/client/js/**/*.js']).pipe(jshint())
     .pipe(jshint.reporter('jshint-stylish'))
     .pipe(jshint.reporter('fail'));
 });
+
+var bundler = watchify(browserify(['./use/client/js/index.js'], {
+  debug: true,
+  cache: {},
+  packageCache: {},
+  fullPaths: true,
+}));
+// use watchify to decide when to rebundle
+//bundler.on('update', function() { return rebundle(); });
+var rebundle = function() {
+  return bundler.bundle()
+    .pipe(source('client/index.js'))
+    .pipe(buffer())
+    .pipe(gulp.dest('use'));
+}
 gulp.task('use-browserify', ['use-jshint'], function() {
-  gulp.src('use/client/js/index.js')
-    .pipe(browserify({
-      debug: true,
-    }))
-    .pipe(gulp.dest('use/client'));
+  return rebundle();
+});
+
+gulp.task('uses', ['use-browserify'], function() {
+  // use gulp to decide when to rebundle
+  // this lets us use js hint
+  gulp.watch(['use/**/*.js', '!use/client/index.js'], ['use-browserify']);
 });
