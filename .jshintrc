@@ -10,5 +10,6 @@
   "laxcomma": true,
   "browser": false,
   "node": true,
-  "expr": true
+  "expr": true,
+  "predef": ["angular"]
 }

@@ -1,8 +1,5 @@
 'use strict';
 // TODO shim angular to be loaded externally
-var angular = require('angular');
-require('angular-route');
-
 var myModule = angular.module('lime.client', [
   require('./wumpus/wumpusModule').name,
   'ngRoute',
