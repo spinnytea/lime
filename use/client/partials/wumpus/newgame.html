@@ -1,0 +1,40 @@
+<form class="form-horizontal" role="form" data-ng-controller="lime.client.wumpus.newgame">
+    <div class="form-group">
+        <label class="col-sm-2 control-label">Chance</label>
+
+        <div class="col-sm-10 radio">
+            <label><input type="radio" value="deterministic" data-ng-model="gameConfig.chance">Deterministic</label>
+            <label><input type="radio" value="stochastic" data-ng-model="gameConfig.chance" disabled>Stochastic</label>
+        </div>
+    </div>
+    <div class="form-group">
+        <label class="col-sm-2 control-label">Grain</label>
+
+        <div class="col-sm-10 radio">
+            <label><input type="radio" value="discrete" data-ng-model="gameConfig.grain">Discrete</label>
+            <label><input type="radio" value="continuous" data-ng-model="gameConfig.grain" disabled>Continuous</label>
+        </div>
+    </div>
+    <div class="form-group">
+        <label class="col-sm-2 control-label">Observable</label>
+
+        <div class="col-sm-10 radio">
+            <label><input type="radio" value="fully" data-ng-model="gameConfig.observable">Fully</label>
+            <label><input type="radio" value="partially" data-ng-model="gameConfig.observable" disabled>Partially</label>
+        </div>
+    </div>
+    <div class="form-group">
+        <label class="col-sm-2 control-label">Timing</label>
+
+        <div class="col-sm-10 radio">
+            <label><input type="radio" value="static" data-ng-model="gameConfig.timing">Static</label>
+            <label><input type="radio" value="dynamic" data-ng-model="gameConfig.timing" disabled>Dynamic</label>
+        </div>
+    </div>
+
+    <div class="form-group">
+        <div class="col-sm-offset-2 col-sm-10">
+            <button class="btn btn-primary">New Game</button>
+        </div>
+    </div>
+</form>
