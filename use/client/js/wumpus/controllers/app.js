@@ -13,5 +13,9 @@ module.exports.controller('lime.client.wumpus.app', [
       observable: 'fully',
       timing: 'static',
     };
+
+    $scope.generateGame = function() {
+      console.log('generate!');
+    };
   }
 ]);
