@@ -6,5 +6,12 @@ module.exports.controller('lime.client.wumpus.app', [
   '$scope',
   function($scope) {
     $scope.name = 'example';
+
+    $scope.gameConfig = {
+      chance: 'deterministic',
+      grain: 'discrete',
+      observable: 'fully',
+      timing: 'static',
+    };
   }
 ]);
