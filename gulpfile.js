@@ -52,6 +52,7 @@ gulp.task('test', ['run-mocha'], function() {
 //
 var browserify = require('browserify');
 var buffer = require('vinyl-buffer');
+var nodemon = require('gulp-nodemon');
 var source = require('vinyl-source-stream');
 var watchify = require('watchify');
 
@@ -79,8 +80,23 @@ gulp.task('use-browserify', ['use-jshint'], function() {
   return rebundle();
 });
 
-gulp.task('uses', ['use-browserify'], function() {
+gulp.task('uses', ['use-browserify'], function(done) {
   // use gulp to decide when to rebundle
   // this lets us use js hint
-  gulp.watch(['use/**/*.js', '!use/client/index.js'], ['use-browserify']);
+  gulp.watch(['use/client/**/*.js', '!use/client/index.js'], ['use-browserify']);
+
+  var called = false;
+  return nodemon({
+    script: 'use/server/index.js',
+    ext: 'js',
+    watch: ['use/server'],
+    ignore: [],
+    verbose: false,
+  })
+  .on('start', function() {
+    if(!called) {
+      done();
+      called = true;
+    }
+  });
 });
