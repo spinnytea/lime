@@ -53,12 +53,17 @@ gulp.task('test', ['run-mocha'], function() {
 var browserify = require('browserify');
 var browserSync = require('browser-sync');
 var buffer = require('vinyl-buffer');
-var nodemon = require('gulp-nodemon');
+var fork = require('child_process').fork;
 var source = require('vinyl-source-stream');
 var watchify = require('watchify');
 
-gulp.task('use-jshint', [], function() {
-  return gulp.src(['use/server/**/*.js', 'use/client/js/**/*.js']).pipe(jshint())
+gulp.task('use-client-jshint', [], function() {
+  return gulp.src(['use/client/js/**/*.js']).pipe(jshint())
+    .pipe(jshint.reporter('jshint-stylish'))
+    .pipe(jshint.reporter('fail'));
+});
+gulp.task('use-server-jshint', [], function() {
+  return gulp.src(['use/server/**/*.js']).pipe(jshint())
     .pipe(jshint.reporter('jshint-stylish'))
     .pipe(jshint.reporter('fail'));
 });
@@ -70,50 +75,57 @@ var bundler = watchify(browserify(['./use/client/js/index.js'], {
   fullPaths: true,
 }));
 // use watchify to decide when to rebundle
-// but I'm doing fancy things with reloading the web page, so we need this elsewhere
+// but we want to call use-sync in response, so we need a gulp watch
 //bundler.on('update', function() { return rebundle(); });
 var rebundle = function() {
   return bundler.bundle()
     .pipe(source('client/index.js'))
     .pipe(buffer())
     .pipe(gulp.dest('use'));
-}
-gulp.task('use-browserify', ['use-jshint'], function() {
+};
+gulp.task('use-browserify', ['use-client-jshint'], function() {
   return rebundle();
 });
 
 var browserSyncSync = false;
+var serverHandle;
 gulp.task('use-sync', ['use-browserify'], function() {
-  if(!browserSyncSync) {
-    browserSyncSync = true;
-    return browserSync({
-      proxy: 'localhost:8888',
-      port: '8080',
-      online: false,
-      injectChanges: false,
-      open: false,
-    });
-  } else {
-    return browserSync.reload({stream: false});
+  if(serverHandle) {
+    if(!browserSyncSync) {
+      browserSyncSync = true;
+      return browserSync({
+        proxy: 'localhost:8888',
+        port: '8080',
+        online: false,
+        injectChanges: false,
+        open: false,
+        logConnections: true,
+      });
+    } else {
+      return browserSync.reload({stream: false});
+    }
   }
 });
 
-gulp.task('uses', ['use-jshint'], function(done) {
-  gulp.watch(['use/client/**/*', '!use/client/index.js'], ['use-sync']);
-  gulp.watch('use/server/.stamp', ['use-sync']);
+gulp.task('use-server', ['use-server-jshint'], function() {
+  if(serverHandle) {
+    serverHandle.kill();
+  } else {
+    serverHandle = fork('use/server');
+    serverHandle.on('close', function() {
+      serverHandle = fork('use/server');
+    });
+  }
+});
 
-  var called = false;
-  return nodemon({
-    script: 'use/server/index.js',
-    ext: 'js',
-    watch: ['use/server'],
-    ignore: ['use/server/.stamp'],
-    verbose: false,
-  })
-  .on('start', function() {
-    if(!called) {
-      done();
-      called = true;
-    }
-  });
+gulp.task('uses', [], function() {
+  // whenever you change client files, restart the browser
+  gulp.watch(['use/client/**/*', '!use/client/index.js'], ['use-sync']);
+  // any time the server starts, restart the browser, restart the browser
+  gulp.watch('use/server/.stamp', ['use-sync']);
+  // any time we make changes to the server, restart the server
+  gulp.watch('use/server/**/*', ['use-server']);
+
+  // try to start the server the first time
+  return gulp.start('use-server');
 });
