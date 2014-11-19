@@ -1,11 +1,9 @@
 'use strict';
 // TODO shim angular to be loaded externally
-var myModule = angular.module('lime.client', [
+angular.module('lime.client', [
   require('./wumpus/wumpusModule').name,
   'ngRoute',
-]);
-
-myModule.config([
+]).config([
   '$routeProvider',
   function($routeProvider) {
     $routeProvider.when('/wumpus', {
@@ -13,9 +11,7 @@ myModule.config([
       controller: 'lime.client.wumpus.app',
     });
   }
-]);
-
-myModule.controller('contentController', [
+]).controller('contentController', [
   '$scope', '$location',
   function($scope, $location) {
     // the layout is a little counter-intuitive

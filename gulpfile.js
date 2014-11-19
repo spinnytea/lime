@@ -51,6 +51,7 @@ gulp.task('test', ['run-mocha'], function() {
 // targets for the use cases
 //
 var browserify = require('browserify');
+var browserSync = require('browser-sync');
 var buffer = require('vinyl-buffer');
 var nodemon = require('gulp-nodemon');
 var source = require('vinyl-source-stream');
@@ -69,6 +70,7 @@ var bundler = watchify(browserify(['./use/client/js/index.js'], {
   fullPaths: true,
 }));
 // use watchify to decide when to rebundle
+// but I'm doing fancy things with reloading the web page, so we need this elsewhere
 //bundler.on('update', function() { return rebundle(); });
 var rebundle = function() {
   return bundler.bundle()
@@ -80,17 +82,32 @@ gulp.task('use-browserify', ['use-jshint'], function() {
   return rebundle();
 });
 
-gulp.task('uses', ['use-browserify'], function(done) {
-  // use gulp to decide when to rebundle
-  // this lets us use js hint
-  gulp.watch(['use/client/**/*.js', '!use/client/index.js'], ['use-browserify']);
+var browserSyncSync = false;
+gulp.task('use-sync', ['use-browserify'], function() {
+  if(!browserSyncSync) {
+    browserSyncSync = true;
+    return browserSync({
+      proxy: 'localhost:8888',
+      port: '8080',
+      online: false,
+      injectChanges: false,
+      open: false,
+    });
+  } else {
+    return browserSync.reload({stream: false});
+  }
+});
+
+gulp.task('uses', ['use-jshint'], function(done) {
+  gulp.watch(['use/client/**/*', '!use/client/index.js'], ['use-sync']);
+  gulp.watch('use/server/.stamp', ['use-sync']);
 
   var called = false;
   return nodemon({
     script: 'use/server/index.js',
     ext: 'js',
     watch: ['use/server'],
-    ignore: [],
+    ignore: ['use/server/.stamp'],
     verbose: false,
   })
   .on('start', function() {
