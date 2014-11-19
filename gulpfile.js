@@ -1,4 +1,5 @@
 var gulp = require('gulp');
+var gutil = require('gulp-util');
 var mocha = require('gulp-mocha');
 var jshint = require('gulp-jshint');
 
@@ -50,10 +51,11 @@ gulp.task('test', ['run-mocha'], function() {
 //
 // targets for the use cases
 //
+var fork = require('child_process').fork;
+
 var browserify = require('browserify');
 var browserSync = require('browser-sync');
 var buffer = require('vinyl-buffer');
-var fork = require('child_process').fork;
 var source = require('vinyl-source-stream');
 var watchify = require('watchify');
 
@@ -104,6 +106,8 @@ gulp.task('use-sync', ['use-browserify'], function() {
     } else {
       return browserSync.reload({stream: false});
     }
+  } else {
+    gutil.log('Server not started, delaying browser sync.');
   }
 });
 
@@ -123,8 +127,13 @@ gulp.task('uses', [], function() {
   gulp.watch(['use/client/**/*', '!use/client/index.js'], ['use-sync']);
   // any time the server starts, restart the browser, restart the browser
   gulp.watch('use/server/.stamp', ['use-sync']);
+
   // any time we make changes to the server, restart the server
   gulp.watch('use/server/**/*', ['use-server']);
+//  .on('change', function(event) {
+//    gutil.log(gutil.colors.yellow('Server file changed: ' +
+//      path.relative(path.join(__dirname, 'use', 'server'), event.path)));
+//  });
 
   // try to start the server the first time
   return gulp.start('use-server');
