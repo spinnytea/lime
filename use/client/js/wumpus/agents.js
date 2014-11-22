@@ -1,5 +1,8 @@
 'use strict';
 
+exports.wumpus = new Agent();
+exports.agent = new Agent({ hasGold: false, wumpus: exports.wumpus });
+
 function Agent(options) {
   angular.extend(this, {
     x: 0,
@@ -18,12 +21,3 @@ Agent.prototype.placeInRoom = function(room) {
   // empty inRooms, and put room in inRooms
   this.inRooms.splice(0, this.inRooms.length, room);
 };
-
-module.exports = angular.module('lime.client.wumpus.Agent', []);
-module.exports.service('lime.client.wumpus.wumpus', [ Agent ]);
-module.exports.service('lime.client.wumpus.agent', [
-  'lime.client.wumpus.wumpus',
-  function(wumpus) {
-    return new Agent({ hasGold: false, wumpus: wumpus });
-  }
-]);
