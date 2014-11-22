@@ -1,7 +1,6 @@
 'use strict';
 
-exports.wumpus = new Agent();
-exports.agent = new Agent({ hasGold: false, wumpus: exports.wumpus });
+exports.Agent = Agent;
 
 function Agent(options) {
   angular.extend(this, {
