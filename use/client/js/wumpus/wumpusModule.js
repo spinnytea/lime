@@ -17,7 +17,7 @@ module.exports = angular.module('lime.client.wumpus', [])
     };
 
     $scope.generateGame = function() {
-      game.generate();
+      game.generate($scope.gameConfig);
       console.log(game.cave);
     };
   }
