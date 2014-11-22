@@ -1,6 +1,6 @@
 'use strict';
 
-exports.Room = Room;
+module.exports = Room;
 
 //var RADIUS = 48;
 //var SPACING = RADIUS * 2 - 10;

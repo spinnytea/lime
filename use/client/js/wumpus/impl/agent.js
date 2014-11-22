@@ -1,6 +1,6 @@
 'use strict';
 
-exports.Agent = Agent;
+module.exports = Agent;
 
 function Agent(options) {
   angular.extend(this, {

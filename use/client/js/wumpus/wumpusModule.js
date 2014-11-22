@@ -1,4 +1,7 @@
 'use strict';
+
+var game = require('./impl/game');
+
 module.exports = angular.module('lime.client.wumpus', [])
 .controller('lime.client.wumpus.app', [
   '$scope',
@@ -14,6 +17,8 @@ module.exports = angular.module('lime.client.wumpus', [])
     };
 
     $scope.generateGame = function() {
+      game.generate();
+      console.log(game.cave);
     };
   }
 ])
