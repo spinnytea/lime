@@ -24,11 +24,11 @@ module.exports = angular.module('lime.client.wumpus', [])
       $scope.state = 'instance';
     };
   }
-])
+]) // end lime.client.wumpus.app controller
 .directive('wumpusInstance', [
   function() {
     return {
-      template: 'partials/wumpus/instance.html',
+      templateUrl: 'partials/wumpus/instance.html',
       link: function($scope, elem) {
         $scope.bounds = {
           minx: 0, maxx: 0,
@@ -51,10 +51,10 @@ module.exports = angular.module('lime.client.wumpus', [])
         elem.css('height', $scope.bounds.maxy-$scope.bounds.miny);
 
         $scope.rooms = game.cave.rooms;
-      },
+      } // end link
     };
   }
-])
+]) // end wumpusInstance directive
 .directive('wumpusRoom', [
   function() {
     return {
@@ -66,13 +66,40 @@ module.exports = angular.module('lime.client.wumpus', [])
         // static config
         elem.css('width', config.room.diameter)
           .css('height', config.room.diameter)
+          .css('padding-top', config.room.radius/3)
+          .css('padding-left', config.room.radius/3)
           .css('border-radius', config.room.radius);
 
         // room config
         elem.css('left', $scope.room.x - $scope.bounds.minx - config.room.radius)
           .css('top', $scope.room.y - $scope.bounds.miny - config.room.radius);
-      }
+
+
+        $scope.$on('$destroy', $scope.$watch(function() { return $scope.room.senses(); }, updateHtml, true));
+        $scope.$on('$destroy', $scope.$watch(function() { return game.cave.wumpus.inRooms; }, updateHtml));
+        $scope.$on('$destroy', $scope.$watch(function() { return game.cave.agent.inRooms; }, updateHtml));
+
+        function updateHtml() {
+          var senses = $scope.room.senses();
+          var hasWumpus = (game.cave.wumpus.inRooms.indexOf($scope.room) !== -1);
+          var hasAgent = (game.cave.agent.inRooms.indexOf($scope.room) !== -1);
+          elem.html(
+            addText('Exit', 'black', $scope.room.hasExit) +
+            addText(($scope.room.hasGold?'Gold':'glitter'), 'gold', $scope.room.hasGold || senses.glitter) +
+            addText(($scope.room.hasPit?'Pit':'breeze'), 'black', $scope.room.hasPit || senses.breeze) +
+            addText('Wumpus', 'black', hasWumpus) +
+            addText('Agent', 'black', hasAgent) +
+            ''
+          );
+        }
+
+        function addText(str, color, bool) {
+          return '<div style="color:'+color+';">' +
+            (bool?str:'&nbsp;') +
+            '</div>';
+        }
+      } // end link
     };
   }
-])
+]) // end wumpusRoom directive
 ;

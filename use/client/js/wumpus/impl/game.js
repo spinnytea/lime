@@ -93,6 +93,9 @@ exports.generate = function(gameConfig) {
     Array.prototype.push.apply(room.nearbyRooms, nearbyRooms);
     i=0; for(; i<nearbyRooms.length; i++)
       nearbyRooms[i].nearbyRooms.push(room);
+
+    // add branches from the current room
+    Array.prototype.push.apply(frontier, grain.roomFrontier[gameConfig.grain](room));
   } // end room_while
 };
 
