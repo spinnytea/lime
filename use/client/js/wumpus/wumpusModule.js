@@ -1,6 +1,6 @@
 'use strict';
 
-`var config = require('./impl/config');
+var config = require('./impl/config');
 var game = require('./impl/game');
 
 module.exports = angular.module('lime.client.wumpus', [])
@@ -21,7 +21,6 @@ module.exports = angular.module('lime.client.wumpus', [])
 
     $scope.generateGame = function() {
       game.generate($scope.gameConfig);
-      console.log(game.cave);
       $scope.state = 'instance';
     };
   }
@@ -29,27 +28,50 @@ module.exports = angular.module('lime.client.wumpus', [])
 .directive('wumpusInstance', [
   function() {
     return {
-      templateUrl: 'partials/wumpus/instance.html',
+      template: 'partials/wumpus/instance.html',
       link: function($scope, elem) {
-        var minx = 0, maxx = 0, miny = 0, maxy = 0;
+        $scope.bounds = {
+          minx: 0, maxx: 0,
+          miny: 0, maxy: 0,
+        };
 
         // find the bounds of the game
         game.cave.rooms.forEach(function(room) {
-          minx = Math.min(minx, room.x);
-          maxx = Math.max(maxx, room.x);
-          miny = Math.min(miny, room.y);
-          maxy = Math.max(maxy, room.y);
+          $scope.bounds.minx = Math.min($scope.bounds.minx, room.x);
+          $scope.bounds.maxx = Math.max($scope.bounds.maxx, room.x);
+          $scope.bounds.miny = Math.min($scope.bounds.miny, room.y);
+          $scope.bounds.maxy = Math.max($scope.bounds.maxy, room.y);
         });
-        minx -= config.room.radius;
-        maxx += config.room.radius;
-        miny -= config.room.radius;
-        maxy += config.room.radius;
+        $scope.bounds.minx -= config.room.radius;
+        $scope.bounds.maxx += config.room.radius;
+        $scope.bounds.miny -= config.room.radius;
+        $scope.bounds.maxy += config.room.radius;
 
-        elem.css('width', maxx-minx);
-        elem.css('height', maxy-miny);
+        elem.css('width', $scope.bounds.maxx-$scope.bounds.minx);
+        elem.css('height', $scope.bounds.maxy-$scope.bounds.miny);
 
         $scope.rooms = game.cave.rooms;
       },
+    };
+  }
+])
+.directive('wumpusRoom', [
+  function() {
+    return {
+      scope: {
+        room: '=wumpusRoom',
+        bounds: '=',
+      },
+      link: function($scope, elem) {
+        // static config
+        elem.css('width', config.room.diameter)
+          .css('height', config.room.diameter)
+          .css('border-radius', config.room.radius);
+
+        // room config
+        elem.css('left', $scope.room.x - $scope.bounds.minx - config.room.radius)
+          .css('top', $scope.room.y - $scope.bounds.miny - config.room.radius);
+      }
     };
   }
 ])

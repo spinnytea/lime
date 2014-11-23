@@ -7,11 +7,7 @@
   border: solid 1px black;
 }
 
-[data-wumpus-instance] span.room {
+[data-wumpus-instance] [data-wumpus-room] {
   position: absolute;
-  width: 96;
-  height: 96;
-  background: black;
-
-  border-radius: 48;
+  border: solid black 1px;
 }
