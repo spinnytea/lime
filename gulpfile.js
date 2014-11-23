@@ -1,3 +1,4 @@
+'use strict';
 var gulp = require('gulp');
 var gutil = require('gulp-util');
 var mocha = require('gulp-mocha');
@@ -53,11 +54,8 @@ gulp.task('test', ['run-mocha'], function() {
 //
 var fork = require('child_process').fork;
 
-var browserify = require('browserify');
+var browserify = require('gulp-browserify');
 var browserSync = require('browser-sync');
-var buffer = require('vinyl-buffer');
-var source = require('vinyl-source-stream');
-var watchify = require('watchify');
 
 gulp.task('use-client-jshint', [], function() {
   return gulp.src(['use/client/js/**/*.js']).pipe(jshint())
@@ -65,28 +63,17 @@ gulp.task('use-client-jshint', [], function() {
     .pipe(jshint.reporter('fail'));
 });
 gulp.task('use-server-jshint', [], function() {
-  return gulp.src(['use/server/**/*.js']).pipe(jshint())
+  return gulp.src(['use/server/**/*.js', 'gulpfile.js']).pipe(jshint())
     .pipe(jshint.reporter('jshint-stylish'))
     .pipe(jshint.reporter('fail'));
 });
 
-var bundler = watchify(browserify(['./use/client/js/index.js'], {
-  debug: true,
-  cache: {},
-  packageCache: {},
-  fullPaths: true,
-}));
-// use watchify to decide when to rebundle
-// but we want to call use-sync in response, so we need a gulp watch
-//bundler.on('update', function() { return rebundle(); });
-var rebundle = function() {
-  return bundler.bundle()
-    .pipe(source('client/index.js'))
-    .pipe(buffer())
-    .pipe(gulp.dest('use'));
-};
 gulp.task('use-browserify', ['use-client-jshint'], function() {
-  return rebundle();
+  return gulp.src('use/client/js/index.js')
+    .pipe(browserify({
+      debug: true
+    }))
+    .pipe(gulp.dest('use/client'));
 });
 
 var browserSyncSync = false;
@@ -122,7 +109,7 @@ gulp.task('use-server', ['use-server-jshint'], function() {
   }
 });
 
-gulp.task('uses', [], function() {
+gulp.task('use', [], function() {
   // whenever you change client files, restart the browser
   gulp.watch(['use/client/**/*', '!use/client/index.js'], ['use-sync']);
   // any time the server starts, restart the browser, restart the browser

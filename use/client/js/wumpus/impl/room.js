@@ -26,3 +26,7 @@ Room.prototype.senses = function() {
     return senses;
   }, { breeze: false, glitter: false, stench: false, breathing: false });
 };
+
+Room.prototype.distance = function(obj) {
+  return Math.sqrt(Math.pow(this.x - obj.x, 2) + Math.pow(this.y - obj.y, 2));
+};

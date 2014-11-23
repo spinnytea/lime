@@ -1,8 +1,11 @@
 'use strict';
 
 var Agent = require('./agent');
-var Room = require('./room');
+var config = require('./peas/config');
 var grain = require('./peas/grain');
+var Room = require('./room');
+
+function randInt(max) { return Math.floor(Math.random() * max); }
 
 exports.cave = undefined;
 
@@ -13,9 +16,9 @@ exports.cave = undefined;
 // . wumpus - randomly placed between exit (exclusive) and gold (inclusive)
 // . gold   - placed at roomCount/2
 // . pit    - after gold is placed, generated with some probability (e.g. n/(roomCount/2), where n is a constant number of rooms we'd like to see)
-exports.generate = function(config) {
+exports.generate = function(gameConfig) {
   // pull out our arguments
-  var roomCount = Math.max(config.roomCount, 4);
+  var roomCount = Math.max(gameConfig.roomCount || 0, 4);
 
   // the room where the cold will be placed
   var goldRoom = Math.floor(roomCount / 2);
@@ -27,9 +30,6 @@ exports.generate = function(config) {
   // the locally scoped name is for ease of access
   var cave = exports.cave = new Cave();
 
-  // This will use an implementation of Prim's Algorithm
-  var frontier = [];
-
   // setup the first room
   var room = new Room(0, 0, { hasExit: true });
   // stick the agent in this room
@@ -37,11 +37,63 @@ exports.generate = function(config) {
   // and place this room on the map
   cave.rooms.push(room);
 
-  Array.prototype.push.apply(frontier, grain.roomFrontier[config.grain]);
+  // This will use an implementation of Prim's Algorithm
+  var frontier = [];
+  // seed the frontier with our first room
+  Array.prototype.push.apply(frontier, grain.roomFrontier[gameConfig.grain](room));
 
-  // TODO build cave.rooms until we hit the room count (or run out of rooms)
-  console.log(goldRoom);
-  console.log(placedWumpus);
+  // these are all the rooms that this new room connects to
+  var nearbyRooms = [];
+
+  // we can't keep looking if we run out of rooms (is such a thing possible? maybe)
+  // we ultimately want to stop once we have the desired room count
+  room_while:
+  while(frontier.length > 0 && cave.rooms.length < roomCount) {
+    // get another from the queue
+    room = frontier.splice(randInt(frontier.length), 1)[0];
+
+    // rebuild the list of nearby rooms
+    nearbyRooms.splice(0);
+    var i=0; for(; i<cave.rooms.length; i++) {
+      var r = cave.rooms[i];
+      var dist = room.distance(r);
+      if(dist < config.room.spacing_err)
+        continue room_while;
+      else if(dist < config.room.radius * 2)
+        nearbyRooms.push(r);
+    }
+
+    // add stats to the room
+    if(cave.rooms.length < goldRoom) {
+      // put the wumpus in a random room
+      //
+      // (each time we call wumpus.placeInRoom, it will be moved to that room)
+      // notice that we don't check to see if it has already been placed
+      // this way there is a slightly higher chance that it will be farther away from the start
+      if(Math.random() < 1.0 / goldRoom) {
+        cave.wumpus.placeInRoom(room);
+        placedWumpus = true;
+      }
+    } else if(cave.rooms.length === goldRoom) {
+      // if the wumpus hasn't been placed yet, do it now
+      if(!placedWumpus) {
+        cave.wumpus.placeInRoom(room);
+        placedWumpus = true;
+      }
+      room.hasGold = true;
+    } else if(cave.rooms.length > goldRoom) {
+      if(Math.random() < config.pit_probability)
+        room.hasPit = true;
+    }
+
+    // add the room to the map
+    cave.rooms.push(room);
+    // now add all the nearby rooms
+    // this is reflexive
+    Array.prototype.push.apply(room.nearbyRooms, nearbyRooms);
+    i=0; for(; i<nearbyRooms.length; i++)
+      nearbyRooms[i].nearbyRooms.push(room);
+  } // end room_while
 };
 
 function Cave() {

@@ -8,6 +8,7 @@ module.exports = angular.module('lime.client.wumpus', [])
   function($scope) {
     $scope.name = 'example';
 
+    // XXX make the options enumerated lists that we get from the impls?
     $scope.gameConfig = {
       chance: 'deterministic',
       grain: 'discrete',
