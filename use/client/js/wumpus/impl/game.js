@@ -1,7 +1,7 @@
 'use strict';
 
 var Agent = require('./agent');
-var config = require('./peas/config');
+var config = require('./config');
 var grain = require('./peas/grain');
 var Room = require('./room');
 
@@ -59,7 +59,7 @@ exports.generate = function(gameConfig) {
       var dist = room.distance(r);
       if(dist < config.room.spacing_err)
         continue room_while;
-      else if(dist < config.room.radius * 2)
+      else if(dist < config.room.diameter)
         nearbyRooms.push(r);
     }
 

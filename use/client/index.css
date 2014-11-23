@@ -1,3 +1,17 @@
 .radio label+label {
   padding-left: 40px;
 }
+
+[data-wumpus-instance] {
+  position: relative;
+  border: solid 1px black;
+}
+
+[data-wumpus-instance] span.room {
+  position: absolute;
+  width: 96;
+  height: 96;
+  background: black;
+
+  border-radius: 48;
+}
