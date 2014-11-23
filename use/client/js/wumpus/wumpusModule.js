@@ -1,5 +1,9 @@
 'use strict';
 
+// XXX I am managing the data AAALLLLLL wrong
+//  - In many cases, I am writing this under the impression that there "might be multiple instances"
+//  - In other cases, I am writing this assuming there will only be one.
+
 var config = require('./impl/config');
 var game = require('./impl/game');
 
@@ -16,7 +20,7 @@ module.exports = angular.module('lime.client.wumpus', [])
       grain: 'discrete',
       observable: 'fully',
       timing: 'static',
-      roomCount: 4,
+      roomCount: 10,
     };
 
     $scope.generateGame = function() {
