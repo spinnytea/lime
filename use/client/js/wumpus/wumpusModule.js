@@ -89,18 +89,28 @@ module.exports = angular.module('lime.client.wumpus', [])
           var hasAgent = (game.cave.agent.inRooms.indexOf($scope.room) !== -1);
           elem.html(
             addText('Exit', 'black', $scope.room.hasExit) +
-            addText(($scope.room.hasGold?'Gold':'glitter'), 'gold', $scope.room.hasGold || senses.glitter) +
-            addText(($scope.room.hasPit?'Pit':'breeze'), 'black', $scope.room.hasPit || senses.breeze) +
-            addText('Wumpus', 'black', hasWumpus) +
+            addText(['Gold', 'glitter'], 'gold', [$scope.room.hasGold, senses.glitter]) +
+            addText(['Pit', 'breeze'], 'black', [$scope.room.hasPit, senses.breeze]) +
+            addText(['Wumpus', 'stench', 'breathing'], 'black', [hasWumpus, senses.stench, senses.breathing]) +
             addText('Agent', 'black', hasAgent) +
             ''
           );
         }
 
-        function addText(str, color, bool) {
-          return '<div style="color:'+color+';">' +
-            (bool?str:'&nbsp;') +
-            '</div>';
+        function addText(strs, color, bools) {
+          if(!bools.length) {
+            // single case
+            return '<div style="color:'+color+';">' +
+              (bools?strs:'&nbsp;') +
+              '</div>';
+          } else {
+            // list case
+            var idx = bools.indexOf(true);
+            if(idx === -1)
+              return addText('', color, false);
+            else
+              return addText(strs[idx], color, true);
+          }
         }
       } // end link
     };

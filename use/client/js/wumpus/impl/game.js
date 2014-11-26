@@ -30,7 +30,7 @@ exports.generate = function(gameConfig) {
   var cave = exports.cave = new Cave();
 
   // setup the first room
-  var room = new Room(0, 0, { hasExit: true });
+  var room = new Room(0, 0, cave, { hasExit: true });
   // stick the agent in this room
   cave.agent.placeInRoom(room);
   // and place this room on the map
