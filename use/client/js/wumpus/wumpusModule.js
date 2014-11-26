@@ -20,6 +20,7 @@ module.exports = angular.module('lime.client.wumpus', [])
       grain: 'discrete',
       observable: 'fully',
       timing: 'static',
+      apriori: 'known',
       roomCount: 10,
     };
 
@@ -90,8 +91,8 @@ module.exports = angular.module('lime.client.wumpus', [])
           elem.html(
             addText('Exit', 'black', $scope.room.hasExit) +
             addText(['Gold', 'glitter'], 'gold', [$scope.room.hasGold, senses.glitter]) +
-            addText(['Pit', 'breeze'], 'black', [$scope.room.hasPit, senses.breeze]) +
-            addText(['Wumpus', 'stench', 'breathing'], 'black', [hasWumpus, senses.stench, senses.breathing]) +
+            addText(['Pit', 'breeze'], 'blue', [$scope.room.hasPit, senses.breeze]) +
+            addText(['Wumpus', 'stench', 'breathing'], 'brown', [hasWumpus, senses.stench, senses.breathing]) +
             addText('Agent', 'black', hasAgent) +
             ''
           );

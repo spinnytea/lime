@@ -4,7 +4,7 @@
 
 [data-wumpus-instance] {
   position: relative;
-  border: solid 1px black;
+  /*border: solid 1px black;*/
 }
 
 [data-wumpus-instance] [data-wumpus-room] {
