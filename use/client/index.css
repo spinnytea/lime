@@ -5,6 +5,17 @@
   padding-left: 40px;
 }
 
+.panel-heading h1,
+.panel-heading h2,
+.panel-heading h3 {
+  margin:0;
+}
+
+[data-ng-click], [ng-click] {
+  cursor: pointer;
+}
+
+
 [data-wumpus-instance] .game-container {
   position: relative;
   /*border: solid 1px black;*/

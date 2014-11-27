@@ -1,84 +1,109 @@
+<h2>Configuration</h2>
+
 <form class="form-horizontal" role="form">
+    <div class="panel panel-default">
+        <div class="panel-heading"><h3>Environment</h3></div>
+        <div class="panel-body">
+
+            <div class="form-group">
+                <label class="col-sm-2 control-label">Chance</label>
+
+                <div class="col-sm-3 radio form-control-static">
+                    <label><input type="radio" value="deterministic" data-ng-model="gameConfig.chance" disabled>Deterministic</label>
+                    <label><input type="radio" value="stochastic" data-ng-model="gameConfig.chance" disabled>Stochastic</label>
+                </div>
+                <div class="col-sm-7 form-control-static">does my wheel slip because the dirt isn't solid (ice physics)</div>
+            </div>
+            <div class="form-group">
+                <label class="col-sm-2 control-label">Grain</label>
+
+                <div class="col-sm-3 radio form-control-static">
+                    <label><input type="radio" value="discrete" data-ng-model="gameConfig.grain">Discrete</label>
+                    <label><input type="radio" value="continuous" data-ng-model="gameConfig.grain">Continuous</label>
+                </div>
+                <div class="col-sm-7 form-control-static">digital vs analog; move in chunks vs move via velocity (w/ noop)</div>
+            </div>
+            <div class="form-group">
+                <label class="col-sm-2 control-label">Observable</label>
+
+                <div class="col-sm-3 radio form-control-static">
+                    <label><input type="radio" value="fully" data-ng-model="gameConfig.observable">Fully</label>
+                    <label><input type="radio" value="partially" data-ng-model="gameConfig.observable">Partially</label>
+                </div>
+                <div class="col-sm-7 form-control-static">fog of war; you remember where you were with some probability</div>
+            </div>
+            <div class="form-group">
+                <label class="col-sm-2 control-label">Timing</label>
+
+                <div class="col-sm-3 radio form-control-static">
+                    <label><input type="radio" value="static" data-ng-model="gameConfig.timing" disabled>Static</label>
+                    <label><input type="radio" value="dynamic" data-ng-model="gameConfig.timing" disabled>Dynamic</label>
+                </div>
+                <div class="col-sm-7 form-control-static">the world moves without you; or only updates when you tell it to</div>
+            </div>
+            <div class="form-group">
+                <label class="col-sm-2 control-label">A Priori</label>
+
+                <div class="col-sm-3 radio form-control-static">
+                    <label><input type="radio" value="known" data-ng-model="gameConfig.apriori" disabled>Known</label>
+                    <label><input type="radio" value="unknown" data-ng-model="gameConfig.apriori" disabled>Unknown</label>
+                </div>
+                <div class="col-sm-7 form-control-static">how much do you know about the world; you need to learn everything about HOW the
+                    world
+                    works
+                </div>
+            </div>
+            <div class="form-group text-muted italic">
+                <label class="col-sm-2 control-label">Agents</label>
+
+                <div class="col-sm-3 radio form-control-static">
+                    <label><input type="radio" checked disabled>Single</label>
+                    <label><input type="radio" disabled><strike>Multi</strike></label>
+                </div>
+                <div class="col-sm-7 form-control-static">are you alone, or do you have to battle/coop with others (no intentions to
+                    implement
+                    this
+                    at this time)
+                </div>
+            </div>
+            <div class="form-group text-muted italic">
+                <label class="col-sm-2 control-label">Statefulness</label>
+
+                <div class="col-sm-3 radio form-control-static">
+                    <label><input type="radio" disabled><strike>Episodic</strike></label>
+                    <label><input type="radio" checked disabled>Sequential</label>
+                </div>
+                <div class="col-sm-7 form-control-static">are decision related? sorting marbles vs solving a maze (wumpus is sequential by
+                    definition)
+                </div>
+            </div>
+            <div class="form-group">
+                <label class="col-sm-2 control-label">Room Count</label>
+
+                <div class="col-sm-3">
+                    <input class="form-control" type="number" min="4" data-ng-model="gameConfig.roomCount"/>
+                </div>
+                <div class="col-sm-7 form-control-static"></div>
+            </div>
+
+        </div>
+    </div>
+
+    <div class="panel panel-default" data-ng-init="showAdvancedConfig = false">
+        <div class="panel-heading" data-ng-click="showAdvancedConfig = !showAdvancedConfig"><h3>
+            <span class="glyphicon" data-ng-class="{
+                    'glyphicon-chevron-down': showAdvancedConfig,
+                    'glyphicon-chevron-up': !showAdvancedConfig
+                }"></span>
+            Advanced
+        </h3></div>
+        <div class="panel-body" data-ng-show="showAdvancedConfig">
+        </div>
+    </div>
+
+
     <div class="form-group">
-        <label class="col-sm-2 control-label">Chance</label>
-
-        <div class="col-sm-3 radio form-control-static">
-            <label><input type="radio" value="deterministic" data-ng-model="gameConfig.chance" disabled>Deterministic</label>
-            <label><input type="radio" value="stochastic" data-ng-model="gameConfig.chance" disabled>Stochastic</label>
-        </div>
-        <div class="col-sm-7 form-control-static">does my wheel slip because the dirt isn't solid (ice physics)</div>
-    </div>
-    <div class="form-group">
-        <label class="col-sm-2 control-label">Grain</label>
-
-        <div class="col-sm-3 radio form-control-static">
-            <label><input type="radio" value="discrete" data-ng-model="gameConfig.grain">Discrete</label>
-            <label><input type="radio" value="continuous" data-ng-model="gameConfig.grain">Continuous</label>
-        </div>
-        <div class="col-sm-7 form-control-static">digital vs analog; move in chunks vs move via velocity (w/ noop)</div>
-    </div>
-    <div class="form-group">
-        <label class="col-sm-2 control-label">Observable</label>
-
-        <div class="col-sm-3 radio form-control-static">
-            <label><input type="radio" value="fully" data-ng-model="gameConfig.observable">Fully</label>
-            <label><input type="radio" value="partially" data-ng-model="gameConfig.observable">Partially</label>
-        </div>
-        <div class="col-sm-7 form-control-static">fog of war; you remember where you were with some probability</div>
-    </div>
-    <div class="form-group">
-        <label class="col-sm-2 control-label">Timing</label>
-
-        <div class="col-sm-3 radio form-control-static">
-            <label><input type="radio" value="static" data-ng-model="gameConfig.timing" disabled>Static</label>
-            <label><input type="radio" value="dynamic" data-ng-model="gameConfig.timing" disabled>Dynamic</label>
-        </div>
-        <div class="col-sm-7 form-control-static">the world moves without you; or only updates when you tell it to</div>
-    </div>
-    <div class="form-group">
-        <label class="col-sm-2 control-label">A Priori</label>
-
-        <div class="col-sm-3 radio form-control-static">
-            <label><input type="radio" value="known" data-ng-model="gameConfig.apriori" disabled>Known</label>
-            <label><input type="radio" value="unknown" data-ng-model="gameConfig.apriori" disabled>Unknown</label>
-        </div>
-        <div class="col-sm-7 form-control-static">how much do you know about the world; you need to learn everything about HOW the world
-            works
-        </div>
-    </div>
-    <div class="form-group text-muted italic">
-        <label class="col-sm-2 control-label">Agents</label>
-
-        <div class="col-sm-3 radio form-control-static">
-            <label><input type="radio" checked disabled>Single</label>
-            <label><input type="radio" disabled><strike>Multi</strike></label>
-        </div>
-        <div class="col-sm-7 form-control-static">are you alone, or do you have to battle/coop with others (no intentions to implement this
-            at this time)
-        </div>
-    </div>
-    <div class="form-group text-muted italic">
-        <label class="col-sm-2 control-label">Statefulness</label>
-
-        <div class="col-sm-3 radio form-control-static">
-            <label><input type="radio" disabled><strike>Episodic</strike></label>
-            <label><input type="radio" checked disabled>Sequential</label>
-        </div>
-        <div class="col-sm-7 form-control-static">are decision related? sorting marbles vs solving a maze (wumpus is sequential by
-            definition)
-        </div>
-    </div>
-    <div class="form-group">
-        <label class="col-sm-2 control-label">Room Count</label>
-
-        <div class="col-sm-3">
-            <input class="form-control" type="number" min="4" data-ng-model="gameConfig.roomCount"/>
-        </div>
-        <div class="col-sm-7 form-control-static"></div>
-    </div>
-
-    <div class="form-group">
-        <div class="col-sm-offset-2 col-sm-10">
+        <div class="col-sm-12">
             <button class="btn btn-primary" data-ng-click="generateGame()">New Game</button>
         </div>
     </div>
