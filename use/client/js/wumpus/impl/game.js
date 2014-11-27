@@ -81,7 +81,7 @@ exports.generate = function(gameConfig) {
       }
       room.hasGold = true;
     } else if(cave.rooms.length > goldRoom) {
-      if(Math.random() < config.pit_probability)
+      if(Math.random() < config.pit.probability)
         room.hasPit = true;
     }
 

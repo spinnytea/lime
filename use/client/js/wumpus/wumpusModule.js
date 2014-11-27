@@ -24,6 +24,10 @@ module.exports = angular.module('lime.client.wumpus', [])
       roomCount: 10,
     };
 
+    $scope.newGame = function() {
+      $scope.state = 'newgame';
+      game.cave = undefined;
+    };
     $scope.generateGame = function() {
       game.generate($scope.gameConfig);
       $scope.state = 'instance';

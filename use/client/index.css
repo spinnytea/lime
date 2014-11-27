@@ -1,8 +1,11 @@
+.italic { font-style: italic; }
+.text-muted { color: #aaa; }
+
 .radio label+label {
   padding-left: 40px;
 }
 
-[data-wumpus-instance] {
+[data-wumpus-instance] .game-container {
   position: relative;
   /*border: solid 1px black;*/
 }
