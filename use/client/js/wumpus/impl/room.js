@@ -1,5 +1,7 @@
 'use strict';
 
+var config = require('./config');
+
 module.exports = Room;
 
 //var RADIUS = 48;
@@ -15,6 +17,7 @@ function Room(x, y, cave, options) {
     hasPit: false,
     hasGold: false,
     hasExit: false,
+    visible: (config.game.observable === 'fully'),
   }, options);
 }
 

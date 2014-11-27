@@ -58,11 +58,7 @@ module.exports = angular.module('lime.client.wumpus', [])
         elem.css('width', $scope.bounds.maxx-$scope.bounds.minx);
         elem.css('height', $scope.bounds.maxy-$scope.bounds.miny);
 
-        // TODO when the computer plays, render the unobservable rooms in mute
-        if(config.game.observable === 'partially')
-          $scope.rooms = game.cave.agent.inRooms;
-        else
-          $scope.rooms = game.cave.rooms;
+        $scope.rooms = game.cave.rooms;
       } // end link
     };
   }
@@ -81,12 +77,13 @@ module.exports = angular.module('lime.client.wumpus', [])
           .css('padding-top', config.room.radius/3)
           .css('padding-left', config.room.radius/3)
           .css('border-radius', config.room.radius)
-        // room config
           .css('left', $scope.room.x - $scope.bounds.minx - config.room.radius)
           .css('top', $scope.room.y - $scope.bounds.miny - config.room.radius);
 
-
         $scope.$on('$destroy', $scope.$watch(function() { return $scope.room.senses(); }, updateHtml, true));
+        $scope.$on('$destroy', $scope.$watch('room.visible', function() {
+          elem.css('display', $scope.room.visible?'auto':'none');
+        }, true));
 
         // TEST cannot deep watch on rooms; we need another way to identify that the rooms have changed
 //        $scope.$on('$destroy', $scope.$watch(function() { return game.cave.wumpus.inRooms; }, updateHtml));

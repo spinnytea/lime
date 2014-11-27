@@ -35,6 +35,8 @@ exports.generate = function() {
   cave.agent.placeInRoom(room);
   // and place this room on the map
   cave.rooms.push(room);
+  // update visibility (if it's already observable, so be it)
+  room.visible = true;
 
   // This will use an implementation of Prim's Algorithm
   var frontier = [];
@@ -126,6 +128,7 @@ function Agent(options) {
 }
 
 Agent.prototype.placeInRoom = function(room) {
+  // update position
   this.x = room.x;
   this.y = room.y;
 
