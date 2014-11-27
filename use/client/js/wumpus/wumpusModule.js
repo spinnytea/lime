@@ -7,16 +7,12 @@
 var config = require('./impl/config');
 var game = require('./impl/game');
 
-// XXX make the options enumerated lists that we get from the impls?
-var gameConfig = config.game;
-
 module.exports = angular.module('lime.client.wumpus', [])
 .controller('lime.client.wumpus.app', [
   '$scope',
   function($scope) {
     $scope.config = config;
     $scope.state = 'config';
-    $scope.gameConfig = gameConfig;
 
     $scope.gotoConfig = function() {
       $scope.state = 'config';
@@ -28,7 +24,7 @@ module.exports = angular.module('lime.client.wumpus', [])
       $scope.state = 'none';
       setTimeout(function() {
         $scope.$apply(function() {
-          game.generate(gameConfig);
+          game.generate();
           $scope.state = 'instance';
         });
       }, 0);
@@ -63,7 +59,7 @@ module.exports = angular.module('lime.client.wumpus', [])
         elem.css('height', $scope.bounds.maxy-$scope.bounds.miny);
 
         // TODO when the computer plays, render the unobservable rooms in mute
-        if(gameConfig.observable === 'partially')
+        if(config.game.observable === 'partially')
           $scope.rooms = game.cave.agent.inRooms;
         else
           $scope.rooms = game.cave.rooms;

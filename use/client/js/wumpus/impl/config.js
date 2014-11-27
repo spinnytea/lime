@@ -5,6 +5,8 @@ var room = exports.room = {};
 var pit = exports.pit = {};
 var grain = exports.grain = { continuous: {} };
 exports.game = {
+  // if these are changed while a game is running... the results will be unpredictable
+  // XXX enumerate lists of available options? (so we don't have magic strings)
   chance: 'deterministic',
   grain: 'discrete',
   observable: 'fully',

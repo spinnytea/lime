@@ -15,9 +15,9 @@ exports.cave = undefined;
 // . wumpus - randomly placed between exit (exclusive) and gold (inclusive)
 // . gold   - placed at roomCount/2
 // . pit    - after gold is placed, generated with some probability (e.g. n/(roomCount/2), where n is a constant number of rooms we'd like to see)
-exports.generate = function(gameConfig) {
+exports.generate = function() {
   // pull out our arguments
-  var roomCount = Math.max(gameConfig.roomCount || 0, 4);
+  var roomCount = Math.max(config.game.roomCount || 0, 4);
 
   // the room where the cold will be placed
   var goldRoom = Math.floor(roomCount / 2);
@@ -39,7 +39,7 @@ exports.generate = function(gameConfig) {
   // This will use an implementation of Prim's Algorithm
   var frontier = [];
   // seed the frontier with our first room
-  Array.prototype.push.apply(frontier, grain.roomFrontier[gameConfig.grain](room));
+  Array.prototype.push.apply(frontier, grain.roomFrontier[config.game.grain](room));
 
   // these are all the rooms that this new room connects to
   var nearbyRooms = [];
@@ -94,7 +94,7 @@ exports.generate = function(gameConfig) {
       nearbyRooms[i].nearbyRooms.push(room);
 
     // add branches from the current room
-    Array.prototype.push.apply(frontier, grain.roomFrontier[gameConfig.grain](room));
+    Array.prototype.push.apply(frontier, grain.roomFrontier[config.game.grain](room));
   } // end room_while
 };
 
