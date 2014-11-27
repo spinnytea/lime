@@ -99,38 +99,50 @@
         </h3></div>
         <div class="panel-body" data-ng-show="showAdvancedConfig">
 
-            <div class="form-group">
+            <div class="form-group has-feedback"
+                 data-ng-class="{'has-success': config.agent.radius, 'has-error': !config.agent.radius}">
                 <label class="col-sm-2 control-label">Agent Radius</label>
 
                 <div class="col-sm-3">
                     <input class="form-control" type="number" min="6" step="4" data-ng-model="config.agent.radius"/>
+                    <span class="glyphicon form-control-feedback"
+                          data-ng-class="{'glyphicon-ok': config.agent.radius, 'glyphicon-remove': !config.agent.radius}"></span>
                 </div>
                 <div class="col-sm-7 form-control-static">How large is the agent and wumpus? (Note: shouldn't be larger than the room)</div>
             </div>
-            <div class="form-group">
+            <div class="form-group has-feedback"
+                 data-ng-class="{'has-success': config.room.radius, 'has-error': !config.room.radius}">
                 <label class="col-sm-2 control-label">Room Radius</label>
 
                 <div class="col-sm-3">
                     <input class="form-control" type="number" min="12" step="8" data-ng-model="config.room.radius"/>
+                    <span class="glyphicon form-control-feedback"
+                          data-ng-class="{'glyphicon-ok': config.room.radius, 'glyphicon-remove': !config.room.radius}"></span>
                 </div>
                 <div class="col-sm-7 form-control-static">How large are the rooms?</div>
             </div>
-            <div class="form-group">
+            <div class="form-group has-feedback"
+                 data-ng-class="{'has-success': config.pit.probability, 'has-error': !config.pit.probability}">
                 <label class="col-sm-2 control-label">Pit Probability</label>
 
                 <div class="col-sm-3">
-                    <input class="form-control" type="number" max="1" min="0" step="0.1" data-ng-model="config.pit.probability"/>
+                    <input class="form-control" type="number" max="1" min="0.1" step="0.1" data-ng-model="config.pit.probability"/>
+                    <span class="glyphicon form-control-feedback"
+                          data-ng-class="{'glyphicon-ok': config.pit.probability, 'glyphicon-remove': !config.pit.probability}"></span>
                 </div>
                 <div class="col-sm-7 form-control-static">Once the objects have been placed (exit/wumpus/gold), how likely is it for pits to
                     appear
                 </div>
             </div>
-            <div class="form-group">
+            <div class="form-group has-feedback"
+                 data-ng-class="{'has-success': config.grain.continuous.branches, 'has-error': !config.grain.continuous.branches}">
                 <label class="col-sm-2 control-label">Branching Factor (continuous)</label>
 
                 <div class="col-sm-3">
                     <input class="form-control" type="number" max="12" min="2" data-ng-model="config.grain.continuous.branches"
                            data-ng-disabled="config.game.grain !== 'continuous'"/>
+                    <span class="glyphicon form-control-feedback"
+                          data-ng-class="{'glyphicon-ok': config.grain.continuous.branches, 'glyphicon-remove': !config.grain.continuous.branches}"></span>
                 </div>
                 <div class="col-sm-7 form-control-static">When the game is in continuous mode, how many branching rooms should the game
                     generate.
