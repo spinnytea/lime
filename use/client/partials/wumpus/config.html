@@ -103,7 +103,7 @@
                 <label class="col-sm-2 control-label">Agent Radius</label>
 
                 <div class="col-sm-3">
-                    <input class="form-control" type="number" min="1" data-ng-model="config.agent.radius"/>
+                    <input class="form-control" type="number" min="6" step="4" data-ng-model="config.agent.radius"/>
                 </div>
                 <div class="col-sm-7 form-control-static">How large is the agent and wumpus? (Note: shouldn't be larger than the room)</div>
             </div>
@@ -111,7 +111,7 @@
                 <label class="col-sm-2 control-label">Room Radius</label>
 
                 <div class="col-sm-3">
-                    <input class="form-control" type="number" min="4" data-ng-model="config.room.radius"/>
+                    <input class="form-control" type="number" min="12" step="8" data-ng-model="config.room.radius"/>
                 </div>
                 <div class="col-sm-7 form-control-static">How large are the rooms?</div>
             </div>
@@ -119,7 +119,7 @@
                 <label class="col-sm-2 control-label">Pit Probability</label>
 
                 <div class="col-sm-3">
-                    <input class="form-control" type="number" max="1" min="0" data-ng-model="config.pit.probability"/>
+                    <input class="form-control" type="number" max="1" min="0" step="0.1" data-ng-model="config.pit.probability"/>
                 </div>
                 <div class="col-sm-7 form-control-static">Once the objects have been placed (exit/wumpus/gold), how likely is it for pits to
                     appear
@@ -129,7 +129,7 @@
                 <label class="col-sm-2 control-label">Branching Factor (continuous)</label>
 
                 <div class="col-sm-3">
-                    <input class="form-control" type="number" min="1" data-ng-model="config.grain.continuous.branches"
+                    <input class="form-control" type="number" max="12" min="2" data-ng-model="config.grain.continuous.branches"
                            data-ng-disabled="config.game.grain !== 'continuous'"/>
                 </div>
                 <div class="col-sm-7 form-control-static">When the game is in continuous mode, how many branching rooms should the game

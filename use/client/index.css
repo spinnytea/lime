@@ -1,8 +1,8 @@
 .italic { font-style: italic; }
 .text-muted { color: #aaa; }
 
-.radio label+label {
-  padding-left: 40px;
+.radio label {
+  padding-right: 20px;
 }
 
 .panel-heading h1,
