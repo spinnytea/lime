@@ -44,6 +44,7 @@ module.exports = angular.module('lime.client.wumpus', [])
           minx: 0, maxx: 0,
           miny: 0, maxy: 0,
         };
+        $scope.agent = game.cave.agent;
 
         // find the bounds of the game
         // TODO change bounds with observability
@@ -61,6 +62,7 @@ module.exports = angular.module('lime.client.wumpus', [])
         elem.css('width', $scope.bounds.maxx-$scope.bounds.minx);
         elem.css('height', $scope.bounds.maxy-$scope.bounds.miny);
 
+        // TODO when the computer plays, render the unobservable rooms in mute
         if(gameConfig.observable === 'partially')
           $scope.rooms = game.cave.agent.inRooms;
         else
@@ -82,16 +84,15 @@ module.exports = angular.module('lime.client.wumpus', [])
           .css('height', config.room.diameter)
           .css('padding-top', config.room.radius/3)
           .css('padding-left', config.room.radius/3)
-          .css('border-radius', config.room.radius);
-
+          .css('border-radius', config.room.radius)
         // room config
-        elem.css('left', $scope.room.x - $scope.bounds.minx - config.room.radius)
+          .css('left', $scope.room.x - $scope.bounds.minx - config.room.radius)
           .css('top', $scope.room.y - $scope.bounds.miny - config.room.radius);
 
 
         $scope.$on('$destroy', $scope.$watch(function() { return $scope.room.senses(); }, updateHtml, true));
-        $scope.$on('$destroy', $scope.$watch(function() { return game.cave.wumpus.inRooms; }, updateHtml));
-        $scope.$on('$destroy', $scope.$watch(function() { return game.cave.agent.inRooms; }, updateHtml));
+        $scope.$on('$destroy', $scope.$watch(function() { return game.cave.wumpus.inRooms; }, updateHtml)); // TEST when agent changes rooms
+        $scope.$on('$destroy', $scope.$watch(function() { return game.cave.agent.inRooms; }, updateHtml)); // TEST when agent changes rooms
 
         function updateHtml() {
           var senses = $scope.room.senses();
@@ -123,6 +124,29 @@ module.exports = angular.module('lime.client.wumpus', [])
           }
         }
       } // end link
+    };
+  }
+]) // end wumpusRoom directive
+.directive('wumpusAgent', [
+  function() {
+    return {
+      scope: {
+        agent: '=wumpusAgent',
+        bounds: '=',
+      },
+      link: function($scope, elem) {
+        // static config
+        elem.css('width', config.agent.diameter)
+          .css('height', config.agent.diameter)
+          .css('border-radius', config.agent.radius);
+
+        // agent config
+        $scope.$on('$destroy', $scope.$watch('agent', function() {
+          elem.css('left', $scope.agent.x - $scope.bounds.minx - config.agent.radius)
+            .css('top', $scope.agent.y - $scope.bounds.miny - config.agent.radius);
+        }));
+
+      }, // end link
     };
   }
 ]) // end wumpusRoom directive

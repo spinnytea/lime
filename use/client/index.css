@@ -10,6 +10,7 @@
   /*border: solid 1px black;*/
 }
 
+[data-wumpus-instance] [data-wumpus-agent],
 [data-wumpus-instance] [data-wumpus-room] {
   position: absolute;
   border: solid black 1px;

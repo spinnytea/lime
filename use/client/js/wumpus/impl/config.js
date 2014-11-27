@@ -1,8 +1,13 @@
 'use strict';
 
+var agent = exports.agent = {};
 var room = exports.room = {};
 var pit = exports.pit = {};
 var grain = exports.grain = { continuous: {} };
+
+// how big are the agents
+agent.radius = 12;
+agent.diameter = agent.radius * 2;
 
 // how big the room is
 room.radius = 48;
