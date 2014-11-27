@@ -16,3 +16,8 @@
   border: solid black 1px;
   font-size: 10px;
 }
+
+[data-wumpus-instance] [data-wumpus-agent] span {
+  position: absolute;
+  border-top: solid black 1px;
+}

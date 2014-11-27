@@ -91,8 +91,10 @@ module.exports = angular.module('lime.client.wumpus', [])
 
 
         $scope.$on('$destroy', $scope.$watch(function() { return $scope.room.senses(); }, updateHtml, true));
-        $scope.$on('$destroy', $scope.$watch(function() { return game.cave.wumpus.inRooms; }, updateHtml)); // TEST when agent changes rooms
-        $scope.$on('$destroy', $scope.$watch(function() { return game.cave.agent.inRooms; }, updateHtml)); // TEST when agent changes rooms
+
+        // TEST cannot deep watch on rooms; we need another way to identify that the rooms have changed
+//        $scope.$on('$destroy', $scope.$watch(function() { return game.cave.wumpus.inRooms; }, updateHtml));
+//        $scope.$on('$destroy', $scope.$watch(function() { return game.cave.agent.inRooms; }, updateHtml));
 
         function updateHtml() {
           var senses = $scope.room.senses();
@@ -134,16 +136,34 @@ module.exports = angular.module('lime.client.wumpus', [])
         agent: '=wumpusAgent',
         bounds: '=',
       },
+      template: '<span></span>',
       link: function($scope, elem) {
         // static config
         elem.css('width', config.agent.diameter)
           .css('height', config.agent.diameter)
           .css('border-radius', config.agent.radius);
 
+        // the line that indicates direction
+        var $dir = elem.find('span');
+        $dir.css('width', config.agent.radius);
+
         // agent config
-        $scope.$on('$destroy', $scope.$watch('agent', function() {
-          elem.css('left', $scope.agent.x - $scope.bounds.minx - config.agent.radius)
-            .css('top', $scope.agent.y - $scope.bounds.miny - config.agent.radius);
+        $scope.$on('$destroy', $scope.$watch('agent.x', function() {
+          elem.css('left', $scope.agent.x - $scope.bounds.minx - config.agent.radius);
+        }));
+        $scope.$on('$destroy', $scope.$watch('agent.y', function() {
+          elem.css('top', $scope.agent.y - $scope.bounds.miny - config.agent.radius);
+        }));
+
+        $scope.$on('$destroy', $scope.$watch('agent.r', function() {
+          // rotate turns the middle of the object
+          var r = $scope.agent.r;
+          var left = config.agent.radius/2 + Math.cos(r)*config.agent.radius/2;
+          var top = config.agent.radius + Math.sin(r)*config.agent.radius/2;
+
+          $dir.css('transform', 'rotate(' + r + 'rad)')
+            .css('top', top)
+            .css('left', left);
         }));
 
       }, // end link
