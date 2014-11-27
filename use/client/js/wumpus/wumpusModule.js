@@ -7,29 +7,30 @@
 var config = require('./impl/config');
 var game = require('./impl/game');
 
+// XXX make the options enumerated lists that we get from the impls?
+var gameConfig = {
+  chance: 'deterministic',
+  grain: 'discrete',
+  observable: 'fully',
+  timing: 'static',
+  apriori: 'known',
+  roomCount: 10,
+};
+
 module.exports = angular.module('lime.client.wumpus', [])
 .controller('lime.client.wumpus.app', [
   '$scope',
   function($scope) {
     $scope.config = config;
     $scope.state = 'newgame';
-
-    // XXX make the options enumerated lists that we get from the impls?
-    $scope.gameConfig = {
-      chance: 'deterministic',
-      grain: 'discrete',
-      observable: 'fully',
-      timing: 'static',
-      apriori: 'known',
-      roomCount: 10,
-    };
+    $scope.gameConfig = gameConfig;
 
     $scope.newGame = function() {
       $scope.state = 'newgame';
       game.cave = undefined;
     };
     $scope.generateGame = function() {
-      game.generate($scope.gameConfig);
+      game.generate(gameConfig);
       $scope.state = 'instance';
     };
   }
@@ -45,6 +46,7 @@ module.exports = angular.module('lime.client.wumpus', [])
         };
 
         // find the bounds of the game
+        // TODO change bounds with observability
         game.cave.rooms.forEach(function(room) {
           $scope.bounds.minx = Math.min($scope.bounds.minx, room.x);
           $scope.bounds.maxx = Math.max($scope.bounds.maxx, room.x);
@@ -59,7 +61,10 @@ module.exports = angular.module('lime.client.wumpus', [])
         elem.css('width', $scope.bounds.maxx-$scope.bounds.minx);
         elem.css('height', $scope.bounds.maxy-$scope.bounds.miny);
 
-        $scope.rooms = game.cave.rooms;
+        if(gameConfig.observable === 'partially')
+          $scope.rooms = game.cave.agent.inRooms;
+        else
+          $scope.rooms = game.cave.rooms;
       } // end link
     };
   }
