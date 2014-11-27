@@ -8,30 +8,30 @@ var config = require('./impl/config');
 var game = require('./impl/game');
 
 // XXX make the options enumerated lists that we get from the impls?
-var gameConfig = {
-  chance: 'deterministic',
-  grain: 'discrete',
-  observable: 'fully',
-  timing: 'static',
-  apriori: 'known',
-  roomCount: 10,
-};
+var gameConfig = config.game;
 
 module.exports = angular.module('lime.client.wumpus', [])
 .controller('lime.client.wumpus.app', [
   '$scope',
   function($scope) {
     $scope.config = config;
-    $scope.state = 'newgame';
+    $scope.state = 'config';
     $scope.gameConfig = gameConfig;
 
-    $scope.newGame = function() {
-      $scope.state = 'newgame';
+    $scope.gotoConfig = function() {
+      $scope.state = 'config';
       game.cave = undefined;
     };
     $scope.generateGame = function() {
-      game.generate(gameConfig);
-      $scope.state = 'instance';
+      // our game is in a directive
+      // this will basically reset the game
+      $scope.state = 'none';
+      setTimeout(function() {
+        $scope.$apply(function() {
+          game.generate(gameConfig);
+          $scope.state = 'instance';
+        });
+      }, 0);
     };
   }
 ]) // end lime.client.wumpus.app controller
@@ -145,7 +145,7 @@ module.exports = angular.module('lime.client.wumpus', [])
 
         // the line that indicates direction
         var $dir = elem.find('span');
-        $dir.css('width', config.agent.radius);
+        $dir.css('width', config.agent.radius-1).css('height', 0);
 
         // agent config
         $scope.$on('$destroy', $scope.$watch('agent.x', function() {
@@ -156,7 +156,8 @@ module.exports = angular.module('lime.client.wumpus', [])
         }));
 
         $scope.$on('$destroy', $scope.$watch('agent.r', function() {
-          // rotate turns the middle of the object
+          // the rotation turns the middle of the object
+          // implemented as a special case: width === radius, height === 0
           var r = $scope.agent.r;
           var left = config.agent.radius/2 + Math.cos(r)*config.agent.radius/2;
           var top = config.agent.radius + Math.sin(r)*config.agent.radius/2;

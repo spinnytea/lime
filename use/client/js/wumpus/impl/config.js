@@ -4,6 +4,14 @@ var agent = exports.agent = {};
 var room = exports.room = {};
 var pit = exports.pit = {};
 var grain = exports.grain = { continuous: {} };
+exports.game = {
+  chance: 'deterministic',
+  grain: 'discrete',
+  observable: 'fully',
+  timing: 'static',
+  apriori: 'known',
+  roomCount: 10,
+};
 
 // how big are the agents
 agent.radius = 12;
