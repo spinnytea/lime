@@ -9,8 +9,8 @@
                 <label class="col-sm-2 control-label">Chance</label>
 
                 <div class="col-sm-3 radio form-control-static">
-                    <label><input type="radio" value="deterministic" data-ng-model="gameConfig.chance" disabled>Deterministic</label>
-                    <label><input type="radio" value="stochastic" data-ng-model="gameConfig.chance" disabled>Stochastic</label>
+                    <label><input type="radio" value="deterministic" data-ng-model="config.game.chance" disabled>Deterministic</label>
+                    <label><input type="radio" value="stochastic" data-ng-model="config.game.chance" disabled>Stochastic</label>
                 </div>
                 <div class="col-sm-7 form-control-static">does my wheel slip because the dirt isn't solid (ice physics)</div>
             </div>
@@ -18,8 +18,8 @@
                 <label class="col-sm-2 control-label">Grain</label>
 
                 <div class="col-sm-3 radio form-control-static">
-                    <label><input type="radio" value="discrete" data-ng-model="gameConfig.grain">Discrete</label>
-                    <label><input type="radio" value="continuous" data-ng-model="gameConfig.grain">Continuous</label>
+                    <label><input type="radio" value="discrete" data-ng-model="config.game.grain">Discrete</label>
+                    <label><input type="radio" value="continuous" data-ng-model="config.game.grain">Continuous</label>
                 </div>
                 <div class="col-sm-7 form-control-static">digital vs analog; move in chunks vs move via velocity (w/ noop)</div>
             </div>
@@ -27,8 +27,8 @@
                 <label class="col-sm-2 control-label">Observable</label>
 
                 <div class="col-sm-3 radio form-control-static">
-                    <label><input type="radio" value="fully" data-ng-model="gameConfig.observable">Fully</label>
-                    <label><input type="radio" value="partially" data-ng-model="gameConfig.observable">Partially</label>
+                    <label><input type="radio" value="fully" data-ng-model="config.game.observable">Fully</label>
+                    <label><input type="radio" value="partially" data-ng-model="config.game.observable">Partially</label>
                 </div>
                 <div class="col-sm-7 form-control-static">fog of war; you remember where you were with some probability</div>
             </div>
@@ -36,8 +36,8 @@
                 <label class="col-sm-2 control-label">Timing</label>
 
                 <div class="col-sm-3 radio form-control-static">
-                    <label><input type="radio" value="static" data-ng-model="gameConfig.timing" disabled>Static</label>
-                    <label><input type="radio" value="dynamic" data-ng-model="gameConfig.timing" disabled>Dynamic</label>
+                    <label><input type="radio" value="static" data-ng-model="config.game.timing" disabled>Static</label>
+                    <label><input type="radio" value="dynamic" data-ng-model="config.game.timing" disabled>Dynamic</label>
                 </div>
                 <div class="col-sm-7 form-control-static">the world moves without you; or only updates when you tell it to</div>
             </div>
@@ -45,8 +45,8 @@
                 <label class="col-sm-2 control-label">A Priori</label>
 
                 <div class="col-sm-3 radio form-control-static">
-                    <label><input type="radio" value="known" data-ng-model="gameConfig.apriori" disabled>Known</label>
-                    <label><input type="radio" value="unknown" data-ng-model="gameConfig.apriori" disabled>Unknown</label>
+                    <label><input type="radio" value="known" data-ng-model="config.game.apriori" disabled>Known</label>
+                    <label><input type="radio" value="unknown" data-ng-model="config.game.apriori" disabled>Unknown</label>
                 </div>
                 <div class="col-sm-7 form-control-static">how much do you know about the world; you need to learn everything about HOW the
                     world
@@ -81,7 +81,7 @@
                 <label class="col-sm-2 control-label">Room Count</label>
 
                 <div class="col-sm-3">
-                    <input class="form-control" type="number" min="4" data-ng-model="gameConfig.roomCount"/>
+                    <input class="form-control" type="number" min="4" data-ng-model="config.game.roomCount"/>
                 </div>
                 <div class="col-sm-7 form-control-static"></div>
             </div>
@@ -98,6 +98,45 @@
             Advanced
         </h3></div>
         <div class="panel-body" data-ng-show="showAdvancedConfig">
+
+            <div class="form-group">
+                <label class="col-sm-2 control-label">Agent Radius</label>
+
+                <div class="col-sm-3">
+                    <input class="form-control" type="number" min="1" data-ng-model="config.agent.radius"/>
+                </div>
+                <div class="col-sm-7 form-control-static">How large is the agent and wumpus? (Note: shouldn't be larger than the room)</div>
+            </div>
+            <div class="form-group">
+                <label class="col-sm-2 control-label">Room Radius</label>
+
+                <div class="col-sm-3">
+                    <input class="form-control" type="number" min="4" data-ng-model="config.room.radius"/>
+                </div>
+                <div class="col-sm-7 form-control-static">How large are the rooms?</div>
+            </div>
+            <div class="form-group">
+                <label class="col-sm-2 control-label">Pit Probability</label>
+
+                <div class="col-sm-3">
+                    <input class="form-control" type="number" max="1" min="0" data-ng-model="config.pit.probability"/>
+                </div>
+                <div class="col-sm-7 form-control-static">Once the objects have been placed (exit/wumpus/gold), how likely is it for pits to
+                    appear
+                </div>
+            </div>
+            <div class="form-group">
+                <label class="col-sm-2 control-label">Branching Factor (continuous)</label>
+
+                <div class="col-sm-3">
+                    <input class="form-control" type="number" min="1" data-ng-model="config.grain.continuous.branches"
+                           data-ng-disabled="config.game.grain !== 'continuous'"/>
+                </div>
+                <div class="col-sm-7 form-control-static">When the game is in continuous mode, how many branching rooms should the game
+                    generate.
+                </div>
+            </div>
+
         </div>
     </div>
 

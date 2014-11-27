@@ -17,16 +17,17 @@ exports.game = {
 
 // how big are the agents
 agent.radius = 12;
-agent.diameter = agent.radius * 2;
+Object.defineProperty(agent, 'diameter', { get: function() { return agent.radius * 2; } });
+//agent.diameter = agent.radius * 2;
 
 // how big the room is
 room.radius = 48;
-room.diameter = exports.room.radius * 2;
+Object.defineProperty(room, 'diameter', { get: function() { return room.radius * 2; } });
 // how far away to place the rooms from each other
 // this needs to be smaller than the diameter. This also means that the agent might be in two rooms at once
-room.spacing = exports.room.diameter - 10;
+Object.defineProperty(room, 'spacing', { get: function() { return room.radius * 1.8; } });
 // computer math isn't perfect, so we need to have a little bit of leeway in our comparisons
-room.spacing_err = exports.room.spacing - 1;
+Object.defineProperty(room, 'spacing_err', { get: function() { return room.spacing - 1; } });
 
 // How likely is it for a pit to be generated after we have placed the exit and the gold
 pit.probability = 0.5;
