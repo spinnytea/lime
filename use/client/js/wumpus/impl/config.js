@@ -46,3 +46,5 @@ grain.continuous.branches = 6;
 // how long do we wait between updates
 // TODO one delay for each grain continuous/dynamic
 timing.updateDelay = 100; // TODO config
+
+// TODO scoring

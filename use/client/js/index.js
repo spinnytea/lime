@@ -1,5 +1,4 @@
 'use strict';
-// TODO shim angular to be loaded externally
 angular.module('lime.client', [
   require('./wumpus/wumpusModule').name,
   'ngRoute',

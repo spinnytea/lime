@@ -39,30 +39,14 @@ module.exports = angular.module('lime.client.wumpus', [])
     return {
       templateUrl: 'partials/wumpus/instance.html',
       link: function($scope, elem) {
-        $scope.bounds = {
-          minx: 0, maxx: 0,
-          miny: 0, maxy: 0,
-        };
         $scope.agent = game.cave.agent;
         $scope.rooms = game.cave.rooms;
 
-        // find the bounds of the game
-        // TODO change bounds with observability
-        // TODO move bounds to game.bounds
-        game.cave.rooms.forEach(function(room) {
-          $scope.bounds.minx = Math.min($scope.bounds.minx, room.x);
-          $scope.bounds.maxx = Math.max($scope.bounds.maxx, room.x);
-          $scope.bounds.miny = Math.min($scope.bounds.miny, room.y);
-          $scope.bounds.maxy = Math.max($scope.bounds.maxy, room.y);
-        });
-        $scope.bounds.minx -= config.room.radius;
-        $scope.bounds.maxx += config.room.radius;
-        $scope.bounds.miny -= config.room.radius;
-        $scope.bounds.maxy += config.room.radius;
+        elem.css('width', game.cave.bounds.maxx-game.cave.bounds.minx);
+        elem.css('height', game.cave.bounds.maxy-game.cave.bounds.miny);
 
-        elem.css('width', $scope.bounds.maxx-$scope.bounds.minx);
-        elem.css('height', $scope.bounds.maxy-$scope.bounds.miny);
-
+        // TODO watch for player death
+        // TODO watch for player win
 
         $scope.$on('$destroy', $scope.$watch('config.game.grain', function(newValue) {
           $scope.override.keyup = grain.keyup[newValue];
@@ -93,7 +77,6 @@ module.exports = angular.module('lime.client.wumpus', [])
     return {
       scope: {
         room: '=wumpusRoom',
-        bounds: '=',
       },
       link: function($scope, elem) {
         // static config
@@ -102,8 +85,8 @@ module.exports = angular.module('lime.client.wumpus', [])
           .css('padding-top', config.room.radius/3)
           .css('padding-left', config.room.radius/3)
           .css('border-radius', config.room.radius)
-          .css('left', $scope.room.x - $scope.bounds.minx - config.room.radius)
-          .css('top', $scope.room.y - $scope.bounds.miny - config.room.radius);
+          .css('left', $scope.room.x - game.cave.bounds.minx - config.room.radius)
+          .css('top', $scope.room.y - game.cave.bounds.miny - config.room.radius);
 
         $scope.$on('$destroy', $scope.$watch(function() { return $scope.room.senses(); }, updateHtml, true));
 
@@ -152,7 +135,6 @@ module.exports = angular.module('lime.client.wumpus', [])
     return {
       scope: {
         agent: '=wumpusAgent',
-        bounds: '=',
       },
       template: '<span></span>',
       link: function($scope, elem) {
@@ -167,10 +149,10 @@ module.exports = angular.module('lime.client.wumpus', [])
 
         // agent config
         $scope.$on('$destroy', $scope.$watch('agent.x', function() {
-          elem.css('left', $scope.agent.x - $scope.bounds.minx - config.agent.radius);
+          elem.css('left', $scope.agent.x - game.cave.bounds.minx - config.agent.radius);
         }));
         $scope.$on('$destroy', $scope.$watch('agent.y', function() {
-          elem.css('top', $scope.agent.y - $scope.bounds.miny - config.agent.radius);
+          elem.css('top', $scope.agent.y - game.cave.bounds.miny - config.agent.radius);
         }));
 
         $scope.$on('$destroy', $scope.$watch('agent.r', function() {

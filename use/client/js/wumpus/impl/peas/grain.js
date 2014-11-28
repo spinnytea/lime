@@ -65,6 +65,9 @@ exports.keydown = {
       case 39: turn_velocity = Math.PI / 2; break;
       case 40: forward_velocity = 0; break;
       case 32: break; // noop
+      // TODO grab
+      // TODO fire
+      // TODO exit
       default:
         used = false;
     }
@@ -82,6 +85,9 @@ exports.keydown = {
       case 39: turn_velocity = Math.min(turn_velocity+config.agent.turn_acceleration, config.agent.top_turn_speed); break;
       case 40: forward_velocity = Math.max(forward_velocity-config.agent.acceleration, 0); break;
       case 32: break; // noop
+      // TODO grab
+      // TODO fire
+      // TODO exit
       default:
         used = false;
     }

@@ -6,7 +6,7 @@ var Room = require('./room');
 
 function randInt(max) { return Math.floor(Math.random() * max); }
 
-exports.cave = undefined;
+var cave = exports.cave = undefined;
 
 // required rooms:
 // (if we generate the rooms in this manner using this algorithm, then we can guarantee that there are not pits between the exit and the gold)
@@ -27,7 +27,7 @@ exports.generate = function() {
   // we are ultimately building this as the game object
   // create a new one on exports
   // the locally scoped name is for ease of access
-  var cave = exports.cave = new Cave();
+  cave = exports.cave = new Cave();
 
   // setup the first room
   var room = new Room(0, 0, cave, { hasExit: true });
@@ -89,6 +89,12 @@ exports.generate = function() {
 
     // add the room to the map
     cave.rooms.push(room);
+    // find the bounds of the game
+    // TODO change bounds with observability
+    cave.bounds.minx = Math.min(cave.bounds.minx, room.x-config.room.radius);
+    cave.bounds.maxx = Math.max(cave.bounds.maxx, room.x+config.room.radius);
+    cave.bounds.miny = Math.min(cave.bounds.miny, room.y-config.room.radius);
+    cave.bounds.maxy = Math.max(cave.bounds.maxy, room.y+config.room.radius);
     // now add all the nearby rooms
     // this is reflexive
     Array.prototype.push.apply(room.nearbyRooms, nearbyRooms);
@@ -102,6 +108,10 @@ exports.generate = function() {
 
 exports.update = function() {
   grain.update[config.game.grain]();
+
+  if(cave.agent.inRooms.some(function(room) { return room.hasPit; })) {
+    cave.agent.alive = false;
+  }
 };
 
 
@@ -111,14 +121,15 @@ function Cave() {
 
   this.agent = new Agent({ hasGold: false });
   this.rooms = [];
+  this.bounds = {
+    minx: -config.room.radius, maxx: config.room.radius,
+    miny: -config.room.radius, maxy: config.room.radius,
+  };
 }
 Cave.prototype.isWin = function() {
   return this.agent.alive &&
     this.agent.inRooms.length === 0 &&
     this.agent.hasGold;
-};
-Cave.prototype.isLose = function() {
-  return !this.agent.alive;
 };
 
 
@@ -147,7 +158,7 @@ Agent.prototype.forward = function(speed) {
 
   // check rooms; update rooms
   var that = {x: x, y: y};
-  var inRooms = exports.cave.rooms.filter(function(room) {
+  var inRooms = cave.rooms.filter(function(room) {
     return room.distance(that) < config.room.radius;
   });
 
