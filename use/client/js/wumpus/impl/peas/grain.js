@@ -80,9 +80,9 @@ exports.keydown = {
   continuous: function($event) {
     var used = true;
     switch($event.keyCode) {
-      case 37: turn_velocity = Math.max(turn_velocity-config.agent.turn_acceleration, -config.agent.top_turn_speed); break;
-      case 38: forward_velocity = Math.min(forward_velocity+config.agent.acceleration, config.agent.top_speed); break;
-      case 39: turn_velocity = Math.min(turn_velocity+config.agent.turn_acceleration, config.agent.top_turn_speed); break;
+      case 37: turn_velocity = Math.max(turn_velocity-config.agent.torque, -config.agent.dt_limit); break;
+      case 38: forward_velocity = Math.min(forward_velocity+config.agent.acceleration, config.agent.velocity_limit); break;
+      case 39: turn_velocity = Math.min(turn_velocity+config.agent.torque, config.agent.dt_limit); break;
       case 40: forward_velocity = Math.max(forward_velocity-config.agent.acceleration, 0); break;
       case 32: break; // noop
       // TODO grab

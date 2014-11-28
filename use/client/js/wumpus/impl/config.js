@@ -22,11 +22,10 @@ agent.radius = 12;
 Object.defineProperty(agent, 'diameter', { get: function() { return agent.radius * 2; } });
 
 // TODO config based on refresh rate; something like "turns per second"
-// TODO better names
 agent.acceleration = 1; // TODO config
-agent.top_speed = 12; // TODO config
-agent.turn_acceleration = Math.PI/40; // TODO config
-agent.top_turn_speed = Math.PI/8; // TODO config
+agent.velocity_limit = 12; // TODO config
+agent.torque = Math.PI/40; // TODO config
+agent.dt_limit = Math.PI/8; // TODO config
 
 // how big the room is
 room.radius = 48;
@@ -47,4 +46,3 @@ grain.continuous.branches = 6;
 // TODO one delay for each grain continuous/dynamic
 timing.updateDelay = 100; // TODO config
 
-// TODO scoring
