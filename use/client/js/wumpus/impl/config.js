@@ -4,6 +4,7 @@ var agent = exports.agent = {};
 var room = exports.room = {};
 var pit = exports.pit = {};
 var grain = exports.grain = { continuous: {} };
+var timing = exports.timing = {};
 exports.game = {
   // if these are changed while a game is running... the results will be unpredictable
   // XXX enumerate lists of available options? (so we don't have magic strings)
@@ -40,4 +41,7 @@ pit.probability = 0.5;
 
 // how many rooms should we generate when branching?
 grain.continuous.branches = 6;
-grain.continuous.updateDelay = 100; // TODO config
+
+// how long do we wait between updates
+// TODO one delay for each grain continuous/dynamic
+timing.updateDelay = 100; // TODO config

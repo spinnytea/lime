@@ -73,16 +73,16 @@ module.exports = angular.module('lime.client.wumpus', [])
         elem.css('height', $scope.bounds.maxy-$scope.bounds.miny);
 
 
-        function continuousUpdate() {
+        function dynamicUpdate() {
           $scope.$apply(game.update);
-          continuousTimeout = setTimeout(continuousUpdate, config.grain.continuous.updateDelay);
+          dynamicTimeout = setTimeout(dynamicUpdate, config.timing.updateDelay);
         }
-        if(config.game.grain === 'continuous') {
-          var continuousTimeout;
-          $scope.$on('$destroy', function() { clearTimeout(continuousTimeout); });
+        if(config.game.timing === 'dynamic') {
+          var dynamicTimeout;
+          $scope.$on('$destroy', function() { clearTimeout(dynamicTimeout); });
 
           // we need to wait for the digest cycle to end
-          setTimeout(continuousUpdate, 0);
+          setTimeout(dynamicUpdate, 0);
         }
       } // end link
     };
