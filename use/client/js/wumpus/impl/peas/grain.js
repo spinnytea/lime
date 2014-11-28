@@ -27,20 +27,52 @@ exports.roomFrontier = {
   },
 };
 
-exports.keyup = {
-  discrete: angular.noop,
+
+var forward_velocity = 0;
+var turn_valocity = 0;
+
+exports.newgame = function() {
+  forward_velocity = 0;
+  turn_valocity = 0;
 };
+
+exports.update = {
+  discrete: angular.noop,
+  continuous: function() {
+    game.cave.agent.r += turn_valocity;
+    game.cave.agent.forward(forward_velocity);
+  },
+};
+
+// TODO display keys on screen
+exports.keyup = {};
 exports.keydown = {
   discrete: function($event) {
     var used = true;
     switch($event.keyCode) {
       case 37: game.cave.agent.r -= Math.PI / 2; break;
-      case 38: game.cave.agent.forward(); break;
+      case 38: game.cave.agent.forward(config.room.spacing); break;
       case 39: game.cave.agent.r += Math.PI / 2; break;
       default:
         used = false;
     }
-    if(used)
+    if(used) {
       $event.preventDefault();
+      game.update();
+    }
+  },
+  continuous: function($event) {
+    var used = true;
+    switch($event.keyCode) {
+      case 37: turn_valocity = Math.max(turn_valocity-config.agent.turn_acceleration, -config.agent.top_turn_speed); break;
+      case 38: forward_velocity = Math.min(forward_velocity+config.agent.acceleration, config.agent.top_speed); break;
+      case 39: turn_valocity = Math.min(turn_valocity+config.agent.turn_acceleration, config.agent.top_turn_speed); break;
+      case 40: forward_velocity = Math.max(forward_velocity-config.agent.acceleration, 0); break;
+      default:
+        used = false;
+    }
+    if(used) {
+      $event.preventDefault();
+    }
   },
 };

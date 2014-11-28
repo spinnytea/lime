@@ -23,6 +23,7 @@ module.exports = angular.module('lime.client.wumpus', [])
       // our game is in a directive
       // this will basically reset the game
       $scope.state = 'none';
+      grain.newgame();
       setTimeout(function() {
         $scope.$apply(function() {
           game.generate();
@@ -52,9 +53,11 @@ module.exports = angular.module('lime.client.wumpus', [])
           miny: 0, maxy: 0,
         };
         $scope.agent = game.cave.agent;
+        $scope.rooms = game.cave.rooms;
 
         // find the bounds of the game
         // TODO change bounds with observability
+        // TODO move bounds to game.bounds
         game.cave.rooms.forEach(function(room) {
           $scope.bounds.minx = Math.min($scope.bounds.minx, room.x);
           $scope.bounds.maxx = Math.max($scope.bounds.maxx, room.x);
@@ -69,7 +72,18 @@ module.exports = angular.module('lime.client.wumpus', [])
         elem.css('width', $scope.bounds.maxx-$scope.bounds.minx);
         elem.css('height', $scope.bounds.maxy-$scope.bounds.miny);
 
-        $scope.rooms = game.cave.rooms;
+
+        function continuousUpdate() {
+          $scope.$apply(game.update);
+          continuousTimeout = setTimeout(continuousUpdate, config.grain.continuous.updateDelay);
+        }
+        if(config.game.grain === 'continuous') {
+          var continuousTimeout;
+          $scope.$on('$destroy', function() { clearTimeout(continuousTimeout); });
+
+          // we need to wait for the digest cycle to end
+          setTimeout(continuousUpdate, 0);
+        }
       } // end link
     };
   }

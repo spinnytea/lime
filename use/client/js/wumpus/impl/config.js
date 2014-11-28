@@ -19,6 +19,13 @@ exports.game = {
 agent.radius = 12;
 Object.defineProperty(agent, 'diameter', { get: function() { return agent.radius * 2; } });
 
+// TODO config based on refresh rate; something like "turns per second"
+// TODO better names
+agent.acceleration = 1; // TODO config
+agent.top_speed = 12; // TODO config
+agent.turn_acceleration = Math.PI/40; // TODO config
+agent.top_turn_speed = Math.PI/8; // TODO config
+
 // how big the room is
 room.radius = 48;
 Object.defineProperty(room, 'diameter', { get: function() { return room.radius * 2; } });
@@ -33,3 +40,4 @@ pit.probability = 0.5;
 
 // how many rooms should we generate when branching?
 grain.continuous.branches = 6;
+grain.continuous.updateDelay = 100; // TODO config

@@ -100,6 +100,10 @@ exports.generate = function() {
   } // end room_while
 };
 
+exports.update = function() {
+  grain.update[config.game.grain]();
+};
+
 
 function Cave() {
   this.wumpus = new Agent();
@@ -136,8 +140,6 @@ Agent.prototype.placeInRoom = function(room) {
 };
 
 Agent.prototype.forward = function(speed) {
-  speed = speed || config.room.spacing;
-
   var x = this.x + Math.cos(this.r) * speed;
   var y = this.y + Math.sin(this.r) * speed;
 
