@@ -18,7 +18,6 @@ exports.game = {
 // how big are the agents
 agent.radius = 12;
 Object.defineProperty(agent, 'diameter', { get: function() { return agent.radius * 2; } });
-//agent.diameter = agent.radius * 2;
 
 // how big the room is
 room.radius = 48;

@@ -1,6 +1,7 @@
 'use strict';
 
 var config = require('../config');
+var game = require('../game');
 var Room = require('../room');
 
 exports.roomFrontier = {
@@ -23,5 +24,23 @@ exports.roomFrontier = {
 			));
     }
     return ret;
+  },
+};
+
+exports.keyup = {
+  discrete: angular.noop,
+};
+exports.keydown = {
+  discrete: function($event) {
+    var used = true;
+    switch($event.keyCode) {
+      case 37: game.cave.agent.r -= Math.PI / 2; break;
+      case 38: game.cave.agent.forward(); break;
+      case 39: game.cave.agent.r += Math.PI / 2; break;
+      default:
+        used = false;
+    }
+    if(used)
+      $event.preventDefault();
   },
 };

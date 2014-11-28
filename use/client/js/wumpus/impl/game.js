@@ -132,6 +132,30 @@ Agent.prototype.placeInRoom = function(room) {
   this.x = room.x;
   this.y = room.y;
 
-  // empty inRooms, and put room in inRooms
-  this.inRooms.splice(0, this.inRooms.length, room);
+  this.inRooms = [ room ];
+};
+
+Agent.prototype.forward = function(speed) {
+  speed = speed || config.room.spacing;
+
+  var x = this.x + Math.cos(this.r) * speed;
+  var y = this.y + Math.sin(this.r) * speed;
+
+  // check rooms; update rooms
+  var that = {x: x, y: y};
+  var inRooms = exports.cave.rooms.filter(function(room) {
+    return room.distance(that) < config.room.radius;
+  });
+
+  if(inRooms.length > 0) {
+    this.x = x;
+    this.y = y;
+
+    // update the view information
+    if(config.game.observable === 'partially') {
+      this.inRooms.forEach(function(room) { room.visible = false; });
+      inRooms.forEach(function(room) { room.visible = true; });
+    }
+    this.inRooms = inRooms;
+  }
 };

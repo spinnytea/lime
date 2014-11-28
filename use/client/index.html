@@ -10,7 +10,8 @@
     <!-- index.js is build with browserify -->
     <script src="./index.js"></script>
 </head>
-<body class="container" data-ng-app="lime.client" data-ng-controller="contentController">
+<body class="container" data-ng-app="lime.client" data-ng-controller="contentController"
+      data-ng-keydown="override.keydown($event)" data-ng-keyup="override.keyup($event)">
 
 <div data-ng-show="showMenu">
     <h1>Menu</h1>

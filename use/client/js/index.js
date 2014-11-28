@@ -20,5 +20,10 @@ angular.module('lime.client', [
     $scope.$watch(function() { return $location.path(); }, function(newValue) {
       $scope.showMenu = (newValue === '');
     });
+
+    $scope.override = {
+      keyup: angular.noop,
+      keydown: angular.noop,
+    };
   }
 ]);

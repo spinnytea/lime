@@ -1,6 +1,6 @@
 <a data-ng-click="generateGame()">New Game</a> |
 <a data-ng-click="gotoConfig()">Update Config</a>
 <div class="game-container">
-    <span data-ng-repeat="room in rooms" data-wumpus-room="room" data-bounds="bounds"></span>
+    <span data-ng-repeat="room in rooms" data-wumpus-room="room" data-bounds="bounds" data-ng-show="room.visible"></span>
     <span data-wumpus-agent="agent" data-bounds="bounds"></span>
 </div>

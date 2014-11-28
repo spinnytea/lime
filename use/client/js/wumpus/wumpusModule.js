@@ -6,6 +6,7 @@
 
 var config = require('./impl/config');
 var game = require('./impl/game');
+var grain = require('./impl/peas/grain');
 
 module.exports = angular.module('lime.client.wumpus', [])
 .controller('lime.client.wumpus.app', [
@@ -29,6 +30,16 @@ module.exports = angular.module('lime.client.wumpus', [])
         });
       }, 0);
     };
+    $scope.generateGame();
+
+    $scope.$on('$destroy', $scope.$watch('config.game.grain', function(newValue) {
+      $scope.override.keyup = grain.keyup[newValue];
+      $scope.override.keydown = grain.keydown[newValue];
+    }));
+    $scope.$on('$destroy', function() {
+      $scope.override.keyup = angular.noop;
+      $scope.override.keydown = angular.noop;
+    });
   }
 ]) // end lime.client.wumpus.app controller
 .directive('wumpusInstance', [
@@ -81,13 +92,10 @@ module.exports = angular.module('lime.client.wumpus', [])
           .css('top', $scope.room.y - $scope.bounds.miny - config.room.radius);
 
         $scope.$on('$destroy', $scope.$watch(function() { return $scope.room.senses(); }, updateHtml, true));
-        $scope.$on('$destroy', $scope.$watch('room.visible', function() {
-          elem.css('display', $scope.room.visible?'auto':'none');
-        }, true));
 
         // TEST cannot deep watch on rooms; we need another way to identify that the rooms have changed
-//        $scope.$on('$destroy', $scope.$watch(function() { return game.cave.wumpus.inRooms; }, updateHtml));
-//        $scope.$on('$destroy', $scope.$watch(function() { return game.cave.agent.inRooms; }, updateHtml));
+        $scope.$on('$destroy', $scope.$watch(function() { return game.cave.wumpus.inRooms; }, updateHtml));
+        $scope.$on('$destroy', $scope.$watch(function() { return game.cave.agent.inRooms; }, updateHtml));
 
         function updateHtml() {
           var senses = $scope.room.senses();
