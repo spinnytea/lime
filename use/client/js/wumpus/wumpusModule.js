@@ -32,15 +32,6 @@ module.exports = angular.module('lime.client.wumpus', [])
       }, 0);
     };
     $scope.generateGame();
-
-    $scope.$on('$destroy', $scope.$watch('config.game.grain', function(newValue) {
-      $scope.override.keyup = grain.keyup[newValue];
-      $scope.override.keydown = grain.keydown[newValue];
-    }));
-    $scope.$on('$destroy', function() {
-      $scope.override.keyup = angular.noop;
-      $scope.override.keydown = angular.noop;
-    });
   }
 ]) // end lime.client.wumpus.app controller
 .directive('wumpusInstance', [
@@ -72,6 +63,15 @@ module.exports = angular.module('lime.client.wumpus', [])
         elem.css('width', $scope.bounds.maxx-$scope.bounds.minx);
         elem.css('height', $scope.bounds.maxy-$scope.bounds.miny);
 
+
+        $scope.$on('$destroy', $scope.$watch('config.game.grain', function(newValue) {
+          $scope.override.keyup = grain.keyup[newValue];
+          $scope.override.keydown = grain.keydown[newValue];
+        }));
+        $scope.$on('$destroy', function() {
+          $scope.override.keyup = angular.noop;
+          $scope.override.keydown = angular.noop;
+        });
 
         function dynamicUpdate() {
           $scope.$apply(game.update);

@@ -28,6 +28,7 @@ exports.roomFrontier = {
 };
 
 
+// TODO display values as a bar (min | cur | max)
 var forward_velocity = 0;
 var turn_velocity = 0;
 
