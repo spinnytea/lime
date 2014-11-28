@@ -71,13 +71,13 @@ exports.generate = function() {
       // (each time we call wumpus.placeInRoom, it will be moved to that room)
       // notice that we don't check to see if it has already been placed
       // this way there is a slightly higher chance that it will be farther away from the start
-      if(Math.random() < 1.0 / goldRoom) {
+      if(cave.wumpus && Math.random() < 1.0 / goldRoom) {
         cave.wumpus.placeInRoom(room);
         placedWumpus = true;
       }
     } else if(cave.rooms.length === goldRoom) {
       // if the wumpus hasn't been placed yet, do it now
-      if(!placedWumpus) {
+      if(cave.wumpus && !placedWumpus) {
         cave.wumpus.placeInRoom(room);
         placedWumpus = true;
       }
@@ -106,8 +106,10 @@ exports.update = function() {
 
 
 function Cave() {
-  this.wumpus = new Agent();
-  this.agent = new Agent({ hasGold: false, wumpus: this.wumpus });
+  if(config.game.agents === 'multi')
+    this.wumpus = new Agent();
+
+  this.agent = new Agent({ hasGold: false });
   this.rooms = [];
 }
 Cave.prototype.isWin = function() {

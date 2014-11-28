@@ -13,6 +13,7 @@ exports.game = {
   observable: 'fully',
   timing: 'static',
   apriori: 'known',
+  agents: 'single',
   roomCount: 10,
 };
 

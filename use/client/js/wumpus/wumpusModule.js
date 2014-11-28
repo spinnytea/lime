@@ -108,21 +108,24 @@ module.exports = angular.module('lime.client.wumpus', [])
         $scope.$on('$destroy', $scope.$watch(function() { return $scope.room.senses(); }, updateHtml, true));
 
         // TEST cannot deep watch on rooms; we need another way to identify that the rooms have changed
-        $scope.$on('$destroy', $scope.$watch(function() { return game.cave.wumpus.inRooms; }, updateHtml));
+        if(game.cave.wumpus)
+          $scope.$on('$destroy', $scope.$watch(function() { return game.cave.wumpus.inRooms; }, updateHtml));
         $scope.$on('$destroy', $scope.$watch(function() { return game.cave.agent.inRooms; }, updateHtml));
 
         function updateHtml() {
           var senses = $scope.room.senses();
-          var hasWumpus = (game.cave.wumpus.inRooms.indexOf($scope.room) !== -1);
           var hasAgent = (game.cave.agent.inRooms.indexOf($scope.room) !== -1);
-          elem.html(
+          var html =
             addText('Exit', 'black', $scope.room.hasExit) +
             addText(['Gold', 'glitter'], 'gold', [$scope.room.hasGold, senses.glitter]) +
             addText(['Pit', 'breeze'], 'blue', [$scope.room.hasPit, senses.breeze]) +
-            addText(['Wumpus', 'stench', 'breathing'], 'brown', [hasWumpus, senses.stench, senses.breathing]) +
             addText('Agent', 'black', hasAgent) +
-            ''
-          );
+            '';
+          if(game.cave.wumpus) {
+            var hasWumpus = (game.cave.wumpus.inRooms.indexOf($scope.room) !== -1);
+            html += addText(['Wumpus', 'stench', 'breathing'], 'brown', [hasWumpus, senses.stench, senses.breathing]);
+          }
+          elem.html(html);
         }
 
         function addText(strs, color, bools) {
