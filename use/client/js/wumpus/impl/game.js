@@ -109,6 +109,7 @@ exports.generate = function() {
 exports.update = function() {
   // world updates
   cave.agent.update();
+  // TODO update wumpus
 
   // check status
   if(cave.agent.inRooms.some(function(room) { return room.hasPit; }))
@@ -157,6 +158,7 @@ Agent.prototype.placeInRoom = function(room) {
   this.x = room.x;
   this.y = room.y;
 
+  // TODO wumpus should face away from the agent
   this.inRooms = [ room ];
 };
 

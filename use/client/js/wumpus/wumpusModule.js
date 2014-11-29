@@ -106,6 +106,7 @@ module.exports = angular.module('lime.client.wumpus', [])
     };
   }
 ]) // end wumpusInstance directive
+// TODO two directives: wumpusRoom-Human vs wumpusRoomMachine
 .directive('wumpusRoom', [
   function() {
     return {
@@ -129,6 +130,7 @@ module.exports = angular.module('lime.client.wumpus', [])
         $scope.$on('$destroy', $scope.$watch(function() { return game.cave.agent.inRooms; }, updateHtml));
 
         function updateHtml() {
+          // TODO sense should be an action
           var senses = $scope.room.senses();
           var hasAgent = (game.cave.agent.inRooms.indexOf($scope.room) !== -1);
           var html =
