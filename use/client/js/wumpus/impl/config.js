@@ -22,6 +22,7 @@ agent.radius = 12;
 Object.defineProperty(agent, 'diameter', { get: function() { return agent.radius * 2; } });
 
 // TODO config based on refresh rate; something like "turns per second"
+// TODO apply force based on update interval
 agent.acceleration = 1; // TODO config
 agent.da_limit = 12; // TODO config
 agent.torque = Math.PI/40; // TODO config
@@ -43,6 +44,6 @@ pit.probability = 0.5;
 grain.continuous.branches = 6;
 
 // how long do we wait between updates
-// TODO one delay for each grain continuous/dynamic
-timing.updateDelay = 100; // TODO config
+timing.updatesPerSecond = 10;
+Object.defineProperty(timing, 'updateDelay', { get: function() { return 1000/timing.updatesPerSecond; } });
 
