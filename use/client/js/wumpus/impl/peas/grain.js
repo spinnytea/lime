@@ -53,9 +53,14 @@ exports.keydown = {
       case 39: game.cave.agent.dt = Math.PI / 2; break;
 //      case 40: game.cave.agent.da = 0; break;
       case 32: used = (config.game.timing === 'static'); break; // noop
-      // TODO grab
-      // TODO fire
-      // TODO exit
+      case 71: game.grab(); break;
+      case 69: game.exit(); break;
+      case 70:
+        if(config.game.agents === 'multi')
+          game.fire();
+        else
+          used = false;
+        break;
       default:
         used = false;
     }
@@ -73,9 +78,14 @@ exports.keydown = {
       case 39: game.cave.agent.dt = Math.min(game.cave.agent.dt+config.agent.torque, config.agent.dt_limit); break;
       case 40: game.cave.agent.da = Math.max(game.cave.agent.da-config.agent.acceleration, 0); break;
       case 32: used = (config.game.timing === 'static'); break; // noop
-      // TODO grab
-      // TODO fire
-      // TODO exit
+      case 71: game.grab(); break;
+      case 69: game.exit(); break;
+      case 70:
+        if(config.game.agents === 'multi')
+          game.fire();
+        else
+          used = false;
+        break;
       default:
         used = false;
     }

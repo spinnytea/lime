@@ -121,24 +121,43 @@ exports.update = function() {
   grain.update[config.game.grain]();
 };
 
+exports.grab = function() {
+  if(cave.agent.alive && !cave.agent.hasGold) {
+    // get the list of rooms that has gold
+    // we could do inRooms.some, but we need a reference to the room
+    var rooms = cave.agent.inRooms.filter(function(room) { return room.hasGold; });
+    if(rooms.length === 1) {
+      rooms[0].hasGold = false;
+      cave.agent.hasGold = true;
+    }
+  }
+};
+exports.exit = function() {
+  if(cave.agent.alive && cave.agent.hasGold) {
+    // get the list of rooms that has exit
+    // we could do inRooms.some, but we need a reference to the room
+    var rooms = cave.agent.inRooms.filter(function(room) { return room.hasExit; });
+    if(rooms.length === 1) {
+      cave.agent.win = true;
+    }
+  }
+};
+exports.fire = function() {
+  console.log('fire');
+};
+
 
 function Cave() {
   if(config.game.agents === 'multi')
     this.wumpus = new Agent();
 
-  this.agent = new Agent({ hasGold: false });
+  this.agent = new Agent({ hasGold: false, win: false });
   this.rooms = [];
   this.bounds = {
     minx: -config.room.radius, maxx: config.room.radius,
     miny: -config.room.radius, maxy: config.room.radius,
   };
 }
-Cave.prototype.isWin = function() {
-  return this.agent.alive &&
-    this.agent.inRooms.length === 0 &&
-    this.agent.hasGold;
-};
-
 
 function Agent(options) {
   angular.extend(this, {

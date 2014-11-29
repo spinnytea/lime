@@ -132,7 +132,7 @@ module.exports = angular.module('lime.client.wumpus', [])
         function updateHtml() {
           // TODO sense should be an action
           var senses = $scope.room.senses();
-          var hasAgent = game.cave.agent.alive && (game.cave.agent.inRooms.indexOf($scope.room) !== -1);
+          var hasAgent = game.cave.agent.alive && !game.cave.agent.win && (game.cave.agent.inRooms.indexOf($scope.room) !== -1);
           var html =
             addText(senses.nearbyCount, 'black', true) +
             addText('Exit', 'black', $scope.room.hasExit) +
@@ -189,6 +189,10 @@ module.exports = angular.module('lime.client.wumpus', [])
         }));
         $scope.$on('$destroy', $scope.$watch('agent.y', function() {
           elem.css('top', $scope.agent.y - game.cave.bounds.miny - config.agent.radius);
+        }));
+        $scope.$on('$destroy', $scope.$watch('agent.hasGold', function() {
+          if($scope.agent.hasGold)
+            elem.css('border-color', 'gold').find('span').css('border-color', 'gold');
         }));
 
         $scope.$on('$destroy', $scope.$watch('agent.r', function() {
