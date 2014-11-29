@@ -25,4 +25,15 @@ angular.module('lime.client', [
       keydown: angular.noop,
     };
   }
+]).directive('strToNum', [
+  function() {
+    return {
+      require: 'ngModel',
+      link: function($scope, elem, attrs, ngModelController) {
+        ngModelController.$parsers.push(function(value) {
+          return +value;
+        });
+      } // end link
+    };
+  }
 ]);
