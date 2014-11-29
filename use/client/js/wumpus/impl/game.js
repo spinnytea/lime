@@ -107,13 +107,17 @@ exports.generate = function() {
 };
 
 exports.update = function() {
+  // world updates
   cave.agent.update();
 
-  grain.update[config.game.grain]();
-
-  if(cave.agent.inRooms.some(function(room) { return room.hasPit; })) {
+  // check status
+  if(cave.agent.inRooms.some(function(room) { return room.hasPit; }))
     cave.agent.alive = false;
-  }
+  if(cave.wumpus && cave.wumpus.distance(cave.agent) < config.agent.diameter)
+    cave.agent.alive = false;
+
+  // config settings
+  grain.update[config.game.grain]();
 };
 
 
@@ -155,6 +159,8 @@ Agent.prototype.placeInRoom = function(room) {
 
   this.inRooms = [ room ];
 };
+
+Agent.prototype.distance = Room.prototype.distance;
 
 Agent.prototype.update = function() {
   // all the turn regardless

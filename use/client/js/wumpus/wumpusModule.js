@@ -39,6 +39,8 @@ module.exports = angular.module('lime.client.wumpus', [])
       templateUrl: 'partials/wumpus/instance.html',
       link: function($scope, elem) {
         $scope.agent = game.cave.agent;
+        if(game.cave.wumpus)
+          $scope.wumpus = game.cave.wumpus;
         $scope.rooms = game.cave.rooms;
 
         elem.find('.game-container')
