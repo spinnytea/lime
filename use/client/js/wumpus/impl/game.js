@@ -158,7 +158,14 @@ Agent.prototype.placeInRoom = function(room) {
   this.x = room.x;
   this.y = room.y;
 
-  // TODO wumpus should face away from the agent
+  if(this === cave.wumpus) {
+    // make sure the wumpus is facing away from the agent
+    // (this way, if the wumpus is next to the agent, the agent wont immediately lose if it isn't facing the wumpus)
+    this.r = Math.atan2(this.y-cave.agent.y, this.x-cave.agent.x) + Math.PI*2;
+    if(config.game.grain === 'discrete')
+      // "round" to the nearest cardinal direction
+      this.r = Math.floor(this.r/(Math.PI/2))*(Math.PI/2);
+  }
   this.inRooms = [ room ];
 };
 
