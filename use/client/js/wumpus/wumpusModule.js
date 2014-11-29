@@ -23,7 +23,6 @@ module.exports = angular.module('lime.client.wumpus', [])
       // our game is in a directive
       // this will basically reset the game
       $scope.state = 'none';
-      grain.newgame();
       setTimeout(function() {
         $scope.$apply(function() {
           game.generate();

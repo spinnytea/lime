@@ -107,6 +107,8 @@ exports.generate = function() {
 };
 
 exports.update = function() {
+  cave.agent.update();
+
   grain.update[config.game.grain]();
 
   if(cave.agent.inRooms.some(function(room) { return room.hasPit; })) {
@@ -138,6 +140,9 @@ function Agent(options) {
     x: 0,
     y: 0,
     r: 0, // the direction the agent facing
+    // TODO display values as a bar (min | cur | max)
+    da: 0, // derivative of acceleration (velocity)
+    dt: 0, // derivative of torque (angular velocity)
     alive: true,
   }, options);
 
@@ -152,19 +157,24 @@ Agent.prototype.placeInRoom = function(room) {
   this.inRooms = [ room ];
 };
 
-Agent.prototype.forward = function(speed) {
-  var x = this.x + Math.cos(this.r) * speed;
-  var y = this.y + Math.sin(this.r) * speed;
+Agent.prototype.update = function() {
+  // all the turn regardless
+  this.r += this.dt;
 
-  // check rooms; update rooms
-  var that = {x: x, y: y};
+  // calculate where we will be if we move forward
+  // if we are no longer in any rooms, then we cannot move
+  var that = {
+    x: this.x + Math.cos(this.r) * this.da,
+    y: this.y + Math.sin(this.r) * this.da,
+  };
   var inRooms = cave.rooms.filter(function(room) {
     return room.distance(that) < config.room.radius;
   });
 
+  // if we can move forward, then update our location
   if(inRooms.length > 0) {
-    this.x = x;
-    this.y = y;
+    this.x = that.x;
+    this.y = that.y;
 
     // update the view information
     if(config.game.observable === 'partially') {

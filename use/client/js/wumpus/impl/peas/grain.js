@@ -28,30 +28,19 @@ exports.roomFrontier = {
 };
 
 
-// TODO display values as a bar (min | cur | max)
-var forward_velocity = 0;
-var turn_velocity = 0;
-
-exports.newgame = function() {
-  forward_velocity = 0;
-  turn_velocity = 0;
-};
-
 exports.update = {
   discrete: function() {
-    if(turn_velocity) {
-      game.cave.agent.r += turn_velocity;
-      turn_velocity = 0;
-    }
-    if(forward_velocity) {
-      game.cave.agent.forward(forward_velocity);
-      forward_velocity = 0;
+    // reset the player's movement
+    game.cave.agent.da = 0;
+    game.cave.agent.dt = 0;
+
+    // reset the wumpus movement
+    if(game.cave.wumpus) {
+      game.cave.wumpus.da = 0;
+      game.cave.wumpus.dt = 0;
     }
   },
-  continuous: function() {
-    game.cave.agent.r += turn_velocity;
-    game.cave.agent.forward(forward_velocity);
-  },
+  continuous: angular.noop,
 };
 
 // TODO display keys on screen
@@ -60,10 +49,10 @@ exports.keydown = {
   discrete: function($event) {
     var used = true;
     switch($event.keyCode) {
-      case 37: turn_velocity = -Math.PI / 2; break;
-      case 38: forward_velocity = config.room.spacing; break;
-      case 39: turn_velocity = Math.PI / 2; break;
-      case 40: forward_velocity = 0; break;
+      case 37: game.cave.agent.dt = -Math.PI / 2; break;
+      case 38: game.cave.agent.da = config.room.spacing; break;
+      case 39: game.cave.agent.dt = Math.PI / 2; break;
+      case 40: game.cave.agent.da = 0; break;
       case 32: break; // noop
       // TODO grab
       // TODO fire
@@ -80,10 +69,10 @@ exports.keydown = {
   continuous: function($event) {
     var used = true;
     switch($event.keyCode) {
-      case 37: turn_velocity = Math.max(turn_velocity-config.agent.torque, -config.agent.dt_limit); break;
-      case 38: forward_velocity = Math.min(forward_velocity+config.agent.acceleration, config.agent.velocity_limit); break;
-      case 39: turn_velocity = Math.min(turn_velocity+config.agent.torque, config.agent.dt_limit); break;
-      case 40: forward_velocity = Math.max(forward_velocity-config.agent.acceleration, 0); break;
+      case 37: game.cave.agent.dt = Math.max(game.cave.agent.dt-config.agent.torque, -config.agent.dt_limit); break;
+      case 38: game.cave.agent.da = Math.min(game.cave.agent.da+config.agent.acceleration, config.agent.velocity_limit); break;
+      case 39: game.cave.agent.dt = Math.min(game.cave.agent.dt+config.agent.torque, config.agent.dt_limit); break;
+      case 40: game.cave.agent.da = Math.max(game.cave.agent.da-config.agent.acceleration, 0); break;
       case 32: break; // noop
       // TODO grab
       // TODO fire
