@@ -122,7 +122,6 @@ module.exports = angular.module('lime.client.wumpus', [])
 
         $scope.$on('$destroy', $scope.$watch(function() { return $scope.room.senses(); }, updateHtml, true));
 
-        // TEST cannot deep watch on rooms; we need another way to identify that the rooms have changed
         if(game.cave.wumpus)
           $scope.$on('$destroy', $scope.$watch(function() { return game.cave.wumpus.inRooms; }, updateHtml));
         $scope.$on('$destroy', $scope.$watch(function() { return game.cave.agent.inRooms; }, updateHtml));

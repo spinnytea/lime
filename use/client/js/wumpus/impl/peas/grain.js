@@ -43,7 +43,6 @@ exports.update = {
   continuous: angular.noop,
 };
 
-// TODO display keys on screen
 exports.keyup = {};
 exports.keydown = {
   discrete: function($event) {
