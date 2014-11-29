@@ -23,7 +23,7 @@ Object.defineProperty(agent, 'diameter', { get: function() { return agent.radius
 
 // TODO config based on refresh rate; something like "turns per second"
 agent.acceleration = 1; // TODO config
-agent.velocity_limit = 12; // TODO config
+agent.da_limit = 12; // TODO config
 agent.torque = Math.PI/40; // TODO config
 agent.dt_limit = Math.PI/8; // TODO config
 

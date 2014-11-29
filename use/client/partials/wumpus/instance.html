@@ -4,3 +4,30 @@
     <span data-ng-repeat="room in rooms" data-wumpus-room="room" data-ng-show="room.visible"></span>
     <span data-wumpus-agent="agent"></span>
 </div>
+
+<!-- needs to be ng-show (not ng-if) so we can find it when the page loads -->
+<div class="form-horizontal" data-ng-show="config.game.grain==='continuous'">
+    <div class="form-group">
+        <div class="col-md-4">
+            <label class="control-label">Forward Velocity</label>
+        </div>
+        <div class="col-md-8">
+            <div class="progress">
+                <div class="forward-cur progress-bar progress-bar-warning progress-bar-striped"></div>
+                <div class="forward-max progress-bar progress-bar-info"></div>
+            </div>
+        </div>
+    </div>
+    <div class="form-group">
+        <div class="col-md-4">
+            <label class="control-label">Turn Velocity</label>
+        </div>
+        <div class="col-md-8">
+            <div class="progress">
+                <div class="turn-min progress-bar progress-bar-info"></div>
+                <div class="turn-cur progress-bar progress-bar-warning progress-bar-striped"></div>
+                <div class="turn-max progress-bar progress-bar-info"></div>
+            </div>
+        </div>
+    </div>
+</div>

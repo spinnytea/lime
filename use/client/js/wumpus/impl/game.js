@@ -140,7 +140,6 @@ function Agent(options) {
     x: 0,
     y: 0,
     r: 0, // the direction the agent facing
-    // TODO display values as a bar (min | cur | max)
     da: 0, // derivative of acceleration (velocity)
     dt: 0, // derivative of torque (angular velocity)
     alive: true,

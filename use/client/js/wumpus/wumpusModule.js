@@ -41,8 +41,9 @@ module.exports = angular.module('lime.client.wumpus', [])
         $scope.agent = game.cave.agent;
         $scope.rooms = game.cave.rooms;
 
-        elem.css('width', game.cave.bounds.maxx-game.cave.bounds.minx);
-        elem.css('height', game.cave.bounds.maxy-game.cave.bounds.miny);
+        elem.find('.game-container')
+          .css('width', game.cave.bounds.maxx-game.cave.bounds.minx)
+          .css('height', game.cave.bounds.maxy-game.cave.bounds.miny);
 
         // TODO watch for player death
         // TODO watch for player win
@@ -55,6 +56,38 @@ module.exports = angular.module('lime.client.wumpus', [])
           $scope.override.keyup = angular.noop;
           $scope.override.keydown = angular.noop;
         });
+
+        if(config.game.grain === 'continuous') {
+          var $forwardCur = elem.find('.forward-cur');
+          var $forwardMax = elem.find('.forward-max');
+          $scope.$on('$destroy', $scope.$watch(function() { return game.cave.agent.da; }, function(da) {
+            var p = da/config.agent.da_limit * 100;
+            $forwardCur.css('width', p+'%');
+            $forwardMax.css('width', (100-p)+'%');
+          }));
+
+          var $turnMin = elem.find('.turn-min');
+          var $turnCur = elem.find('.turn-cur');
+          var $turnMax = elem.find('.turn-max');
+          $scope.$on('$destroy', $scope.$watch(function() { return game.cave.agent.dt; }, function(dt) {
+            var p;
+            if(dt === 0) {
+              $turnMin.css('width', '50%');
+              $turnCur.css('width', '0%');
+              $turnMax.css('width', '50%');
+            } else if (dt > 0) {
+              p = dt/config.agent.dt_limit * 50;
+              $turnMin.css('width', '50%');
+              $turnCur.css('width', p+'%');
+              $turnMax.css('width', (50-p)+'%');
+            } else {
+              p = -dt/config.agent.dt_limit * 50;
+              $turnMin.css('width', (50-p)+'%');
+              $turnCur.css('width', p+'%');
+              $turnMax.css('width', '50%');
+            }
+          }));
+        }
 
         function dynamicUpdate() {
           $scope.$apply(game.update);

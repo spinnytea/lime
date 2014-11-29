@@ -70,7 +70,7 @@ exports.keydown = {
     var used = true;
     switch($event.keyCode) {
       case 37: game.cave.agent.dt = Math.max(game.cave.agent.dt-config.agent.torque, -config.agent.dt_limit); break;
-      case 38: game.cave.agent.da = Math.min(game.cave.agent.da+config.agent.acceleration, config.agent.velocity_limit); break;
+      case 38: game.cave.agent.da = Math.min(game.cave.agent.da+config.agent.acceleration, config.agent.da_limit); break;
       case 39: game.cave.agent.dt = Math.min(game.cave.agent.dt+config.agent.torque, config.agent.dt_limit); break;
       case 40: game.cave.agent.da = Math.max(game.cave.agent.da-config.agent.acceleration, 0); break;
       case 32: break; // noop
