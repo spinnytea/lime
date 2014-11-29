@@ -52,8 +52,8 @@ exports.keydown = {
       case 37: game.cave.agent.dt = -Math.PI / 2; break;
       case 38: game.cave.agent.da = config.room.spacing; break;
       case 39: game.cave.agent.dt = Math.PI / 2; break;
-      case 40: game.cave.agent.da = 0; break;
-      case 32: break; // noop
+//      case 40: game.cave.agent.da = 0; break;
+      case 32: used = (config.game.timing === 'static'); break; // noop
       // TODO grab
       // TODO fire
       // TODO exit
@@ -73,7 +73,7 @@ exports.keydown = {
       case 38: game.cave.agent.da = Math.min(game.cave.agent.da+config.agent.acceleration, config.agent.da_limit); break;
       case 39: game.cave.agent.dt = Math.min(game.cave.agent.dt+config.agent.torque, config.agent.dt_limit); break;
       case 40: game.cave.agent.da = Math.max(game.cave.agent.da-config.agent.acceleration, 0); break;
-      case 32: break; // noop
+      case 32: used = (config.game.timing === 'static'); break; // noop
       // TODO grab
       // TODO fire
       // TODO exit
