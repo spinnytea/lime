@@ -2,8 +2,8 @@
 <a data-ng-click="gotoConfig()">Update Config</a>
 <div class="game-container">
     <span data-ng-repeat="room in rooms" data-wumpus-room="room" data-ng-show="room.visible"></span>
-    <span data-wumpus-agent="wumpus" data-ng-if="wumpus"></span>
-    <span data-wumpus-agent="agent"></span>
+    <span class="wumpus" data-wumpus-agent="wumpus" data-ng-if="wumpus && wumpus.alive"></span>
+    <span data-wumpus-agent="agent" data-ng-if="agent.alive"></span>
 </div>
 
 <!-- needs to be ng-show (not ng-if) so we can find it when the page loads -->

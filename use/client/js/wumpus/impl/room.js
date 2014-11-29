@@ -25,7 +25,7 @@ Room.prototype.senses = function() {
   return this.nearbyRooms.reduce(function(senses, room) {
     senses.breeze = senses.breeze || room.hasPit;
     senses.glitter = senses.glitter || room.hasGold;
-    senses.stench = senses.stench || (room.cave.wumpus && room.cave.wumpus.inRooms.indexOf(room) !== -1);
+    senses.stench = senses.stench || (senses.breathing && room.cave.wumpus.inRooms.indexOf(room) !== -1);
     return senses;
   }, {
     breeze: false, glitter: false, stench: false,

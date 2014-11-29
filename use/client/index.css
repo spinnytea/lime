@@ -28,6 +28,11 @@
   font-size: 10px;
 }
 
+[data-wumpus-instance] [data-wumpus-agent].wumpus,
+[data-wumpus-instance] [data-wumpus-agent].wumpus span {
+  border-color: brown;
+}
+
 [data-wumpus-instance] [data-wumpus-agent] span {
   position: absolute;
   border-top: solid black 1px;

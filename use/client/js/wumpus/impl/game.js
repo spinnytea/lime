@@ -169,6 +169,7 @@ Agent.prototype.placeInRoom = function(room) {
   this.inRooms = [ room ];
 };
 
+// it's the same distance formula
 Agent.prototype.distance = Room.prototype.distance;
 
 Agent.prototype.update = function() {
