@@ -27,7 +27,11 @@ Room.prototype.senses = function() {
     senses.glitter = senses.glitter || room.hasGold;
     senses.stench = senses.stench || (room.cave.wumpus && room.cave.wumpus.inRooms.indexOf(room) !== -1);
     return senses;
-  }, { breeze: false, glitter: false, stench: false, breathing: (this.cave.wumpus && this.cave.wumpus.alive) });
+  }, {
+    breeze: false, glitter: false, stench: false,
+    breathing: (this.cave.wumpus && this.cave.wumpus.alive),
+    nearbyCount: this.nearbyRooms.length,
+  });
 };
 
 Room.prototype.distance = function(obj) {

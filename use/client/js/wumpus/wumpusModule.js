@@ -132,6 +132,7 @@ module.exports = angular.module('lime.client.wumpus', [])
           var senses = $scope.room.senses();
           var hasAgent = (game.cave.agent.inRooms.indexOf($scope.room) !== -1);
           var html =
+            addText(senses.nearbyCount, 'black', true) +
             addText('Exit', 'black', $scope.room.hasExit) +
             addText(['Gold', 'glitter'], 'gold', [$scope.room.hasGold, senses.glitter]) +
             addText(['Pit', 'breeze'], 'blue', [$scope.room.hasPit, senses.breeze]) +
