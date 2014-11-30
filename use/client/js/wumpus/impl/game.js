@@ -59,6 +59,14 @@ exports.generate = function() {
   // these are all the rooms that this new room connects to
   var nearbyRooms = [];
 
+  // keep the rooms from bunching up too much
+  // - this was configured for discrete (no 9x9 blocks; the room can't have 4 exists (N,S,E,W)
+  // - this doesn't really effect continuous, but then again, continuous is already "interesting"
+  function tooManyNearbyRooms() {
+    return nearbyRooms.length > 3 ||
+      nearbyRooms.some(function(r) { return r.nearbyRooms.length > 2; });
+  }
+
   // we can't keep looking if we run out of rooms (is such a thing possible? maybe)
   // we ultimately want to stop once we have the desired room count
   room_while:
@@ -76,6 +84,8 @@ exports.generate = function() {
       else if(dist < config.room.diameter)
         nearbyRooms.push(r);
     }
+    if(tooManyNearbyRooms())
+      continue room_while;
 
     // add stats to the room
     if(cave.rooms.length < goldRoom) {
