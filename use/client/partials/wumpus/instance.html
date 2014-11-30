@@ -3,9 +3,11 @@
 <div class="alert end-message" data-ng-if="agent.win || !agent.alive"
      data-ng-class="{'alert-success': agent.win, 'alert-danger': !agent.win}"></div>
 <div class="game-container">
+    <!-- room needs to be ng-show, otherwise the watches don't work -->
     <span data-ng-repeat="room in rooms" data-wumpus-room="room" data-ng-show="room.visible"></span>
-    <span class="wumpus" data-wumpus-agent="wumpus" data-ng-show="showWumpus()"></span>
-    <span data-wumpus-agent="agent" data-ng-show="agent.alive && !agent.win"></span>
+    <!-- wumpus needs to be ng-if, otherwise it runs calculations on something that's undefined -->
+    <span class="wumpus" data-wumpus-agent="wumpus" data-ng-if="showWumpus()"></span>
+    <span data-wumpus-agent="agent" data-ng-if="agent.alive && !agent.win"></span>
 </div>
 
 <!-- needs to be ng-show (not ng-if) so we can find it when the page loads -->
