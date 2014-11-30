@@ -30,7 +30,6 @@ Room.prototype.senses = function() {
   }, {
     breeze: false, glitter: false, stench: false,
     breathing: (this.cave.wumpus && this.cave.wumpus.alive),
-    nearbyCount: this.nearbyRooms.length,
   });
 };
 

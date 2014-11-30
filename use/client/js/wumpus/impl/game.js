@@ -32,12 +32,9 @@ exports.generate = function() {
 
   // setup the first room
   var room = new Room(0, 0, cave, { hasExit: true });
-  // stick the agent in this room
-  cave.agent.placeInRoom(room);
+  var firstRoom = room;
   // and place this room on the map
   cave.rooms.push(room);
-  // update visibility (if it's already observable, so be it)
-  room.visible = true;
 
   // This will use an implementation of Prim's Algorithm
   var frontier = [];
@@ -105,6 +102,10 @@ exports.generate = function() {
     // add branches from the current room
     Array.prototype.push.apply(frontier, grain.roomFrontier[config.game.grain](room));
   } // end room_while
+
+  // put the agent in the first room
+  // (this needs to be last because partial observability
+  cave.agent.placeInRoom(firstRoom);
 };
 
 exports.keydown = function($event) {
@@ -259,7 +260,31 @@ Agent.prototype.placeInRoom = function(room) {
       // "round" to the nearest cardinal direction
       this.r = Math.floor(this.r/(Math.PI/2))*(Math.PI/2);
   }
-  this.inRooms = [ room ];
+
+  this.updateRooms([room]);
+};
+
+Agent.prototype.updateRooms = function(rooms) {
+  // update the view information
+  if(this === cave.agent && config.game.observable === 'partially') {
+    // invisible current rooms
+    this.inRooms.forEach(function(room) {
+      room.visible = false;
+      room.nearbyRooms.forEach(function(r) {
+        r.visible = false;
+      });
+    });
+    // visible new rooms
+    rooms.forEach(function(room) {
+      room.visible = true;
+      room.nearbyRooms.forEach(function(r) {
+        r.visible = true;
+      });
+    });
+  }
+
+  // regardless, update the room list
+  this.inRooms = rooms;
 };
 
 // it's the same distance formula
@@ -297,11 +322,6 @@ Agent.prototype.update = function() {
     this.x = that.x;
     this.y = that.y;
 
-    // update the view information
-    if(this === cave.agent && config.game.observable === 'partially') {
-      this.inRooms.forEach(function(room) { room.visible = false; });
-      inRooms.forEach(function(room) { room.visible = true; });
-    }
-    this.inRooms = inRooms;
+    this.updateRooms(inRooms);
   }
 };
