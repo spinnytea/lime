@@ -142,10 +142,11 @@ module.exports = angular.module('lime.client.wumpus', [])
 
         function updateHtml() {
           // TODO sense should be an action
+          // - then the opacity needs to fall off with time
           var senses = $scope.room.senses();
           var hasAgent = game.cave.agent.alive && !game.cave.agent.win && (game.cave.agent.inRooms.indexOf($scope.room) !== -1);
           var html =
-            addText('Exit', 'black', $scope.room.hasExit) +
+            addText(['Exit', 'sunlight'], 'black', [$scope.room.hasExit, senses.sunlight]) +
             addText(['Gold', 'glitter'], 'gold', [$scope.room.hasGold, senses.glitter]) +
             addText(['Pit', 'breeze'], 'blue', [$scope.room.hasPit, senses.breeze]) +
             addText('Agent', 'black', hasAgent) +
