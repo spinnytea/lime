@@ -7,6 +7,10 @@
 var config = require('./impl/config');
 var game = require('./impl/game');
 
+// some aesthetics for when the game ends
+// and puts a border between the game area and the HUD
+var GAME_BOX_BORDER = 12;
+
 module.exports = angular.module('lime.client.wumpus', [])
 .controller('lime.client.wumpus.app', [
   '$scope',
@@ -39,8 +43,8 @@ module.exports = angular.module('lime.client.wumpus', [])
       templateUrl: 'partials/wumpus/instance.html',
       link: function($scope, elem) {
         elem.find('.game-container')
-          .css('width', game.cave.bounds.maxx-game.cave.bounds.minx)
-          .css('height', game.cave.bounds.maxy-game.cave.bounds.miny);
+          .css('width', game.cave.bounds.maxx-game.cave.bounds.minx+GAME_BOX_BORDER*2)
+          .css('height', game.cave.bounds.maxy-game.cave.bounds.miny+GAME_BOX_BORDER*2);
 
         $scope.$on('$destroy', $scope.$watch(function() { return !game.cave.agent.alive || game.cave.agent.win; }, function(end) {
           if(end) {
@@ -131,8 +135,8 @@ module.exports = angular.module('lime.client.wumpus', [])
           .css('padding-top', config.room.radius/3)
           .css('padding-left', config.room.radius/3)
           .css('border-radius', config.room.radius)
-          .css('left', $scope.room.x - game.cave.bounds.minx - config.room.radius)
-          .css('top', $scope.room.y - game.cave.bounds.miny - config.room.radius);
+          .css('left', $scope.room.x - game.cave.bounds.minx - config.room.radius + GAME_BOX_BORDER)
+          .css('top', $scope.room.y - game.cave.bounds.miny - config.room.radius + GAME_BOX_BORDER);
 
         $scope.$on('$destroy', $scope.$watch(function() { return $scope.room.senses(); }, updateHtml, true));
 
@@ -196,10 +200,10 @@ module.exports = angular.module('lime.client.wumpus', [])
 
         // agent config
         $scope.$on('$destroy', $scope.$watch('agent.x', function() {
-          elem.css('left', $scope.agent.x - game.cave.bounds.minx - config.agent.radius);
+          elem.css('left', $scope.agent.x - game.cave.bounds.minx - config.agent.radius + GAME_BOX_BORDER);
         }));
         $scope.$on('$destroy', $scope.$watch('agent.y', function() {
-          elem.css('top', $scope.agent.y - game.cave.bounds.miny - config.agent.radius);
+          elem.css('top', $scope.agent.y - game.cave.bounds.miny - config.agent.radius + GAME_BOX_BORDER);
         }));
         $scope.$on('$destroy', $scope.$watch('agent.hasGold', function() {
           if($scope.agent.hasGold)

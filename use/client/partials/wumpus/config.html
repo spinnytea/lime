@@ -149,20 +149,32 @@
                 When the game is in continuous mode, how many branching rooms should the game generate.
             </div>
         </div>
-        <div class="form-group" data-ng-disabled="config.game.timing!=='dynamic'">
+        <div class="form-group" data-ng-disabled="config.game.timing!=='dynamic' || config.game.grain!=='discrete'">
             <label class="col-sm-2 control-label">Update / Second</label>
 
             <div class="col-sm-3 form-control-static">
-                <input type="range" min="1" step="1" max="20" data-str-to-num data-ng-model="config.timing.updatesPerSecond"
-                       data-ng-disabled="config.game.timing !== 'dynamic'"/>
+                <input type="range" min="1" step="1" max="5" data-str-to-num data-ng-model="config.timing.updatesPerSecond.discrete"
+                       data-ng-disabled="config.game.timing!=='dynamic' || config.game.grain!=='discrete'"/>
             </div>
-            <div class="col-sm-1 form-control-static">{{config.timing.updatesPerSecond | number}}</div>
+            <div class="col-sm-1 form-control-static">{{config.timing.updatesPerSecond.discrete | number}}</div>
             <div class="col-sm-6 form-control-static">
-                <strong>Dynamic Only:</strong>
+                <strong>Dynamic, Discrete Only:</strong>
                 How many times per second should the game update?
             </div>
         </div>
+        <div class="form-group" data-ng-disabled="config.game.timing!=='dynamic' || config.game.grain!=='continuous'">
+            <label class="col-sm-2 control-label">Update / Second</label>
 
+            <div class="col-sm-3 form-control-static">
+                <input type="range" min="5" step="1" max="20" data-str-to-num data-ng-model="config.timing.updatesPerSecond.continuous"
+                       data-ng-disabled="config.game.timing!=='dynamic' || config.game.grain!=='continuous'"/>
+            </div>
+            <div class="col-sm-1 form-control-static">{{config.timing.updatesPerSecond.continuous | number}}</div>
+            <div class="col-sm-6 form-control-static">
+                <strong>Dynamic, Continuous Only:</strong>
+                How many times per second should the game update?
+            </div>
+        </div>
     </div>
 </div>
 

@@ -1,7 +1,11 @@
-<a data-ng-click="generateGame()">New Game</a> |
-<a data-ng-click="gotoConfig()">Update Config</a>
-<div class="alert end-message" data-ng-if="game.cave.agent.win || !game.cave.agent.alive"
-     data-ng-class="{'alert-success': game.cave.agent.win, 'alert-danger': !game.cave.agent.win}"></div>
+<div>
+    <a data-ng-click="generateGame()">New Game</a> |
+    <a data-ng-click="gotoConfig()">Update Config</a>
+
+    <div>Points: {{game.points}}</div>
+    <div class="alert end-message" data-ng-if="game.cave.agent.win || !game.cave.agent.alive"
+         data-ng-class="{'alert-success': game.cave.agent.win, 'alert-danger': !game.cave.agent.win}"></div>
+</div>
 <div class="game-container">
     <!-- room needs to be ng-show, otherwise the watches don't work -->
     <span data-ng-repeat="room in game.cave.rooms" data-wumpus-room="room" data-ng-show="room.visible"></span>

@@ -46,6 +46,9 @@ pit.probability = 0.5;
 grain.continuous.branches = 6;
 
 // how long do we wait between updates
-timing.updatesPerSecond = 10;
-Object.defineProperty(timing, 'updateDelay', { get: function() { return 1000/timing.updatesPerSecond; } });
+timing.updatesPerSecond = {
+  discrete: 2,
+  continuous: 10,
+};
+Object.defineProperty(timing, 'updateDelay', { get: function() { return 1000/timing.updatesPerSecond[exports.game.grain]; } });
 
