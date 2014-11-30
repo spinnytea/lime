@@ -14,7 +14,6 @@ exports.game = {
   grain: 'discrete',
   observable: 'fully',
   timing: 'static',
-  apriori: 'known',
   agents: 'single',
   roomCount: 10,
 };

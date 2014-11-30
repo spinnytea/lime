@@ -50,17 +50,6 @@
             </div>
         </div>
         <div class="form-group">
-            <label class="col-sm-2 control-label">A Priori</label>
-
-            <div class="col-sm-3 radio form-control-static">
-                <label><input type="radio" value="known" data-ng-model="config.game.apriori" disabled>Known</label>
-                <label><input type="radio" value="unknown" data-ng-model="config.game.apriori" disabled>Unknown</label>
-            </div>
-            <div class="col-sm-7 form-control-static">
-                how much do you know about the world before you start?
-            </div>
-        </div>
-        <div class="form-group">
             <label class="col-sm-2 control-label">Agents</label>
 
             <div class="col-sm-3 radio form-control-static">
@@ -69,6 +58,17 @@
             </div>
             <div class="col-sm-7 form-control-static">
                 are you alone, or do you have to battle/coop with others (is there a wumpus?)
+            </div>
+        </div>
+        <div class="form-group" data-ng-disabled="true">
+            <label class="col-sm-2 control-label">A Priori</label>
+
+            <div class="col-sm-3 radio form-control-static">
+                <label><input type="radio" disabled checked>Known</label>
+                <label><input type="radio" disabled><strike>Unknown</strike></label>
+            </div>
+            <div class="col-sm-7 form-control-static">
+                how much do you know about the world before you start?
             </div>
         </div>
         <div class="form-group" data-ng-disabled="true">
