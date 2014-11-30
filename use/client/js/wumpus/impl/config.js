@@ -22,8 +22,8 @@ exports.game = {
 agent.radius = 12;
 Object.defineProperty(agent, 'diameter', { get: function() { return agent.radius * 2; } });
 
-// TODO config based on refresh rate; something like "turns per second"
-// TODO apply force based on update interval
+// XXX config based on refresh rate; something like "turns per second"
+// XXX apply force based on update interval
 agent.acceleration = 1;
 agent.da_limit = 12;
 agent.torque = Math.PI/40;

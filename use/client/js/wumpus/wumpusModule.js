@@ -145,8 +145,6 @@ module.exports = angular.module('lime.client.wumpus', [])
         $scope.$on('$destroy', $scope.$watch(function() { return game.cave.agent.inRooms; }, updateHtml));
 
         function updateHtml() {
-          // TODO sense should be an action
-          // - then the opacity needs to fall off with time
           var senses = $scope.room.senses();
           var hasAgent = game.cave.agent.alive && !game.cave.agent.win && (game.cave.agent.inRooms.indexOf($scope.room) !== -1);
           var html =

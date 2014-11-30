@@ -133,6 +133,11 @@ exports.generate = function() {
 };
 
 exports.keydown = function($event) {
+  // XXX sense should be an action
+  // - then the opacity needs to fall off with time
+  // ---
+  // - it's kind of disruptive for people
+  // > should sensing be something that constantly happens?
   var used = true;
   switch($event.keyCode) {
     case 37: grain.move[config.game.grain].left(cave.agent); break;
@@ -218,8 +223,8 @@ function fire() {
   // simple ray tracing algorithm
   var arrow = { x: cave.agent.x, y: cave.agent.y };
   var r = cave.agent.r;
-  var s = config.agent.radius/4; // TODO config arrow speed
-  var radius = config.agent.radius/4; // TODO config arrow radius
+  var s = config.agent.radius/4; // XXX config arrow speed
+  var radius = config.agent.radius/4; // XXX config arrow radius
 
   function inSomeRoom(room) { return room.distance(arrow) < config.room.radius; }
 
@@ -330,7 +335,7 @@ Agent.prototype.distance = Room.prototype.distance;
 Agent.prototype.update = function() {
   if(config.game.chance === 'stochastic' &&
       config.game.grain === 'discrete' &&
-      Math.random() < 0.1) // TODO configure stochastic/discrete
+      Math.random() < 0.1) // XXX configure stochastic/discrete
     return;
 
   // all the turn regardless
@@ -347,7 +352,7 @@ Agent.prototype.update = function() {
   };
   if(config.game.chance === 'stochastic' &&
       config.game.grain === 'continuous' &&
-      Math.random() < 0.05)  { // TODO configure stochastic/continuous
+      Math.random() < 0.05)  { // XXX configure stochastic/continuous
     that = {
       x: this.x + Math.cos(Math.random()*Math.PI*2) * Math.random() * this.da,
       y: this.y + Math.sin(Math.random()*Math.PI*2) * Math.random() * this.da,
