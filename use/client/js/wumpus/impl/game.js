@@ -32,7 +32,7 @@ exports.generate = function() {
   // create a new one on exports
   // the locally scoped name is for ease of access
   cave = exports.cave = new Cave();
-  exports.points = Math.sqrt(config.game.roomCount)*5;
+  exports.points = Math.pow(config.game.roomCount, 0.7)*4;
   if(config.game.chance === 'stochastic')
     exports.points += 5;
   if(config.game.observable === 'partially')
@@ -113,7 +113,6 @@ exports.generate = function() {
     // add the room to the map
     cave.rooms.push(room);
     // find the bounds of the game
-    // TODO change bounds with observability
     cave.bounds.minx = Math.min(cave.bounds.minx, room.x-config.room.radius);
     cave.bounds.maxx = Math.max(cave.bounds.maxx, room.x+config.room.radius);
     cave.bounds.miny = Math.min(cave.bounds.miny, room.y-config.room.radius);
