@@ -6,6 +6,7 @@ var room = exports.room = {};
 var pit = exports.pit = {};
 var grain = exports.grain = { continuous: {} };
 var timing = exports.timing = {};
+var multi = exports.multi = {};
 exports.game = {
   // if these are changed while a game is running... the results will be unpredictable
   // XXX enumerate lists of available options? (so we don't have magic strings)
@@ -28,6 +29,7 @@ agent.acceleration = 1; // TODO config
 agent.da_limit = 12; // TODO config
 agent.torque = Math.PI/40; // TODO config
 agent.dt_limit = Math.PI/8; // TODO config
+multi.wumpus_da_limit = 2; // TODO config
 
 // how big the room is
 room.radius = 48;

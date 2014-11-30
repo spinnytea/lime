@@ -1,5 +1,6 @@
 'use strict';
 
+var agents = require('./peas/agents');
 var config = require('./config');
 var grain = require('./peas/grain');
 var Room = require('./room');
@@ -140,7 +141,8 @@ exports.keydown = function($event) {
 exports.update = function() {
   // world updates
   cave.agent.update();
-  // TODO update wumpus
+  if(cave.wumpus)
+    cave.wumpus.update();
 
   // check status
   if(cave.agent.inRooms.some(function(room) { return room.hasPit; }))
@@ -150,6 +152,7 @@ exports.update = function() {
 
   // config settings
   grain.update[config.game.grain]();
+  agents.update[config.game.agents]();
 };
 
 function grab() {
