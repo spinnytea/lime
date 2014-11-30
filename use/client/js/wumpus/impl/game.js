@@ -106,6 +106,37 @@ exports.generate = function() {
   } // end room_while
 };
 
+exports.keydown = function($event) {
+  var used = true;
+  switch($event.keyCode) {
+    case 37: grain.move[config.game.grain].left(cave.agent); break;
+    case 38: grain.move[config.game.grain].up(cave.agent); break;
+    case 39: grain.move[config.game.grain].right(cave.agent); break;
+    case 40:
+      if(config.game.grain === 'continuous')
+        grain.move.continuous.down(cave.agent);
+      else
+        used = false;
+      break;
+    case 32: used = (config.game.timing === 'static'); break; // noop
+    case 71: grab(); break;
+    case 69: exit(); break;
+    case 70:
+      if(config.game.agents === 'multi')
+        fire();
+      else
+        used = false;
+      break;
+    default:
+      used = false;
+  }
+  if(used) {
+    $event.preventDefault();
+    if(config.game.timing === 'static')
+      exports.update();
+  }
+};
+
 exports.update = function() {
   // world updates
   cave.agent.update();
@@ -121,7 +152,7 @@ exports.update = function() {
   grain.update[config.game.grain]();
 };
 
-exports.grab = function() {
+function grab() {
   if(cave.agent.alive && !cave.agent.hasGold) {
     // get the list of rooms that has gold
     // we could do inRooms.some, but we need a reference to the room
@@ -131,8 +162,8 @@ exports.grab = function() {
       cave.agent.hasGold = true;
     }
   }
-};
-exports.exit = function() {
+}
+function exit() {
   if(cave.agent.alive && cave.agent.hasGold) {
     // get the list of rooms that has exit
     // we could do inRooms.some, but we need a reference to the room
@@ -141,10 +172,10 @@ exports.exit = function() {
       cave.agent.win = true;
     }
   }
-};
-exports.fire = function() {
+}
+function fire() {
   console.log('fire');
-};
+}
 
 
 function Cave() {

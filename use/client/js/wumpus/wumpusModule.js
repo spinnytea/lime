@@ -6,7 +6,6 @@
 
 var config = require('./impl/config');
 var game = require('./impl/game');
-var grain = require('./impl/peas/grain');
 
 module.exports = angular.module('lime.client.wumpus', [])
 .controller('lime.client.wumpus.app', [
@@ -60,12 +59,8 @@ module.exports = angular.module('lime.client.wumpus', [])
           }
         }));
 
-        $scope.$on('$destroy', $scope.$watch('config.game.grain', function(newValue) {
-          $scope.override.keyup = grain.keyup[newValue];
-          $scope.override.keydown = grain.keydown[newValue];
-        }));
+        $scope.override.keydown = game.keydown;
         $scope.$on('$destroy', function() {
-          $scope.override.keyup = angular.noop;
           $scope.override.keydown = angular.noop;
         });
 

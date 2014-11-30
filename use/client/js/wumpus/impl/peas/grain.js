@@ -43,56 +43,16 @@ exports.update = {
   continuous: angular.noop,
 };
 
-exports.keyup = {};
-exports.keydown = {
-  discrete: function($event) {
-    var used = true;
-    switch($event.keyCode) {
-      case 37: game.cave.agent.dt = -Math.PI / 2; break;
-      case 38: game.cave.agent.da = config.room.spacing; break;
-      case 39: game.cave.agent.dt = Math.PI / 2; break;
-//      case 40: game.cave.agent.da = 0; break;
-      case 32: used = (config.game.timing === 'static'); break; // noop
-      case 71: game.grab(); break;
-      case 69: game.exit(); break;
-      case 70:
-        if(config.game.agents === 'multi')
-          game.fire();
-        else
-          used = false;
-        break;
-      default:
-        used = false;
-    }
-    if(used) {
-      $event.preventDefault();
-      if(config.game.timing === 'static')
-        game.update();
-    }
+exports.move = {
+  discrete: {
+    left: function(agent) { agent.dt = -Math.PI / 2; },
+    right: function(agent) { agent.dt = Math.PI / 2; },
+    up: function(agent) { agent.da = config.room.spacing; },
   },
-  continuous: function($event) {
-    var used = true;
-    switch($event.keyCode) {
-      case 37: game.cave.agent.dt = Math.max(game.cave.agent.dt-config.agent.torque, -config.agent.dt_limit); break;
-      case 38: game.cave.agent.da = Math.min(game.cave.agent.da+config.agent.acceleration, config.agent.da_limit); break;
-      case 39: game.cave.agent.dt = Math.min(game.cave.agent.dt+config.agent.torque, config.agent.dt_limit); break;
-      case 40: game.cave.agent.da = Math.max(game.cave.agent.da-config.agent.acceleration, 0); break;
-      case 32: used = (config.game.timing === 'static'); break; // noop
-      case 71: game.grab(); break;
-      case 69: game.exit(); break;
-      case 70:
-        if(config.game.agents === 'multi')
-          game.fire();
-        else
-          used = false;
-        break;
-      default:
-        used = false;
-    }
-    if(used) {
-      $event.preventDefault();
-      if(config.game.timing === 'static')
-        game.update();
-    }
+  continuous: {
+    left: function(agent) { agent.dt = Math.max(agent.dt-config.agent.torque, -config.agent.dt_limit); },
+    right: function(agent) { agent.dt = Math.min(agent.dt+config.agent.torque, config.agent.dt_limit); },
+    up: function(agent) { agent.da = Math.min(agent.da+config.agent.acceleration, config.agent.da_limit); },
+    down: function(agent) { agent.da = Math.max(agent.da-config.agent.acceleration, 0); },
   },
 };
