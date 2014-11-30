@@ -13,10 +13,13 @@ exports.update = {
       // move the wumpus towards the agent
       // - if not "mostly correct", turn correct
       // - if already "mostly correct", move forward
-      // TODO work out angles so wumpus doesn't turn around
 
       var delta = w.r-Math.atan2(a.y-w.y, a.x-w.x);
       var threshold = Math.PI/4;
+
+      // clamp the angles to something we can work with
+      while(delta > Math.PI) delta -= Math.PI*2;
+      while(delta < -Math.PI) delta += Math.PI*2;
 
       if(delta > threshold) {
         if(w.dt >= 0)

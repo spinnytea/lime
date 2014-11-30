@@ -326,6 +326,9 @@ Agent.prototype.update = function() {
 
   // all the turn regardless
   this.r += this.dt;
+  // keep r in a reasonable range
+  if(this.r > Math.PI) this.r -= Math.PI*2;
+  if(this.r < -Math.PI) this.r += Math.PI*2;
 
   // calculate where we will be if we move forward
   // if we are no longer in any rooms, then we cannot move
