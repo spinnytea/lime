@@ -1,5 +1,6 @@
 'use strict';
 
+// TODO incorporate advanced config into environment config (with a toggle)
 var agent = exports.agent = {};
 var room = exports.room = {};
 var pit = exports.pit = {};
