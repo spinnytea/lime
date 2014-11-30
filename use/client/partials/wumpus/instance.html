@@ -1,13 +1,13 @@
 <a data-ng-click="generateGame()">New Game</a> |
 <a data-ng-click="gotoConfig()">Update Config</a>
-<div class="alert end-message" data-ng-if="agent.win || !agent.alive"
-     data-ng-class="{'alert-success': agent.win, 'alert-danger': !agent.win}"></div>
+<div class="alert end-message" data-ng-if="game.cave.agent.win || !game.cave.agent.alive"
+     data-ng-class="{'alert-success': game.cave.agent.win, 'alert-danger': !game.cave.agent.win}"></div>
 <div class="game-container">
     <!-- room needs to be ng-show, otherwise the watches don't work -->
-    <span data-ng-repeat="room in rooms" data-wumpus-room="room" data-ng-show="room.visible"></span>
+    <span data-ng-repeat="room in game.cave.rooms" data-wumpus-room="room" data-ng-show="room.visible"></span>
     <!-- wumpus needs to be ng-if, otherwise it runs calculations on something that's undefined -->
-    <span class="wumpus" data-wumpus-agent="wumpus" data-ng-if="showWumpus()"></span>
-    <span data-wumpus-agent="agent" data-ng-if="agent.alive && !agent.win"></span>
+    <span class="wumpus" data-wumpus-agent="game.cave.wumpus" data-ng-if="showWumpus()"></span>
+    <span data-wumpus-agent="game.cave.agent" data-ng-if="game.cave.agent.alive && !game.cave.agent.win"></span>
 </div>
 
 <!-- needs to be ng-show (not ng-if) so we can find it when the page loads -->

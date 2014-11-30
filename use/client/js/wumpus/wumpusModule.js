@@ -12,6 +12,7 @@ module.exports = angular.module('lime.client.wumpus', [])
   '$scope',
   function($scope) {
     $scope.config = config;
+    $scope.game = game;
     $scope.state = 'config';
 
     $scope.gotoConfig = function() {
@@ -37,20 +38,19 @@ module.exports = angular.module('lime.client.wumpus', [])
     return {
       templateUrl: 'partials/wumpus/instance.html',
       link: function($scope, elem) {
-        $scope.agent = game.cave.agent;
-        if(game.cave.wumpus)
-          $scope.wumpus = game.cave.wumpus;
-        $scope.rooms = game.cave.rooms;
-
         elem.find('.game-container')
           .css('width', game.cave.bounds.maxx-game.cave.bounds.minx)
           .css('height', game.cave.bounds.maxy-game.cave.bounds.miny);
 
-        $scope.$on('$destroy', $scope.$watch(function() { return !$scope.agent.alive || $scope.agent.win; }, function(end) {
+        $scope.$on('$destroy', $scope.$watch(function() { return !game.cave.agent.alive || game.cave.agent.win; }, function(end) {
           if(end) {
-            elem.find('.game-container').css('opacity', '0.3');
+            // XXX should the whole board become visible?
+            elem.find('.game-container')
+              .css('opacity', '0.3')
+              .css('background-color', '#ccc')
+              .css('border-radius', config.room.radius);
             var message;
-            if($scope.agent.win) {
+            if(game.cave.agent.win) {
               message = 'ヾ(⌐■_■)ノ♪' + '<br>You won.';
             } else {
               message = 'You lost. ... ' + '┻━┻ ︵ヽ(`Д´)ﾉ︵ ┻━┻';
@@ -109,9 +109,9 @@ module.exports = angular.module('lime.client.wumpus', [])
         }
 
         $scope.showWumpus = function() {
-          return $scope.wumpus &&
-            $scope.wumpus.alive &&
-            $scope.wumpus.inRooms.some(function(room) { return room.visible; });
+          return game.cave.wumpus &&
+            game.cave.wumpus.alive &&
+            game.cave.wumpus.inRooms.some(function(room) { return room.visible; });
         };
       } // end link
     };
