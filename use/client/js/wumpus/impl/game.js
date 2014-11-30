@@ -147,7 +147,7 @@ exports.update = function() {
   // check status
   if(cave.agent.inRooms.some(function(room) { return room.hasPit; }))
     cave.agent.alive = false;
-  if(cave.wumpus && cave.wumpus.distance(cave.agent) < config.agent.diameter)
+  if(cave.wumpus && cave.wumpus.alive && cave.wumpus.distance(cave.agent) < config.agent.diameter)
     cave.agent.alive = false;
 
   // config settings
@@ -177,8 +177,48 @@ function exit() {
   }
 }
 function fire() {
-  console.log('fire');
+  // simple ray tracing algorithm
+  var arrow = { x: cave.agent.x, y: cave.agent.y };
+  var r = cave.agent.r;
+  var s = config.agent.radius/4; // TODO config arrow speed
+  var radius = config.agent.radius/4; // TODO config arrow radius
+
+  function inSomeRoom(room) { return room.distance(arrow) < config.room.radius; }
+
+  var count = 1000;
+  while(count > 0) {
+    arrow.x += Math.cos(r) * s;
+    arrow.y += Math.sin(r) * s;
+    count--;
+
+    // hit wumpus
+    if(cave.wumpus.distance(arrow) < config.agent.radius+radius) {
+      cave.wumpus.alive = false;
+      count = 0;
+    }
+
+    // in at least one room
+    if(!cave.rooms.some(inSomeRoom)) {
+      count = 0;
+    }
+  }
 }
+//function fire() {
+//  // http://mathworld.wolfram.com/Circle-LineIntersection.html
+//  var r2 = config.room.radius*config.room.radius;
+//  var d2 = Math.pow(Math.cos(cave.agent.r), 2) + Math.pow(Math.sin(cave.agent.r), 2);
+//  var D2 = Math.pow((cave.agent.x-cave.wumpus.x+Math.cos(cave.agent.r))*(cave.agent.y-cave.wumpus.y) -
+//    (cave.agent.x-cave.wumpus.x)*(cave.agent.y-cave.wumpus.y+Math.sin(cave.agent.r)), 2);
+//
+//  if(r2*d2 - D2 > 0) {
+//    console.log('hit');
+//    // XXX make this directional
+//    // XXX if it hits a wall first
+//    // - so we need to intersect all room walls
+//    // - and allow it to pass through "doors"
+//    // - which means we need to intersect rooms with rooms to find doors
+//  }
+//}
 
 
 function Cave() {
@@ -245,7 +285,7 @@ Agent.prototype.update = function() {
     this.y = that.y;
 
     // update the view information
-    if(config.game.observable === 'partially') {
+    if(this === cave.agent && config.game.observable === 'partially') {
       this.inRooms.forEach(function(room) { room.visible = false; });
       inRooms.forEach(function(room) { room.visible = true; });
     }

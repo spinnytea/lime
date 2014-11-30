@@ -107,6 +107,12 @@ module.exports = angular.module('lime.client.wumpus', [])
           // we need to wait for the digest cycle to end
           setTimeout(dynamicUpdate, 0);
         }
+
+        $scope.showWumpus = function() {
+          return $scope.wumpus &&
+            $scope.wumpus.alive &&
+            $scope.wumpus.inRooms.some(function(room) { return room.visible; });
+        };
       } // end link
     };
   }
