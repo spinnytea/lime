@@ -266,6 +266,11 @@ Agent.prototype.placeInRoom = function(room) {
 Agent.prototype.distance = Room.prototype.distance;
 
 Agent.prototype.update = function() {
+  if(config.game.chance === 'stochastic' &&
+      config.game.grain === 'discrete' &&
+      Math.random() < 0.1) // TODO configure stochastic/discrete
+    return;
+
   // all the turn regardless
   this.r += this.dt;
 
@@ -275,6 +280,14 @@ Agent.prototype.update = function() {
     x: this.x + Math.cos(this.r) * this.da,
     y: this.y + Math.sin(this.r) * this.da,
   };
+  if(config.game.chance === 'stochastic' &&
+      config.game.grain === 'continuous' &&
+      Math.random() < 0.05)  { // TODO configure stochastic/continuous
+    that = {
+      x: this.x + Math.cos(Math.random()*Math.PI*2) * Math.random() * this.da,
+      y: this.y + Math.sin(Math.random()*Math.PI*2) * Math.random() * this.da,
+    };
+  }
   var inRooms = cave.rooms.filter(function(room) {
     return room.distance(that) < config.room.radius;
   });
