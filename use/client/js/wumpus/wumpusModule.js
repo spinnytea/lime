@@ -47,8 +47,18 @@ module.exports = angular.module('lime.client.wumpus', [])
           .css('width', game.cave.bounds.maxx-game.cave.bounds.minx)
           .css('height', game.cave.bounds.maxy-game.cave.bounds.miny);
 
-        // TODO watch for player death
-        // TODO watch for player win
+        $scope.$on('$destroy', $scope.$watch(function() { return !$scope.agent.alive || $scope.agent.win; }, function(end) {
+          if(end) {
+            elem.find('.game-container').css('opacity', '0.3');
+            var message;
+            if($scope.agent.win) {
+              message = 'ヾ(⌐■_■)ノ♪' + '<br>You won.';
+            } else {
+              message = 'You lost. ... ' + '┻━┻ ︵ヽ(`Д´)ﾉ︵ ┻━┻';
+            }
+            elem.find('.end-message').html(message);
+          }
+        }));
 
         $scope.$on('$destroy', $scope.$watch('config.game.grain', function(newValue) {
           $scope.override.keyup = grain.keyup[newValue];

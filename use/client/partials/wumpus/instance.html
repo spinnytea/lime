@@ -1,5 +1,7 @@
 <a data-ng-click="generateGame()">New Game</a> |
 <a data-ng-click="gotoConfig()">Update Config</a>
+<div class="alert end-message" data-ng-if="agent.win || !agent.alive"
+     data-ng-class="{'alert-success': agent.win, 'alert-danger': !agent.win}"></div>
 <div class="game-container">
     <span data-ng-repeat="room in rooms" data-wumpus-room="room" data-ng-show="room.visible"></span>
     <span class="wumpus" data-wumpus-agent="wumpus" data-ng-if="wumpus && wumpus.alive"></span>
