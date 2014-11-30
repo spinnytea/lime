@@ -63,7 +63,7 @@
             <div class="col-sm-7 form-control-static">are you alone, or do you have to battle/coop with others (is there a wumpus?)
             </div>
         </div>
-        <div class="form-group text-muted italic">
+        <div class="form-group" data-ng-disabled="true">
             <label class="col-sm-2 control-label">Statefulness</label>
 
             <div class="col-sm-3 radio form-control-static">
@@ -88,10 +88,10 @@
 
 <div class="panel panel-default" data-ng-init="showAdvancedConfig = false">
     <div class="panel-heading" data-ng-click="showAdvancedConfig = !showAdvancedConfig"><h3>
-                <span class="glyphicon" data-ng-class="{
-                        'glyphicon-chevron-down': showAdvancedConfig,
-                        'glyphicon-chevron-up': !showAdvancedConfig
-                    }"></span>
+        <span class="glyphicon" data-ng-class="{
+                'glyphicon-chevron-down': showAdvancedConfig,
+                'glyphicon-chevron-up': !showAdvancedConfig
+            }"></span>
         Advanced
     </h3></div>
     <div class="panel-body" data-ng-show="showAdvancedConfig">
@@ -126,7 +126,7 @@
                 Once the objects have been placed (exit/wumpus/gold), how likely is it for pits to appear?
             </div>
         </div>
-        <div class="form-group" data-ng-class="{'text-muted italic': config.game.grain!=='continuous'}">
+        <div class="form-group" data-ng-disabled="config.game.grain!=='continuous'">
             <label class="col-sm-2 control-label">Branching Factor</label>
 
             <div class="col-sm-3 form-control-static">
@@ -139,7 +139,7 @@
                 When the game is in continuous mode, how many branching rooms should the game generate.
             </div>
         </div>
-        <div class="form-group" data-ng-class="{'text-muted italic': config.game.timing!=='dynamic'}">
+        <div class="form-group" data-ng-disabled="config.game.timing!=='dynamic'">
             <label class="col-sm-2 control-label">Update / Second</label>
 
             <div class="col-sm-3 form-control-static">
@@ -158,10 +158,10 @@
 
 <div class="panel panel-default" data-ng-init="showKeyConfig = false">
     <div class="panel-heading" data-ng-click="showKeyConfig = !showKeyConfig"><h3>
-                <span class="glyphicon" data-ng-class="{
-                        'glyphicon-chevron-down': showKeyConfig,
-                        'glyphicon-chevron-up': !showKeyConfig
-                    }"></span>
+        <span class="glyphicon" data-ng-class="{
+                'glyphicon-chevron-down': showKeyConfig,
+                'glyphicon-chevron-up': !showKeyConfig
+            }"></span>
         Key Config
     </h3></div>
     <div class="panel-body" data-ng-show="showKeyConfig">
@@ -171,10 +171,10 @@
 
             <div class="col-sm-1 form-control-static">←</div>
             <div class="col-sm-9 form-control-static">
-                <div data-ng-class="{'text-muted italic': config.game.grain!=='discrete'}">
+                <div data-ng-disabled="config.game.grain!=='discrete'">
                     <strong>Discrete:</strong> Turn the agent left.
                 </div>
-                <div data-ng-class="{'text-muted italic': config.game.grain!=='continuous'}">
+                <div data-ng-disabled="config.game.grain!=='continuous'">
                     <strong>Continuous:</strong> Apply force to increase agent count-clockwise velocity.
                 </div>
             </div>
@@ -185,10 +185,10 @@
 
             <div class="col-sm-1 form-control-static">→</div>
             <div class="col-sm-9 form-control-static">
-                <div data-ng-class="{'text-muted italic': config.game.grain!=='discrete'}">
+                <div data-ng-disabled="config.game.grain!=='discrete'">
                     <strong>Discrete:</strong> Turn the agent right.
                 </div>
-                <div data-ng-class="{'text-muted italic': config.game.grain!=='continuous'}">
+                <div data-ng-disabled="config.game.grain!=='continuous'">
                     <strong>Continuous:</strong> Apply force to increase agent clockwise velocity.
                 </div>
             </div>
@@ -199,34 +199,57 @@
 
             <div class="col-sm-1 form-control-static">↑</div>
             <div class="col-sm-9 form-control-static">
-                <div data-ng-class="{'text-muted italic': config.game.grain!=='discrete'}">
+                <div data-ng-disabled="config.game.grain!=='discrete'">
                     <strong>Discrete:</strong> Move the agent forward.
                 </div>
-                <div data-ng-class="{'text-muted italic': config.game.grain!=='continuous'}">
+                <div data-ng-disabled="config.game.grain!=='continuous'">
                     <strong>Continuous:</strong> Apply force to increase agent velocity.
                 </div>
             </div>
         </div>
 
-        <div class="form-group" data-ng-class="{'text-muted italic': config.game.grain!=='continuous'}">
+        <div class="form-group" data-ng-disabled="config.game.grain!=='continuous'">
             <label class="col-sm-2 control-label">Backward</label>
 
             <div class="col-sm-1 form-control-static">↓</div>
             <div class="col-sm-9 form-control-static">
-                <div>
-                    <strong>Continuous Only:</strong> Apply force to increase agent velocity.
-                </div>
+                <strong>Continuous Only:</strong> Apply force to increase agent velocity.
             </div>
         </div>
 
-        <div class="form-group" data-ng-class="{'text-muted italic': config.game.timing!=='static'}">
+        <div class="form-group">
+            <label class="col-sm-2 control-label">Grab</label>
+
+            <div class="col-sm-1 form-control-static">G</div>
+            <div class="col-sm-9 form-control-static">
+                Grab the gold, if the agent is in the correct room.
+            </div>
+        </div>
+
+        <div class="form-group">
+            <label class="col-sm-2 control-label">Exit</label>
+
+            <div class="col-sm-1 form-control-static">E</div>
+            <div class="col-sm-9 form-control-static">
+                Exit the cave. The agent must have the gold and be in the correct room.
+            </div>
+        </div>
+
+        <div class="form-group" data-ng-disabled="config.game.agents!=='multi'">
+            <label class="col-sm-2 control-label">Fire</label>
+
+            <div class="col-sm-1 form-control-static">F</div>
+            <div class="col-sm-9 form-control-static">
+                <strong>Multi Only:</strong> Fire an arrow. It will fly straight until it either hits a wall or slays the wumpus.
+            </div>
+        </div>
+
+        <div class="form-group" data-ng-disabled="config.game.timing!=='static'">
             <label class="col-sm-2 control-label">Noop</label>
 
             <div class="col-sm-1 form-control-static">(Spacebar)</div>
             <div class="col-sm-9 form-control-static">
-                <div>
-                    <strong>Static Only:</strong> Take no action for a round.
-                </div>
+                <strong>Static Only:</strong> Take no action for a round.
             </div>
         </div>
 

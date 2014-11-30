@@ -1,5 +1,7 @@
-.italic { font-style: italic; }
-.text-muted { color: #aaa; }
+[disabled] {
+  font-style: italic;
+  color: #aaa;
+}
 
 .radio label {
   padding-right: 20px;
