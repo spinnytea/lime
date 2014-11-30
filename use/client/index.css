@@ -1,10 +1,13 @@
-[disabled] {
-  font-style: italic;
-  color: #aaa;
-}
+/*
+ * Bootstrap overrides
+ */
 
 .radio label {
   padding-right: 20px;
+}
+
+.progress {
+  margin-bottom: 0;
 }
 
 .panel-heading h1,
@@ -18,8 +21,23 @@
 }
 
 
+/*
+ * General UI Tweaks
+ */
+
+[disabled] {
+  font-style: italic;
+  color: #aaa;
+}
+
+
+/*
+ * Wumpus
+ */
+
 [data-wumpus-instance] .game-container {
   position: relative;
+  margin-bottom: 20px;
   /*border: solid 1px black;*/
 }
 
