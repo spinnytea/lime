@@ -24,11 +24,11 @@ Object.defineProperty(agent, 'diameter', { get: function() { return agent.radius
 
 // TODO config based on refresh rate; something like "turns per second"
 // TODO apply force based on update interval
-agent.acceleration = 1; // TODO config
-agent.da_limit = 12; // TODO config
-agent.torque = Math.PI/40; // TODO config
-agent.dt_limit = Math.PI/8; // TODO config
-multi.wumpus_da_limit = 2; // TODO config
+agent.acceleration = 1;
+agent.da_limit = 12;
+agent.torque = Math.PI/40;
+agent.dt_limit = Math.PI/8;
+multi.wumpus_da_limit = 2;
 
 // how big the room is
 room.radius = 48;

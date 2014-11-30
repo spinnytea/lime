@@ -9,6 +9,8 @@ function randInt(max) { return Math.floor(Math.random() * max); }
 
 var cave = exports.cave = undefined;
 exports.points = 0;
+// used for timing:dynamic
+var point_step = 0;
 
 // required rooms:
 // (if we generate the rooms in this manner using this algorithm, then we can guarantee that there are not pits between the exit and the gold)
@@ -30,16 +32,18 @@ exports.generate = function() {
   // create a new one on exports
   // the locally scoped name is for ease of access
   cave = exports.cave = new Cave();
-  exports.points = config.game.roomCount*2;
+  exports.points = Math.sqrt(config.game.roomCount)*5;
   if(config.game.chance === 'stochastic')
     exports.points += 5;
   if(config.game.observable === 'partially')
     exports.points *= 2;
   if(config.game.grain === 'continuous') {
-    exports.points *= 8;
+    exports.points *= 6;
     if(config.game.timing === 'dynamic')
-      exports.points *= 2;
+      exports.points /= (config.timing.updatesPerSecond.continuous/2);
   }
+  // TODO play-test the points
+  exports.points = Math.ceil(exports.points);
 
   // setup the first room
   var room = new Room(0, 0, cave, { hasExit: true });
@@ -162,8 +166,18 @@ exports.update = function() {
   if(cave.wumpus && cave.wumpus.alive && cave.wumpus.distance(cave.agent) < config.agent.diameter)
     cave.agent.alive = false;
 
-  if(cave.agent.alive && !cave.agent.win)
-    exports.points--;
+  if(cave.agent.alive && !cave.agent.win) {
+    if(config.game.timing === 'static') {
+      exports.points--;
+    } else {
+      if(point_step <= 0) {
+        exports.points--;
+        point_step = config.timing.updatesPerSecond[config.game.grain];
+      } else {
+        point_step--;
+      }
+    }
+  }
 
   // config settings
   grain.update[config.game.grain]();
