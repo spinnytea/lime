@@ -37,6 +37,8 @@ exports.generate = function() {
     exports.points += 5;
   if(config.game.observable === 'partially')
     exports.points *= 2;
+  if(config.game.agents === 'multi')
+    exports.points += 3;
   if(config.game.grain === 'continuous') {
     exports.points *= 6;
     if(config.game.timing === 'dynamic')
@@ -171,8 +173,10 @@ exports.keydown = function($event) {
 exports.update = function() {
   // world updates
   cave.agent.update();
-  if(cave.wumpus)
+  if(cave.wumpus) {
+    agents.update.multi();
     cave.wumpus.update();
+  }
 
   // check status
   if(cave.agent.inRooms.some(function(room) { return room.hasPit; }))
@@ -195,7 +199,6 @@ exports.update = function() {
 
   // config settings
   grain.update[config.game.grain]();
-  agents.update[config.game.agents]();
 };
 
 function grab() {

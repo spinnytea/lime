@@ -4,12 +4,23 @@ var config = require('../config');
 var game = require('../game');
 var grain = require('./grain');
 
+// the wumpus will skip a turn every so often
+// (discrete only)
+var skip = -1;
+
 exports.update = {
   single: angular.noop,
   multi: function() {
     var a = game.cave.agent;
     var w = game.cave.wumpus;
     if(w.alive && a.alive) {
+      if(config.game.grain === 'discrete') {
+        skip = (skip+1)%3;
+        console.log(skip);
+        if(skip === 0)
+          return;
+      }
+
       // move the wumpus towards the agent
       // - if not "mostly correct", turn correct
       // - if already "mostly correct", move forward
