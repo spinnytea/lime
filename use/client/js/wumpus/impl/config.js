@@ -3,18 +3,23 @@
 // TODO incorporate advanced config into environment config (with a toggle)
 var agent = exports.agent = {};
 var room = exports.room = {};
-var pit = exports.pit = {};
+var misc = exports.misc = {
+  pit: {},
+  arrow: {},
+};
+
+var chance = exports.chance = {};
 var grain = exports.grain = { continuous: {} };
 var timing = exports.timing = {};
 var multi = exports.multi = {};
 exports.game = {
   // if these are changed while a game is running... the results will be unpredictable
   // XXX enumerate lists of available options? (so we don't have magic strings)
-  chance: 'deterministic',
-  grain: 'discrete',
-  observable: 'fully',
-  timing: 'static',
-  agents: 'single',
+  chance: 'deterministic', // stochastic
+  grain: 'discrete', // continuous
+  observable: 'fully', // partially
+  timing: 'static', // dynamic
+  agents: 'single', // multi
   roomCount: 10,
 };
 
@@ -40,12 +45,21 @@ Object.defineProperty(room, 'spacing', { get: function() { return room.radius * 
 Object.defineProperty(room, 'spacing_err', { get: function() { return room.spacing - 1; } });
 
 // How likely is it for a pit to be generated after we have placed the exit and the gold
-pit.probability = 0.5;
+misc.pit.probability = 0.5;
+// some properties about firing an arrow
+Object.defineProperty(misc.arrow, 'radius', { get: function() { return agent.radius/4; } });
+Object.defineProperty(misc.arrow, 'speed', { get: function() { return agent.radius/4; } });
+
+
+// how likely is it for the actions to mess up?
+chance.discrete = 0.1;
+chance.continuous = 0.05;
 
 // how many rooms should we generate when branching?
 grain.continuous.branches = 6;
 
 // how long do we wait between updates
+// (only applies to dynamic)
 timing.updatesPerSecond = {
   discrete: 2,
   continuous: 10,

@@ -106,7 +106,7 @@ exports.generate = function() {
       }
       room.hasGold = true;
     } else if(cave.rooms.length > goldRoom) {
-      if(Math.random() < config.pit.probability)
+      if(Math.random() < config.misc.pit.probability)
         room.hasPit = true;
     }
 
@@ -223,19 +223,17 @@ function fire() {
   // simple ray tracing algorithm
   var arrow = { x: cave.agent.x, y: cave.agent.y };
   var r = cave.agent.r;
-  var s = config.agent.radius/4; // XXX config arrow speed
-  var radius = config.agent.radius/4; // XXX config arrow radius
 
   function inSomeRoom(room) { return room.distance(arrow) < config.room.radius; }
 
   var count = 1000;
   while(count > 0) {
-    arrow.x += Math.cos(r) * s;
-    arrow.y += Math.sin(r) * s;
+    arrow.x += Math.cos(r) * config.misc.arrow.speed;
+    arrow.y += Math.sin(r) * config.misc.arrow.speed;
     count--;
 
     // hit wumpus
-    if(cave.wumpus.distance(arrow) < config.agent.radius+radius) {
+    if(cave.wumpus.distance(arrow) < config.agent.radius+config.misc.arrow.radius) {
       cave.wumpus.alive = false;
       count = 0;
     }
@@ -335,7 +333,7 @@ Agent.prototype.distance = Room.prototype.distance;
 Agent.prototype.update = function() {
   if(config.game.chance === 'stochastic' &&
       config.game.grain === 'discrete' &&
-      Math.random() < 0.1) // XXX configure stochastic/discrete
+      Math.random() < config.chance.discrete)
     return;
 
   // all the turn regardless
@@ -352,7 +350,7 @@ Agent.prototype.update = function() {
   };
   if(config.game.chance === 'stochastic' &&
       config.game.grain === 'continuous' &&
-      Math.random() < 0.05)  { // XXX configure stochastic/continuous
+      Math.random() < config.chance.continuous)  {
     that = {
       x: this.x + Math.cos(Math.random()*Math.PI*2) * Math.random() * this.da,
       y: this.y + Math.sin(Math.random()*Math.PI*2) * Math.random() * this.da,
