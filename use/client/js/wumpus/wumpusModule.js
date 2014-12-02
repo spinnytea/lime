@@ -6,7 +6,7 @@
 
 var config = require('./impl/config');
 var game = require('./impl/game');
-var io = require('socket.io-client');
+var socket = require('./socket');
 
 // some aesthetics for when the game ends
 // and puts a border between the game area and the HUD
@@ -14,20 +14,11 @@ var GAME_BOX_BORDER = 12;
 
 module.exports = angular.module('lime.client.wumpus', [])
 .controller('lime.client.wumpus.app', [
-  '$scope', '$location',
-  function($scope, $location) {
+  '$scope',
+  function($scope) {
     $scope.config = config;
     $scope.game = game;
     $scope.state = 'config';
-
-    var socket = io($location.protocol() + '://' + $location.host() + ':3000/wumpus'); // TODO config port
-    socket.on('news', function(data) {
-      console.log('news');
-      console.log(data);
-    });
-    $scope.$on('$destroy', function() {
-      socket.disconnect();
-    });
 
     $scope.gotoConfig = function() {
       $scope.state = 'config';
@@ -47,6 +38,21 @@ module.exports = angular.module('lime.client.wumpus', [])
     $scope.generateGame();
   }
 ]) // end lime.client.wumpus.app controller
+.directive('wumpusSocket', [
+  '$location',
+  function($location) {
+    return {
+      templateUrl: 'partials/wumpus/socket.html',
+      link: function($scope) {
+        $scope.$on('$destroy', socket.connect($location.protocol(), $location.host()));
+
+        $scope.send = function() {
+          console.log('send');
+        };
+      } // end link
+    };
+  }
+]) // end wumpusSocket directive
 .directive('wumpusInstance', [
   function() {
     return {
@@ -73,10 +79,12 @@ module.exports = angular.module('lime.client.wumpus', [])
           }
         }));
 
-        $scope.override.keydown = game.keydown;
-        $scope.$on('$destroy', function() {
-          $scope.override.keydown = angular.noop;
-        });
+        if(config.game.player === 'person') {
+          $scope.override.keydown = game.keydown;
+          $scope.$on('$destroy', function() {
+            $scope.override.keydown = angular.noop;
+          });
+        }
 
         if(config.game.grain === 'continuous') {
           var $forwardCur = elem.find('.forward-cur');

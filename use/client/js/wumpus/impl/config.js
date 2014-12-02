@@ -21,6 +21,7 @@ exports.game = {
   timing: 'static', // dynamic
   agents: 'single', // multi
   roomCount: 10,
+  player: 'person', // lemon
 };
 
 // how big are the agents
