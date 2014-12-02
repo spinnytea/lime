@@ -14,13 +14,13 @@ var GAME_BOX_BORDER = 12;
 
 module.exports = angular.module('lime.client.wumpus', [])
 .controller('lime.client.wumpus.app', [
-  '$scope',
-  function($scope) {
+  '$scope', '$location',
+  function($scope, $location) {
     $scope.config = config;
     $scope.game = game;
     $scope.state = 'config';
-    //var socket = io($location.protocol() + '://' + $location.host() + ':3000'); // TODO config location
-    var socket = io('http://localhost:3000');
+
+    var socket = io($location.protocol() + '://' + $location.host() + ':3000/wumpus'); // TODO config port
     socket.on('news', function(data) {
       console.log('news');
       console.log(data);
