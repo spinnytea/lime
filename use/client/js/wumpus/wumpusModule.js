@@ -6,6 +6,7 @@
 
 var config = require('./impl/config');
 var game = require('./impl/game');
+var io = require('socket.io-client');
 
 // some aesthetics for when the game ends
 // and puts a border between the game area and the HUD
@@ -18,6 +19,15 @@ module.exports = angular.module('lime.client.wumpus', [])
     $scope.config = config;
     $scope.game = game;
     $scope.state = 'config';
+    //var socket = io($location.protocol() + '://' + $location.host() + ':3000'); // TODO config location
+    var socket = io('http://localhost:3000');
+    socket.on('news', function(data) {
+      console.log('news');
+      console.log(data);
+    });
+    $scope.$on('$destroy', function() {
+      socket.disconnect();
+    });
 
     $scope.gotoConfig = function() {
       $scope.state = 'config';
