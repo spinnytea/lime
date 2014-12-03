@@ -287,7 +287,7 @@ function Agent(options) {
     alive: true,
   }, options);
 
-  this.inRooms = [];
+  Object.defineProperty(this, 'inRooms', { value: [], writable: true, enumerable: false });
 }
 
 Agent.prototype.placeInRoom = function(room) {

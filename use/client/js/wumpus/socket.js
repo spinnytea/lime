@@ -44,5 +44,14 @@ exports.emit = function(event, message) {
 };
 
 exports.sense = function() {
-  socket.emit('sense', 'yar');
+  var cave = angular.extend({}, game.cave);
+  if(config.game.observable === 'partially') {
+    cave.rooms = [];
+    Array.prototype.push.apply(cave.rooms, cave.agent.inRooms);
+    cave.agent.inRooms.forEach(function(room) {
+      Array.prototype.push.apply(cave.rooms, room.nearbyRooms);
+    });
+  }
+  cave.rooms.forEach(function(room) { room.senses = room.sense(); });
+  socket.emit('sense', cave);
 };

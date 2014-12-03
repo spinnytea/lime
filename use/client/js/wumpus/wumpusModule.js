@@ -175,14 +175,14 @@ module.exports = angular.module('lime.client.wumpus', [])
           .css('left', $scope.room.x - game.cave.bounds.minx - config.room.radius + GAME_BOX_BORDER)
           .css('top', $scope.room.y - game.cave.bounds.miny - config.room.radius + GAME_BOX_BORDER);
 
-        $scope.$on('$destroy', $scope.$watch(function() { return $scope.room.senses(); }, updateHtml, true));
+        $scope.$on('$destroy', $scope.$watch(function() { return $scope.room.sense(); }, updateHtml, true));
 
         if(game.cave.wumpus)
           $scope.$on('$destroy', $scope.$watch(function() { return game.cave.wumpus.inRooms; }, updateHtml));
         $scope.$on('$destroy', $scope.$watch(function() { return game.cave.agent.inRooms; }, updateHtml));
 
         function updateHtml() {
-          var senses = $scope.room.senses();
+          var senses = $scope.room.sense();
           var hasAgent = game.cave.agent.alive && !game.cave.agent.win && (game.cave.agent.inRooms.indexOf($scope.room) !== -1);
           var html =
             addText(['Exit', 'sunlight'], 'black', [$scope.room.hasExit, senses.sunlight]) +

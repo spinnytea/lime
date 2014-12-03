@@ -10,8 +10,8 @@ module.exports = Room;
 function Room(x, y, cave, options) {
   this.x = x;
   this.y = y;
-  this.cave = cave;
-  this.nearbyRooms = [];
+  Object.defineProperty(this, 'cave', { value: cave, writable: true, enumerable: false });
+  Object.defineProperty(this, 'nearbyRooms', { value: [], writable: true, enumerable: false });
 
   angular.extend(this, {
     hasPit: false,
@@ -21,7 +21,7 @@ function Room(x, y, cave, options) {
   }, options);
 }
 
-Room.prototype.senses = function() {
+Room.prototype.sense = function() {
   return this.nearbyRooms.reduce(function(senses, room) {
     senses.sunlight = senses.sunlight || room.hasExit,
     senses.breeze = senses.breeze || room.hasPit;

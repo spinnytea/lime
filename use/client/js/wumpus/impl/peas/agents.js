@@ -16,7 +16,6 @@ exports.update = {
     if(w.alive && a.alive) {
       if(config.game.grain === 'discrete') {
         skip = (skip+1)%3;
-        console.log(skip);
         if(skip === 0)
           return;
       }
