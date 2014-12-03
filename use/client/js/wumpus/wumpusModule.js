@@ -41,11 +41,14 @@ module.exports = angular.module('lime.client.wumpus', [])
 .directive('wumpusSocket', [
   '$location',
   function($location) {
-    var COMMAND_TYPES = ['command'];
+    var COMMAND_TYPES = {
+      'command': 'command',
+      'c': 'command',
+    };
     return {
       templateUrl: 'partials/wumpus/socket.html',
       link: function($scope) {
-        $scope.$on('$destroy', socket.connect($location.protocol(), $location.host()));
+        $scope.$on('$destroy', socket.connect($scope, $location.protocol(), $location.host()));
 
         $scope.message = '';
         $scope.keyup = function($event) {
@@ -53,8 +56,8 @@ module.exports = angular.module('lime.client.wumpus', [])
             var type = $scope.message.substring(0, $scope.message.indexOf(' '));
 
             // only process this if it starts with a valid command
-            if(COMMAND_TYPES.indexOf(type) !== -1) {
-              socket.emit(type, $scope.message.substring(type.length+1));
+            if(type in COMMAND_TYPES) {
+              socket.emit(COMMAND_TYPES[type], $scope.message.substring(type.length+1));
               $scope.message = '';
             }
           }

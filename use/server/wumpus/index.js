@@ -7,8 +7,13 @@ exports.setup = function(io) {
       console.log('disconnected!');
     });
 
+    // super debug
+    // this is a round-trip
+    // we are sending a command to the server, and sending that command right back
+    // --
+    // later, lemon will send these command itself
     socket.on('command', function(str) {
-      console.log(str);
+      socket.emit('action', str);
     });
   });
 };
