@@ -16,6 +16,9 @@ exports.setup = function(io) {
       socket.emit('action', str);
     });
 
+    socket.on('config', function(config) {
+      console.log(config);
+    });
     socket.on('sense', function(state) {
       console.log(state);
     });

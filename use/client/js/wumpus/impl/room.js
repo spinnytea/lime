@@ -22,6 +22,7 @@ function Room(x, y, cave, options) {
 }
 
 Room.prototype.sense = function() {
+  // TODO some of this is static; calculate that stuff once
   return this.nearbyRooms.reduce(function(senses, room) {
     senses.sunlight = senses.sunlight || room.hasExit,
     senses.breeze = senses.breeze || room.hasPit;

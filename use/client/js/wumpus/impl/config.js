@@ -41,15 +41,15 @@ room.radius = 48;
 Object.defineProperty(room, 'diameter', { get: function() { return room.radius * 2; } });
 // how far away to place the rooms from each other
 // this needs to be smaller than the diameter. This also means that the agent might be in two rooms at once
-Object.defineProperty(room, 'spacing', { get: function() { return room.radius * 1.8; } });
+Object.defineProperty(room, 'spacing', { get: function() { return room.radius * 1.8; }, enumerable: true });
 // computer math isn't perfect, so we need to have a little bit of leeway in our comparisons
 Object.defineProperty(room, 'spacing_err', { get: function() { return room.spacing - 1; } });
 
 // How likely is it for a pit to be generated after we have placed the exit and the gold
 misc.pit.probability = 0.5;
 // some properties about firing an arrow
-Object.defineProperty(misc.arrow, 'radius', { get: function() { return agent.radius/4; } });
-Object.defineProperty(misc.arrow, 'speed', { get: function() { return agent.radius/4; } });
+Object.defineProperty(misc.arrow, 'radius', { get: function() { return agent.radius/4; }, enumerable: true });
+Object.defineProperty(misc.arrow, 'speed', { get: function() { return agent.radius/4; }, enumerable: true });
 
 
 // how likely is it for the actions to mess up?
