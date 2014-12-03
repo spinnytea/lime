@@ -50,6 +50,10 @@ module.exports = angular.module('lime.client.wumpus', [])
       link: function($scope) {
         $scope.$on('$destroy', socket.connect($scope, $location.protocol(), $location.host()));
 
+        // because of the ng-if, the game has already been setup
+        if(config.game.player === 'lemon' && config.game.timing === 'static')
+          socket.sense();
+
         $scope.message = '';
         $scope.keyup = function($event) {
           if($event.keyCode === 13) { // enter
@@ -133,6 +137,8 @@ module.exports = angular.module('lime.client.wumpus', [])
 
         function dynamicUpdate() {
           $scope.$apply(game.update);
+          if(config.game.player === 'lemon')
+            socket.sense();
           dynamicTimeout = setTimeout(dynamicUpdate, config.timing.updateDelay);
         }
         if(config.game.timing === 'dynamic') {

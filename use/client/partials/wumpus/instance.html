@@ -3,11 +3,11 @@
     <a data-ng-click="gotoConfig()">Update Config</a>
 
     <div>Points: {{game.points}}</div>
+    <div data-wumpus-socket data-ng-if="config.game.player==='lemon'"></div>
+
     <div class="alert end-message" data-ng-if="game.cave.agent.win || !game.cave.agent.alive"
          data-ng-class="{'alert-success': game.cave.agent.win, 'alert-danger': !game.cave.agent.win}"></div>
 </div>
-
-<div data-wumpus-socket data-ng-if="config.game.player==='lemon'"></div>
 
 <div class="game-container">
     <!-- room needs to be ng-show, otherwise the watches don't work -->

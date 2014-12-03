@@ -15,5 +15,9 @@ exports.setup = function(io) {
     socket.on('command', function(str) {
       socket.emit('action', str);
     });
+
+    socket.on('sense', function(state) {
+      console.log(state);
+    });
   });
 };

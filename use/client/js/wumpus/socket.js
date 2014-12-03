@@ -1,6 +1,7 @@
 'use strict';
 var io = require('socket.io-client');
 
+var config = require('./impl/config');
 var game = require('./impl/game');
 
 var socket;
@@ -14,9 +15,6 @@ exports.connect = function($scope, protocol, host) {
 
   socket.on('action', function(which) {
     var keyCode;
-    function doIt() {
-      game.keydown({ keyCode: keyCode, preventDefault: angular.noop });
-    }
 
     switch(which) {
       case 'left': keyCode = 37; break;
@@ -27,11 +25,15 @@ exports.connect = function($scope, protocol, host) {
       case 'grab': keyCode = 71; break;
       case 'exit': keyCode = 69; break;
       case 'fire': keyCode = 70; break;
-      default:
-        console.log('invalid action: ' + which);
+      default: console.log('invalid action: ' + which);
     }
 
-    if(keyCode) $scope.$apply(doIt);
+    if(keyCode)
+      $scope.$apply(function() {
+        game.keydown({ keyCode: keyCode, preventDefault: angular.noop });
+        if(config.game.timing === 'static')
+          exports.sense();
+      });
   });
 
   return disconnect;
@@ -39,4 +41,8 @@ exports.connect = function($scope, protocol, host) {
 
 exports.emit = function(event, message) {
   socket.emit(event, message);
+};
+
+exports.sense = function() {
+  socket.emit('sense', 'yar');
 };
