@@ -41,13 +41,23 @@ module.exports = angular.module('lime.client.wumpus', [])
 .directive('wumpusSocket', [
   '$location',
   function($location) {
+    var COMMAND_TYPES = ['command'];
     return {
       templateUrl: 'partials/wumpus/socket.html',
       link: function($scope) {
         $scope.$on('$destroy', socket.connect($location.protocol(), $location.host()));
 
-        $scope.send = function() {
-          console.log('send');
+        $scope.message = '';
+        $scope.keyup = function($event) {
+          if($event.keyCode === 13) { // enter
+            var type = $scope.message.substring(0, $scope.message.indexOf(' '));
+
+            // only process this if it starts with a valid command
+            if(COMMAND_TYPES.indexOf(type) !== -1) {
+              socket.emit(type, $scope.message.substring(type.length+1));
+              $scope.message = '';
+            }
+          }
         };
       } // end link
     };

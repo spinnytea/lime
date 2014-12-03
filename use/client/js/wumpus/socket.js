@@ -17,3 +17,7 @@ exports.connect = function(protocol, host) {
 
     return disconnect;
 };
+
+exports.emit = function(event, message) {
+  socket.emit(event, message);
+};
