@@ -28,12 +28,6 @@ describe('blueprint', function() {
     expect(_.intersection(Object.keys(blueprint.State.prototype), Object.keys(path.State.prototype))).to.deep.equal(Object.keys(path.State.prototype));
     // there is no need to test matches; it's too simple
   });
-  it.skip('list plans', function() {
-    // create a node that is the base of blueprints
-    // save this in config.data
-    // when we do a blueprint.save(), hook it up as a child
-    // list plans should load the ones we have saved
-  });
 
   // this is just a basic test
   // it still needs to be tested for each of the implementing prototypes

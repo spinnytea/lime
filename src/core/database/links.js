@@ -17,7 +17,11 @@ function create(name) {
 }
 
 exports.list = {};
+
+// no imbedded structural meaning
+// heavily used in testing
 create('thought_description');
+
 
 // apple
 //  machintosh --typeof_of-> apple
@@ -28,3 +32,9 @@ create('thought_description');
 // person --can_has-> apple
 create('type_of');
 //create('has');
+
+
+// helps identify when certain ideas are relevant
+//
+// idea --context-> ContextIdea
+create('context');
