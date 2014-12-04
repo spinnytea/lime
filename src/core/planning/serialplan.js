@@ -116,6 +116,7 @@ SerialAction.prototype.save = function() {
     idea = ideas.load(this.idea);
   else {
     idea = ideas.create();
+    idea.link(links.list.context, blueprint.context);
     this.idea = idea.id;
   }
 

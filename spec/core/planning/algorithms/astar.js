@@ -9,7 +9,7 @@ var NumberSlide = require('../NumberSlide');
 
 
 describe('astar', function() {
-  it.only('init', function() {
+  it('init', function() {
     expect(config.settings.astar_max_paths).to.be.a('number');
 
     expect(Object.keys(astar)).to.deep.equal(['search']);

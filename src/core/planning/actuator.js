@@ -10,6 +10,7 @@
 var _ = require('lodash');
 var blueprint = require('./primitives/blueprint');
 var ideas = require('../database/ideas');
+var links = require('../database/links');
 var subgraph = require('../database/subgraph');
 
 function ActuatorAction() {
@@ -82,6 +83,7 @@ ActuatorAction.prototype.save = function() {
     idea = ideas.load(this.idea);
   else {
     idea = ideas.create();
+    idea.link(links.list.context, blueprint.context);
     this.idea = idea.id;
   }
 

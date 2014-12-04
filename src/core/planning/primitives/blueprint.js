@@ -2,6 +2,7 @@
 // this class defines an Action and State that can be used by a Path
 var _ = require('lodash');
 var ideas = require('../../database/ideas');
+var links = require('../../database/links');
 var subgraph = require('../../database/subgraph');
 var number = require('./number');
 var discrete = require('./discrete');
@@ -210,3 +211,36 @@ BlueprintState.prototype.matches = function(blueprintstate) {
 };
 
 exports.State = BlueprintState;
+
+
+exports.context = ideas.context('blueprint');
+exports.list = function(contexts) {
+  // build our search
+  var sg = new subgraph.Subgraph();
+  // this is the node in the graph that we care about
+  var result = sg.addVertex(subgraph.matcher.filler);
+  // we have our base context
+  sg.addEdge(result, links.list.context, sg.addVertex(subgraph.matcher.id, exports.context));
+  if(contexts) {
+    // a single context presented as an ID string
+    // a single proxy idea
+    if(typeof contexts === 'string' || contexts.id)
+      sg.addEdge(result, links.list.context, sg.addVertex(subgraph.matcher.id, contexts), 1);
+    // an array of contexts
+    else if(contexts.length)
+      contexts.forEach(function(c) {
+        sg.addEdge(result, links.list.context, sg.addVertex(subgraph.matcher.id, c), 1);
+      });
+  }
+
+  // search for matches
+  var matches = subgraph.search(sg);
+  if(matches.length === 0)
+    return undefined;
+
+  // we have a set of subgraphs that match
+  // we only care about the ideas that match
+  return matches.map(function(m) {
+    return m.vertices[result].idea;
+  });
+};

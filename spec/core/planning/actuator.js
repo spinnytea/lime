@@ -175,4 +175,51 @@ describe('actuator', function() {
 
     expect(path.actions).to.deep.equal([a, a]);
   });
+
+  // we need to test a blueprint function
+  it.only('list plans', function() {
+    // create a node that is the base of blueprints
+    // save this in config.data
+    // when we do a blueprint.save(), hook it up as a child
+    // list plans should load the ones we have saved
+
+    // save our actuator
+    a.save();
+    expect(a.idea).to.be.ok;
+
+    // attach it to a dummy context
+    var context = ideas.create();
+    ideas.load(a.idea).link(links.list.context, context);
+
+
+    // search for our actuator
+    // (basic)
+    var list = blueprint.list();
+    expect(list.length).to.equal(1);
+    expect(list[0].id).to.equal(a.idea);
+
+    // search for our actuator
+    // (ID string)
+    list = blueprint.list(context.id);
+    expect(list.length).to.equal(1);
+    expect(list[0].id).to.equal(a.idea);
+
+    // search for our actuator
+    // (proxy idea)
+    list = blueprint.list(context);
+    expect(list.length).to.equal(1);
+    expect(list[0].id).to.equal(a.idea);
+
+    // search for our actuator
+    // ([ID string])
+    list = blueprint.list([context.id]);
+    expect(list.length).to.equal(1);
+    expect(list[0].id).to.equal(a.idea);
+
+    // search for our actuator
+    // ([proxy idea])
+    list = blueprint.list([context]);
+    expect(list.length).to.equal(1);
+    expect(list[0].id).to.equal(a.idea);
+  });
 }); // end actuator
