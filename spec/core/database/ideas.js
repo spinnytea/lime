@@ -14,7 +14,7 @@ describe('ideas', function() {
     expect(config.settings.location).to.be.a('string');
 
     // this is to ensure we test everything
-    expect(Object.keys(ideas)).to.deep.equal(['create', 'save', 'load', 'proxy', 'close']);
+    expect(Object.keys(ideas)).to.deep.equal(['create', 'save', 'load', 'proxy', 'close', 'context']);
   });
 
   describe('ProxyIdea', function() {
@@ -221,4 +221,18 @@ describe('ideas', function() {
       expect(function() { ideas.close('a'); }).to.not.throw();
     });
   }); // end crud
+
+  it('context', function() {
+    // first, ensure the context has be
+    expect(config.data).to.be.ok;
+    expect(config.data.ideas).to.be.ok;
+
+    expect(config.data.ideas.context.test).to.not.be.ok;
+    expect(ideas.context('test')).to.be.ok;
+    expect(config.data.ideas.context.test).to.be.ok;
+
+    // clean up after the test
+    delete config.data.ideas.context.test;
+    config.save();
+  });
 }); // end ideas

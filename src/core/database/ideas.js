@@ -11,6 +11,13 @@ var ids = require('../ids');
 // internal functionality
 //
 
+if(!config.data.ideas) {
+  config.data.ideas = {
+    context: {},
+  };
+  config.save();
+}
+
 var NEXT_ID = 'ideas';
 var memory = {};
 
@@ -147,4 +154,16 @@ exports.close = function(idea) {
 
   exports.save(idea);
   delete memory[id];
+};
+
+exports.context = function(name) {
+  var id = config.data.ideas.context[name];
+  if(id) {
+    return exports.proxy(id);
+  } else {
+    id = exports.create();
+    config.data.ideas.context[name] = id.id;
+    config.save();
+    return id;
+  }
 };

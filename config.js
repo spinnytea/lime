@@ -21,6 +21,18 @@ if(fs.existsSync(exports.settings.location + '/_settings.json'))
 else
   exports.data = {};
 // TODO save on exit
+var writing = false;
+var writeAgain = false;
 exports.save = function() {
-  fs.writeFile(exports.settings.location + '/_settings.json', JSON.stringify(exports.data), {encoding: 'utf8'});
+  if(writing) {
+    writeAgain = true;
+  } else {
+    writing = true;
+    fs.writeFile(exports.settings.location + '/_settings.json', JSON.stringify(exports.data), {encoding: 'utf8'}, function() {
+      writing = false;
+      if(writeAgain)
+        exports.save();
+      writeAgain = false;
+    });
+  }
 };
