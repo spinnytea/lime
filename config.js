@@ -17,10 +17,10 @@ exports.settings = {
 // a settings file store in the database
 // config.data can be updated and saved
 if(fs.existsSync(exports.settings.location + '/_settings.json'))
-  exports.data = fs.readFileSync(exports.settings.location + '/_settings.json', {encoding: 'utf8'});
+  exports.data = JSON.parse(fs.readFileSync(exports.settings.location + '/_settings.json', {encoding: 'utf8'}));
 else
   exports.data = {};
 // TODO save on exit
 exports.save = function() {
-  fs.writeFile(exports.settings.location + '/_settings.json', exports.data, {encoding: 'utf8'});
+  fs.writeFile(exports.settings.location + '/_settings.json', JSON.stringify(exports.data), {encoding: 'utf8'});
 };
