@@ -16,13 +16,15 @@ var subgraph = require('../../../src/core/database/subgraph');
 
 var socket;
 var gameConfig;
-//var instanceIdea;
-var context = {
-  // the subgraph the represents the context
-  subgraph: undefined,
-  // name -> subgraph.vertex_id
-  keys: {},
-};
+
+// the subgraph the represents the context
+exports.subgraph = undefined;
+// name -> subgraph.vertex_id
+exports.keys = {};
+// name -> idea
+// should be same name as used in keys
+// convenience mapping from for subgraph.vertices[keys].idea
+exports.idea = function(name) { return exports.subgraph.vertices[exports.keys[name]].idea; };
 
 
 exports.setup = function(s, c) {
@@ -49,50 +51,103 @@ exports.setup = function(s, c) {
   socket = s;
   gameConfig = c;
   getDiscreteContext();
+  exports.keys.instance = exports.subgraph.addVertex(subgraph.matcher.id, ideas.create());
+  config.save();
+  subgraph.search(exports.subgraph);
+  // exports.subgraph.concrete === true;
 };
 
 exports.cleanup = function() {
   console.log('cleanup');
   gameConfig = undefined;
   socket = undefined;
+  exports.subgraph = undefined;
+  exports.keys = {};
+//  exports.ideas = {};
   config.save();
 };
 
 
 var getDiscreteContext = function() {
-  context.subgraph = new subgraph.Subgraph();
-  context.keys.wumpus_world = context.subgraph.addVertex(subgraph.matcher.id, ideas.context('wumpus_world'));
-  context.keys.directions = context.subgraph.addVertex(subgraph.matcher.similar, discrete.definitions.similar);
-  context.subgraph.addEdge(context.keys.wumpus_world, links.list.context, context.keys.directions);
-  context.subgraph.addEdge(
-    context.keys.directions,
-    links.list.context,
-    context.subgraph.addVertex(subgraph.matcher.similar, { name: 'compass' })
+  // context
+  exports.subgraph = new subgraph.Subgraph();
+  exports.keys.wumpus_world = exports.subgraph.addVertex(subgraph.matcher.id, ideas.context('wumpus_world'));
+
+  // directions
+  exports.keys.directions = exports.subgraph.addVertex(subgraph.matcher.similar, discrete.definitions.similar);
+  exports.subgraph.addEdge(exports.keys.wumpus_world, links.list.context, exports.keys.directions);
+  exports.subgraph.addEdge(
+    exports.keys.directions,
+    links.list.thought_description,
+    exports.subgraph.addVertex(subgraph.matcher.similar, { name: 'compass' })
   );
 
-  var results = subgraph.search(context.subgraph);
+  // agent type
+  exports.keys.agent = exports.subgraph.addVertex(subgraph.matcher.similar, { name: 'agent' });
+  exports.subgraph.addEdge(exports.keys.wumpus_world, links.list.context, exports.keys.agent);
+
+  var results = subgraph.search(exports.subgraph);
   if(results.length === 0) {
     console.log('create discrete context');
 
+    // context
     var wumpus_world = ideas.context('wumpus_world');
+
+    // directions
     var directions = discrete.definitions.create(['east', 'north', 'west', 'south']);
     var compass = ideas.create({name: 'compass'});
     wumpus_world.link(links.list.context, directions);
-    directions.link(links.list.context, compass);
+    directions.link(links.list.thought_description, compass);
+
+    // agent type
+    var agent = ideas.create({name: 'agent'});
+    wumpus_world.link(links.list.context, agent);
 
     // save our the ideas
-    [wumpus_world, directions, compass].forEach(ideas.save);
+    [wumpus_world, directions, compass, agent].forEach(ideas.save);
     config.save();
 
     // now search again
-    results = subgraph.search(context.subgraph);
+    results = subgraph.search(exports.subgraph);
   }
 
+  // finish loading
   if(results.length === 1) {
-    // TODO load discrete context
     console.log('loaded discrete context');
   } else {
-    console.log('error');
-    // what? do I even try to handle this?
+    console.log('error: found ' + results.length + ' discrete contexts');
+    exports.subgraph = results[0];
   }
+};
+
+exports.senseAgent = function(state) {
+  if(!exports.keys.agentInstance) {
+    var agentInstance = ideas.create();
+    var agentDirection = ideas.create();
+    agentInstance.link(links.list.type_of, exports.idea('agent'));
+    agentInstance.link(links.list.thought_description, agentDirection);
+
+    exports.keys.agentInstance = exports.subgraph.addVertex(subgraph.matcher.filler);
+    exports.keys.agentDirection = exports.subgraph.addVertex(subgraph.matcher.filler);
+    exports.subgraph.addEdge(exports.keys.agentInstance, links.list.type_of, exports.keys.agent);
+    exports.subgraph.addEdge(exports.keys.agentInstance, links.list.thought_description, exports.keys.agentDirection);
+
+    config.save();
+    subgraph.search(exports.subgraph);
+//    console.log('concrete: ' + exports.subgraph.concrete);
+  }
+
+  // note: the -= needs to be second since we are comparing against zero
+  var dir;
+  while(state.agent.r < 0) state.agent.r += Math.PI*2;
+  while(state.agent.r > Math.PI*2) state.agent.r -= Math.PI*2;
+  if(Math.abs(state.agent.r-0) < 0.001)
+    dir = 'east';
+  if(Math.abs(state.agent.r-Math.PI/2) < 0.001)
+    dir = 'north';
+  if(Math.abs(state.agent.r-Math.PI) < 0.001)
+    dir = 'west';
+  if(Math.abs(state.agent.r-Math.PI*3/4) < 0.001)
+    dir = 'west';
+  exports.idea('agentDirection').update({value: dir, unit: exports.idea('directions').id});
 };

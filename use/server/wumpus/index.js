@@ -21,10 +21,9 @@ exports.setup = function(io) {
       socket.emit('action', str);
     });
 
-    socket.on('sense', function() {
-//      console.log(state);
-      // TODO find agent in context: update
+    socket.on('sense', function(state) {
       // TODO find rooms in context: update
+      context.senseAgent(state);
     });
   });
 };
