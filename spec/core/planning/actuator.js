@@ -14,7 +14,7 @@ describe('actuator', function() {
   it.skip('can we reduce the setup for these tests; can we use "before" instead of "beforeEach"');
   it('init', function() {
     // this is to ensure we test everything
-    expect(Object.keys(actuator)).to.deep.equal(['Action', 'actions']);
+    expect(Object.keys(actuator)).to.deep.equal(['Action', 'actions', 'list']);
     expect(Object.keys(actuator.Action.prototype)).to.deep.equal(['runCost', 'tryTransition', 'runBlueprint', 'cost', 'apply', 'save']);
   });
 
@@ -177,7 +177,7 @@ describe('actuator', function() {
   });
 
   // we need to test a blueprint function
-  it.only('list plans', function() {
+  it('list', function() {
     // create a node that is the base of blueprints
     // save this in config.data
     // when we do a blueprint.save(), hook it up as a child
@@ -194,31 +194,31 @@ describe('actuator', function() {
 
     // search for our actuator
     // (basic)
-    var list = blueprint.list();
+    var list = actuator.list();
     expect(list.length).to.equal(1);
     expect(list[0].id).to.equal(a.idea);
 
     // search for our actuator
     // (ID string)
-    list = blueprint.list(context.id);
+    list = actuator.list(context.id);
     expect(list.length).to.equal(1);
     expect(list[0].id).to.equal(a.idea);
 
     // search for our actuator
     // (proxy idea)
-    list = blueprint.list(context);
+    list = actuator.list(context);
     expect(list.length).to.equal(1);
     expect(list[0].id).to.equal(a.idea);
 
     // search for our actuator
     // ([ID string])
-    list = blueprint.list([context.id]);
+    list = actuator.list([context.id]);
     expect(list.length).to.equal(1);
     expect(list[0].id).to.equal(a.idea);
 
     // search for our actuator
     // ([proxy idea])
-    list = blueprint.list([context]);
+    list = actuator.list([context]);
     expect(list.length).to.equal(1);
     expect(list[0].id).to.equal(a.idea);
   });

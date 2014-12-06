@@ -13,9 +13,11 @@ var tools = require('../../testingTools');
 describe('blueprint', function() {
   it('init', function() {
     // this is to ensure we test everything
-    expect(Object.keys(blueprint)).to.deep.equal(['loaders', 'load', 'Action', 'State']);
+    expect(Object.keys(blueprint)).to.deep.equal(['loaders', 'load', 'Action', 'State', 'context', 'list']);
     // there isn't a need to test loaders directly
     // when we test the load of actuator, serialplan, etc then loaders will be tested through them
+    // we can't test list without anything to retrieve; this will be tested in the prototypes that need it
+    expect(blueprint.context).to.be.ok;
 
     expect(Object.keys(blueprint.Action.prototype)).to.deep.equal(['runCost', 'tryTransition', 'runBlueprint', 'cost', 'apply', 'save']);
     expect(_.intersection(Object.keys(blueprint.Action.prototype), Object.keys(path.Action.prototype))).to.deep.equal(Object.keys(path.Action.prototype));

@@ -840,8 +840,8 @@ describe('subgraph', function() {
   }); // end match (part 2)
 
   describe('rewrite', function() {
-    var boolean, money, price, wumpus, any;
-    var sg, p, w, a;
+    var boolean, money, price, wumpus, any, wumpusUpdateIdea;
+    var sg, p, w, a, wu;
     var priceData, wumpusData, priceUpdate, priceUpdate2, wumpusUpdate, wumpusUpdate2, anyData, anyUpdate;
 
     beforeEach(function() {
@@ -866,6 +866,10 @@ describe('subgraph', function() {
       wumpusUpdate = { value: 'false', unit: boolean.id };
       wumpusUpdate2 = { value: 'maybe', unit: boolean.id };
       anyUpdate = { object: 3.14 };
+
+      // replace_id
+      wumpusUpdateIdea = tools.ideas.create(wumpusUpdate);
+      wu = sg.addVertex(subgraph.matcher.id, wumpusUpdateIdea);
     });
 
     afterEach(function() {
@@ -1000,6 +1004,18 @@ describe('subgraph', function() {
         expect(sg4.vertices[a].idea.data()).to.deep.equal(anyData);
       });
 
+      it('replace_id', function() {
+        var sg2 = subgraph.rewrite(sg, [{vertex_id: w, replace_id: wu }]);
+        expect(sg2).to.be.ok;
+        expect(sg2).to.not.equal(sg);
+        // update the new value
+        expect(sg.vertices[w]._data).to.equal(undefined);
+        expect(sg2.vertices[w].data).to.deep.equal(wumpusUpdate);
+        // don't update the id
+        expect(sg.vertices[w].idea.data()).to.deep.equal(wumpusData);
+        expect(sg2.vertices[w].idea.data()).to.deep.equal(wumpusData);
+      });
+
       it('combine number', function() {
         var sg2 = subgraph.rewrite(sg, [{vertex_id: p, combine: priceUpdate }]);
         expect(sg2).to.be.ok;
@@ -1047,18 +1063,28 @@ describe('subgraph', function() {
     }); // end !actual
 
     it('actual', function() {
+      // replace number
       var sg2 = subgraph.rewrite(sg, [{vertex_id: p, replace: priceUpdate }], true);
       expect(sg2).to.be.ok;
       expect(sg2).to.equal(sg);
       expect(sg.vertices[p].data).to.deep.equal(priceUpdate);
       expect(sg.vertices[p].idea.data()).to.deep.equal(priceUpdate);
 
-      sg2 = subgraph.rewrite(sg, [{vertex_id: w, replace: wumpusUpdate }], true);
+      // replace discrete
+      sg2 = subgraph.rewrite(sg, [{vertex_id: w, replace: wumpusUpdate2 }], true);
+      expect(sg2).to.be.ok;
+      expect(sg2).to.equal(sg);
+      expect(sg.vertices[w].data).to.deep.equal(wumpusUpdate2);
+      expect(sg.vertices[w].idea.data()).to.deep.equal(wumpusUpdate2);
+
+      // replace_id
+      sg2 = subgraph.rewrite(sg, [{vertex_id: w, replace_id: wu }], true);
       expect(sg2).to.be.ok;
       expect(sg2).to.equal(sg);
       expect(sg.vertices[w].data).to.deep.equal(wumpusUpdate);
       expect(sg.vertices[w].idea.data()).to.deep.equal(wumpusUpdate);
 
+      // combine number
       sg2 = subgraph.rewrite(sg, [{vertex_id: p, combine: priceUpdate }], true);
       expect(sg2).to.be.ok;
       expect(sg2).to.equal(sg);
@@ -1066,6 +1092,7 @@ describe('subgraph', function() {
       expect(sg.vertices[p].data).to.deep.equal({ type: 'lime_number', value: number.value(40), unit: money.id });
       expect(sg2.vertices[p].idea.data()).to.deep.equal({ type: 'lime_number', value: number.value(40), unit: money.id });
 
+      // combine discrete
       sg2 = subgraph.rewrite(sg, [{vertex_id: w, combine: wumpusData }], true);
       expect(sg2).to.equal(undefined);
     });

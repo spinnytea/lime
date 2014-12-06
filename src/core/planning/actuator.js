@@ -115,3 +115,5 @@ blueprint.loaders.ActuatorAction = function(blueprint) {
 // due to serialization of javascript objects...
 // all action impls must be registered here
 exports.actions = {};
+
+exports.list = blueprint.list;

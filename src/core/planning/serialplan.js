@@ -8,6 +8,7 @@ var _ = require('lodash');
 var astar = require('./algorithms/astar');
 var blueprint = require('./primitives/blueprint');
 var ideas = require('../database/ideas');
+var links = require('../database/links');
 
 // @param plans: blueprint.Action
 //  - the steps that make up this macro action

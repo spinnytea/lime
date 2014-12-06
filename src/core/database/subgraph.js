@@ -427,7 +427,7 @@ function subgraphMatch(outerEdges, innerEdges, vertexMap, unitOnly) {
       // get a list of
       return subgraphMatch(newOuter, newInner, newMap, unitOnly);
   }).reduce(function(list, match) {
-    // combine the matches into a single list
+    // reduce all match lists into a single list
     Array.prototype.push.apply(list, match);
     return list;
   }, []);
@@ -461,6 +461,7 @@ function vertexTransitionableAcceptable(vo, vi, unitOnly) {
 //  - { vertex_id: id, replace: number }
 //  - { vertex_id: id, combine: number }
 //  - { vertex_id: id, replace: discrete }
+//  - { vertex_id: id, replace_id: id } // (both are vertex_id's)
 //  - AC: actuator.runBlueprint depends on this structure
 //  - AC: actuator.runBlueprint does a _.clone() on each object, and replaces vertex_id
 // @param actual: boolean (default: false)
@@ -485,7 +486,7 @@ exports.rewrite = function(subgraph, transitions, actual) {
     var v = subgraph.vertices[t.vertex_id];
     if(v) {
       // if a transition hasn't been specified, there is nothing to do
-      if(!(t.replace || t.combine))
+      if(!(t.replace || t.combine || t.replace_id))
         return false;
 
       if(!v.transitionable) {
@@ -500,6 +501,10 @@ exports.rewrite = function(subgraph, transitions, actual) {
       // verify the transition data
       if(t.replace) {
         if(v.data.unit && t.replace.unit && v.data.unit !== t.replace.unit)
+          return false;
+      } else if(t.replace_id) {
+        var r = subgraph.vertices[t.replace_id];
+        if(v.data.unit && r.data.unit && v.data.unit !== r.data.unit)
           return false;
       } else {
         if(v.data.unit !== t.combine.unit || !numnum.isNumber(v.data) || !numnum.isNumber(t.combine))
@@ -517,6 +522,8 @@ exports.rewrite = function(subgraph, transitions, actual) {
 
     if(t.replace) {
       v.data = t.replace;
+    } else if(t.replace_id) {
+      v.data = subgraph.vertices[t.replace_id].data;
     } else {
       v.data = numnum.combine(v.data, t.combine);
     }
