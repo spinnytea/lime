@@ -21,6 +21,7 @@ if(fs.existsSync(exports.settings.location + '/_settings.json'))
 else
   exports.data = {};
 // TODO save on exit
+// TODO race condition: sometimes nothing saves when it saves too often
 var writing = false;
 var writeAgain = false;
 exports.save = function() {
