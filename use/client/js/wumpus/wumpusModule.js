@@ -42,8 +42,8 @@ module.exports = angular.module('lime.client.wumpus', [])
   '$location',
   function($location) {
     var COMMAND_TYPES = {
-      'command': 'command',
-      'c': 'command',
+      'command': 'command', 'c': 'command',
+      'actuator': 'actuator', 'a': 'actuator',
     };
     return {
       templateUrl: 'partials/wumpus/socket.html',
