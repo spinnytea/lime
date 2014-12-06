@@ -10,6 +10,10 @@
   margin-bottom: 0;
 }
 
+.form-group {
+  margin-bottom: 5px;
+}
+
 .panel-heading h1,
 .panel-heading h2,
 .panel-heading h3 {

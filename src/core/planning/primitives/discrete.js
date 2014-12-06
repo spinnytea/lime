@@ -56,6 +56,7 @@ exports.difference = function(d1, d2) {
 //
 var definitionTypeName = 'lime_discrete_definition';
 exports.definitions = {};
+exports.definitions.similar = {type: definitionTypeName};
 
 // create a new definition of a discrete value
 // states must be an array of primitive javascript values (number, string, etc)

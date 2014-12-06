@@ -1,13 +1,14 @@
 'use strict';
 
+var context = require('./context');
+
 exports.setup = function(io) {
   io.on('connection', function(socket) {
-    // TODO setup context
-    console.log('connected!');
-    socket.on('disconnect', function() {
-      // TODO tear down context
-      console.log('disconnected!');
+    // Note: only meant for one client
+    socket.on('config', function(config) {
+      context.setup(socket, config);
     });
+    socket.on('disconnect', context.cleanup);
 
     // super debug
     // this is a round-trip
@@ -20,10 +21,6 @@ exports.setup = function(io) {
       socket.emit('action', str);
     });
 
-    socket.on('config', function(config) {
-      console.log(config);
-      // TODO put config data in context
-    });
     socket.on('sense', function() {
 //      console.log(state);
       // TODO find agent in context: update
