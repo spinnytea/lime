@@ -70,7 +70,9 @@ var getDiscreteContext = function() {
   // context
   exports.keys.wumpus_world = exports.subgraph.addVertex(subgraph.matcher.id, ideas.context('wumpus_world'));
   exports.keys.action_left = exports.subgraph.addVertex(subgraph.matcher.exact, {name:'action:left'});
+  exports.keys.action_right = exports.subgraph.addVertex(subgraph.matcher.exact, {name:'action:right'});
   exports.subgraph.addEdge(exports.keys.wumpus_world, links.list.thought_description, exports.keys.action_left);
+  exports.subgraph.addEdge(exports.keys.wumpus_world, links.list.thought_description, exports.keys.action_right);
 
   // directions
   exports.keys.directions = exports.subgraph.addVertex(subgraph.matcher.similar, discrete.definitions.similar);
@@ -93,7 +95,9 @@ var getDiscreteContext = function() {
     // TODO relink context directions
     var wumpus_world = ideas.context('wumpus_world');
     var action_left = ideas.create({ name: 'action:left' });
+    var action_right = ideas.create({ name: 'action:right' });
     wumpus_world.link(links.list.thought_description, action_left);
+    wumpus_world.link(links.list.thought_description, action_right);
 
     // directions
     var directions = discrete.definitions.create(['east', 'south', 'west', 'north']);
@@ -125,10 +129,20 @@ var getDiscreteContext = function() {
     ideas.load(a.idea).link(links.list.context, wumpus_world);
     ideas.load(a.idea).link(links.list.context, action_left);
 
+    // TODO trying some shorthand: just update the action and save it again
+    // - this is brittle, but it works for now
+    ideas.save(a.idea);
+    a.idea = undefined;
+    a.transitions[0].cycle.value = 1;
+    a.action = 'wumpus_known_discrete_right';
+    a.save();
+    ideas.load(a.idea).link(links.list.context, wumpus_world);
+    ideas.load(a.idea).link(links.list.context, action_right);
+
 
     // save our the ideas
     [
-      wumpus_world, action_left,
+      wumpus_world, action_left, action_right,
       directions, compass, agent,
       a.idea,
     ].forEach(ideas.save);
