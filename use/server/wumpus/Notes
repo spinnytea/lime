@@ -1,0 +1,5 @@
+For Continuous
+------------------------------------------------
+  blueprint state: requirements
+  - need to find an idea after transition has been applied
+  - once the agent moves, there needs to be a room nearby

@@ -31,7 +31,7 @@ exports.setup = function(s, c) {
   console.log('setup');
 
   if(socket) {
-    console.log('I can only handle one thing at a time.');
+    s.emit('message', 'I can only handle one thing at a time.');
     return;
   }
 
@@ -44,7 +44,7 @@ exports.setup = function(s, c) {
     agents: 'single', // multi
     player: 'lemon', // person
   }))) {
-    console.log('I don\'t know how to handle this.');
+    s.emit('message', 'I don\'t know how to handle this.');
     return;
   }
 
@@ -113,7 +113,6 @@ var getDiscreteContext = function() {
     var a = new actuator.Action();
     var a_agentInstance = a.requirements.addVertex(subgraph.matcher.filler);
     var a_agentDirection = a.requirements.addVertex(subgraph.matcher.exact, {value: 'east', unit: directions.id}, true);
-    console.log('a_agentDirection: ' + a_agentDirection);
     a.requirements.addEdge(
       a_agentInstance,
       links.list.type_of,
@@ -152,6 +151,7 @@ var getDiscreteContext = function() {
 };
 
 exports.senseAgent = function(state) {
+  if(!socket) return;
   if(!exports.keys.agentInstance) {
     var agentInstance = ideas.create();
     var agentDirection = ideas.create();

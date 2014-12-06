@@ -21,19 +21,21 @@ if(fs.existsSync(exports.settings.location + '/_settings.json'))
 else
   exports.data = {};
 // TODO save on exit
-// TODO race condition: sometimes nothing saves when it saves too often
+var saveTimeout = undefined;
 var writing = false;
-var writeAgain = false;
 exports.save = function() {
-  if(writing) {
-    writeAgain = true;
-  } else {
+  clearTimeout(saveTimeout);
+  saveTimeout = setTimeout(function() {
+    // if we are currently writing something, redo the timeout
+    if(writing)
+      exports.save();
+
     writing = true;
-    fs.writeFile(exports.settings.location + '/_settings.json', JSON.stringify(exports.data), {encoding: 'utf8'}, function() {
-      writing = false;
-      if(writeAgain)
-        exports.save();
-      writeAgain = false;
-    });
-  }
+    fs.writeFile(
+      exports.settings.location + '/_settings.json',
+      JSON.stringify(exports.data),
+      {encoding: 'utf8'},
+      function() { writing = false; }
+    );
+  }, 1000);
 };

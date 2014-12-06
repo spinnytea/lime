@@ -305,6 +305,14 @@ exports.search = function(subgraph) {
 // - when we need to see if a transition is possible, the match needs to see if we can combine the values
 // - this boils down to "do the units match"
 // AC: subgraph.match: i.transitionable === o.transitionable
+//
+// TODO problem with combinatorics
+// - is it okay just know there is an answer, or to think there may be one?
+// - 1 known root with 10 fillers. that's 10! options
+// - we don't need to list every option
+// - but what can we do about it? what would this even look like?
+// - can we try one solution, and start to nail down likely version
+//   (pin down, say, 6, and then try all 4! remaining options)
 exports.match = function(subgraphOuter, subgraphInner, unitOnly) {
   if(!subgraphOuter.concrete)
     throw new RangeError('the outer subgraph must be concrete before you can match against it');
