@@ -39,6 +39,12 @@ exports.connect = function($scope, protocol, host) {
       });
   });
 
+  socket.on('message', function(str) {
+    $scope.$apply(function() {
+      $scope.serverMessage = str;
+    });
+  });
+
   return disconnect;
 };
 

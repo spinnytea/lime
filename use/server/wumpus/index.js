@@ -21,7 +21,7 @@ exports.setup = function(io) {
     socket.on('actuator', function(str) {
       // find the list of actions for this str
       if(!context.keys['action_'+str]) {
-        console.log('action:'+str+' not found');
+        socket.emit('message', 'actuator:'+str+'> not found');
         return;
       }
 
@@ -41,10 +41,11 @@ exports.setup = function(io) {
         return false;
       });
 
-      // if none of the actions work, report a message
-      // TODO send this to the client
-      if(!success) {
-        console.log('could not apply action:'+str);
+      if(success) {
+        socket.emit('message', 'actuator:'+str+'> potassium');
+      } else {
+        // if none of the actions work, report a message
+        socket.emit('message', 'actuator:'+str+'> could not apply');
       }
     });
 
