@@ -1016,6 +1016,50 @@ describe('subgraph', function() {
         expect(sg2.vertices[w].idea.data()).to.deep.equal(wumpusData);
       });
 
+      it('cycle discrete', function() {
+        // true, false, maybe
+        var currValue = {type: 'lime_discrete', unit: boolean.id, value: 'false'};
+
+        var sg2 = subgraph.rewrite(sg, [{vertex_id: w, cycle: { unit: boolean.id, value: 1 } }]);
+        expect(sg2).to.be.ok;
+        expect(sg2).to.not.equal(sg);
+        // update the new value
+        expect(sg.vertices[w]._data).to.equal(undefined);
+        expect(sg2.vertices[w].data).to.deep.equal(currValue);
+        // don't update the id
+        expect(sg.vertices[w].idea.data()).to.deep.equal(wumpusData);
+        expect(sg2.vertices[w].idea.data()).to.deep.equal(wumpusData);
+
+        var sg3 = subgraph.rewrite(sg2, [{vertex_id: w, cycle: { unit: boolean.id, value: 2 } }]);
+        currValue.value = 'true';
+        expect(sg3).to.be.ok;
+        expect(sg3).to.not.equal(sg2);
+        expect(sg3.vertices[w].data).to.deep.equal(currValue);
+
+        var sg4 = subgraph.rewrite(sg3, [{vertex_id: w, cycle: { unit: boolean.id, value: 3 } }]);
+        expect(sg4).to.be.ok;
+        expect(sg4).to.not.equal(sg3);
+        expect(sg4.vertices[w].data).to.deep.equal(currValue);
+
+        var sg5 = subgraph.rewrite(sg4, [{vertex_id: w, cycle: { unit: boolean.id, value: -4 } }]);
+        currValue.value = 'maybe';
+        expect(sg5).to.be.ok;
+        expect(sg5).to.not.equal(sg4);
+        expect(sg5.vertices[w].data).to.deep.equal(currValue);
+
+        // don't update the id
+        expect(sg.vertices[w].idea.data()).to.deep.equal(wumpusData);
+        expect(sg2.vertices[w].idea.data()).to.deep.equal(wumpusData);
+        expect(sg3.vertices[w].idea.data()).to.deep.equal(wumpusData);
+        expect(sg4.vertices[w].idea.data()).to.deep.equal(wumpusData);
+        expect(sg5.vertices[w].idea.data()).to.deep.equal(wumpusData);
+      });
+
+      it('cycle number', function() {
+        var sg2 = subgraph.rewrite(sg, [{vertex_id: p, cycle: { unit: money.id, value: 1 } }]);
+        expect(sg2).to.not.be.ok;
+      });
+
       it('combine number', function() {
         var sg2 = subgraph.rewrite(sg, [{vertex_id: p, combine: priceUpdate }]);
         expect(sg2).to.be.ok;
@@ -1083,6 +1127,17 @@ describe('subgraph', function() {
       expect(sg2).to.equal(sg);
       expect(sg.vertices[w].data).to.deep.equal(wumpusUpdate);
       expect(sg.vertices[w].idea.data()).to.deep.equal(wumpusUpdate);
+
+      // cycle discrete
+      sg2 = subgraph.rewrite(sg, [{vertex_id: w, cycle: { unit: boolean.id, value: 1 } }], true);
+      expect(sg2).to.be.ok;
+      expect(sg2).to.equal(sg);
+      expect(sg.vertices[w].data).to.deep.equal({type: 'lime_discrete', unit: boolean.id, value: 'maybe'});
+      expect(sg.vertices[w].idea.data()).to.deep.equal({type: 'lime_discrete', unit: boolean.id, value: 'maybe'});
+
+      // cycle number
+      sg2 = subgraph.rewrite(sg, [{vertex_id: p, cycle: { unit: money.id, value: 1 } }], true);
+      expect(sg2).to.equal(undefined);
 
       // combine number
       sg2 = subgraph.rewrite(sg, [{vertex_id: p, combine: priceUpdate }], true);

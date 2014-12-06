@@ -21,7 +21,7 @@ if(fs.existsSync(exports.settings.location + '/_settings.json'))
 else
   exports.data = {};
 // TODO save on exit
-var saveTimeout = undefined;
+var saveTimeout;
 var writing = false;
 exports.save = function() {
   clearTimeout(saveTimeout);

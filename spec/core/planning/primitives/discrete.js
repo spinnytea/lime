@@ -8,7 +8,7 @@ describe('discrete', function() {
   it('init', function() {
     // this is to ensure we test everything
     expect(Object.keys(discrete)).to.deep.equal(['isDiscrete', 'difference', 'definitions']);
-    expect(Object.keys(discrete.definitions)).to.deep.equal(['create']);
+    expect(Object.keys(discrete.definitions)).to.deep.equal(['similar', 'create']);
   });
 
   // TODO should this throw an exception?
