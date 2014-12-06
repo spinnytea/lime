@@ -96,7 +96,7 @@ var getDiscreteContext = function() {
     wumpus_world.link(links.list.thought_description, action_left);
 
     // directions
-    var directions = discrete.definitions.create(['east', 'north', 'west', 'south']);
+    var directions = discrete.definitions.create(['east', 'south', 'west', 'north']);
     var compass = ideas.create({name: 'compass'});
     wumpus_world.link(links.list.context, directions);
     directions.link(links.list.thought_description, compass);
@@ -112,14 +112,14 @@ var getDiscreteContext = function() {
     // create left turn (when facing east)
     var a = new actuator.Action();
     var a_agentInstance = a.requirements.addVertex(subgraph.matcher.filler);
-    var a_agentDirection = a.requirements.addVertex(subgraph.matcher.exact, {value: 'east', unit: directions.id}, true);
+    var a_agentDirection = a.requirements.addVertex(subgraph.matcher.similar, {unit: directions.id}, true);
     a.requirements.addEdge(
       a_agentInstance,
       links.list.type_of,
       a.requirements.addVertex(subgraph.matcher.id, agent)
     );
     a.requirements.addEdge(a_agentInstance, links.list.thought_description, a_agentDirection);
-    a.transitions.push({ vertex_id: a_agentDirection, replace: {value: 'north', unit: directions.id} });
+    a.transitions.push({ vertex_id: a_agentDirection, cycle: {value: -1, unit: directions.id} });
     a.action = 'wumpus_known_discrete_left';
     a.save();
     ideas.load(a.idea).link(links.list.context, wumpus_world);
@@ -176,11 +176,11 @@ exports.senseAgent = function(state) {
   if(Math.abs(state.agent.r-0) < 0.001)
     dir = 'east';
   if(Math.abs(state.agent.r-Math.PI/2) < 0.001)
-    dir = 'north';
+    dir = 'south';
   if(Math.abs(state.agent.r-Math.PI) < 0.001)
     dir = 'west';
-  if(Math.abs(state.agent.r-Math.PI*3/4) < 0.001)
-    dir = 'west';
+  if(Math.abs(state.agent.r-Math.PI*3/2) < 0.001)
+    dir = 'north';
   exports.idea('agentDirection').update({value: dir, unit: exports.idea('directions').id});
 
   // TODO create a function to reset vertex data cache
