@@ -2,6 +2,11 @@
 
 var config = require('./config');
 
+// don't start with zero
+// because reasons
+// (actually, there is no reason; I just don't want these to be predictable in the first game)
+var next_id = Math.floor(Math.random()*50)+50;
+
 module.exports = Room;
 
 //var RADIUS = 48;
@@ -10,6 +15,8 @@ module.exports = Room;
 function Room(x, y, cave, options) {
   this.x = x;
   this.y = y;
+  if(config.game.observable === 'fully')
+    this.id = next_id++;
   Object.defineProperty(this, 'cave', { value: cave, writable: true, enumerable: false });
   Object.defineProperty(this, 'nearbyRooms', { value: [], writable: true, enumerable: false });
 

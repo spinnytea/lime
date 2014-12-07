@@ -328,6 +328,8 @@ Agent.prototype.updateRooms = function(rooms) {
 
   // regardless, update the room list
   this.inRooms = rooms;
+  if(config.game.observable === 'fully')
+    this.inRoomIds = rooms.map(function(r) { return r.id; });
 };
 
 // it's the same distance formula

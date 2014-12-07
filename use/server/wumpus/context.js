@@ -81,12 +81,15 @@ var getDiscreteContext = function() {
   exports.subgraph.addEdge(
     exports.keys.directions,
     links.list.thought_description,
-    exports.subgraph.addVertex(subgraph.matcher.similar, { name: 'compass' })
+    exports.subgraph.addVertex(subgraph.matcher.exact, {name:'compass'})
   );
 
   // agent type
-  exports.keys.agent = exports.subgraph.addVertex(subgraph.matcher.similar, { name: 'agent' });
+  exports.keys.agent = exports.subgraph.addVertex(subgraph.matcher.exact, {name:'agent'});
   exports.subgraph.addEdge(exports.keys.wumpus_world, links.list.context, exports.keys.agent);
+  // room type
+  exports.keys.room = exports.subgraph.addVertex(subgraph.matcher.exact, {name:'room'});
+  exports.subgraph.addEdge(exports.keys.wumpus_world, links.list.context, exports.keys.room);
 
   var results = subgraph.search(exports.subgraph);
   if(results.length === 0) {
@@ -95,20 +98,23 @@ var getDiscreteContext = function() {
     // context
     // TODO relink context directions
     var wumpus_world = ideas.context('wumpus_world');
-    var action_left = ideas.create({ name: 'action:left' });
-    var action_right = ideas.create({ name: 'action:right' });
+    var action_left = ideas.create({name:'action:left'});
+    var action_right = ideas.create({name:'action:right'});
     wumpus_world.link(links.list.thought_description, action_left);
     wumpus_world.link(links.list.thought_description, action_right);
 
     // directions
     var directions = discrete.definitions.create(['east', 'south', 'west', 'north']);
-    var compass = ideas.create({name: 'compass'});
+    var compass = ideas.create({name:'compass'});
     wumpus_world.link(links.list.context, directions);
     directions.link(links.list.thought_description, compass);
 
     // agent type
-    var agent = ideas.create({ name: 'agent' });
+    var agent = ideas.create({name:'agent'});
     wumpus_world.link(links.list.context, agent);
+    // room type
+    var room = ideas.create({name:'room'});
+    wumpus_world.link(links.list.context, room);
 
     // now search again
     results = subgraph.search(exports.subgraph);
@@ -156,23 +162,37 @@ var getDiscreteContext = function() {
     console.log('error: found ' + results.length + ' discrete contexts');
     exports.subgraph = results[0];
   }
-
-  var instance = ideas.create();
-  exports.keys.instance = exports.subgraph.addVertex(subgraph.matcher.id, instance);
-  instance.link(links.list.type_of, exports.idea('wumpus_world'));
-  config.save();
-  subgraph.search(exports.subgraph);
-//  console.log('discrete concrete: ' + exports.subgraph.concrete);
 };
 
-exports.senseAgent = function(state) {
+
+exports.sense = function(state) {
   if(!socket) return;
-  if(!exports.keys.agentInstance) {
+  if(!exports.keys.instance) {
+    var instance = ideas.create();
+    exports.keys.instance = exports.subgraph.addVertex(subgraph.matcher.id, instance);
+    instance.link(links.list.type_of, exports.idea('wumpus_world'));
+
+
+    //
+    // rooms
+    //
+
+    // TODO create a discrete definition THESE rooms (room id as the value)
+    console.log(state.rooms.map(function(r) { return r.id; }));
+    // TODO create a "rooms" object (this is ease of use for people)
+    // TODO attach the rooms under it (the room's value is the discrete)
+    // TODO attach senses under rooms
+
+
+    //
+    // agent
+    //
     var agentInstance = ideas.create();
     var agentDirection = ideas.create();
     exports.idea('instance').link(links.list.thought_description, agentInstance);
     agentInstance.link(links.list.type_of, exports.idea('agent'));
     agentInstance.link(links.list.thought_description, agentDirection);
+    // TODO agentRoom (current location)
 
     exports.keys.agentInstance = exports.subgraph.addVertex(subgraph.matcher.filler);
     exports.keys.agentDirection = exports.subgraph.addVertex(subgraph.matcher.filler, undefined, true);
@@ -180,25 +200,39 @@ exports.senseAgent = function(state) {
     exports.subgraph.addEdge(exports.keys.agentInstance, links.list.type_of, exports.keys.agent);
     exports.subgraph.addEdge(exports.keys.agentInstance, links.list.thought_description, exports.keys.agentDirection);
 
+
     config.save();
     subgraph.search(exports.subgraph);
-//    console.log('concrete: ' + exports.subgraph.concrete);
+  //  console.log('discrete concrete: ' + exports.subgraph.concrete);
   }
 
+  senseRooms(state.rooms);
+  senseAgent(state.agent);
+};
+
+function senseRooms(rooms) {
+  console.log(rooms[0]);
+}
+
+function senseAgent(agent) {
   // note: the -= needs to be second since we are comparing against zero
   var dir;
-  while(state.agent.r < 0) state.agent.r += Math.PI*2;
-  while(state.agent.r > Math.PI*2) state.agent.r -= Math.PI*2;
-  if(Math.abs(state.agent.r-0) < 0.001)
+  while(agent.r < 0) agent.r += Math.PI*2;
+  while(agent.r > Math.PI*2) agent.r -= Math.PI*2;
+  if(Math.abs(agent.r-0) < 0.001)
     dir = 'east';
-  if(Math.abs(state.agent.r-Math.PI/2) < 0.001)
+  if(Math.abs(agent.r-Math.PI/2) < 0.001)
     dir = 'south';
-  if(Math.abs(state.agent.r-Math.PI) < 0.001)
+  if(Math.abs(agent.r-Math.PI) < 0.001)
     dir = 'west';
-  if(Math.abs(state.agent.r-Math.PI*3/2) < 0.001)
+  if(Math.abs(agent.r-Math.PI*3/2) < 0.001)
     dir = 'north';
   exports.idea('agentDirection').update({value: dir, unit: exports.idea('directions').id});
 
+  // TODO update agent room location
+  // agent.inRoomIds[0]
+
+  // TODO log when the sensed value differs from the internal value
   // TODO create a function to reset vertex data cache
   exports.subgraph.vertices[exports.keys.agentDirection].data = undefined;
-};
+}

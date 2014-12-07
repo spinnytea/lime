@@ -49,9 +49,6 @@ exports.setup = function(io) {
       }
     });
 
-    socket.on('sense', function(state) {
-      // TODO find rooms in context: update
-      context.senseAgent(state);
-    });
+    socket.on('sense', context.sense);
   });
 };
