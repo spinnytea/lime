@@ -194,9 +194,10 @@ describe('actuator', function() {
 
     // search for our actuator
     // (basic)
+    // if we have data from a use case, so we need to ensure this actuator is included in the list
     var list = actuator.list();
-    expect(list.length).to.equal(1);
-    expect(list[0].id).to.equal(a.idea);
+    expect(list.length).to.be.gt(0);
+    expect(list.map(function(i) { return i.id; })).to.include(a.idea);
 
     // search for our actuator
     // (ID string)

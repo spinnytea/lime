@@ -141,14 +141,13 @@ exports.matcher = {
     return _.isEqual(idea.data(), matchData);
   },
   similar: function similar(idea, matchData) {
-    // FIXME this implementation is bad and I should feel bad
+    // FIXME this implementation is bad and it should feel bad
     // matchData should be contained within data
     var data = idea.data();
     return _.isEqual(data, _.merge(_.cloneDeep(data), matchData));
   },
   number: function number(idea, matchData) {
-    var data = idea.data();
-    return numnum.difference(data, matchData) === 0;
+    return numnum.difference(idea.data(), matchData) === 0;
   },
   // TODO vertex_value
   // - return _.deepEquals(idea.data(), vertices[matchData].data);
@@ -219,9 +218,9 @@ exports.search = function(subgraph) {
   var nextSteps = [];
 
   // find an edge to expand
-  subgraph.edges.forEach(function(currEdge) {
-    var isSrc = !_.isUndefined(currEdge.src.idea);
-    var isDst = !_.isUndefined(currEdge.dst.idea);
+  if(!subgraph.edges.every(function(currEdge) {
+    var isSrc = (currEdge.src.idea !== undefined);
+    var isDst = (currEdge.dst.idea !== undefined);
 
     if(isSrc ^ isDst) {
 
@@ -245,15 +244,11 @@ exports.search = function(subgraph) {
       // TODO cache the result so we don't need to check this for every subgraph
       if(currEdge.src.idea.link(currEdge.link).filter(function(idea) { return idea.id === currEdge.dst.id; }) === 0)
         // if we can't resolve this edge, then this graph is invalid
-        // TODO does this doesn't do what I think it does
-        // - this returns from the function within the forEach
-        // - nothing becomes of the []
-        // - is this tested?
-        // - we need to mark this search as invalid and return [] from outside the loop
-        // - use edges.every; in this case return false; if !every, then return [];
-        return [];
+        return false;
     }
-  }); // end edges.forEach
+
+    return true;
+  })) return []; // end if !edges.every
 
   // expand the edge
   if(selectedEdge) {
@@ -284,10 +279,7 @@ exports.search = function(subgraph) {
   // there are no edges that can be expanded
   if(nextSteps.length === 0) {
     // check all vertices to ensure they all have ideas defined
-    if(!subgraph.vertices.every(function(v) {
-      if(v.idea) return true;
-      return false;
-    }))
+    if(!subgraph.vertices.every(function(v) { return v.idea; }))
       return [];
 
 //    if(!subgraph.edges.every(function(edge) { return edge.src.idea && edge.dst.idea; }))

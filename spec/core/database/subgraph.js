@@ -106,7 +106,7 @@ describe('subgraph', function() {
     }); // end loadVertexData
   }); // end Subgraph
 
-  describe('matchers', function() {
+  describe('matcher', function() {
     it('id: function', function() {
       var idea = tools.ideas.create();
 
@@ -588,6 +588,8 @@ describe('subgraph', function() {
 
     // how do you even test srcMapped, !srcMapped, dstMapped, !dstMapped
     it.skip('mapped branching');
+
+    it.skip('isSrc && isDst failure');
 
     it('fail', function() {
       var result = subgraph.match(outer, new subgraph.Subgraph());
