@@ -8,6 +8,7 @@ var ideas = require('../../../src/core/database/ideas');
 var links = require('../../../src/core/database/links');
 var subgraph = require('../../../src/core/database/subgraph');
 
+var ERROR_RANGE = 0.001;
 
 // create the actions that we can use
 ['left', 'right'].forEach(function(a) {
@@ -121,6 +122,7 @@ var getDiscreteContext = function() {
 
 
     // create left turn (when facing east)
+    // TODO break out these discrete actions into their own file
     var a = new actuator.Action();
     var a_agentInstance = a.requirements.addVertex(subgraph.matcher.filler);
     var a_agentDirection = a.requirements.addVertex(subgraph.matcher.similar, {unit: directions.id}, true);
@@ -176,12 +178,50 @@ exports.sense = function(state) {
     //
     // rooms
     //
+    // create a discrete definition with these rooms (room id as the value)
+    var roomDefinition = discrete.definitions.create(state.rooms.map(function(r) { return r.id; }));
+    instance.link(links.list.context, roomDefinition);
 
-    // TODO create a discrete definition THESE rooms (room id as the value)
-    console.log(state.rooms.map(function(r) { return r.id; }));
-    // TODO create a "rooms" object (this is ease of use for people)
-    // TODO attach the rooms under it (the room's value is the discrete)
-    // TODO attach senses under rooms
+    var roomInstances = [];
+    state.rooms.forEach(function(room) {
+      var roomInstance = ideas.create({value: room.id, unit: roomDefinition.id});
+      // attach the rooms (the room's value is the discrete)
+      roomDefinition.link(links.list.thought_description, roomInstance);
+      // TODO attach senses under rooms
+
+      // link rooms together (check existing rooms)
+      // this is similar to for(j=0; j<length) for(i=j+1; j<length)
+      for(var i=0; i<roomInstances.length; i++) {
+        var r2 = state.rooms[i];
+        if(Math.abs(room.x-r2.x) < ERROR_RANGE) {
+          // check north / south
+          if(Math.abs(room.y-r2.y - gameConfig.room.spacing) < ERROR_RANGE) {
+            // room > r2
+            // room is south of r2
+            console.log(room.id + ' south of ' + r2.id);
+          }
+          if(Math.abs(r2.y-room.y - gameConfig.room.spacing) < ERROR_RANGE) {
+            // r2 > room
+            // r2 is south of room
+            console.log(room.id + ' north of ' + r2.id);
+          }
+        } else if(Math.abs(room.y-r2.y) < ERROR_RANGE) {
+          // check east/west
+          if(Math.abs(room.x-r2.x - gameConfig.room.spacing) < ERROR_RANGE) {
+            // room > r2
+            // room is east of r2
+            console.log(room.id + ' east of ' + r2.id);
+          }
+          if(Math.abs(r2.x-room.x - gameConfig.room.spacing) < ERROR_RANGE) {
+            // r2 > room
+            // r2 is east of room
+            console.log(room.id + ' west of ' + r2.id);
+          }
+        }
+      }
+
+      roomInstances.push(roomInstance);
+    }); // end rooms.forEach
 
 
     //
@@ -189,7 +229,7 @@ exports.sense = function(state) {
     //
     var agentInstance = ideas.create();
     var agentDirection = ideas.create();
-    exports.idea('instance').link(links.list.thought_description, agentInstance);
+    instance.link(links.list.thought_description, agentInstance);
     agentInstance.link(links.list.type_of, exports.idea('agent'));
     agentInstance.link(links.list.thought_description, agentDirection);
     // TODO agentRoom (current location)
@@ -219,13 +259,13 @@ function senseAgent(agent) {
   var dir;
   while(agent.r < 0) agent.r += Math.PI*2;
   while(agent.r > Math.PI*2) agent.r -= Math.PI*2;
-  if(Math.abs(agent.r-0) < 0.001)
+  if(Math.abs(agent.r-0) < ERROR_RANGE)
     dir = 'east';
-  if(Math.abs(agent.r-Math.PI/2) < 0.001)
+  if(Math.abs(agent.r-Math.PI/2) < ERROR_RANGE)
     dir = 'south';
-  if(Math.abs(agent.r-Math.PI) < 0.001)
+  if(Math.abs(agent.r-Math.PI) < ERROR_RANGE)
     dir = 'west';
-  if(Math.abs(agent.r-Math.PI*3/2) < 0.001)
+  if(Math.abs(agent.r-Math.PI*3/2) < ERROR_RANGE)
     dir = 'north';
   exports.idea('agentDirection').update({value: dir, unit: exports.idea('directions').id});
 

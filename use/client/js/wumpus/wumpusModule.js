@@ -185,6 +185,7 @@ module.exports = angular.module('lime.client.wumpus', [])
           var senses = $scope.room.sense();
           var hasAgent = game.cave.agent.alive && !game.cave.agent.win && (game.cave.agent.inRooms.indexOf($scope.room) !== -1);
           var html =
+            addText($scope.room.id, 'black', true) +
             addText(['Exit', 'sunlight'], 'black', [$scope.room.hasExit, senses.sunlight]) +
             addText(['Gold', 'glitter'], 'gold', [$scope.room.hasGold, senses.glitter]) +
             addText(['Pit', 'breeze'], 'blue', [$scope.room.hasPit, senses.breeze]) +
@@ -198,6 +199,7 @@ module.exports = angular.module('lime.client.wumpus', [])
         }
 
         function addText(strs, color, bools) {
+          if(strs === undefined) return '';
           if(!bools.length) {
             // single case
             return '<div style="color:'+color+';">' +

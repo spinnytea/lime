@@ -150,6 +150,9 @@ exports.matcher = {
     var data = idea.data();
     return numnum.difference(data, matchData) === 0;
   },
+  // TODO vertex_value
+  // - return _.deepEquals(idea.data(), vertices[matchData].data);
+  // - these types of matchers can only run if vertices[matchData].idea
 };
 
 // serialize a subgraph object
@@ -242,6 +245,12 @@ exports.search = function(subgraph) {
       // TODO cache the result so we don't need to check this for every subgraph
       if(currEdge.src.idea.link(currEdge.link).filter(function(idea) { return idea.id === currEdge.dst.id; }) === 0)
         // if we can't resolve this edge, then this graph is invalid
+        // TODO does this doesn't do what I think it does
+        // - this returns from the function within the forEach
+        // - nothing becomes of the []
+        // - is this tested?
+        // - we need to mark this search as invalid and return [] from outside the loop
+        // - use edges.every; in this case return false; if !every, then return [];
         return [];
     }
   }); // end edges.forEach
