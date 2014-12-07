@@ -51,6 +51,7 @@ exports.setup = function(s, c) {
   socket = s;
   gameConfig = c;
   getDiscreteContext();
+  s.emit('message', 'Connected');
 };
 
 exports.cleanup = function() {
@@ -175,6 +176,7 @@ exports.senseAgent = function(state) {
 
     exports.keys.agentInstance = exports.subgraph.addVertex(subgraph.matcher.filler);
     exports.keys.agentDirection = exports.subgraph.addVertex(subgraph.matcher.filler, undefined, true);
+    exports.subgraph.addEdge(exports.keys.instance, links.list.thought_description, exports.keys.agentInstance);
     exports.subgraph.addEdge(exports.keys.agentInstance, links.list.type_of, exports.keys.agent);
     exports.subgraph.addEdge(exports.keys.agentInstance, links.list.thought_description, exports.keys.agentDirection);
 
