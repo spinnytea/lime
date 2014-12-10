@@ -1,12 +1,9 @@
 'use strict';
 var _ = require('lodash');
+var discrete = require('../planning/primitives/discrete');
 var ideas = require('./ideas');
 var links = require('./links');
-var discrete = require('../planning/primitives/discrete');
-
-// this import needs to be a different name because we have exports.matcher.number
-// we want to keep the API standard, so we can change the import in this file
-var numnum = require('../planning/primitives/number');
+var number = require('../planning/primitives/number');
 
 // this is an overlay on the idea database
 // it is a proxy or wrapper around the idea graph
@@ -56,7 +53,7 @@ Subgraph.prototype.addVertex = function(matcher, matchData, transitionable) {
     vertex_id: id,
 
     // this is how we are going to match an idea in the search and match
-    matches: matcher,
+    matcher: matcher,
     matchData: matchData,
     transitionable: (transitionable === true),
 
@@ -81,7 +78,7 @@ Subgraph.prototype.addVertex = function(matcher, matchData, transitionable) {
 
     if(matcher === exports.matcher.number)
       // should this fail if it is not a number?
-      numnum.isNumber(matchData);
+      number.isNumber(matchData);
   }
 
   return id;
@@ -126,33 +123,41 @@ exports.Subgraph = Subgraph;
 
 // matchers
 // because of serialization, you currently cannot add your own
+// - we can probably add them to this list directly, so long as we add them on startup (and they are simple)
 // because of serialization, the functions are create with a name
 // ( e.g. id: function id() {})
 exports.matcher = {
-  id: function id(idea, matchData) {
+  id: function(idea, matchData) {
     // XXX this could be an empty object
     return matchData === idea.id;
   },
-  filler: function filler() {
+  filler: function() {
     return true;
   },
 
-  exact: function exact(idea, matchData) {
+  exact: function(idea, matchData) {
     return _.isEqual(idea.data(), matchData);
   },
-  similar: function similar(idea, matchData) {
+  similar: function(idea, matchData) {
     // FIXME this implementation is bad and it should feel bad
     // matchData should be contained within data
     var data = idea.data();
     return _.isEqual(data, _.merge(_.cloneDeep(data), matchData));
   },
-  number: function number(idea, matchData) {
-    return numnum.difference(idea.data(), matchData) === 0;
+  number: function(idea, matchData) {
+    return number.difference(idea.data(), matchData) === 0;
   },
+  discrete: function(idea, matchData) {
+    return discrete.difference(idea.data(), matchData) === 0;
+  },
+
   // TODO vertex_value
   // - return _.deepEquals(idea.data(), vertices[matchData].data);
   // - these types of matchers can only run if vertices[matchData].idea
 };
+_.forEach(exports.matcher, function(fun, name) {
+  fun.thename = name;
+});
 
 // serialize a subgraph object
 // a straight JSON.stringify will not work
@@ -164,7 +169,7 @@ exports.stringify = function(sg) {
   // convert the verticies
   // _.map will flatten it into an array, but we store the id anyway
   sg.vertices = sg.vertices.map(function(v) {
-    v.matches = v.matches.name;
+    v.matcher = v.matcher.thename;
     if(v.idea)
       v.idea = v.idea.id;
     return v;
@@ -188,7 +193,7 @@ exports.parse = function(str) {
   str.vertices.forEach(function(v) {
     // XXX swap the vertex ID
     // - or convert the vertices object to a list
-    var id = sg.addVertex(exports.matcher[v.matches], v.matchData, v.transitionable);
+    var id = sg.addVertex(exports.matcher[v.matcher], v.matchData, v.transitionable);
     if(v.idea)
       sg.vertices[id].idea = ideas.proxy(v.idea);
     sg.vertices[id]._data = v._data;
@@ -256,7 +261,7 @@ exports.search = function(subgraph) {
     var vertex = _.isUndefined(selectedEdge.src.idea) ? selectedEdge.src : selectedEdge.dst;
 
     var matchedBranches = selectedBranches.filter(function(idea) {
-      return vertex.matches(idea, vertex.matchData);
+      return vertex.matcher(idea, vertex.matchData);
     });
 
     if(matchedBranches.length === 0) {
@@ -409,8 +414,8 @@ function subgraphMatch(outerEdges, innerEdges, vertexMap, unitOnly) {
       return false;
 
     return innerEdge.link === currEdge.link &&
-      innerEdge.src.matches(currEdge.src.idea, innerEdge.src.matchData) &&
-      innerEdge.dst.matches(currEdge.dst.idea, innerEdge.dst.matchData);
+      innerEdge.src.matcher(currEdge.src.idea, innerEdge.src.matchData) &&
+      innerEdge.dst.matcher(currEdge.dst.idea, innerEdge.dst.matchData);
   });
 
   // recurse
@@ -442,11 +447,13 @@ function subgraphMatch(outerEdges, innerEdges, vertexMap, unitOnly) {
   }, []);
 } // end subgraphMatch
 
+// AC: if vi.transitionable === false, we don't care what vo.transitionable is
+// - we only need to care about transitions if vi wants it
 function vertexTransitionableAcceptable(vo, vi, unitOnly) {
-  if(vi.transitionable !== vo.transitionable) {
-    // if one is transitionable, they both must be transitionable
-    return false;
-  } else if(vi.transitionable) {
+  if(vi.transitionable) {
+    if(!vo.transitionable)
+      return false;
+
     // if they are both transitionable, then the values must match
     // XXX maybe make this more complicate to account for non-unit transitionable data
     // - but where is the use case?
@@ -458,7 +465,7 @@ function vertexTransitionableAcceptable(vo, vi, unitOnly) {
       if(unitOnly && vo.data.unit !== vi.data.unit)
         return false;
 
-      if(!unitOnly && numnum.difference(vo.data, vi.data) !== 0 && discrete.difference(vo.data, vi.data) !== 0)
+      if(!unitOnly && number.difference(vo.data, vi.data) !== 0 && discrete.difference(vo.data, vi.data) !== 0)
         return false;
     }
   }
@@ -470,6 +477,7 @@ function vertexTransitionableAcceptable(vo, vi, unitOnly) {
 //  - { vertex_id: id, replace: number }
 //  - { vertex_id: id, combine: number }
 //  - { vertex_id: id, replace: discrete }
+//  - { vertex_id: id, cycle: { value: number, unit: idea.id } }
 //  - { vertex_id: id, replace_id: id } // (both are vertex_id's)
 //  - AC: actuator.runBlueprint depends on this structure
 //  - AC: actuator.runBlueprint does a _.clone() on each object, and replaces vertex_id
@@ -520,7 +528,7 @@ exports.rewrite = function(subgraph, transitions, actual) {
         if(v.data.unit !== t.cycle.unit || !discrete.isDiscrete(v.data))
           return false;
       } else if(t.combine) {
-        if(v.data.unit !== t.combine.unit || !numnum.isNumber(v.data) || !numnum.isNumber(t.combine))
+        if(v.data.unit !== t.combine.unit || !number.isNumber(v.data) || !number.isNumber(t.combine))
           return false;
       }
 
@@ -543,13 +551,14 @@ exports.rewrite = function(subgraph, transitions, actual) {
       idx = (((idx%states.length)+states.length)%states.length);
       v.data.value = states[idx];
     } else if(t.combine) {
-      v.data = numnum.combine(v.data, t.combine);
+      v.data = number.combine(v.data, t.combine);
     }
 
     if(actual)
-      // FIXME should combine use "update?" or should I perform a combine on the raw
-      // - do I need to guarantee that v.data and v.idea.data() before combine have a number.difference of 0
-      // - more strictly, should they be _.isEqual?
+      // XXX should combine use "update?" or should I perform a combine on the raw
+      // - number.combine(v.idea.data(), t.combine)
+      // - should number.difference(v.data, v.idea.data()) === 0 before combine?
+      // - should _.isEqual(v.data, v.idea.data()) before combine?
       v.idea.update(v.data);
   });
 

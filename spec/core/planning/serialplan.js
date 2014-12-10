@@ -175,9 +175,10 @@ describe('serialplan', function() {
       expect(sp.cost(start, goal)).to.equal(10);
 
       // so start cannot get to the goal
-      goal.state.vertices[state_count].transitionable = false;
+      // (since the start cannot manipulate that value)
+      start.state.vertices[state_count].transitionable = false;
       expect(sp.cost(start, goal)).to.equal(Infinity);
-      goal.state.vertices[state_count].transitionable = true;
+      start.state.vertices[state_count].transitionable = true;
 
       // using this plan costs 5
       // the distance to the goal is 0

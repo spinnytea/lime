@@ -130,6 +130,9 @@ function BlueprintState(subgraph, availableActions) {
 }
 
 // path.State.distance
+// TODO if from.transitionable === false and from.value !== to.value, then the distance is Infinity?
+// - when is this function actually used?
+// - can we make such a claim?
 BlueprintState.prototype.distance = function(to) {
   var that = this;
   var result = subgraph.match(that.state, to.state, true);
@@ -143,11 +146,11 @@ BlueprintState.prototype.distance = function(to) {
       var o = that.state.vertices[outer];
       var i = to.state.vertices[inner];
 
-      if(o.transitionable !== i.transitionable) {
-        cost += DISTANCE_ERROR;
-        // no need to check other vertices in this map
-        return false;
-      } else if(o.transitionable) {
+      if(i.transitionable) {
+        // if the outer is not transitionable, then this is bad
+        if(!o.transitionable)
+          return false;
+
         // check the values
 
         var diff;
@@ -240,6 +243,8 @@ exports.list = function(contexts) {
 
   // we have a set of subgraphs that match
   // we only care about the ideas that match
+  // FIXME can I think of any situation where I want the ID and not the blueprint?
+  // - why is this not returning blueprint.load(result.idea)?
   return matches.map(function(m) {
     return m.vertices[result].idea;
   });
