@@ -130,9 +130,6 @@ function BlueprintState(subgraph, availableActions) {
 }
 
 // path.State.distance
-// TODO if from.transitionable === false and from.value !== to.value, then the distance is Infinity?
-// - when is this function actually used?
-// - can we make such a claim?
 BlueprintState.prototype.distance = function(to) {
   var that = this;
   var result = subgraph.match(that.state, to.state, true);
@@ -146,45 +143,54 @@ BlueprintState.prototype.distance = function(to) {
       var o = that.state.vertices[outer];
       var i = to.state.vertices[inner];
 
-      if(i.transitionable) {
-        // if the outer is not transitionable, then this is bad
-        if(!o.transitionable)
-          return false;
-
-        // check the values
-
-        var diff;
-        if(number.isNumber(o.data)) {
-          diff = number.difference(o.data, i.data);
-          if(diff === undefined) {
-            cost += DISTANCE_ERROR;
-            // no need to check other vertices in this map
-            return false;
-          }
-          cost += diff;
-        } else if(number.isNumber(i.data)) {
-            // one is a number and the other is not
-            cost += DISTANCE_ERROR;
-            // no need to check other vertices in this map
-            return false;
-        } else if(discrete.isDiscrete(o.data)) {
-          diff = discrete.difference(o.data, i.data);
-          if(diff === undefined) {
-            cost += DISTANCE_ERROR;
-            // no need to check other vertices in this map
-            return false;
-          }
-          cost += diff;
-        } else if(discrete.isDiscrete(i.data)) {
-            // one is a discrete and the other is not
-            cost += DISTANCE_ERROR;
-            // no need to check other vertices in this map
-            return false;
-        } else {
-          if(!_.isEqual(o.data, i.data))
-            cost += DISTANCE_DEFAULT;
-        }
+      // if the inner is transitionable,
+      // but the outer is not,
+      // then this is bad
+      if(i.transitionable && !o.transitionable) {
+        cost += DISTANCE_ERROR;
+        return false;
       }
+
+      // check the values
+      var diff = 0;
+      if(number.isNumber(o.data)) {
+        diff = number.difference(o.data, i.data);
+        if(diff === undefined) {
+          cost += DISTANCE_ERROR;
+          // no need to check other vertices in this map
+          return false;
+        }
+      } else if(number.isNumber(i.data)) {
+          // one is a number and the other is not
+          cost += DISTANCE_ERROR;
+          // no need to check other vertices in this map
+          return false;
+      } else if(discrete.isDiscrete(o.data)) {
+        diff = discrete.difference(o.data, i.data);
+        if(diff === undefined) {
+          cost += DISTANCE_ERROR;
+          // no need to check other vertices in this map
+          return false;
+        }
+      } else if(discrete.isDiscrete(i.data)) {
+          // one is a discrete and the other is not
+          cost += DISTANCE_ERROR;
+          // no need to check other vertices in this map
+          return false;
+      } else {
+        if(!_.isEqual(o.data, i.data))
+          diff = DISTANCE_DEFAULT;
+      }
+
+      if(!o.transitionable && diff > 0) {
+        // we can't change the outer value
+        // but the outer value doesn't match
+        cost += DISTANCE_ERROR;
+        return false;
+      }
+
+      // otherwise, add the diff
+      cost += diff;
     });
     if(cost < min)
       min = cost;

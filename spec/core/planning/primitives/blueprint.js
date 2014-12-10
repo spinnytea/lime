@@ -89,6 +89,19 @@ describe('blueprint', function() {
         expect(a.distance(b)).to.equal(Infinity);
       });
 
+      describe('transitionable 101', function() {
+        it.skip('i && !o'); // straight up failure
+
+        it.skip('!i && !o'); // and there is a difference
+
+        it.skip('i && o'); // standard
+
+        // standard differences
+        // it says that the target doesn't care about the change
+        // but it still needs to match, so we still care about the diff
+        it.skip('!i && o');
+      });
+
       it('numbers', function() {
         var thing = { thing: 42 };
         var n_10 = { value: number.value(10), unit: idea.id };
