@@ -48,12 +48,14 @@ exports.search = function(start, goal) {
     for(var i=0; i<nextActions.length; i++) {
       var next = nextActions[i];
       if(next.action && next.glue) {
+        // path for blueprints
         // TODO remove action/glue from the return
         // - incorporate glue into the action (this means making a copy of the actions)
         var p = path.add(next.action.apply(path.last, next.glue), next.action);
         if(p.cost + p.distFromGoal !== Infinity)
           frontier.enq(p);
       } else {
+        // vanilla path
         frontier.enq(path.add(next.apply(path.last), next));
       }
     }

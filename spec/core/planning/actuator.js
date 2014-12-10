@@ -91,6 +91,7 @@ describe('actuator', function() {
     expect(price.data()).to.deep.equal(expectedData); // idea data has not
     expect(actionImplCount).to.equal(1); // action has been called
   });
+  it.skip('replace_id translation across actuator glue');
 
   it('cost', function() {
     expect(actionImplCount).to.equal(0);

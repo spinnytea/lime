@@ -11,6 +11,12 @@ var ideas = require('../../database/ideas');
 // the discrete value
 //
 
+// FIXME never assume that discrete values can be compared "exactly"
+// - meaning, we need to check "is discrete" any time we expect to compare a discrete value
+// - and we need to signal as such
+// - (e.g. vertex_discrete)
+//	Number doesn't have this problem so it can be considered separately
+// TODO create a factory method
 var typeName = 'lime_discrete';
 
 // obj:

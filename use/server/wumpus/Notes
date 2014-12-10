@@ -3,3 +3,16 @@ For Continuous
   blueprint state: requirements
   - need to find an idea after transition has been applied
   - once the agent moves, there needs to be a room nearby
+
+
+applyTransitions
+------------------------------------------------
+	Brainstorm what this should do
+	it should apply aggainst the original (probably)
+	Should it update the ideas directly?
+	what about senses, should they update the ideas referenced by the subgraph?
+	How do we reconcile "thoughs" vs "reality" if reality is overwritten?
+		We can't blow up every time something is different; how will we ever imagine?
+	What about thought experiments?
+		Do we carve out sections of the idea graph? Duplicate sections? Or do we just add modified nodes and mark them as "thought experiment" knowing we have gotten too far from reality when too many of our nodes are alternates.
+		Or do we save subgraphs as alternate worlds; we can save and load them whole-sale, otherwise we trudge on with our untainted world-thoughts.

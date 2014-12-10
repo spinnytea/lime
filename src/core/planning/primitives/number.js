@@ -3,6 +3,7 @@
 // e.g. '13.5 meters' or '22.3124 psi'
 // all numbers are a range of possible values
 
+// TODO create a factory method
 var typeName = 'lime_number';
 
 // value:
