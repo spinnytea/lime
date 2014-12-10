@@ -36,6 +36,8 @@ exports.setup = function(io) {
         var result = a.tryTransition(bs);
         if(result.length > 0) {
           a.runBlueprint(bs, result[0]);
+          if(result.length > 1)
+            console.log('more than one option??');
           return true;
         }
         return false;
