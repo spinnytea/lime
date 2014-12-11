@@ -8,6 +8,23 @@ var number = require('../../../src/core/planning/primitives/number');
 var subgraph = require('../../../src/core/database/subgraph');
 var tools = require('../testingTools');
 
+// @param match: the result of subgraph.match ([vertexMap])
+function checkSubgraphMatch(match, outer, inner) {
+  if(match.hasOwnProperty('length'))
+    match = match[0];
+
+  // make sure the outer and inner values are not the same
+  // it may be subtle, but it helps to ensure this test is valid
+  // XXX or does it, now that I have this function
+//  expect(outer).to.not.deep.equal(inner);
+
+  expect(outer.length).to.equal(inner.length);
+  expect(Object.keys(match).length).to.equal(inner.length);
+  inner.forEach(function(k, idx) {
+    expect(match[k]).to.equal(outer[idx]);
+  });
+}
+
 describe('subgraph', function() {
   it('init', function() {
     // this is to ensure we test everything
@@ -663,25 +680,8 @@ describe('subgraph', function() {
       var _a = sg.addVertex(subgraph.matcher.filler);
       sg.addEdge(_m, links.list.thought_description, _a);
       sg.addEdge(_a, links.list.thought_description, _p);
-      expect(m).to.not.equal(_m);
-      expect(a).to.not.equal(_a);
-      expect(p).to.not.equal(_p);
 
-      var result = subgraph.match(outer, sg);
-      expect(result.length).to.equal(1);
-      expect(Object.keys(result[0]).length).to.equal(3);
-      expect(result[0][_m]).to.equal(m);
-      expect(result[0][_a]).to.equal(a);
-      expect(result[0][_p]).to.equal(p);
-
-      _.forEach(result[0], function(outer, inner) {
-        // make sure the forEach works as expected
-        // I mean, it does, but I just want the copy-pasta example
-        // like, I know how this works, but it's still nice to have overkill
-        expect(result[0][inner]).to.equal(outer);
-        // this is to ensure our test works
-        expect(result[0][outer]).to.not.equal(inner);
-      });
+      checkSubgraphMatch(subgraph.match(outer, sg), [m, a, p], [_m, _a, _p]);
     });
 
     it('success multiple', function() {
@@ -693,24 +693,18 @@ describe('subgraph', function() {
       var result = subgraph.match(outer, sg);
       expect(result.length).to.equal(2);
 
-      var res = result[0]; // not sure which is which
-      expect(Object.keys(res).length).to.equal(2);
-      expect(res[x]).to.equal(m);
-      expect(res[y]).to.equal(a);
+      // not sure which is which
+      checkSubgraphMatch(result[0], [m, a], [x, y]);
 
-      res = result[1]; // not sure which is which
-      expect(Object.keys(res).length).to.equal(2);
-      expect(res[x]).to.equal(a);
-      expect(res[y]).to.equal(p);
+      // not sure which is which
+      checkSubgraphMatch(result[1], [a, p], [x, y]);
     });
 
     it('only id', function() {
       var sg = new subgraph.Subgraph();
       var _m = sg.addVertex(subgraph.matcher.id, mark);
 
-      var result = subgraph.match(outer, sg);
-      expect(result.length).to.equal(1);
-      expect(result[0][_m]).to.equal(m);
+      checkSubgraphMatch(subgraph.match(outer, sg), [m], [_m]);
     });
 
     it('only filler', function() {
@@ -730,11 +724,7 @@ describe('subgraph', function() {
       var _p = sg.addVertex(subgraph.matcher.id, price);
       sg.addEdge(_m, links.list.thought_description, _a);
 
-      var result = subgraph.match(outer, sg);
-      expect(result.length).to.equal(1);
-      expect(result[0][_m]).to.equal(m);
-      expect(result[0][_a]).to.equal(a);
-      expect(result[0][_p]).to.equal(p);
+      checkSubgraphMatch(subgraph.match(outer, sg), [m, a, p], [_m, _a, _p]);
     });
 
     it('disjoint + lone filler', function() {
@@ -771,13 +761,7 @@ describe('subgraph', function() {
       var _bp = sg.addVertex(subgraph.matcher.similar, {value: 20});
       sg.addEdge(_b, links.list.thought_description, _bp);
 
-      var result = subgraph.match(outer, sg);
-      expect(result.length).to.equal(1);
-      expect(result[0][_m]).to.equal(m);
-      expect(result[0][_a]).to.equal(a);
-      expect(result[0][_p]).to.equal(p);
-      expect(result[0][_b]).to.equal(b);
-      expect(result[0][_bp]).to.equal(bp);
+      checkSubgraphMatch(subgraph.match(outer, sg), [m, a, p, b, bp], [_m, _a, _p, _b, _bp]);
     });
 
     // it shouldn't matter that the outer is larger
@@ -907,7 +891,31 @@ describe('subgraph', function() {
         // - but what if the matcher(v.data, vertices[v.matchData].data) is no longer true?
         it.skip('inner concrete');
 
-        it.skip('inner target w/ data');
+        it('inner target w/ data', function() {
+          var mark = tools.ideas.create(); // anchor
+          var desire = tools.ideas.create({name: 'apple'}); // matchRef
+          var apple = tools.ideas.create({name: 'apple'}); // target
+          var banana = tools.ideas.create({name: 'banana'}); // distractor
+          mark.link(links.list.thought_description, desire);
+          mark.link(links.list.thought_description, apple);
+          mark.link(links.list.thought_description, banana);
+
+          var outer = new subgraph.Subgraph();
+          var om = outer.addVertex(subgraph.matcher.id, mark);
+          var od = outer.addVertex(subgraph.matcher.id, desire);
+          var o_ = outer.addVertex(subgraph.matcher.id, apple);
+          outer.addEdge(om, links.list.thought_description, od);
+          outer.addEdge(om, links.list.thought_description, o_);
+
+          var inner = new subgraph.Subgraph();
+          var id = inner.addVertex(subgraph.matcher.id, desire);
+          var i_ = inner.addVertex(subgraph.matcher.exact, id, {matchRef:true});
+          var im = inner.addVertex(subgraph.matcher.id, mark);
+          inner.addEdge(im, links.list.thought_description, id);
+          inner.addEdge(im, links.list.thought_description, i_);
+
+          checkSubgraphMatch(subgraph.match(outer, inner), [om, od, o_], [im, id, i_]);
+        });
 
         it.skip('outer target mapped');
 
