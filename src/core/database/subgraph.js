@@ -46,12 +46,14 @@ Subgraph.prototype.copy = function() {
 // @param matcher: exports.matcher or equivalent
 // @param matchData: passed to the matcher
 // // TODO should matchData be inside options?
+// // - if(matcher !== filler && options.matchData === undefined) throw new Error('matchData must be defined');
 // @param options: {
 //   transitionable: boolean, // if true, this part of a transition (subgraph.rewrite, blueprints, etc; subgraph.rewrite(transitions);)
 //                           // it means that we are intending to change the value
 //   matchRef: boolean, // if true, this should use a different object for the matchData
-//                        // specifically, use vertex[matchData].data instead of matchData
-//   TODO add support for matchRef in blueprints; look for any case where we use vertex.data
+//                      // specifically, use vertex[matchData].data instead of matchData
+//                      // (it doesn't make sense to use this with matcher.filler)
+// // TODO add support for matchRef in blueprints; look for any case where we use vertex.data
 // }
 Subgraph.prototype.addVertex = function(matcher, matchData, options) {
   if(typeof options === 'boolean')
@@ -286,6 +288,15 @@ exports.search = function(subgraph) {
     var vertex = _.isUndefined(selectedEdge.src.idea) ? selectedEdge.src : selectedEdge.dst;
     var matchData = vertex.options.matchRef?subgraph.vertices[vertex.matchData].data:vertex.matchData;
 
+    // XXX following the transitions to the end requires a more complex pre match thing
+//    var matchData = vertex.matchData;
+//    if(vertex.options.matchRef) {
+//      var tv = vertex;
+//      while(tv.options.matchRef)
+//        tv = subgraph.vertices[tv.matchData];
+//      matchData = tv.data;
+//    }
+
     var matchedBranches = selectedBranches.filter(function(idea) {
       return vertex.matcher(idea, matchData);
     });
@@ -365,7 +376,9 @@ exports.match = function(subgraphOuter, subgraphInner, unitOnly) {
         // outer is concrete; vo.idea exists
         if(vi.idea.id === vo.idea.id) {
           vertexMap[vi.vertex_id] = vo.vertex_id;
-          possible = vertexTransitionableAcceptable(vo, vi, unitOnly);
+          // vi.idea has been identified
+          // so we can use vi.data directly
+          possible = vertexTransitionableAcceptable(vo, vi.options.transitionable, vi.data, unitOnly);
         }
         return possible;
       });
@@ -385,7 +398,7 @@ exports.match = function(subgraphOuter, subgraphInner, unitOnly) {
 
   // with this information, fill out the map using the edges
   // (note: there may not yet be any edges specified)
-  return subgraphMatch(_.clone(subgraphOuter.edges), _.clone(subgraphInner.edges), vertexMap, unitOnly)
+  return subgraphMatch(subgraphOuter, subgraphInner, _.clone(subgraphOuter.edges), _.clone(subgraphInner.edges), vertexMap, unitOnly)
     .filter(function(map) {
       return Object.keys(map).length === numVertices;
     });
@@ -397,7 +410,7 @@ exports.match = function(subgraphOuter, subgraphInner, unitOnly) {
 // map[inner.vertex_id] = outer.vertex_id;
 // we will typically use the inner subgraph to find the indices of the outer map
 // match all of the innerEdges to the outerEdges
-function subgraphMatch(outerEdges, innerEdges, vertexMap, unitOnly) {
+function subgraphMatch(subgraphOuter, subgraphInner, outerEdges, innerEdges, vertexMap, unitOnly) {
   // pick the best inner edge
   // (this should help us reduce the number of branches)
   var innerEdge = innerEdges.reduce(function(prev, curr) {
@@ -433,15 +446,60 @@ function subgraphMatch(outerEdges, innerEdges, vertexMap, unitOnly) {
         return false;
     }
 
+    // find the target data we are interested
+    var srcData;
+    if(innerEdge.src.idea || !innerEdge.src.options.matchRef) {
+      // this is pretty simple for for !matchRef
+      // or if the target is already associated with an idea
+      srcData = innerEdge.src.data;
+    } else {
+      if((srcData = subgraphInner.vertices[innerEdge.src.matchData]).data)
+        // if our inner graph has a value cached, use that
+        srcData = srcData.data;
+      else if((srcData = subgraphOuter.vertices[vertexMap[innerEdge.src.matchData]]) !== undefined)
+        // if we have already mapped the vertex in question, then use the outer data
+        // (mapped, but the inner hasn't been updated with the idea)
+        // (note: at this point, data could still be undefined, and that's okay)
+        srcData = srcData.data;
+      else
+        // if we can't find srcData to use, then we can't check this edge yet
+        return false;
+    }
+    var dstData;
+    if(innerEdge.dst.idea || !innerEdge.dst.options.matchRef) {
+      // this is pretty simple for for !matchRef
+      // or if the target is already associated with an idea
+      dstData = innerEdge.dst.data;
+    } else {
+      if((dstData = subgraphInner.vertices[innerEdge.dst.matchData]).data)
+        // if our inner graph has a value cached, use that
+        dstData = dstData.data;
+      else if((dstData = subgraphOuter.vertices[vertexMap[innerEdge.dst.matchData]]) !== undefined)
+        // if we have already mapped the vertex in question, then use the outer data
+        // (mapped, but the inner hasn't been updated with the idea)
+        // (note: at this point, data could still be undefined, and that's okay)
+        dstData = dstData.data;
+      else
+        // if we can't find dstData to use, then we can't check this edge yet
+        return false;
+    }
+
     // check the transitionability of both src and dst
-    if(!vertexTransitionableAcceptable(currEdge.src, innerEdge.src, unitOnly))
+    if(!vertexTransitionableAcceptable(currEdge.src, innerEdge.src.options.transitionable, srcData, unitOnly))
       return false;
-    if(!vertexTransitionableAcceptable(currEdge.dst, innerEdge.dst, unitOnly))
+    if(!vertexTransitionableAcceptable(currEdge.dst, innerEdge.dst.options.transitionable, dstData, unitOnly))
       return false;
 
+    // if matchRef, then we want to use the data we found as the matcher data
+    // if !matchRef, then we need to use the matchData on the object
+    if(!innerEdge.src.options.matchRef)
+      srcData = innerEdge.src.matchData;
+    if(!innerEdge.dst.options.matchRef)
+      dstData = innerEdge.dst.matchData;
+
     return innerEdge.link === currEdge.link &&
-      innerEdge.src.matcher(currEdge.src.idea, innerEdge.src.matchData) &&
-      innerEdge.dst.matcher(currEdge.dst.idea, innerEdge.dst.matchData);
+      innerEdge.src.matcher(currEdge.src.idea, srcData) &&
+      innerEdge.dst.matcher(currEdge.dst.idea, dstData);
   });
 
   // recurse
@@ -465,7 +523,7 @@ function subgraphMatch(outerEdges, innerEdges, vertexMap, unitOnly) {
     else
       // recursive case
       // get a list of
-      return subgraphMatch(newOuter, newInner, newMap, unitOnly);
+      return subgraphMatch(subgraphOuter, subgraphInner, newOuter, newInner, newMap, unitOnly);
   }).reduce(function(list, match) {
     // reduce all match lists into a single list
     Array.prototype.push.apply(list, match);
@@ -475,8 +533,8 @@ function subgraphMatch(outerEdges, innerEdges, vertexMap, unitOnly) {
 
 // AC: if vi.options.transitionable === false, we don't care what vo.options.transitionable is
 // - we only need to care about transitions if vi wants it
-function vertexTransitionableAcceptable(vo, vi, unitOnly) {
-  if(vi.options.transitionable) {
+function vertexTransitionableAcceptable(vo, vi_transitionable, vi_data, unitOnly) {
+  if(vi_transitionable) {
     if(!vo.options.transitionable)
       return false;
 
@@ -487,11 +545,11 @@ function vertexTransitionableAcceptable(vo, vi, unitOnly) {
     // - (the value doesn't match, but we CAN transition)
     // - (if it doesn't have a unit, what other fuzzy matching would we perform)
     // - (if it doesn't have a unit, what what's the point of unitOnly?)
-    if(vo.data && vo.data.unit && vi.data && vi.data.unit) {
-      if(unitOnly && vo.data.unit !== vi.data.unit)
+    if(vo.data && vo.data.unit && vi_data && vi_data.unit) {
+      if(unitOnly && vo.data.unit !== vi_data.unit)
         return false;
 
-      if(!unitOnly && number.difference(vo.data, vi.data) !== 0 && discrete.difference(vo.data, vi.data) !== 0)
+      if(!unitOnly && number.difference(vo.data, vi_data) !== 0 && discrete.difference(vo.data, vi_data) !== 0)
         return false;
     }
   }

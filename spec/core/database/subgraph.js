@@ -900,7 +900,19 @@ describe('subgraph', function() {
     describe('matchRef', function() {
       it.skip('pre-match');
 
-      it.skip('subgraphMatch');
+      describe('subgraphMatch', function() {
+        // TODO what does it mean to have a concrete inner object with matchRef
+        // - how does this even work with a subgraphMatch search
+        // - it's easy to say "oh, just match the idea data since we already have it"
+        // - but what if the matcher(v.data, vertices[v.matchData].data) is no longer true?
+        it.skip('inner concrete');
+
+        it.skip('inner target w/ data');
+
+        it.skip('outer target mapped');
+
+        it.skip('outer target not mapped');
+      });
     });
   }); // end match (part 2)
 
