@@ -415,6 +415,58 @@ describe('subgraph', function() {
     });
 
     describe('clauses', function() {
+      describe('matchRef', function() {
+        var fruit, apple, banana;
+        var mark, desire;
+        beforeEach(function() {
+          fruit = tools.ideas.create();
+          apple = tools.ideas.create({name: 'apple'});
+          banana = tools.ideas.create({name: 'banana'});
+          fruit.link(links.list.thought_description, apple);
+          fruit.link(links.list.thought_description, banana);
+
+          mark = tools.ideas.create();
+          desire = tools.ideas.create();
+          mark.link(links.list.thought_description, desire);
+        });
+
+        // put both success and fail in the one test
+        // (the success is enough to prove that this works)
+        it('isSrc', function() {
+          var sg = new subgraph.Subgraph();
+          var m = sg.addVertex(subgraph.matcher.id, mark);
+          var d = sg.addVertex(subgraph.matcher.filler);
+          sg.addEdge(m, links.list.thought_description, d);
+
+          var f = sg.addVertex(subgraph.matcher.id, fruit);
+          var _f = sg.addVertex(subgraph.matcher.exact, d, {matchRef:true});
+          sg.addEdge(f, links.list.thought_description, _f, 1); // make the pref higher to ensure this is considered first
+
+          desire.update({name: 'apple'});
+
+          expect(subgraph.search(sg)).to.deep.equal([sg]);
+          expect(sg.vertices[_f].idea.id).to.equal(apple.id);
+        });
+
+        it('idDst', function() {
+          var sg = new subgraph.Subgraph();
+          var m = sg.addVertex(subgraph.matcher.id, mark);
+          var d = sg.addVertex(subgraph.matcher.filler);
+          sg.addEdge(m, links.list.thought_description, d);
+
+          var f = sg.addVertex(subgraph.matcher.id, fruit);
+          var _f = sg.addVertex(subgraph.matcher.exact, d, {matchRef:true});
+          // make the pref higher to ensure this is considered first
+          // hook up this edge backwards (so we can test isDst)
+          sg.addEdge(_f, links.list.thought_description.opposite, f, 1);
+
+          desire.update({name: 'banana'});
+
+          expect(subgraph.search(sg)).to.deep.equal([sg]);
+          expect(sg.vertices[_f].idea.id).to.equal(banana.id);
+        });
+      });
+
       describe('selectedEdge', function() {
         var mark, apple;
         var sg, m, a;
@@ -844,6 +896,12 @@ describe('subgraph', function() {
         expect(subgraph.match(outer, inner, false).length).to.equal(0);
       });
     }); // end transitionable
+
+    describe('matchRef', function() {
+      it.skip('pre-match');
+
+      it.skip('subgraphMatch');
+    });
   }); // end match (part 2)
 
   describe('rewrite', function() {

@@ -45,9 +45,14 @@ Subgraph.prototype.copy = function() {
 };
 // @param matcher: exports.matcher or equivalent
 // @param matchData: passed to the matcher
-// @param options:
-//  - transitionable: is this part of a transition (subgraph.rewrite, blueprints, etc)
-//    - subgraph.rewrite(transitions);
+// // TODO should matchData be inside options?
+// @param options: {
+//   transitionable: boolean, // if true, this part of a transition (subgraph.rewrite, blueprints, etc; subgraph.rewrite(transitions);)
+//                           // it means that we are intending to change the value
+//   matchRef: boolean, // if true, this should use a different object for the matchData
+//                        // specifically, use vertex[matchData].data instead of matchData
+//   TODO add support for matchRef in blueprints; look for any case where we use vertex.data
+// }
 Subgraph.prototype.addVertex = function(matcher, matchData, options) {
   if(typeof options === 'boolean')
     // TODO remove this after I feel like all the old usages are gone
@@ -55,7 +60,12 @@ Subgraph.prototype.addVertex = function(matcher, matchData, options) {
 
   options = _.merge({
     transitionable: false,
+    matchRef: false,
   }, options);
+
+  if(options.matchRef && !(matchData in this.vertices))
+    // TODO Should I even check this? isn't this contractual programming?
+    throw new Error('matchData must already exist in the vertex list');
 
   var id = this.vertices.length;
   var v = this.vertices[id] = {
@@ -159,12 +169,9 @@ exports.matcher = {
   discrete: function(idea, matchData) {
     return discrete.difference(idea.data(), matchData) === 0;
   },
-
-  // TODO vertex_value
-  // - return _.deepEquals(idea.data(), vertices[matchData].data);
-  // - these types of matchers can only run if vertices[matchData].idea
 };
 _.forEach(exports.matcher, function(fun, name) {
+  // TODO put the name back in the function def
   fun.thename = name;
 });
 
@@ -219,6 +226,8 @@ exports.parse = function(str) {
 
 
 // find a list of subgraphs in the database that matches the supplied subgraph
+// TODO don't modify the original
+// - this may break some tests/use cases, so check for every call to search
 //
 // use Prim's algorithm to expand the know subgraph
 // we are trying to identify all of the vertices
@@ -237,6 +246,13 @@ exports.search = function(subgraph) {
     var isDst = (currEdge.dst.idea !== undefined);
 
     if(isSrc ^ isDst) {
+
+      // we can't consider this edge if the target object hasn't be identified
+      // return true because this doesn't make the match invalid
+      if(isSrc && currEdge.dst.options.matchRef && subgraph.vertices[currEdge.dst.matchData].idea === undefined)
+        return true;
+      if(isDst && currEdge.src.options.matchRef && subgraph.vertices[currEdge.src.matchData].idea === undefined)
+        return true;
 
       var currBranches = (isSrc ? (currEdge.src.idea.link(currEdge.link)) : (currEdge.dst.idea.link(currEdge.link.opposite)) );
 
@@ -268,9 +284,10 @@ exports.search = function(subgraph) {
   if(selectedEdge) {
     // pick the vertex to expand
     var vertex = _.isUndefined(selectedEdge.src.idea) ? selectedEdge.src : selectedEdge.dst;
+    var matchData = vertex.options.matchRef?subgraph.vertices[vertex.matchData].data:vertex.matchData;
 
     var matchedBranches = selectedBranches.filter(function(idea) {
-      return vertex.matcher(idea, vertex.matchData);
+      return vertex.matcher(idea, matchData);
     });
 
     if(matchedBranches.length === 0) {
@@ -319,7 +336,7 @@ exports.search = function(subgraph) {
 // @param unitOnly is specific to transitionable vertices and blueprint.tryTransition
 // - when we need to see if a transition is possible, the match needs to see if we can combine the values
 // - this boils down to "do the units match"
-// AC: subgraph.match: i.transitionable === o.transitionable
+// AC: subgraph.match: i.options.transitionable === o.options.transitionable
 //
 // TODO problem with combinatorics
 // - is it okay just know there is an answer, or to think there may be one?
@@ -456,7 +473,7 @@ function subgraphMatch(outerEdges, innerEdges, vertexMap, unitOnly) {
   }, []);
 } // end subgraphMatch
 
-// AC: if vi.transitionable === false, we don't care what vo.transitionable is
+// AC: if vi.options.transitionable === false, we don't care what vo.options.transitionable is
 // - we only need to care about transitions if vi wants it
 function vertexTransitionableAcceptable(vo, vi, unitOnly) {
   if(vi.options.transitionable) {
