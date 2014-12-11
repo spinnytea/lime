@@ -45,9 +45,18 @@ Subgraph.prototype.copy = function() {
 };
 // @param matcher: exports.matcher or equivalent
 // @param matchData: passed to the matcher
-// @param transitionable: is this part of a transition (subgraph.rewrite, blueprints, etc)
-//  - subgraph.rewrite(transitions);
-Subgraph.prototype.addVertex = function(matcher, matchData, transitionable) {
+// @param options:
+//  - transitionable: is this part of a transition (subgraph.rewrite, blueprints, etc)
+//    - subgraph.rewrite(transitions);
+Subgraph.prototype.addVertex = function(matcher, matchData, options) {
+  if(typeof options === 'boolean')
+    // TODO remove this after I feel like all the old usages are gone
+    throw new TypeError('options is now an object. use {transitionable:true}');
+
+  options = _.merge({
+    transitionable: false,
+  }, options);
+
   var id = this.vertices.length;
   var v = this.vertices[id] = {
     vertex_id: id,
@@ -55,7 +64,7 @@ Subgraph.prototype.addVertex = function(matcher, matchData, transitionable) {
     // this is how we are going to match an idea in the search and match
     matcher: matcher,
     matchData: matchData,
-    transitionable: (transitionable === true),
+    options: options,
 
     // this is what we are ultimately trying to find with a subgraph search
     idea: undefined,
@@ -193,7 +202,7 @@ exports.parse = function(str) {
   str.vertices.forEach(function(v) {
     // XXX swap the vertex ID
     // - or convert the vertices object to a list
-    var id = sg.addVertex(exports.matcher[v.matcher], v.matchData, v.transitionable);
+    var id = sg.addVertex(exports.matcher[v.matcher], v.matchData, v.options);
     if(v.idea)
       sg.vertices[id].idea = ideas.proxy(v.idea);
     sg.vertices[id]._data = v._data;
@@ -450,8 +459,8 @@ function subgraphMatch(outerEdges, innerEdges, vertexMap, unitOnly) {
 // AC: if vi.transitionable === false, we don't care what vo.transitionable is
 // - we only need to care about transitions if vi wants it
 function vertexTransitionableAcceptable(vo, vi, unitOnly) {
-  if(vi.transitionable) {
-    if(!vo.transitionable)
+  if(vi.options.transitionable) {
+    if(!vo.options.transitionable)
       return false;
 
     // if they are both transitionable, then the values must match
@@ -506,7 +515,7 @@ exports.rewrite = function(subgraph, transitions, actual) {
       if(!(t.replace || t.combine || t.replace_id || t.cycle))
         return false;
 
-      if(!v.transitionable) {
+      if(!v.options.transitionable) {
         console.log('cannot rewrite; v is not transitionable');
         return false;
       }

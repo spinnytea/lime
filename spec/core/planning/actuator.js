@@ -32,7 +32,7 @@ describe('actuator', function() {
     // create an action
     // it will add 20 to the price
     a = new actuator.Action();
-    a_p = a.requirements.addVertex(subgraph.matcher.number, { value: number.value(0, Infinity), unit: money.id }, true);
+    a_p = a.requirements.addVertex(subgraph.matcher.number, { value: number.value(0, Infinity), unit: money.id }, {transitionable:true});
     a_a = a.requirements.addVertex(subgraph.matcher.id, apple);
     a.requirements.addEdge(
       a_a,
@@ -49,7 +49,7 @@ describe('actuator', function() {
     // and something else random
     var sg = new subgraph.Subgraph();
     sg.addVertex(subgraph.matcher.id, money); // this is just to make our tests more valid (see p !== a_p)
-    p = sg.addVertex(subgraph.matcher.id, price, true);
+    p = sg.addVertex(subgraph.matcher.id, price, {transitionable:true});
     sg.addEdge(
       sg.addVertex(subgraph.matcher.id, apple),
       links.list.thought_description,
@@ -75,7 +75,8 @@ describe('actuator', function() {
     var result = a.tryTransition(bs);
 
     expect(result.length).to.equal(1);
-    expect(Object.keys(result[0])).to.deep.equal([a_p+'', a_a+'']);
+    // the keys of an object are always strings
+    expect(Object.keys(result[0]).map(function(k) {return +k;})).to.deep.equal([a_p, a_a]);
     expect(result[0][a_p]).to.equal(p);
     expect(actionImplCount).to.equal(0);
   });

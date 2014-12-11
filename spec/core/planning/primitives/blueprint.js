@@ -85,7 +85,7 @@ describe('blueprint', function() {
         expect(a.distance(b)).to.equal(0);
 
         // if we make b transitionable, then this should no longer be valid
-        b.state.vertices[v].transitionable = true;
+        b.state.vertices[v].options.transitionable = true;
         expect(a.distance(b)).to.equal(Infinity);
       });
 
@@ -106,8 +106,8 @@ describe('blueprint', function() {
         var thing = { thing: 42 };
         var n_10 = { value: number.value(10), unit: idea.id };
         var n_20 = { value: number.value(20), unit: idea.id };
-        var _a = a.state.addVertex(subgraph.matcher.id, idea, true);
-        var _b = b.state.addVertex(subgraph.matcher.id, idea, true);
+        var _a = a.state.addVertex(subgraph.matcher.id, idea, {transitionable:true});
+        var _b = b.state.addVertex(subgraph.matcher.id, idea, {transitionable:true});
 
         // init a to have a value, and b to not
         // one is a number, the other is not a number
@@ -143,8 +143,8 @@ describe('blueprint', function() {
         tools.ideas.clean(boolean);
         var t = { value: 'true', unit: boolean.id };
         var f = { value: 'false', unit: boolean.id };
-        var _a = a.state.addVertex(subgraph.matcher.id, idea, true);
-        var _b = b.state.addVertex(subgraph.matcher.id, idea, true);
+        var _a = a.state.addVertex(subgraph.matcher.id, idea, {transitionable:true});
+        var _b = b.state.addVertex(subgraph.matcher.id, idea, {transitionable:true});
 
         // init a to have a value, and b to not
         // one is a discrete, the other is not a discrete
@@ -177,8 +177,8 @@ describe('blueprint', function() {
       it('<any>', function() {
         var t_1 = { thing: 42 };
         var t_2 = { thing: 3.14 };
-        var _a = a.state.addVertex(subgraph.matcher.id, idea, true);
-        var _b = b.state.addVertex(subgraph.matcher.id, idea, true);
+        var _a = a.state.addVertex(subgraph.matcher.id, idea, {transitionable:true});
+        var _b = b.state.addVertex(subgraph.matcher.id, idea, {transitionable:true});
 
         a.state.vertices[_a].data = undefined;
         b.state.vertices[_b].data = undefined;
@@ -212,7 +212,7 @@ describe('blueprint', function() {
 
       var bs = new blueprint.State(new subgraph.Subgraph(), []);
       var a = new actuator.Action();
-      var a_i1 = a.requirements.addVertex(subgraph.matcher.id, idea_1, true);
+      var a_i1 = a.requirements.addVertex(subgraph.matcher.id, idea_1, {transitionable:true});
       a.transitions.push({vertex_id: a_i1, replace: { thing: 42 }});
 
       // no actions and no state
@@ -225,7 +225,7 @@ describe('blueprint', function() {
 
       // now if we have something in the state, but no actions
       bs.availableActions.splice(0);
-      bs.state.addVertex(subgraph.matcher.id, idea_1, true);
+      bs.state.addVertex(subgraph.matcher.id, idea_1, {transitionable:true});
       expect(bs.actions()).to.deep.equal([]);
 
       // and finally, if there is a state and action

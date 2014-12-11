@@ -277,7 +277,7 @@ describe('subgraph', function() {
     mark.link(links.list.thought_description, apple);
     var sg = new subgraph.Subgraph();
     var m = sg.addVertex(subgraph.matcher.id, mark.id);
-    var a = sg.addVertex(subgraph.matcher.number, { value: number.value(0, Infinity), unit: unit.id }, true);
+    var a = sg.addVertex(subgraph.matcher.number, { value: number.value(0, Infinity), unit: unit.id }, {transitionable:true});
     sg.addEdge(m, links.list.thought_description, a, 1);
 
     var str = subgraph.stringify(sg);
@@ -752,18 +752,18 @@ describe('subgraph', function() {
         var i = inner.addVertex(subgraph.matcher.id, idea);
 
         // if both are not transitionable, then data doesn't matter
-        expect(outer.vertices[o].transitionable).to.equal(false);
-        expect(inner.vertices[i].transitionable).to.equal(false);
+        expect(outer.vertices[o].options.transitionable).to.equal(false);
+        expect(inner.vertices[i].options.transitionable).to.equal(false);
         expect(subgraph.match(outer, inner).length).to.equal(1);
 
         // if the inner is transitionable, and the outer is not, then it should fail
         // if the outer is transitionable, but the inner is not, then it should pass (because why not?)
-        outer.vertices[o].transitionable = true;
+        outer.vertices[o].options.transitionable = true;
         expect(subgraph.match(outer, inner).length).to.equal(1); // AC: if inner=false & outer=true, it can transition
         expect(subgraph.match(inner, outer).length).to.equal(0);
 
         // now with both transitionable, we need to test based on data (unit)
-        inner.vertices[i].transitionable = true;
+        inner.vertices[i].options.transitionable = true;
 
         // neither have data, so it's okay
         expect(subgraph.match(outer, inner, true).length).to.equal(1);
@@ -811,8 +811,8 @@ describe('subgraph', function() {
 
         var outer = new subgraph.Subgraph();
         var o1 = outer.addVertex(subgraph.matcher.id, id1);
-        var o2 = outer.addVertex(subgraph.matcher.id, id2, false);
-        var o3 = outer.addVertex(subgraph.matcher.id, id3, false);
+        var o2 = outer.addVertex(subgraph.matcher.id, id2, {transitionable:false});
+        var o3 = outer.addVertex(subgraph.matcher.id, id3, {transitionable:false});
         outer.addEdge(o1, links.list.thought_description, o2);
         outer.addEdge(o1, links.list.thought_description, o3);
         expect(subgraph.search(outer).length).to.equal(1);
@@ -823,17 +823,17 @@ describe('subgraph', function() {
 
         // if inner is transitionable, then outer must be too
         // if inner is not transitionable, then outer doesn't matter
-        outer.vertices[o2].transitionable = true;
-        expect(outer.vertices[o2].transitionable).to.equal(true);
-        expect(outer.vertices[o3].transitionable).to.equal(false);
-        expect(inner.vertices[i].transitionable).to.equal(false);
+        outer.vertices[o2].options.transitionable = true;
+        expect(outer.vertices[o2].options.transitionable).to.equal(true);
+        expect(outer.vertices[o3].options.transitionable).to.equal(false);
+        expect(inner.vertices[i].options.transitionable).to.equal(false);
         expect(subgraph.match(outer, inner).length).to.equal(2);
-        inner.vertices[i].transitionable = true;
+        inner.vertices[i].options.transitionable = true;
         expect(subgraph.match(outer, inner).length).to.equal(1);
 
         // if transitionable is true for both, the unit checking starts to get interesting
         // if units are not defined, then unitOnly must match (because I want to replace)
-        outer.vertices[o3].transitionable = true;
+        outer.vertices[o3].options.transitionable = true;
         expect(subgraph.match(outer, inner).length).to.equal(2);
 
         // when we define units for both, now they must start matching
@@ -864,9 +864,9 @@ describe('subgraph', function() {
       any = tools.ideas.create(anyData);
 
       sg = new subgraph.Subgraph();
-      p = sg.addVertex(subgraph.matcher.id, price, true);
-      w = sg.addVertex(subgraph.matcher.id, wumpus, true);
-      a = sg.addVertex(subgraph.matcher.id, any, true);
+      p = sg.addVertex(subgraph.matcher.id, price, {transitionable:true});
+      w = sg.addVertex(subgraph.matcher.id, wumpus, {transitionable:true});
+      a = sg.addVertex(subgraph.matcher.id, any, {transitionable:true});
 
       priceUpdate = { value: number.value(20), unit: money.id };
       priceUpdate2 = { value: number.value(30), unit: money.id };

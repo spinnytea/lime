@@ -146,7 +146,7 @@ BlueprintState.prototype.distance = function(to) {
       // if the inner is transitionable,
       // but the outer is not,
       // then this is bad
-      if(i.transitionable && !o.transitionable) {
+      if(i.options.transitionable && !o.options.transitionable) {
         cost += DISTANCE_ERROR;
         return false;
       }
@@ -182,7 +182,7 @@ BlueprintState.prototype.distance = function(to) {
           diff = DISTANCE_DEFAULT;
       }
 
-      if(!o.transitionable && diff > 0) {
+      if(!o.options.transitionable && diff > 0) {
         // we can't change the outer value
         // but the outer value doesn't match
         cost += DISTANCE_ERROR;

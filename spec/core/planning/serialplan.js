@@ -32,7 +32,7 @@ describe('serialplan', function() {
     // since this action can be applied to any count..
     // athing -> {value: ...}
     a = new actuator.Action();
-    a_c = a.requirements.addVertex(subgraph.matcher.number, { value: number.value(0, 10), unit: count_unit.id }, true);
+    a_c = a.requirements.addVertex(subgraph.matcher.number, { value: number.value(0, 10), unit: count_unit.id }, {transitionable:true});
     a.requirements.addEdge(
       a.requirements.addVertex(subgraph.matcher.id, athing),
       links.list.thought_description,
@@ -48,7 +48,7 @@ describe('serialplan', function() {
     // athing -> count
     var sg = new subgraph.Subgraph();
     sg.addVertex(subgraph.matcher.id, count_unit);
-    state_count = sg.addVertex(subgraph.matcher.id, count, true);
+    state_count = sg.addVertex(subgraph.matcher.id, count, {transitionable:true});
     sg.addEdge(
       sg.addVertex(subgraph.matcher.id, athing),
       links.list.thought_description,
@@ -176,9 +176,9 @@ describe('serialplan', function() {
 
       // so start cannot get to the goal
       // (since the start cannot manipulate that value)
-      start.state.vertices[state_count].transitionable = false;
+      start.state.vertices[state_count].options.transitionable = false;
       expect(sp.cost(start, goal)).to.equal(Infinity);
-      start.state.vertices[state_count].transitionable = true;
+      start.state.vertices[state_count].options.transitionable = true;
 
       // using this plan costs 5
       // the distance to the goal is 0
