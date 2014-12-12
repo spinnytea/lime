@@ -431,6 +431,18 @@ function subgraphMatch(subgraphOuter, subgraphInner, outerEdges, innerEdges, ver
 
   // find all matching outer edges
   var matches = outerEdges.filter(function(currEdge) {
+    if(innerEdge.link === currEdge.link.opposite) {
+      // reverse edge
+      var swap = {
+        src: currEdge.dst,
+        link: currEdge.link.opposite,
+        dst: currEdge.src,
+      };
+      currEdge = swap;
+    } else if(innerEdge.link !== currEdge.link)
+      // the edges don't match
+      return false;
+
     // skip the vertices that are mapped to something different
     if(srcMapped) {
       if(vertexMap[innerEdge.src.vertex_id] !== currEdge.src.vertex_id)
@@ -500,9 +512,8 @@ function subgraphMatch(subgraphOuter, subgraphInner, outerEdges, innerEdges, ver
     if(!innerEdge.dst.options.matchRef)
       dstData = innerEdge.dst.matchData;
 
-    return innerEdge.link === currEdge.link &&
-      innerEdge.src.matcher(currEdge.src.idea, srcData) &&
-      innerEdge.dst.matcher(currEdge.dst.idea, dstData);
+    return innerEdge.src.matcher(currEdge.src.idea, srcData) &&
+           innerEdge.dst.matcher(currEdge.dst.idea, dstData);
   });
 
   // recurse
@@ -512,8 +523,13 @@ function subgraphMatch(subgraphOuter, subgraphInner, outerEdges, innerEdges, ver
   return matches.map(function(outerEdge) {
     // update the new matches
     var newMap = _.clone(vertexMap);
-    newMap[innerEdge.src.vertex_id] = outerEdge.src.vertex_id;
-    newMap[innerEdge.dst.vertex_id] = outerEdge.dst.vertex_id;
+    if(outerEdge.link === innerEdge.link) {
+      newMap[innerEdge.src.vertex_id] = outerEdge.src.vertex_id;
+      newMap[innerEdge.dst.vertex_id] = outerEdge.dst.vertex_id;
+    } else {
+      newMap[innerEdge.src.vertex_id] = outerEdge.dst.vertex_id;
+      newMap[innerEdge.dst.vertex_id] = outerEdge.src.vertex_id;
+    }
 
     // shallow copy the outer/inner without the current match
     var newOuter = outerEdges.filter(function(e) { return e !== outerEdge; });

@@ -931,12 +931,12 @@ describe('subgraph', function() {
           inner.addEdge(im, links.list.thought_description, i_, +1);
           checkSubgraphMatch(subgraph.match(outer, inner), [om, od, o_], [im, id, i_]);
 
-//          inner = prep.copy();
-//          inner.addEdge(i_, links.list.thought_description.opposite, im, -1);
-//          checkSubgraphMatch(subgraph.match(outer, inner), [om, od, o_], [im, id, i_]);
-//          inner = prep.copy();
-//          inner.addEdge(i_, links.list.thought_description.opposite, im, +1);
-//          checkSubgraphMatch(subgraph.match(outer, inner), [om, od, o_], [im, id, i_]);
+          inner = prep.copy();
+          inner.addEdge(i_, links.list.thought_description.opposite, im, -1);
+          checkSubgraphMatch(subgraph.match(outer, inner), [om, od, o_], [im, id, i_]);
+          inner = prep.copy();
+          inner.addEdge(i_, links.list.thought_description.opposite, im, +1);
+          checkSubgraphMatch(subgraph.match(outer, inner), [om, od, o_], [im, id, i_]);
         });
         it.skip('test src');
 
