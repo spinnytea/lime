@@ -906,14 +906,14 @@ describe('subgraph', function() {
         expect(outer.concrete).to.equal(true);
       });
 
-      it.skip('pre-match');
+//      it.skip('pre-match');
 
       describe('subgraphMatch', function() {
         // TODO what does it mean to have a concrete inner object with matchRef
         // - how does this even work with a subgraphMatch search
         // - it's easy to say "oh, just match the idea data since we already have it"
         // - but what if the matcher(v.data, vertices[v.matchData].data) is no longer true?
-        it.skip('inner concrete');
+//        it.skip('inner concrete');
 
         it('inner target w/ data', function() {
           var prep = new subgraph.Subgraph();
@@ -922,7 +922,6 @@ describe('subgraph', function() {
           var id = prep.addVertex(subgraph.matcher.id, desire);
           var i_ = prep.addVertex(subgraph.matcher.similar, id, {matchRef:true});
           prep.addEdge(im, links.list.thought_description, id);
-
 
           inner = prep.copy();
           inner.addEdge(im, links.list.thought_description, i_, -1);
@@ -939,7 +938,7 @@ describe('subgraph', function() {
           checkSubgraphMatch(subgraph.match(outer, inner), [om, od, o_], [im, id, i_]);
         });
 
-        it('outer target mapped', function() {
+        it('outer target mapped / not mapped', function() {
           var prep = new subgraph.Subgraph();
           var inner;
           var im = prep.addVertex(subgraph.matcher.id, mark);
@@ -961,10 +960,8 @@ describe('subgraph', function() {
           inner.addEdge(i_, links.list.thought_description.opposite, im, +1);
           checkSubgraphMatch(subgraph.match(outer, inner), [om, od, o_], [im, id, i_]);
         });
-
-        it.skip('outer target not mapped');
-      });
-    });
+      }); // end subgraphMatch
+    }); // end matchRef
   }); // end match (part 2)
 
   describe('rewrite', function() {
