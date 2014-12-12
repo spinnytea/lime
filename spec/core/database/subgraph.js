@@ -661,7 +661,9 @@ describe('subgraph', function() {
     });
 
     // how do you even test srcMapped, !srcMapped, dstMapped, !dstMapped
-    it.skip('mapped branching');
+    // and do we even care to test it
+    // I've been over the logic QUITE A LOT (erma gerd) I'm pretty sure it's correct
+//    it.skip('mapped branching');
 
     it.skip('isSrc && isDst failure');
 
@@ -900,6 +902,8 @@ describe('subgraph', function() {
         o_ = outer.addVertex(subgraph.matcher.id, apple);
         outer.addEdge(om, links.list.thought_description, od);
         outer.addEdge(om, links.list.thought_description, o_);
+
+        expect(outer.concrete).to.equal(true);
       });
 
       it.skip('pre-match');

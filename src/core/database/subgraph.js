@@ -391,6 +391,11 @@ exports.match = function(subgraphOuter, subgraphInner, unitOnly) {
 
   // if there are no edges, return the map
   if(subgraphInner.edges.length === 0) {
+    // if there are edges, and all vertices have been mapped, we still need to check the edges to make sure they match
+    // or we can just make the call to subgraphMatch
+    // TODO do we need to run the matchers? we probably need to run the matchers
+    // TODO what does it mean to call subgraph.match with inner.concrete? is this really targeted for !inner.concrete?
+    // - they probably both make sense, but they are distinctly different operations
     if(Object.keys(vertexMap).length === numVertices)
       return [vertexMap];
     return [];
@@ -420,29 +425,27 @@ function subgraphMatch(subgraphOuter, subgraphInner, outerEdges, innerEdges, ver
   }, null);
   innerEdges.splice(innerEdges.indexOf(innerEdge), 1);
 
-  var srcId = innerEdge.src.vertex_id;
-  var dstId = innerEdge.dst.vertex_id;
-  var srcMapped = (srcId in vertexMap);
-  var dstMapped = (dstId in vertexMap);
-  var mapValues = _.values(vertexMap);
+  var srcMapped = (innerEdge.src.vertex_id in vertexMap);
+  var dstMapped = (innerEdge.dst.vertex_id in vertexMap);
+  var inverseMap = _.invert(vertexMap);
 
   // find all matching outer edges
   var matches = outerEdges.filter(function(currEdge) {
     // skip the vertices that are mapped to something different
     if(srcMapped) {
-      if(vertexMap[srcId] !== currEdge.src.vertex_id)
+      if(vertexMap[innerEdge.src.vertex_id] !== currEdge.src.vertex_id)
         return false;
     } else {
       // currEdge src is mapped to a different inner id
-      if(mapValues.indexOf(currEdge.src.vertex_id) !== -1)
+      if(currEdge.src.vertex_id in inverseMap)
         return false;
     }
     if(dstMapped) {
-      if(vertexMap[dstId] !== currEdge.dst.vertex_id)
+      if(vertexMap[innerEdge.dst.vertex_id] !== currEdge.dst.vertex_id)
         return false;
     } else {
       // currEdge dst is mapped to a different inner id
-      if(mapValues.indexOf(currEdge.dst.vertex_id) !== -1)
+      if(currEdge.dst.vertex_id in inverseMap)
         return false;
     }
 
