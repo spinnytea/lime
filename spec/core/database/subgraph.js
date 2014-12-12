@@ -938,7 +938,6 @@ describe('subgraph', function() {
           inner.addEdge(i_, links.list.thought_description.opposite, im, +1);
           checkSubgraphMatch(subgraph.match(outer, inner), [om, od, o_], [im, id, i_]);
         });
-        it.skip('test src');
 
         it('outer target mapped', function() {
           var prep = new subgraph.Subgraph();
@@ -951,18 +950,17 @@ describe('subgraph', function() {
           inner = prep.copy();
           inner.addEdge(im, links.list.thought_description, i_, -1);
           checkSubgraphMatch(subgraph.match(outer, inner), [om, od, o_], [im, id, i_]);
-//          inner = prep.copy();
-//          inner.addEdge(im, links.list.thought_description, i_, +1);
-//          checkSubgraphMatch(subgraph.match(outer, inner), [om, od, o_], [im, id, i_]);
+          inner = prep.copy();
+          inner.addEdge(im, links.list.thought_description, i_, +1);
+          checkSubgraphMatch(subgraph.match(outer, inner), [om, od, o_], [im, id, i_]);
 
-//          inner = prep.copy();
-//          inner.addEdge(i_, links.list.thought_description.opposite, im, -1);
-//          checkSubgraphMatch(subgraph.match(outer, inner), [om, od, o_], [im, id, i_]);
-//          inner = prep.copy();
-//          inner.addEdge(i_, links.list.thought_description.opposite, im, +1);
-//          checkSubgraphMatch(subgraph.match(outer, inner), [om, od, o_], [im, id, i_]);
+          inner = prep.copy();
+          inner.addEdge(i_, links.list.thought_description.opposite, im, -1);
+          checkSubgraphMatch(subgraph.match(outer, inner), [om, od, o_], [im, id, i_]);
+          inner = prep.copy();
+          inner.addEdge(i_, links.list.thought_description.opposite, im, +1);
+          checkSubgraphMatch(subgraph.match(outer, inner), [om, od, o_], [im, id, i_]);
         });
-        it.skip('finish tests');
 
         it.skip('outer target not mapped');
       });

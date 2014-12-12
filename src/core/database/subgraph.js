@@ -403,7 +403,7 @@ exports.match = function(subgraphOuter, subgraphInner, unitOnly) {
 
   // with this information, fill out the map using the edges
   // (note: there may not yet be any edges specified)
-  return subgraphMatch(subgraphOuter, subgraphInner, _.clone(subgraphOuter.edges), _.clone(subgraphInner.edges), vertexMap, unitOnly)
+  return subgraphMatch(subgraphOuter, subgraphInner, _.clone(subgraphOuter.edges), _.clone(subgraphInner.edges), vertexMap, unitOnly, [])
     .filter(function(map) {
       return Object.keys(map).length === numVertices;
     });
@@ -415,11 +415,11 @@ exports.match = function(subgraphOuter, subgraphInner, unitOnly) {
 // map[inner.vertex_id] = outer.vertex_id;
 // we will typically use the inner subgraph to find the indices of the outer map
 // match all of the innerEdges to the outerEdges
-function subgraphMatch(subgraphOuter, subgraphInner, outerEdges, innerEdges, vertexMap, unitOnly) {
+function subgraphMatch(subgraphOuter, subgraphInner, outerEdges, innerEdges, vertexMap, unitOnly, skipThisTime) {
   // pick the best inner edge
   // (this should help us reduce the number of branches)
   var innerEdge = innerEdges.reduce(function(prev, curr) {
-    if(prev === null || curr.pref > prev.pref)
+    if(prev === null || curr.pref > prev.pref && skipThisTime.indexOf(curr) === -1)
       return curr;
     return prev;
   }, null);
@@ -517,8 +517,19 @@ function subgraphMatch(subgraphOuter, subgraphInner, outerEdges, innerEdges, ver
   });
 
   // recurse
-  if(matches.length === 0)
+  if(matches.length === 0) {
+    // because of indirection, we may need to skip an edge and try the next best one
+    // so if our current edge uses inderection, and there are other edges to try, then, well, try again
+    // but next time, don't consider this edge
+    if((innerEdge.src.options.matchRef || innerEdge.dst.options.matchRef) && innerEdges.length > skipThisTime.length) {
+      innerEdges.push(innerEdge);
+      skipThisTime.push(innerEdge);
+      return subgraphMatch(subgraphOuter, subgraphInner, outerEdges, innerEdges, vertexMap, unitOnly, skipThisTime);
+    }
+
+    // no matches, and we've skipped everything
     return [];
+  }
 
   return matches.map(function(outerEdge) {
     // update the new matches
@@ -541,8 +552,8 @@ function subgraphMatch(subgraphOuter, subgraphInner, outerEdges, innerEdges, ver
       return [newMap];
     else
       // recursive case
-      // get a list of
-      return subgraphMatch(subgraphOuter, subgraphInner, newOuter, newInner, newMap, unitOnly);
+      // get a list of all matches from this branch
+      return subgraphMatch(subgraphOuter, subgraphInner, newOuter, newInner, newMap, unitOnly, []);
   }).reduce(function(list, match) {
     // reduce all match lists into a single list
     Array.prototype.push.apply(list, match);
