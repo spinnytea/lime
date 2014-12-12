@@ -5,6 +5,7 @@ var expect = require('chai').expect;
 var actuator = require('../../../../src/core/planning/actuator');
 var blueprint = require('../../../../src/core/planning/primitives/blueprint');
 var discrete = require('../../../../src/core/planning/primitives/discrete');
+var links = require('../../../../src/core/database/links');
 var number = require('../../../../src/core/planning/primitives/number');
 var path = require('../../../../src/core/planning/primitives/path');
 var subgraph = require('../../../../src/core/database/subgraph');
@@ -204,6 +205,28 @@ describe('blueprint', function() {
         expect(a.state.vertices[_a].data).to.deep.equal(t_1);
         expect(a.distance(b)).to.equal(0);
         expect(b.distance(a)).to.equal(0);
+      });
+
+      it('matchRef', function() {
+        var idea2 = tools.ideas.create({ value: number.value(10), unit: idea.id });
+        idea.link(links.list.thought_description, idea2);
+        var _aidea = a.state.addVertex(subgraph.matcher.id, idea);
+        a.state.addEdge(
+          _aidea,
+          links.list.thought_description,
+          a.state.addVertex(subgraph.matcher.id, idea2, {transitionable:true})
+        );
+
+        var _bidea = b.state.addVertex(subgraph.matcher.id, idea);
+        var _b = b.state.addVertex(subgraph.matcher.number, _bidea, {transitionable:true,matchRef:true});
+        b.state.addEdge(_bidea, links.list.thought_description, _b);
+
+        idea.update({ value: number.value(10), unit: idea.id });
+        expect(a.distance(b)).to.equal(0);
+
+        a.state.vertices[_aidea].data.value = number.value(15);
+        b.state.vertices[_bidea].data.value = number.value(15);
+        expect(a.distance(b)).to.equal(5);
       });
     }); // end distance
 

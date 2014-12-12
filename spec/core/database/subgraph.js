@@ -885,30 +885,63 @@ describe('subgraph', function() {
     }); // end transitionable
 
     describe('matchRef', function() {
-      var mark, desire, apple;
-      var outer, om, od, o_;
-      beforeEach(function() {
-        mark = tools.ideas.create({name: 'mark'}); // anchor
-        desire = tools.ideas.create({name: 'apple'}); // matchRef
-        apple = tools.ideas.create({name: 'apple', target: true}); // target
-        var banana = tools.ideas.create({name: 'banana'}); // distractor
-        mark.link(links.list.thought_description, desire);
-        mark.link(links.list.thought_description, apple);
-        mark.link(links.list.thought_description, banana);
-
-        outer = new subgraph.Subgraph();
-        om = outer.addVertex(subgraph.matcher.id, mark);
-        od = outer.addVertex(subgraph.matcher.id, desire);
-        o_ = outer.addVertex(subgraph.matcher.id, apple);
-        outer.addEdge(om, links.list.thought_description, od);
-        outer.addEdge(om, links.list.thought_description, o_);
-
-        expect(outer.concrete).to.equal(true);
-      });
-
 //      it.skip('pre-match');
 
+      it('unit only', function() {
+        var unit = tools.ideas.create();
+        var v1 = tools.ideas.create({ value: number.value(5), unit: unit.id });
+        var v2 = tools.ideas.create({ value: number.value(15), unit: unit.id });
+        unit.link(links.list.thought_description, v1);
+        unit.link(links.list.thought_description, v2);
+
+        var outer = new subgraph.Subgraph();
+        var o_unit = outer.addVertex(subgraph.matcher.id, unit);
+        var o_v1 = outer.addVertex(subgraph.matcher.id, v1, {transitionable:true});
+        var o_v2 = outer.addVertex(subgraph.matcher.id, v2, {transitionable:true});
+        outer.addEdge(o_unit, links.list.thought_description, o_v1);
+        outer.addEdge(o_unit, links.list.thought_description, o_v2);
+        expect(outer.concrete).to.equal(true);
+
+        var inner = new subgraph.Subgraph();
+        var i_unit = inner.addVertex(subgraph.matcher.id, unit);
+        var i_v = inner.addVertex(subgraph.matcher.number, i_unit, {transitionable:true,matchRef:true});
+        inner.addEdge(i_unit, links.list.thought_description, i_v);
+
+        unit.update({ value: number.value(5), unit: unit.id });
+
+        checkSubgraphMatch(subgraph.match(outer, inner), [o_unit, o_v1], [i_unit, i_v]);
+
+
+        var result = subgraph.match(outer, inner, true);
+        expect(result.length).to.equal(2);
+        // not sure which is which
+        checkSubgraphMatch(result[0], [o_unit, o_v1], [i_unit, i_v]);
+        // not sure which is which
+        checkSubgraphMatch(result[1], [o_unit, o_v2], [i_unit, i_v]);
+      });
+
       describe('subgraphMatch', function() {
+        var mark, desire, apple;
+        var outer, om, od, o_;
+        beforeEach(function() {
+          mark = tools.ideas.create({name: 'mark'}); // anchor
+          desire = tools.ideas.create({name: 'apple'}); // matchRef
+          apple = tools.ideas.create({name: 'apple', target: true}); // target
+          var banana = tools.ideas.create({name: 'banana'}); // distractor
+          mark.link(links.list.thought_description, desire);
+          mark.link(links.list.thought_description, apple);
+          mark.link(links.list.thought_description, banana);
+
+          outer = new subgraph.Subgraph();
+          om = outer.addVertex(subgraph.matcher.id, mark);
+          od = outer.addVertex(subgraph.matcher.id, desire);
+          o_ = outer.addVertex(subgraph.matcher.id, apple);
+          outer.addEdge(om, links.list.thought_description, od);
+          outer.addEdge(om, links.list.thought_description, o_);
+
+          expect(outer.concrete).to.equal(true);
+        });
+
         // TODO what does it mean to have a concrete inner object with matchRef
         // - how does this even work with a subgraphMatch search
         // - it's easy to say "oh, just match the idea data since we already have it"

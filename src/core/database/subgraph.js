@@ -504,6 +504,9 @@ function subgraphMatch(subgraphOuter, subgraphInner, outerEdges, innerEdges, ver
     if(!vertexTransitionableAcceptable(currEdge.dst, innerEdge.dst.options.transitionable, dstData, unitOnly))
       return false;
 
+    if(unitOnly)
+      return true;
+
     // if matchRef, then we want to use the data we found as the matcher data
     // if !matchRef, then we need to use the matchData on the object
     if(!innerEdge.src.options.matchRef)

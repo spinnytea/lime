@@ -105,7 +105,7 @@ BlueprintAction.prototype.save = function() {
 exports.loaders = {};
 exports.load = function(id) {
   var data = ideas.load(id).data();
-  if(!(data.type === 'blueprint' && typeof data.subtype === 'string' && typeof data.blueprint === 'object'))
+  if(!(data.type === 'blueprint' && data.blueprint && typeof data.subtype === 'string'))
     return undefined;
   return exports.loaders[data.subtype](data.blueprint);
 };
@@ -118,19 +118,20 @@ exports.Action = BlueprintAction;
 //
 // @param state: subgraph
 //  - this state is a theoretical situation
-//  - it may be based on reality (idea.idata())
+//  - it may be based on reality (idea.data())
 //  - it may transition into an alternate reality (vertex.data)
 // @param availableActions: an array of blueprint.Actions
 //  - these should be actions that make sense to take in this context
 function BlueprintState(subgraph, availableActions) {
-  if(!subgraph.concrete)
-    throw new RangeError('blueprint states must be concrete');
   this.state = subgraph;
   this.availableActions = availableActions;
 }
 
 // path.State.distance
 BlueprintState.prototype.distance = function(to) {
+  if(!this.state.concrete)
+    // TODO do I throw an error or silently fail? (return DISTANCE_ERROR)
+    throw new Error('blueprint states must be concrete to plan from');
   var that = this;
   var result = subgraph.match(that.state, to.state, true);
   if(result.length === 0)
@@ -151,34 +152,38 @@ BlueprintState.prototype.distance = function(to) {
         return false;
       }
 
+      var i_data = i.data;
+      if(i_data === undefined && i.options.matchRef)
+        i_data = to.state.vertices[i.matchData].data;
+
       // check the values
       var diff = 0;
       if(number.isNumber(o.data)) {
-        diff = number.difference(o.data, i.data);
+        diff = number.difference(o.data, i_data);
         if(diff === undefined) {
           cost += DISTANCE_ERROR;
           // no need to check other vertices in this map
           return false;
         }
-      } else if(number.isNumber(i.data)) {
+      } else if(number.isNumber(i_data)) {
           // one is a number and the other is not
           cost += DISTANCE_ERROR;
           // no need to check other vertices in this map
           return false;
       } else if(discrete.isDiscrete(o.data)) {
-        diff = discrete.difference(o.data, i.data);
+        diff = discrete.difference(o.data, i_data);
         if(diff === undefined) {
           cost += DISTANCE_ERROR;
           // no need to check other vertices in this map
           return false;
         }
-      } else if(discrete.isDiscrete(i.data)) {
+      } else if(discrete.isDiscrete(i_data)) {
           // one is a discrete and the other is not
           cost += DISTANCE_ERROR;
           // no need to check other vertices in this map
           return false;
       } else {
-        if(!_.isEqual(o.data, i.data))
+        if(!_.isEqual(o.data, i_data))
           diff = DISTANCE_DEFAULT;
       }
 
@@ -200,6 +205,9 @@ BlueprintState.prototype.distance = function(to) {
 
 // path.State.actions
 BlueprintState.prototype.actions = function() {
+  if(!this.state.concrete)
+    // TODO do I throw an error or silently fail? (return [])
+    throw new Error('blueprint states must be concrete to plan from');
   var that = this;
   var ret = [];
   // the actions need relate to this state
@@ -216,6 +224,9 @@ BlueprintState.prototype.actions = function() {
 // path.State.matches
 // AC: subgraph.match(unitOnly: false)
 BlueprintState.prototype.matches = function(blueprintstate) {
+  if(!this.state.concrete)
+    // TODO do I throw an error or silently fail? (return false)
+    throw new Error('blueprint states must be concrete to plan from');
   return subgraph.match(this.state, blueprintstate.state, false).length > 0;
 };
 
