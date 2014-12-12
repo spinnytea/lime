@@ -1,9 +1,12 @@
 'use strict';
 var _ = require('lodash');
-var discrete = require('../planning/primitives/discrete');
 var ideas = require('./ideas');
 var links = require('./links');
-var number = require('../planning/primitives/number');
+
+// these imports need to be a different name because we have exports.matcher.discrete and exports.matcher.number
+// we want to keep the API standard, so we can change the import in this file
+var crtcrt = require('../planning/primitives/discrete');
+var numnum = require('../planning/primitives/number');
 
 // this is an overlay on the idea database
 // it is a proxy or wrapper around the idea graph
@@ -99,7 +102,7 @@ Subgraph.prototype.addVertex = function(matcher, matchData, options) {
 
     if(matcher === exports.matcher.number)
       // should this fail if it is not a number?
-      number.isNumber(matchData);
+      numnum.isNumber(matchData);
   }
 
   return id;
@@ -148,34 +151,30 @@ exports.Subgraph = Subgraph;
 // because of serialization, the functions are create with a name
 // ( e.g. id: function id() {})
 exports.matcher = {
-  id: function(idea, matchData) {
+  id: function id(idea, matchData) {
     // XXX this could be an empty object
     return matchData === idea.id;
   },
-  filler: function() {
+  filler: function filler() {
     return true;
   },
 
-  exact: function(idea, matchData) {
+  exact: function exact(idea, matchData) {
     return _.isEqual(idea.data(), matchData);
   },
-  similar: function(idea, matchData) {
+  similar: function similar(idea, matchData) {
     // FIXME this implementation is bad and it should feel bad
     // matchData should be contained within data
     var data = idea.data();
     return _.isEqual(data, _.merge(_.cloneDeep(data), matchData));
   },
-  number: function(idea, matchData) {
-    return number.difference(idea.data(), matchData) === 0;
+  number: function number(idea, matchData) {
+    return numnum.difference(idea.data(), matchData) === 0;
   },
-  discrete: function(idea, matchData) {
-    return discrete.difference(idea.data(), matchData) === 0;
+  discrete: function discrete(idea, matchData) {
+    return crtcrt.difference(idea.data(), matchData) === 0;
   },
 };
-_.forEach(exports.matcher, function(fun, name) {
-  // TODO put the name back in the function def
-  fun.thename = name;
-});
 
 // serialize a subgraph object
 // a straight JSON.stringify will not work
@@ -187,7 +186,7 @@ exports.stringify = function(sg) {
   // convert the verticies
   // _.map will flatten it into an array, but we store the id anyway
   sg.vertices = sg.vertices.map(function(v) {
-    v.matcher = v.matcher.thename;
+    v.matcher = v.matcher.name;
     if(v.idea)
       v.idea = v.idea.id;
     return v;
@@ -579,7 +578,7 @@ function vertexTransitionableAcceptable(vo, vi_transitionable, vi_data, unitOnly
       if(unitOnly && vo.data.unit !== vi_data.unit)
         return false;
 
-      if(!unitOnly && number.difference(vo.data, vi_data) !== 0 && discrete.difference(vo.data, vi_data) !== 0)
+      if(!unitOnly && numnum.difference(vo.data, vi_data) !== 0 && crtcrt.difference(vo.data, vi_data) !== 0)
         return false;
     }
   }
@@ -639,10 +638,10 @@ exports.rewrite = function(subgraph, transitions, actual) {
           return false;
       } else if(t.cycle) {
         // TODO does the discrete unit need to be defined as 'cyclical' before we can use 'cycle'
-        if(v.data.unit !== t.cycle.unit || !discrete.isDiscrete(v.data))
+        if(v.data.unit !== t.cycle.unit || !crtcrt.isDiscrete(v.data))
           return false;
       } else if(t.combine) {
-        if(v.data.unit !== t.combine.unit || !number.isNumber(v.data) || !number.isNumber(t.combine))
+        if(v.data.unit !== t.combine.unit || !numnum.isNumber(v.data) || !numnum.isNumber(t.combine))
           return false;
       }
 
@@ -665,7 +664,7 @@ exports.rewrite = function(subgraph, transitions, actual) {
       idx = (((idx%states.length)+states.length)%states.length);
       v.data.value = states[idx];
     } else if(t.combine) {
-      v.data = number.combine(v.data, t.combine);
+      v.data = numnum.combine(v.data, t.combine);
     }
 
     if(actual)
