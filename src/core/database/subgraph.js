@@ -114,7 +114,7 @@ Subgraph.prototype.addEdge = function(src, link, dst, pref) {
     dst: this.vertices[dst],
     pref: (pref || 0),
   });
-  this.concrete = false;
+  this.concrete = this.concrete && this.vertices[src].idea !== undefined && this.vertices[dst].idea !== undefined;
 };
 
 // returns undefined if there is no data, or the object if there is

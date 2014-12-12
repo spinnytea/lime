@@ -12,6 +12,7 @@ var tools = require('../testingTools');
 function checkSubgraphMatch(match, outer, inner) {
   if(match.hasOwnProperty('length'))
     match = match[0];
+  expect(match).to.be.ok;
 
   // make sure the outer and inner values are not the same
   // it may be subtle, but it helps to ensure this test is valid
@@ -882,6 +883,25 @@ describe('subgraph', function() {
     }); // end transitionable
 
     describe('matchRef', function() {
+      var mark, desire, apple;
+      var outer, om, od, o_;
+      beforeEach(function() {
+        mark = tools.ideas.create({name: 'mark'}); // anchor
+        desire = tools.ideas.create({name: 'apple'}); // matchRef
+        apple = tools.ideas.create({name: 'apple', target: true}); // target
+        var banana = tools.ideas.create({name: 'banana'}); // distractor
+        mark.link(links.list.thought_description, desire);
+        mark.link(links.list.thought_description, apple);
+        mark.link(links.list.thought_description, banana);
+
+        outer = new subgraph.Subgraph();
+        om = outer.addVertex(subgraph.matcher.id, mark);
+        od = outer.addVertex(subgraph.matcher.id, desire);
+        o_ = outer.addVertex(subgraph.matcher.id, apple);
+        outer.addEdge(om, links.list.thought_description, od);
+        outer.addEdge(om, links.list.thought_description, o_);
+      });
+
       it.skip('pre-match');
 
       describe('subgraphMatch', function() {
@@ -892,32 +912,53 @@ describe('subgraph', function() {
         it.skip('inner concrete');
 
         it('inner target w/ data', function() {
-          var mark = tools.ideas.create(); // anchor
-          var desire = tools.ideas.create({name: 'apple'}); // matchRef
-          var apple = tools.ideas.create({name: 'apple'}); // target
-          var banana = tools.ideas.create({name: 'banana'}); // distractor
-          mark.link(links.list.thought_description, desire);
-          mark.link(links.list.thought_description, apple);
-          mark.link(links.list.thought_description, banana);
+          var prep = new subgraph.Subgraph();
+          var inner;
+          var im = prep.addVertex(subgraph.matcher.id, mark);
+          var id = prep.addVertex(subgraph.matcher.id, desire);
+          var i_ = prep.addVertex(subgraph.matcher.similar, id, {matchRef:true});
+          prep.addEdge(im, links.list.thought_description, id);
 
-          var outer = new subgraph.Subgraph();
-          var om = outer.addVertex(subgraph.matcher.id, mark);
-          var od = outer.addVertex(subgraph.matcher.id, desire);
-          var o_ = outer.addVertex(subgraph.matcher.id, apple);
-          outer.addEdge(om, links.list.thought_description, od);
-          outer.addEdge(om, links.list.thought_description, o_);
 
-          var inner = new subgraph.Subgraph();
-          var id = inner.addVertex(subgraph.matcher.id, desire);
-          var i_ = inner.addVertex(subgraph.matcher.exact, id, {matchRef:true});
-          var im = inner.addVertex(subgraph.matcher.id, mark);
-          inner.addEdge(im, links.list.thought_description, id);
-          inner.addEdge(im, links.list.thought_description, i_);
-
+          inner = prep.copy();
+          inner.addEdge(im, links.list.thought_description, i_, -1);
           checkSubgraphMatch(subgraph.match(outer, inner), [om, od, o_], [im, id, i_]);
-        });
+          inner = prep.copy();
+          inner.addEdge(im, links.list.thought_description, i_, +1);
+          checkSubgraphMatch(subgraph.match(outer, inner), [om, od, o_], [im, id, i_]);
 
-        it.skip('outer target mapped');
+//          inner = prep.copy();
+//          inner.addEdge(i_, links.list.thought_description.opposite, im, -1);
+//          checkSubgraphMatch(subgraph.match(outer, inner), [om, od, o_], [im, id, i_]);
+//          inner = prep.copy();
+//          inner.addEdge(i_, links.list.thought_description.opposite, im, +1);
+//          checkSubgraphMatch(subgraph.match(outer, inner), [om, od, o_], [im, id, i_]);
+        });
+        it.skip('test src');
+
+        it('outer target mapped', function() {
+          var prep = new subgraph.Subgraph();
+          var inner;
+          var im = prep.addVertex(subgraph.matcher.id, mark);
+          var id = prep.addVertex(subgraph.matcher.exact, {name: 'apple'});
+          var i_ = prep.addVertex(subgraph.matcher.similar, id, {matchRef:true});
+          prep.addEdge(im, links.list.thought_description, id);
+
+          inner = prep.copy();
+          inner.addEdge(im, links.list.thought_description, i_, -1);
+          checkSubgraphMatch(subgraph.match(outer, inner), [om, od, o_], [im, id, i_]);
+//          inner = prep.copy();
+//          inner.addEdge(im, links.list.thought_description, i_, +1);
+//          checkSubgraphMatch(subgraph.match(outer, inner), [om, od, o_], [im, id, i_]);
+
+//          inner = prep.copy();
+//          inner.addEdge(i_, links.list.thought_description.opposite, im, -1);
+//          checkSubgraphMatch(subgraph.match(outer, inner), [om, od, o_], [im, id, i_]);
+//          inner = prep.copy();
+//          inner.addEdge(i_, links.list.thought_description.opposite, im, +1);
+//          checkSubgraphMatch(subgraph.match(outer, inner), [om, od, o_], [im, id, i_]);
+        });
+        it.skip('finish tests');
 
         it.skip('outer target not mapped');
       });
