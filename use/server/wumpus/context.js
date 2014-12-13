@@ -8,7 +8,12 @@ var ideas = require('../../../src/core/database/ideas');
 var links = require('../../../src/core/database/links');
 var subgraph = require('../../../src/core/database/subgraph');
 
+var discreteActuators = require('./actuators/discreteActuators');
+
 var ERROR_RANGE = 0.001;
+links.create('wumpus_sense_agent_dir');
+//links.create('wumpus_sense_agent_loc');
+links.create('wumpus_room_door');
 
 // create the actions that we can use
 ['left', 'right'].forEach(function(a) {
@@ -117,44 +122,20 @@ var getDiscreteContext = function() {
     var room = ideas.create({name:'room'});
     wumpus_world.link(links.list.context, room);
 
-    // now search again
-    results = subgraph.search(exports.subgraph);
 
-
-    // create left turn (when facing east)
-    // TODO break out these discrete actions into their own file
-    var a = new actuator.Action();
-    var a_agentInstance = a.requirements.addVertex(subgraph.matcher.filler);
-    var a_agentDirection = a.requirements.addVertex(subgraph.matcher.similar, {unit: directions.id}, true);
-    a.requirements.addEdge(
-      a_agentInstance,
-      links.list.type_of,
-      a.requirements.addVertex(subgraph.matcher.id, agent)
-    );
-    a.requirements.addEdge(a_agentInstance, links.list.thought_description, a_agentDirection);
-    a.transitions.push({ vertex_id: a_agentDirection, cycle: {value: -1, unit: directions.id} });
-    a.action = 'wumpus_known_discrete_left';
-    a.save();
-    ideas.load(a.idea).link(links.list.context, wumpus_world);
-    ideas.load(a.idea).link(links.list.context, action_left);
-
-    // TODO trying some shorthand: just update the action and save it again
-    // - this is brittle, but it works for now
-    ideas.save(a.idea);
-    a.idea = undefined;
-    a.transitions[0].cycle.value = 1;
-    a.action = 'wumpus_known_discrete_right';
-    a.save();
-    ideas.load(a.idea).link(links.list.context, wumpus_world);
-    ideas.load(a.idea).link(links.list.context, action_right);
+    // create actuators
+    discreteActuators.turn(directions, agent, -1, 'left', [wumpus_world, action_left]);
+    discreteActuators.turn(directions, agent, 1, 'right', [wumpus_world, action_right]);
+//    discreteActuators.forward(agent, room, [wumpus_world, action_up]);
 
 
     // save our the ideas
     [
-      wumpus_world, action_left, action_right,
-      directions, compass, agent,
-      a.idea,
+      wumpus_world, action_left, action_right, ideas.context('blueprint'),
+      directions, compass, agent, room,
     ].forEach(ideas.save);
+    // now search again
+    results = subgraph.search(exports.subgraph);
   }
 
   // finish loading
@@ -171,8 +152,9 @@ exports.sense = function(state) {
   if(!socket) return;
   if(!exports.keys.instance) {
     var instance = ideas.create();
-    exports.keys.instance = exports.subgraph.addVertex(subgraph.matcher.id, instance);
     instance.link(links.list.type_of, exports.idea('wumpus_world'));
+    exports.keys.instance = exports.subgraph.addVertex(subgraph.matcher.id, instance);
+    exports.subgraph.addEdge(exports.keys.instance, links.list.type_of, exports.keys.wumpus_world);
 
 
     //
@@ -231,14 +213,14 @@ exports.sense = function(state) {
     var agentDirection = ideas.create();
     instance.link(links.list.thought_description, agentInstance);
     agentInstance.link(links.list.type_of, exports.idea('agent'));
-    agentInstance.link(links.list.thought_description, agentDirection);
+    agentInstance.link(links.list.wumpus_sense_agent_dir, agentDirection);
     // TODO agentRoom (current location)
 
     exports.keys.agentInstance = exports.subgraph.addVertex(subgraph.matcher.filler);
-    exports.keys.agentDirection = exports.subgraph.addVertex(subgraph.matcher.filler, undefined, true);
+    exports.keys.agentDirection = exports.subgraph.addVertex(subgraph.matcher.filler, undefined, {transitionable:true});
     exports.subgraph.addEdge(exports.keys.instance, links.list.thought_description, exports.keys.agentInstance);
     exports.subgraph.addEdge(exports.keys.agentInstance, links.list.type_of, exports.keys.agent);
-    exports.subgraph.addEdge(exports.keys.agentInstance, links.list.thought_description, exports.keys.agentDirection);
+    exports.subgraph.addEdge(exports.keys.agentInstance, links.list.wumpus_sense_agent_dir, exports.keys.agentDirection);
 
 
     config.save();
@@ -250,11 +232,14 @@ exports.sense = function(state) {
   senseAgent(state.agent);
 };
 
-function senseRooms(rooms) {
-  console.log(rooms[0]);
+function senseRooms() {
+//  console.log(rooms[0]);
 }
 
 function senseAgent(agent) {
+  // TODO log when the sensed value differs from the internal value
+
+  // update agent direction
   // note: the -= needs to be second since we are comparing against zero
   var dir;
   while(agent.r < 0) agent.r += Math.PI*2;
@@ -272,7 +257,6 @@ function senseAgent(agent) {
   // TODO update agent room location
   // agent.inRoomIds[0]
 
-  // TODO log when the sensed value differs from the internal value
   // TODO create a function to reset vertex data cache
   exports.subgraph.vertices[exports.keys.agentDirection].data = undefined;
 }
