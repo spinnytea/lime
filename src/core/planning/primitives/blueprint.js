@@ -153,8 +153,18 @@ BlueprintState.prototype.distance = function(to) {
       }
 
       var i_data = i.data;
-      if(i_data === undefined && i.options.matchRef)
-        i_data = to.state.vertices[i.matchData].data;
+      if(i_data === undefined) {
+        // if the data is not cached, then find it from the match ref
+        if(i.options.matchRef)
+          i_data = to.state.vertices[i.matchData].data;
+
+        // used when looking for a goal
+        // TODO review this case; is this correct?
+        // - are there others? (basically, how else is the data used by subgraphs)
+        // - specifically, review blueprints
+        else if(!i.idea && !to.concrete)
+          i_data = i.matchData;
+      }
 
       // check the values
       var diff = 0;
