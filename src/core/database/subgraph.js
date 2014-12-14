@@ -151,28 +151,28 @@ exports.Subgraph = Subgraph;
 // because of serialization, the functions are create with a name
 // ( e.g. id: function id() {})
 exports.matcher = {
-  id: function id(idea, matchData) {
+  id: function id(vertex, matchData) {
     // XXX this could be an empty object
-    return matchData === idea.id;
+    return matchData === vertex.idea.id;
   },
   filler: function filler() {
     return true;
   },
 
-  exact: function exact(idea, matchData) {
-    return _.isEqual(idea.data(), matchData);
+  exact: function exact(vertex, matchData) {
+    return _.isEqual(vertex.data, matchData);
   },
-  similar: function similar(idea, matchData) {
+  similar: function similar(vertex, matchData) {
     // FIXME this implementation is bad and it should feel bad
     // matchData should be contained within data
-    var data = idea.data();
+    var data = vertex.data;
     return _.isEqual(data, _.merge(_.cloneDeep(data), matchData));
   },
-  number: function number(idea, matchData) {
-    return numnum.difference(idea.data(), matchData) === 0;
+  number: function number(vertex, matchData) {
+    return numnum.difference(vertex.data, matchData) === 0;
   },
-  discrete: function discrete(idea, matchData) {
-    return crtcrt.difference(idea.data(), matchData) === 0;
+  discrete: function discrete(vertex, matchData) {
+    return crtcrt.difference(vertex.data, matchData) === 0;
   },
 };
 
@@ -297,7 +297,13 @@ exports.search = function(subgraph) {
 //    }
 
     var matchedBranches = selectedBranches.filter(function(idea) {
-      return vertex.matcher(idea, matchData);
+      if(vertex.matcher === exports.matcher.id)
+        // XXX this should never happen here
+        return vertex.matcher({idea:idea}, matchData);
+      else if(vertex.matcher === exports.matcher.filler)
+        return true;
+      else
+        return vertex.matcher({data:idea.data()}, matchData);
     });
 
     if(matchedBranches.length === 0) {
@@ -514,8 +520,8 @@ function subgraphMatch(subgraphOuter, subgraphInner, outerEdges, innerEdges, ver
     if(!innerEdge.dst.options.matchRef)
       dstData = innerEdge.dst.matchData;
 
-    return innerEdge.src.matcher(currEdge.src.idea, srcData) &&
-           innerEdge.dst.matcher(currEdge.dst.idea, dstData);
+    return innerEdge.src.matcher(currEdge.src, srcData) &&
+           innerEdge.dst.matcher(currEdge.dst, dstData);
   });
 
   // recurse

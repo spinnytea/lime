@@ -118,7 +118,7 @@ describe('actuator', function() {
     expect(bs2).to.not.equal(bs);
 
     // bs should not be changed
-    expect(bs.state.vertices[bs_p].data).to.deep.equal({ value: number.value(10), unit: money.id });
+    expect(bs.state.vertices[bs_p].data).to.deep.equal({ type: 'lime_number', value: number.value(10), unit: money.id });
 
     // bs2 should be updated
     expect(bs2.state.vertices[bs_p].data).to.deep.equal({ type: 'lime_number', value: number.value(30), unit: money.id });

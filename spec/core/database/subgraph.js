@@ -128,11 +128,13 @@ describe('subgraph', function() {
     it('id: function', function() {
       var idea = tools.ideas.create();
 
-      expect(subgraph.matcher.id(idea, idea.id)).to.equal(true);
-      expect(subgraph.matcher.id(idea, '')).to.equal(false);
+      expect(subgraph.matcher.id({idea: idea}, idea.id)).to.equal(true);
+      expect(subgraph.matcher.id({idea: idea}, '')).to.equal(false);
+      expect(subgraph.matcher.id({idea: idea}, undefined)).to.equal(false);
     });
 
-    it('id: basic search', function() {
+    // matcher.id shouldn't ever actually be used in subgraph.search
+    it.skip('id: basic search', function() {
       var mark = tools.ideas.create();
       var apple = tools.ideas.create();
       mark.link(links.list.thought_description, apple);
@@ -175,11 +177,11 @@ describe('subgraph', function() {
     });
 
     it('exact: function', function() {
-      var idea = tools.ideas.create({'thing': 3.14});
+      var vertex = { data: {'thing': 3.14} };
 
-      expect(subgraph.matcher.exact(idea, {'thing': 3.14})).to.equal(true);
-      expect(subgraph.matcher.exact(idea, {'thing': 6.28})).to.equal(false);
-      expect(subgraph.matcher.exact(idea, {})).to.equal(false);
+      expect(subgraph.matcher.exact(vertex, {'thing': 3.14})).to.equal(true);
+      expect(subgraph.matcher.exact(vertex, {'thing': 6.28})).to.equal(false);
+      expect(subgraph.matcher.exact(vertex, {})).to.equal(false);
     });
 
     it('exact: basic search', function() {
@@ -210,17 +212,18 @@ describe('subgraph', function() {
     });
 
     it('similar: function', function() {
-      var idea = tools.ideas.create({'thing1': 3.14, 'thing2': 2.71});
+      var vertex = { data: {'thing1': 3.14, 'thing2': 2.71} };
+      var before = _.cloneDeep(vertex);
 
-      expect(subgraph.matcher.similar(idea, {'thing1': 3.14})).to.equal(true);
-      expect(subgraph.matcher.similar(idea, {'thing2': 2.71})).to.equal(true);
-      expect(subgraph.matcher.similar(idea, {})).to.equal(true);
-      expect(subgraph.matcher.similar(idea)).to.equal(true);
-      expect(subgraph.matcher.similar(idea, {'thing2': 42})).to.equal(false);
-      expect(subgraph.matcher.similar(idea, {'others': 42})).to.equal(false);
+      expect(subgraph.matcher.similar(vertex, {'thing1': 3.14})).to.equal(true);
+      expect(subgraph.matcher.similar(vertex, {'thing2': 2.71})).to.equal(true);
+      expect(subgraph.matcher.similar(vertex, {})).to.equal(true);
+      expect(subgraph.matcher.similar(vertex)).to.equal(true);
+      expect(subgraph.matcher.similar(vertex, {'thing2': 42})).to.equal(false);
+      expect(subgraph.matcher.similar(vertex, {'others': 42})).to.equal(false);
 
       // the data shouldn't have been changed after any of this
-      expect(idea.data()).to.deep.equal({'thing1': 3.14, 'thing2': 2.71});
+      expect(vertex).to.deep.equal(before);
     });
 
     it('similar: basic search', function() {
@@ -248,15 +251,15 @@ describe('subgraph', function() {
 
     it('number: function', function() {
       var unit = tools.ideas.create();
-      var idea = tools.ideas.create({ value: number.value(10), unit: unit.id });
+      var vertex = { data: { value: number.value(10), unit: unit.id } };
 
-      expect(subgraph.matcher.number(idea, { value: number.value(10), unit: unit.id })).to.equal(true);
-      expect(subgraph.matcher.number(idea, { value: number.value(0, 100), unit: unit.id })).to.equal(true);
+      expect(subgraph.matcher.number(vertex, { value: number.value(10), unit: unit.id })).to.equal(true);
+      expect(subgraph.matcher.number(vertex, { value: number.value(0, 100), unit: unit.id })).to.equal(true);
 
-      expect(subgraph.matcher.number(idea, { value: number.value(10), unit: '_'+unit.id })).to.equal(false);
-      expect(subgraph.matcher.number(idea, { value: number.value(10) })).to.equal(false);
-      expect(subgraph.matcher.number(idea, { unit: unit.id })).to.equal(false);
-      expect(subgraph.matcher.number(idea)).to.equal(false);
+      expect(subgraph.matcher.number(vertex, { value: number.value(10), unit: '_'+unit.id })).to.equal(false);
+      expect(subgraph.matcher.number(vertex, { value: number.value(10) })).to.equal(false);
+      expect(subgraph.matcher.number(vertex, { unit: unit.id })).to.equal(false);
+      expect(subgraph.matcher.number(vertex)).to.equal(false);
     });
 
     it('number: basic search', function() {
