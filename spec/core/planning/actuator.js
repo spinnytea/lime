@@ -212,63 +212,26 @@ describe('actuator', function() {
     expect(next.matches(goal)).to.equal(true);
   });
 
-  it.skip('basic planning (inconcrete)', function() {
+  it('basic planning (inconcrete)', function() {
     var goal = new subgraph.Subgraph();
     var g_a = goal.addVertex(subgraph.matcher.id, apple);
     var g_p = goal.addVertex(subgraph.matcher.number, { value: number.value(50), unit: money.id }, {transitionable:true});
     goal.addEdge(g_a, links.list.thought_description, g_p);
     goal = new blueprint.State(goal, bs.availableActions);
 
-    // TODO clean this up to match basic planning (concrete)
-    // - I had extra stuff to address a bug
-
-    //
-    // quick aside
-    // verify that our subgraphs are correct
-    //
     expect(bs.state.concrete).to.equal(true);
     expect(goal.state.concrete).to.equal(false);
-
-    // the goal should not yet match the goal
-    expect(subgraph.match(bs.state, goal.state, false)).to.deep.equal([]);
-    // however, we can find some kind of mapping for the goal
-    var result = subgraph.match(bs.state, goal.state, true);
-    expect(result.length).to.equal(1);
-    expect(result[0][g_a]).to.equal(bs_a);
-    expect(result[0][g_p]).to.equal(bs_p);
-
-    //
-    // instead, of calling "search!"
-    // lets try doing the search things
-    // (I am was having problems with this section)
-    //
-
-    // our goal doesn't match the initial state
     expect(bs.matches(goal)).to.equal(false);
 
-    // try to expand the fronteir
-    var nextActions = bs.actions();
-    expect(nextActions.length).to.equal(1);
-    nextActions = nextActions[0];
-    expect(nextActions.action).to.equal(a);
-    expect(nextActions.glue).to.deep.equal(subgraph.match(bs.state, a.requirements, true)[0]);
+    var path = astar.search(bs, goal);
 
-    // get the next state
-    var next = nextActions.action.apply(bs, nextActions.glue);
-    expect(next).to.be.ok;
-    expect(next).to.not.equal(bs.state);
-    expect(next.state.vertices[bs_p].data).to.deep.equal({ type: 'lime_number', value: number.value(30), unit: money.id });
+    expect(path).to.be.ok;
+    expect(path.states.length).to.equal(3);
+    expect(path.states[0].state.vertices[bs_p].data).to.deep.equal({ type: 'lime_number', value: number.value(10), unit: money.id });
+    expect(path.states[1].state.vertices[bs_p].data).to.deep.equal({ type: 'lime_number', value: number.value(30), unit: money.id });
+    expect(path.states[2].state.vertices[bs_p].data).to.deep.equal({ type: 'lime_number', value: number.value(50), unit: money.id });
 
-    // now the goal should match
-    // (this is what I had problems with)
-    console.log('----------------------------------------------');
-    result = subgraph.match(next.state, goal.state, false);
-    expect(result.length).to.equal(1);
-//    expect(result[0][g_a]).to.equal(bs_a);
-//    expect(result[0][g_p]).to.equal(bs_p);
-
-//    var path = astar.search(bs, goal);
-//    expect(path).to.be.ok;
+    expect(path.actions).to.deep.equal([a, a]);
   });
 
   // we need to test a blueprint function
