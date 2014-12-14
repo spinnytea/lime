@@ -175,7 +175,7 @@ describe('actuator', function() {
     expect(path.actions).to.deep.equal([a, a]);
   });
 
-  it.skip('bug: match new state with inconcrete goal', function() {
+  it('bug: match new state with inconcrete goal', function() {
     // !goal.concrete
     // apply an action to state
     // check the goal against the new state
@@ -198,7 +198,6 @@ describe('actuator', function() {
     // apply the action to get a new state
     var next = a.apply(bs, glue);
     expect(next).to.be.ok;
-    console.log('bs_p: ' + bs_p);
     expect(next.state.vertices[bs_p].data).to.deep.equal({ type: 'lime_number', value: number.value(30), unit: money.id });
 
     // and now, we should match the goal
@@ -207,7 +206,9 @@ describe('actuator', function() {
     // matcher.id needs the idea to match idea.id
     // The other matchers use idea because the matcher.id needs it
     // However, they shouldn't be matching on idea.data(); they need to be looking at vertex.data
-    console.log('---------------------------------------');
+    //
+    // before, I had matcher.number(idea, matchData)
+    // now, I have matcher.number(vertex, matchData)
     expect(next.matches(goal)).to.equal(true);
   });
 

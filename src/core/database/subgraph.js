@@ -150,6 +150,10 @@ exports.Subgraph = Subgraph;
 // - we can probably add them to this list directly, so long as we add them on startup (and they are simple)
 // because of serialization, the functions are create with a name
 // ( e.g. id: function id() {})
+//
+// AC: matcher.number(vertex, matchData)
+// - when working with inconcrete graphs in subgraph.match
+// - we need to work with the hypothetical data (vertex.data)
 exports.matcher = {
   id: function id(vertex, matchData) {
     // XXX this could be an empty object
