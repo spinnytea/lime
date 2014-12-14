@@ -41,7 +41,14 @@ ActuatorAction.prototype.tryTransition = function(state) {
   // (the entire state does not need to be contained within the requirements)
   // likewise, when we index by the transition vertex_id, it will be with the requirements
   // (the result of matches is map[inner] = outer)
-  return subgraph.match(state.state, this.requirements, true);
+  //
+  // this used to be called with unitOnly=true
+  // that's how the legacy system had it, but that was wrong
+  // there are better matchers to identify requirements
+  // if for some reason the requirements need to be "unit only" then define the matchers to just look for the unit
+  // (this wasn't really possible before, but now it is! :D)
+  // TL;DR: AC: subgraph.match(state, requirements, false)
+  return subgraph.match(state.state, this.requirements);
 };
 
 // blueprint.runBlueprint
