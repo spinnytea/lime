@@ -51,9 +51,9 @@ exports.difference = function(d1, d2) {
   if(d1.unit !== d2.unit)
     return undefined;
 
-  if(d1.value === d2.value)
-    return 0;
-  return 1;
+  var differenceFnName = ideas.load(d1.unit).data().difference || 'default';
+
+  return exports.definitions.difference[differenceFnName](d1, d2);
 };
 
 //
@@ -63,15 +63,30 @@ exports.difference = function(d1, d2) {
 var definitionTypeName = 'lime_discrete_definition';
 exports.definitions = {};
 exports.definitions.similar = {type: definitionTypeName};
+exports.definitions.difference = {
+  default: function(d1, d2) {
+    if(d1.value === d2.value)
+      return 0;
+    return 1;
+  },
+};
 
 // create a new definition of a discrete value
 // states must be an array of primitive javascript values (number, string, etc)
-exports.definitions.create = function(states) {
+exports.definitions.create = function(states, differenceFnName) {
   if(!states.length || states.length <= 1)
     throw new TypeError('must pass an array of states with more than one value');
 
-  return ideas.create({
+  var data = {
     type: definitionTypeName,
     states: states,
-  });
+  };
+
+  if(differenceFnName) {
+    if(!exports.definitions.difference[differenceFnName])
+      throw new TypeError(differenceFnName + ' does not exist');
+    data.difference = differenceFnName;
+  }
+
+  return ideas.create(data);
 };

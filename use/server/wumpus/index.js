@@ -69,12 +69,13 @@ exports.setup = function(io) {
       if(str.indexOf('room') === 0) {
         // the agent needs to be in the location we provide
         var roomId = +str.substring(str.indexOf(' ')+1);
+        var loc = context.roomLoc[roomId];
 
         // TODO specify new agent location based on room
-        var roomInstance = goal.addVertex(subgraph.matcher.discrete, { value: roomId, unit: context.idea('roomDefinition').id });
+        var roomInstance = goal.addVertex(subgraph.matcher.discrete, { value: roomId, unit: context.idea('roomDefinition').id, loc: loc });
         goal.addEdge(roomDefinition, links.list.thought_description, roomInstance);
 //        var agentLocation = goal.addVertex(subgraph.matcher.discrete, roomInstance, {transitionable:true,matchRef:true});
-        var agentLocation = goal.addVertex(subgraph.matcher.discrete, { value: roomId, unit: context.idea('roomDefinition').id }, {transitionable:true});
+        var agentLocation = goal.addVertex(subgraph.matcher.discrete, { value: roomId, unit: context.idea('roomDefinition').id, loc: loc }, {transitionable:true});
         goal.addEdge(agentInstance, links.list.wumpus_sense_agent_loc, agentLocation);
       } else {
         socket.emit('message', 'goal:'+str+'> not a valid goal');

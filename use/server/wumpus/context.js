@@ -14,6 +14,19 @@ var ERROR_RANGE = 0.001;
 links.create('wumpus_sense_agent_dir');
 links.create('wumpus_sense_agent_loc');
 links.create('wumpus_room_door');
+discrete.definitions.difference.wumpus_room = function(d1, d2) {
+  var dx = Math.abs(d1.loc.x-d2.loc.x);
+  var dy = Math.abs(d1.loc.y-d2.loc.y);
+  if(dx === 0) return dy;
+  if(dy === 0) return dx;
+  return dx + dy + 1;
+};
+// these are cached for ease of use in index.js
+// we want them to be stored with the idea (alongside the discrete value)
+// but there isn't a good way to recover the loc from the roomId
+// TODO specify new agent location based on room
+// - this is breaking and I wanted to get on with discrete.definitions.difference
+exports.roomLoc = {};
 
 // create the actions that we can use
 ['left', 'right', 'up'].forEach(function(a) {
@@ -165,7 +178,7 @@ exports.sense = function(state) {
     // rooms
     //
     // create a discrete definition with these rooms (room id as the value)
-    var roomDefinition = discrete.definitions.create(state.rooms.map(function(r) { return r.id; }));
+    var roomDefinition = discrete.definitions.create(state.rooms.map(function(r) { return r.id; }), 'wumpus_room');
     instance.link(links.list.context, roomDefinition);
     roomDefinition.link(links.list.thought_description, ideas.create({name:'room def'}));
     exports.keys.roomDefinition = exports.subgraph.addVertex(subgraph.matcher.similar, discrete.definitions.similar);
@@ -180,7 +193,8 @@ exports.sense = function(state) {
     var roomInstances = [];
     var roomKeys = [];
     state.rooms.forEach(function(room) {
-      var roomInstance = ideas.create({value: room.id, unit: roomDefinition.id});
+      var roomInstance = ideas.create({value: room.id, unit: roomDefinition.id, loc: { x: room.x, y: room.y }});
+      exports.roomLoc[room.id] = { x: room.x, y: room.y };
       roomDefinition.link(links.list.thought_description, roomInstance);
       roomInstance.link(links.list.type_of, exports.idea('room'));
       var keys_rI = exports.subgraph.addVertex(subgraph.matcher.id, roomInstance);
@@ -330,7 +344,7 @@ function senseAgent(agent) {
   exports.idea('agentDirection').update({value: dir, unit: exports.idea('directions').id});
 
   // update agent location
-  exports.idea('agentLocation').update({value: agent.inRoomIds[0], unit: exports.idea('roomDefinition').id});
+  exports.idea('agentLocation').update({value: agent.inRoomIds[0], unit: exports.idea('roomDefinition').id, loc: { x: agent.x, y: agent.y }});
 
   // TODO create a function to reset vertex data cache
   exports.subgraph.vertices[exports.keys.agentDirection].data = undefined;
