@@ -234,6 +234,37 @@ describe('actuator', function() {
 
       expect(path.actions).to.deep.equal([a, a]);
     });
+
+    it('matchRef', function() {
+      // I wrote this test because I thought there was a problem finding via matchRef
+      // turns out, there wasn't
+      // there must be a problem my impl
+      //   (use wumpus, go to room via room reference)
+      var target_money = tools.ideas.create({ value: number.value(50), unit: money.id });
+      bs.state.addVertex(subgraph.matcher.id, target_money);
+      expect(bs.state.concrete).to.equal(true);
+
+      var goal = new subgraph.Subgraph();
+      var g_a = goal.addVertex(subgraph.matcher.id, apple);
+      var g_tm = goal.addVertex(subgraph.matcher.id, target_money);
+      var g_p = goal.addVertex(subgraph.matcher.number, g_tm, {transitionable:true,matchRef:true});
+      goal.addEdge(g_a, links.list.thought_description, g_p);
+      goal = new blueprint.State(goal, bs.availableActions);
+
+      expect(bs.state.concrete).to.equal(true);
+      expect(goal.state.concrete).to.equal(false);
+      expect(bs.matches(goal)).to.equal(false);
+
+      var path = astar.search(bs, goal);
+
+      expect(path).to.be.ok;
+      expect(path.states.length).to.equal(3);
+      expect(path.states[0].state.vertices[bs_p].data).to.deep.equal({ type: 'lime_number', value: number.value(10), unit: money.id });
+      expect(path.states[1].state.vertices[bs_p].data).to.deep.equal({ type: 'lime_number', value: number.value(30), unit: money.id });
+      expect(path.states[2].state.vertices[bs_p].data).to.deep.equal({ type: 'lime_number', value: number.value(50), unit: money.id });
+
+      expect(path.actions).to.deep.equal([a, a]);
+    });
   }); // end planning
 
   // we need to test a blueprint function
