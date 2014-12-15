@@ -34,6 +34,12 @@ exports.create('type_of');
 //create('has');
 
 
+// appleInstance
+//  apple --property-> color
+//  apple --property-> dimensions
+exports.create('property');
+
+
 // helps identify when certain ideas are relevant
 //
 // idea --context-> ContextIdea

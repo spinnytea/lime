@@ -1018,18 +1018,18 @@ describe('subgraph', function() {
   }); // end match (part 2)
 
   describe('rewrite', function() {
-    var boolean, money, price, wumpus, any, wumpusUpdateIdea;
+    var indeterminate, money, price, wumpus, any, wumpusUpdateIdea;
     var sg, p, w, a, wu;
     var priceData, wumpusData, priceUpdate, priceUpdate2, wumpusUpdate, wumpusUpdate2, anyData, anyUpdate;
 
     beforeEach(function() {
-      boolean = discrete.definitions.create(['true', 'false', 'maybe']);
-      tools.ideas.clean(boolean);
+      indeterminate = discrete.definitions.create(['true', 'false', 'maybe']);
+      tools.ideas.clean(indeterminate);
       money = tools.ideas.create();
 
       priceData = { value: number.value(10), unit: money.id };
       price = tools.ideas.create(priceData);
-      wumpusData = { value: 'true', unit: boolean.id };
+      wumpusData = { value: 'true', unit: indeterminate.id };
       wumpus = tools.ideas.create(wumpusData);
       anyData = { thing: 42 };
       any = tools.ideas.create(anyData);
@@ -1041,8 +1041,8 @@ describe('subgraph', function() {
 
       priceUpdate = { value: number.value(20), unit: money.id };
       priceUpdate2 = { value: number.value(30), unit: money.id };
-      wumpusUpdate = { value: 'false', unit: boolean.id };
-      wumpusUpdate2 = { value: 'maybe', unit: boolean.id };
+      wumpusUpdate = { value: 'false', unit: indeterminate.id };
+      wumpusUpdate2 = { value: 'maybe', unit: indeterminate.id };
       anyUpdate = { object: 3.14 };
 
       // replace_id
@@ -1196,9 +1196,9 @@ describe('subgraph', function() {
 
       it('cycle discrete', function() {
         // true, false, maybe
-        var currValue = {type: 'lime_discrete', unit: boolean.id, value: 'false'};
+        var currValue = {type: 'lime_discrete', unit: indeterminate.id, value: 'false'};
 
-        var sg2 = subgraph.rewrite(sg, [{vertex_id: w, cycle: { unit: boolean.id, value: 1 } }]);
+        var sg2 = subgraph.rewrite(sg, [{vertex_id: w, cycle: { unit: indeterminate.id, value: 1 } }]);
         expect(sg2).to.be.ok;
         expect(sg2).to.not.equal(sg);
         // update the new value
@@ -1208,18 +1208,18 @@ describe('subgraph', function() {
         expect(sg.vertices[w].idea.data()).to.deep.equal(wumpusData);
         expect(sg2.vertices[w].idea.data()).to.deep.equal(wumpusData);
 
-        var sg3 = subgraph.rewrite(sg2, [{vertex_id: w, cycle: { unit: boolean.id, value: 2 } }]);
+        var sg3 = subgraph.rewrite(sg2, [{vertex_id: w, cycle: { unit: indeterminate.id, value: 2 } }]);
         currValue.value = 'true';
         expect(sg3).to.be.ok;
         expect(sg3).to.not.equal(sg2);
         expect(sg3.vertices[w].data).to.deep.equal(currValue);
 
-        var sg4 = subgraph.rewrite(sg3, [{vertex_id: w, cycle: { unit: boolean.id, value: 3 } }]);
+        var sg4 = subgraph.rewrite(sg3, [{vertex_id: w, cycle: { unit: indeterminate.id, value: 3 } }]);
         expect(sg4).to.be.ok;
         expect(sg4).to.not.equal(sg3);
         expect(sg4.vertices[w].data).to.deep.equal(currValue);
 
-        var sg5 = subgraph.rewrite(sg4, [{vertex_id: w, cycle: { unit: boolean.id, value: -4 } }]);
+        var sg5 = subgraph.rewrite(sg4, [{vertex_id: w, cycle: { unit: indeterminate.id, value: -4 } }]);
         currValue.value = 'maybe';
         expect(sg5).to.be.ok;
         expect(sg5).to.not.equal(sg4);
@@ -1307,11 +1307,11 @@ describe('subgraph', function() {
       expect(sg.vertices[w].idea.data()).to.deep.equal(wumpusUpdate);
 
       // cycle discrete
-      sg2 = subgraph.rewrite(sg, [{vertex_id: w, cycle: { unit: boolean.id, value: 1 } }], true);
+      sg2 = subgraph.rewrite(sg, [{vertex_id: w, cycle: { unit: indeterminate.id, value: 1 } }], true);
       expect(sg2).to.be.ok;
       expect(sg2).to.equal(sg);
-      expect(sg.vertices[w].data).to.deep.equal({type: 'lime_discrete', unit: boolean.id, value: 'maybe'});
-      expect(sg.vertices[w].idea.data()).to.deep.equal({type: 'lime_discrete', unit: boolean.id, value: 'maybe'});
+      expect(sg.vertices[w].data).to.deep.equal({type: 'lime_discrete', unit: indeterminate.id, value: 'maybe'});
+      expect(sg.vertices[w].idea.data()).to.deep.equal({type: 'lime_discrete', unit: indeterminate.id, value: 'maybe'});
 
       // cycle number
       sg2 = subgraph.rewrite(sg, [{vertex_id: p, cycle: { unit: money.id, value: 1 } }], true);

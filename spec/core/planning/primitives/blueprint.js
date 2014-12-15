@@ -140,10 +140,8 @@ describe('blueprint', function() {
 
       it('discrete', function() {
         var thing = { thing: 42 };
-        var boolean = discrete.definitions.create(['true', 'false']);
-        tools.ideas.clean(boolean);
-        var t = { value: 'true', unit: boolean.id };
-        var f = { value: 'false', unit: boolean.id };
+        var t = { value: true, unit: discrete.definitions.list.boolean };
+        var f = { value: false, unit: discrete.definitions.list.boolean };
         var _a = a.state.addVertex(subgraph.matcher.id, idea, {transitionable:true});
         var _b = b.state.addVertex(subgraph.matcher.id, idea, {transitionable:true});
 

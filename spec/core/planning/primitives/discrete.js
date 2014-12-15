@@ -4,41 +4,43 @@ var expect = require('chai').expect;
 var discrete = require('../../../../src/core/planning/primitives/discrete');
 var tools = require('../../testingTools');
 
+var boolean = discrete.definitions.list.boolean;
 describe('discrete', function() {
   it('init', function() {
     // this is to ensure we test everything
     expect(Object.keys(discrete)).to.deep.equal(['isDiscrete', 'difference', 'definitions']);
-    expect(Object.keys(discrete.definitions)).to.deep.equal(['similar', 'difference', 'create']);
+    expect(Object.keys(discrete.definitions)).to.deep.equal(['similar', 'difference', 'create', 'list']);
+
+    expect(discrete.definitions.list.boolean).to.be.ok;
   });
 
   // TODO should this throw an exception?
   it('isDiscrete', function() {
-    var boolean = discrete.definitions.create(['true', 'false']);
 
     expect(discrete.isDiscrete(undefined)).to.equal(false);
     expect(discrete.isDiscrete({})).to.equal(false);
-    expect(discrete.isDiscrete({ value: 'true' })).to.equal(false);
-    expect(discrete.isDiscrete({ unit: boolean.id })).to.equal(false);
+    expect(discrete.isDiscrete({ value: true })).to.equal(false);
+    expect(discrete.isDiscrete({ unit: boolean })).to.equal(false);
 
     // the point of the type is to short circuit the tests
     // and it's an identifier of the type
     // if the other values aren't there then there is a larger problem
     expect(discrete.isDiscrete({ type: 'lime_discrete' })).to.equal(true);
 
-    expect(discrete.isDiscrete({ type: 'wrong type', value: 'true', unit: boolean.id })).to.equal(false);
-    expect(discrete.isDiscrete({ value: 'wrong value', unit: boolean.id })).to.equal(false);
+    expect(discrete.isDiscrete({ type: 'wrong type', value: true, unit: boolean })).to.equal(false);
+    expect(discrete.isDiscrete({ value: 'wrong value', unit: boolean })).to.equal(false);
     expect(discrete.isDiscrete({ value: 'true', unit: 'wrong unit' })).to.equal(false);
+    expect(discrete.isDiscrete({ value: true, unit: 'wrong unit' })).to.equal(false);
+    expect(discrete.isDiscrete({ value: 0, unit: boolean })).to.equal(false);
 
-    expect(discrete.isDiscrete({ value: 'true', unit: boolean.id })).to.equal(true);
-    expect(discrete.isDiscrete({ type: 'lime_discrete', value: 'true', unit: boolean.id })).to.equal(true);
-
-    tools.ideas.clean(boolean);
+    expect(discrete.isDiscrete({ value: true, unit: boolean })).to.equal(true);
+    expect(discrete.isDiscrete({ value: false, unit: boolean })).to.equal(true);
+    expect(discrete.isDiscrete({ type: 'lime_discrete', value: true, unit: boolean })).to.equal(true);
   });
 
   it('difference', function() {
-    var boolean = discrete.definitions.create(['true', 'false']);
-    var t = {value: 'true', unit: boolean.id};
-    var f = {value: 'false', unit: boolean.id};
+    var t = {value: true, unit: boolean};
+    var f = {value: false, unit: boolean};
 
     var roygbiv = discrete.definitions.create(['r', 'o', 'y', 'g', 'b', 'i', 'v']);
     var r = {value: 'r', unit: roygbiv.id};
@@ -56,7 +58,6 @@ describe('discrete', function() {
     expect(discrete.difference(r, r)).to.equal(0);
     expect(discrete.difference(r, b)).to.equal(1);
 
-    tools.ideas.clean(boolean);
     tools.ideas.clean(roygbiv);
   });
 
@@ -66,12 +67,12 @@ describe('discrete', function() {
       expect(function() { discrete.definitions.create({}); }).to.throw(Error);
       expect(function() { discrete.definitions.create([]); }).to.throw(Error);
 
-      var states = ['true', 'false'];
-      var boolean = discrete.definitions.create(states);
-      expect(boolean.data().type).to.be.ok;
-      expect(boolean.data().states).to.deep.equal(states);
+      var states = ['r', 'o', 'y', 'g', 'b', 'i', 'v'];
+      var roygbiv = discrete.definitions.create(states);
+      expect(roygbiv.data().type).to.be.ok;
+      expect(roygbiv.data().states).to.deep.equal(states);
 
-      tools.ideas.clean(boolean);
+      tools.ideas.clean(roygbiv);
     });
 
     it('difference', function() {

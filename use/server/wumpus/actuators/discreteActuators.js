@@ -79,3 +79,9 @@ exports.forward = function(directions, agent, room, actuator_context) {
   });
   ideas.save(a.idea);
 };
+
+exports.grab = function() {
+};
+
+exports.exit = function() {
+};

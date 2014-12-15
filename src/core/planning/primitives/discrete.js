@@ -5,6 +5,7 @@
 // what is a color? a collection of numbers? sensor data?
 // but that's the point; we want to categorize it so it's "easier" to work with, or more human to work with at least
 
+var config = require('../../../../config');
 var ideas = require('../../database/ideas');
 
 //
@@ -56,13 +57,21 @@ exports.difference = function(d1, d2) {
   return exports.definitions.difference[differenceFnName](d1, d2);
 };
 
+
 //
 // how to define/recall definitions of discrete values
 // this stores the possible states each can take
 //
+
 var definitionTypeName = 'lime_discrete_definition';
+
 exports.definitions = {};
+// use the similar matcher to find "types of discrete definitions"
+// TODO deprecate: you really should know the definition you are looking for
 exports.definitions.similar = {type: definitionTypeName};
+
+// some stock difference functions
+// more can be added during setup of application-specific uses
 exports.definitions.difference = {
   default: function(d1, d2) {
     if(d1.value === d2.value)
@@ -106,4 +115,26 @@ exports.definitions.create = function(states, differenceFnName) {
   }
 
   return ideas.create(data);
+};
+
+
+//
+// setup some stock discrete definitions
+//
+var configNeedsSaving = false;
+if(!config.data.discrete) {
+  config.data.discrete = {};
+  configNeedsSaving = true;
+}
+if(!config.data.discrete.boolean) {
+  var idea = exports.definitions.create([true, false]);
+  config.data.discrete.boolean = idea.id;
+  ideas.close(idea);
+  configNeedsSaving = true;
+}
+if(configNeedsSaving)
+  config.save();
+
+exports.definitions.list = {
+  boolean: config.data.discrete.boolean,
 };
