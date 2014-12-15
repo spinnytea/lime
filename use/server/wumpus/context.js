@@ -15,6 +15,10 @@ links.create('wumpus_sense_agent_dir');
 links.create('wumpus_sense_agent_loc');
 links.create('wumpus_room_door');
 discrete.definitions.difference.wumpus_room = function(d1, d2) {
+  // TODO debug astar path expansions without this
+  // - what do they look like?
+  // - it IS better than not using this at all
+  // - why does this still take p60/f100 to get to a room?
   var dx = Math.abs(d1.loc.x-d2.loc.x);
   var dy = Math.abs(d1.loc.y-d2.loc.y);
   if(dx === 0) return dy;

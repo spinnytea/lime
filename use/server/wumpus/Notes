@@ -16,3 +16,22 @@ applyTransitions
 	What about thought experiments?
 		Do we carve out sections of the idea graph? Duplicate sections? Or do we just add modified nodes and mark them as "thought experiment" knowing we have gotten too far from reality when too many of our nodes are alternates.
 		Or do we save subgraphs as alternate worlds; we can save and load them whole-sale, otherwise we trudge on with our untainted world-thoughts.
+
+
+hierarchy planning
+------------------------------------------------
+  I know I know this, but here is a practical use
+  the wumpus takes forever to get from room a to room b
+    approx p60/f100 in astar.search
+  astar works by having a clear goal
+    "go to room b" allows us to use "room b" as the target and then use manhattan distance as the primary progress count
+    having a goal "exit" won't allow us to have any kind of intelligent distance
+  so, we need to break the plan into parts
+    1) get to the room with the gold
+    2) grab
+    3) get to the room with the exit
+    3) exit
+  but how do we make this generic?
+  how do we know that grab/exit are the correct splits?
+  --
+  Just something to think about
