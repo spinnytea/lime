@@ -156,83 +156,85 @@ describe('actuator', function() {
     tools.ideas.clean(id);
   });
 
-  it('basic planning (concrete)', function() {
-    var goal = new blueprint.State(bs.state.copy(), bs.availableActions);
-    goal.state.vertices[bs_p].data = { value: number.value(50), unit: money.id };
+  describe('planning', function() {
+    it('bug: match new state with inconcrete goal', function() {
+      // !goal.concrete
+      // apply an action to state
+      // check the goal against the new state
+      // -----------------------
 
-    expect(bs.state.vertices[bs_p].data).to.deep.equal({ value: number.value(10), unit: money.id });
-    expect(goal.state.vertices[bs_p].data).to.deep.equal({ value: number.value(50), unit: money.id });
-    expect(bs.matches(goal)).to.equal(false);
+      var goal = new subgraph.Subgraph();
+      var g_a = goal.addVertex(subgraph.matcher.id, apple);
+      var g_p = goal.addVertex(subgraph.matcher.number, { value: number.value(30), unit: money.id }, {transitionable:true});
+      goal.addEdge(g_a, links.list.thought_description, g_p);
+      goal = new blueprint.State(goal, bs.availableActions);
 
-    var path = astar.search(bs, goal);
+      // we have a goal, it is not concrete
+      expect(bs.state.concrete).to.equal(true);
+      expect(bs.matches(goal)).to.equal(false);
 
-    expect(path).to.be.ok;
-    expect(path.states.length).to.equal(3);
-    expect(path.states[0].state.vertices[bs_p].data).to.deep.equal({ type: 'lime_number', value: number.value(10), unit: money.id });
-    expect(path.states[1].state.vertices[bs_p].data).to.deep.equal({ type: 'lime_number', value: number.value(30), unit: money.id });
-    expect(path.states[2].state.vertices[bs_p].data).to.deep.equal({ type: 'lime_number', value: number.value(50), unit: money.id });
+      var glue = subgraph.match(bs.state, a.requirements, true)[0];
+      expect(glue[a_a]).to.equal(bs_a);
+      expect(glue[a_p]).to.equal(bs_p);
 
-    expect(path.actions).to.deep.equal([a, a]);
-  });
+      // apply the action to get a new state
+      var next = a.apply(bs, glue);
+      expect(next).to.be.ok;
+      expect(next.state.vertices[bs_p].data).to.deep.equal({ type: 'lime_number', value: number.value(30), unit: money.id });
 
-  it('bug: match new state with inconcrete goal', function() {
-    // !goal.concrete
-    // apply an action to state
-    // check the goal against the new state
-    // -----------------------
+      // and now, we should match the goal
+      // (this was the bug)
+      //
+      // matcher.id needs the idea to match idea.id
+      // The other matchers use idea because the matcher.id needs it
+      // However, they shouldn't be matching on idea.data(); they need to be looking at vertex.data
+      //
+      // before, I had matcher.number(idea, matchData)
+      // now, I have matcher.number(vertex, matchData)
+      expect(next.matches(goal)).to.equal(true);
+    });
 
-    var goal = new subgraph.Subgraph();
-    var g_a = goal.addVertex(subgraph.matcher.id, apple);
-    var g_p = goal.addVertex(subgraph.matcher.number, { value: number.value(30), unit: money.id }, {transitionable:true});
-    goal.addEdge(g_a, links.list.thought_description, g_p);
-    goal = new blueprint.State(goal, bs.availableActions);
+    it('basic, concrete', function() {
+      var goal = new blueprint.State(bs.state.copy(), bs.availableActions);
+      goal.state.vertices[bs_p].data = { value: number.value(50), unit: money.id };
 
-    // we have a goal, it is not concrete
-    expect(bs.state.concrete).to.equal(true);
-    expect(bs.matches(goal)).to.equal(false);
+      expect(bs.state.vertices[bs_p].data).to.deep.equal({ value: number.value(10), unit: money.id });
+      expect(goal.state.vertices[bs_p].data).to.deep.equal({ value: number.value(50), unit: money.id });
+      expect(bs.matches(goal)).to.equal(false);
 
-    var glue = subgraph.match(bs.state, a.requirements, true)[0];
-    expect(glue[a_a]).to.equal(bs_a);
-    expect(glue[a_p]).to.equal(bs_p);
+      var path = astar.search(bs, goal);
 
-    // apply the action to get a new state
-    var next = a.apply(bs, glue);
-    expect(next).to.be.ok;
-    expect(next.state.vertices[bs_p].data).to.deep.equal({ type: 'lime_number', value: number.value(30), unit: money.id });
+      expect(path).to.be.ok;
+      expect(path.states.length).to.equal(3);
+      expect(path.states[0].state.vertices[bs_p].data).to.deep.equal({ type: 'lime_number', value: number.value(10), unit: money.id });
+      expect(path.states[1].state.vertices[bs_p].data).to.deep.equal({ type: 'lime_number', value: number.value(30), unit: money.id });
+      expect(path.states[2].state.vertices[bs_p].data).to.deep.equal({ type: 'lime_number', value: number.value(50), unit: money.id });
 
-    // and now, we should match the goal
-    // (this was the bug)
-    //
-    // matcher.id needs the idea to match idea.id
-    // The other matchers use idea because the matcher.id needs it
-    // However, they shouldn't be matching on idea.data(); they need to be looking at vertex.data
-    //
-    // before, I had matcher.number(idea, matchData)
-    // now, I have matcher.number(vertex, matchData)
-    expect(next.matches(goal)).to.equal(true);
-  });
+      expect(path.actions).to.deep.equal([a, a]);
+    });
 
-  it('basic planning (inconcrete)', function() {
-    var goal = new subgraph.Subgraph();
-    var g_a = goal.addVertex(subgraph.matcher.id, apple);
-    var g_p = goal.addVertex(subgraph.matcher.number, { value: number.value(50), unit: money.id }, {transitionable:true});
-    goal.addEdge(g_a, links.list.thought_description, g_p);
-    goal = new blueprint.State(goal, bs.availableActions);
+    it('basic, inconcrete', function() {
+      var goal = new subgraph.Subgraph();
+      var g_a = goal.addVertex(subgraph.matcher.id, apple);
+      var g_p = goal.addVertex(subgraph.matcher.number, { value: number.value(50), unit: money.id }, {transitionable:true});
+      goal.addEdge(g_a, links.list.thought_description, g_p);
+      goal = new blueprint.State(goal, bs.availableActions);
 
-    expect(bs.state.concrete).to.equal(true);
-    expect(goal.state.concrete).to.equal(false);
-    expect(bs.matches(goal)).to.equal(false);
+      expect(bs.state.concrete).to.equal(true);
+      expect(goal.state.concrete).to.equal(false);
+      expect(bs.matches(goal)).to.equal(false);
 
-    var path = astar.search(bs, goal);
+      var path = astar.search(bs, goal);
 
-    expect(path).to.be.ok;
-    expect(path.states.length).to.equal(3);
-    expect(path.states[0].state.vertices[bs_p].data).to.deep.equal({ type: 'lime_number', value: number.value(10), unit: money.id });
-    expect(path.states[1].state.vertices[bs_p].data).to.deep.equal({ type: 'lime_number', value: number.value(30), unit: money.id });
-    expect(path.states[2].state.vertices[bs_p].data).to.deep.equal({ type: 'lime_number', value: number.value(50), unit: money.id });
+      expect(path).to.be.ok;
+      expect(path.states.length).to.equal(3);
+      expect(path.states[0].state.vertices[bs_p].data).to.deep.equal({ type: 'lime_number', value: number.value(10), unit: money.id });
+      expect(path.states[1].state.vertices[bs_p].data).to.deep.equal({ type: 'lime_number', value: number.value(30), unit: money.id });
+      expect(path.states[2].state.vertices[bs_p].data).to.deep.equal({ type: 'lime_number', value: number.value(50), unit: money.id });
 
-    expect(path.actions).to.deep.equal([a, a]);
-  });
+      expect(path.actions).to.deep.equal([a, a]);
+    });
+  }); // end planning
 
   // we need to test a blueprint function
   it('list', function() {
