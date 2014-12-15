@@ -64,18 +64,16 @@ exports.setup = function(io) {
         agentInstance);
       goal.addEdge(agentInstance, links.list.type_of,
         goal.addVertex(subgraph.matcher.id, context.idea('agent')));
-//      var roomDefinition = goal.addVertex(subgraph.matcher.id, context.idea('roomDefinition'));
+      var roomDefinition = goal.addVertex(subgraph.matcher.id, context.idea('roomDefinition'));
 
       if(str.indexOf('room') === 0) {
         // the agent needs to be in the location we provide
         var roomId = +str.substring(str.indexOf(' ')+1);
 
         // TODO specify new agent location based on room
-//        var roomInstance = goal.addVertex(subgraph.matcher.discrete, { value: roomId, unit: context.idea('roomDefinition').id });
-//        goal.addEdge(roomDefinition, links.list.thought_description, roomInstance);
+        var roomInstance = goal.addVertex(subgraph.matcher.discrete, { value: roomId, unit: context.idea('roomDefinition').id });
+        goal.addEdge(roomDefinition, links.list.thought_description, roomInstance);
 //        var agentLocation = goal.addVertex(subgraph.matcher.discrete, roomInstance, {transitionable:true,matchRef:true});
-//        goal.addEdge(agentInstance, links.list.wumpus_sense_agent_loc, agentLocation);
-
         var agentLocation = goal.addVertex(subgraph.matcher.discrete, { value: roomId, unit: context.idea('roomDefinition').id }, {transitionable:true});
         goal.addEdge(agentInstance, links.list.wumpus_sense_agent_loc, agentLocation);
       } else {
@@ -95,6 +93,19 @@ exports.setup = function(io) {
       var sp = serialplan.create(start, goal);
 
       if(sp) {
+        if(sp.plans && sp.plans.length === 0) {
+          // TODO how can I determine this without going into sp?
+          // - should serialplan.create return undefined
+          //   - probably not
+          // - should there be a special "noop" plan?
+          //   - :/ no op implies wait; not that we have already succeeded
+          // - should there be a special "do nothing" plan?
+          // - or maybe we should be matching against the goal first to know there is nothing to do
+          //   - if(subgraph.match(start, goal)) /* skip the search */;
+          socket.emit('message', 'goal:'+str+'> here\'s the plan: do nothing');
+          return;
+        }
+
         var result = sp.tryTransition(start);
         if(result.length > 0) {
           sp.runBlueprint(start, result[0]);
