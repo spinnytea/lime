@@ -8,7 +8,7 @@ describe('discrete', function() {
   it('init', function() {
     // this is to ensure we test everything
     expect(Object.keys(discrete)).to.deep.equal(['isDiscrete', 'difference', 'definitions']);
-    expect(Object.keys(discrete.definitions)).to.deep.equal(['similar', 'create']);
+    expect(Object.keys(discrete.definitions)).to.deep.equal(['similar', 'difference', 'create']);
   });
 
   // TODO should this throw an exception?
@@ -72,6 +72,26 @@ describe('discrete', function() {
       expect(boolean.data().states).to.deep.equal(states);
 
       tools.ideas.clean(boolean);
+    });
+
+    it('difference', function() {
+      expect(function() { discrete.definitions.create(states, 'banana'); }).to.throw(TypeError);
+
+      var states = ['a', 'b', 'c', 'd', 'e', 'f'];
+      var alpha = discrete.definitions.create(states, 'cycle');
+      var a = { value: 'a', unit: alpha.id };
+      var b = { value: 'b', unit: alpha.id };
+      var c = { value: 'c', unit: alpha.id };
+      var d = { value: 'd', unit: alpha.id };
+      var e = { value: 'e', unit: alpha.id };
+      var f = { value: 'f', unit: alpha.id };
+
+      expect(discrete.difference(a, a)).to.equal(0);
+      expect(discrete.difference(a, b)).to.equal(1);
+      expect(discrete.difference(a, c)).to.equal(2);
+      expect(discrete.difference(a, d)).to.equal(3);
+      expect(discrete.difference(a, e)).to.equal(2);
+      expect(discrete.difference(a, f)).to.equal(1);
     });
   }); // end definitions
 }); // end discrete

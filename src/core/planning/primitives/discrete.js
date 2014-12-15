@@ -69,6 +69,23 @@ exports.definitions.difference = {
       return 0;
     return 1;
   },
+  cycle: function(d1, d2) {
+    var states = ideas.load(d1.unit).data().states;
+    var i1 = states.indexOf(d1.value);
+    var i2 = states.indexOf(d2.value);
+
+    // a > b
+    //  a - b
+    //  b - a + len
+    // a < b
+    //  b - a
+    //  a - b + len
+
+    return Math.min(
+      (i1-i2 + states.length)%states.length,
+      (i2-i1 + states.length)%states.length
+    );
+  },
 };
 
 // create a new definition of a discrete value
