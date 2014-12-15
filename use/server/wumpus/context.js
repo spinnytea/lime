@@ -127,7 +127,7 @@ var getDiscreteContext = function() {
     wumpus_world.link(links.list.thought_description, action_up);
 
     // directions
-    var directions = discrete.definitions.create(['east', 'south', 'west', 'north']);
+    var directions = discrete.definitions.create(['east', 'south', 'west', 'north'], 'cycle');
     var compass = ideas.create({name:'compass'});
     wumpus_world.link(links.list.context, directions);
     directions.link(links.list.thought_description, compass);
@@ -348,4 +348,5 @@ function senseAgent(agent) {
 
   // TODO create a function to reset vertex data cache
   exports.subgraph.vertices[exports.keys.agentDirection].data = undefined;
+  exports.subgraph.vertices[exports.keys.agentLocation].data = undefined;
 }

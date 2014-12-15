@@ -86,6 +86,23 @@ describe('subgraph', function() {
       expect(sg.copy()).to.deep.equal(sg);
     });
 
+    describe('lazy copy', function() {
+      it.skip('nothing at first');
+
+      it.skip('copy all when addEdge/addVertex');
+
+      // (not just the idea/data; that'll get confusing)
+      // (this IS supposed to be it's own entity
+      it.skip('copy vertex when accessed vertex');
+
+      it.skip('stringify');
+
+      // ensure getting vertices goes back to most recent version
+      // - maybe the one before
+      // - maybe the original
+      it.skip('copy of copy');
+    });
+
     describe('loadVertexData', function() {
       it('with data', function() {
         var data = { somat: 42 };

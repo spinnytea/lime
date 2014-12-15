@@ -25,6 +25,7 @@ function Subgraph() {
   // - is it a description of something to find
   this.concrete = true;
 }
+// TODO can I do a lazy copy?
 Subgraph.prototype.copy = function() {
   var sg = new Subgraph();
   this.vertices.forEach(function(v) {
@@ -132,7 +133,7 @@ function loadVertexData(v) {
     // try loading the data
     var d = v.idea.data();
     if(Object.keys(d).length === 0) {
-      // cach the result
+      // cache the result
       v._data = null;
       return undefined;
     } else {
