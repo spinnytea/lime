@@ -112,6 +112,7 @@ exports.setup = function(io) {
           sp.runBlueprint(start, result[0]);
           if(result.length > 1)
             console.log('more than one result?? ('+result.length+')');
+          socket.emit('message', 'goal:'+str+'> oxygen potassium');
         } else {
           socket.emit('message', 'goal:'+str+'> could not apply the path ...?');
         }

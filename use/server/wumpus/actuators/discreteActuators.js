@@ -8,6 +8,8 @@ var ideas = require('../../../../src/core/database/ideas');
 var links = require('../../../../src/core/database/links');
 var subgraph = require('../../../../src/core/database/subgraph');
 
+// TODO if I move around too much, I mess up the context :(
+
 // @param directions: the directions unit idea
 // @param agent: the agent type idea
 // @param cycle_value: -1 or 1
