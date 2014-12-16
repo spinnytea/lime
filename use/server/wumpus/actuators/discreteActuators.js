@@ -3,6 +3,7 @@
 // config.game.grain === 'discrete'
 
 var actuator = require('../../../../src/core/planning/actuator');
+var discrete = require('../../../../src/core/planning/primitives/discrete');
 var ideas = require('../../../../src/core/database/ideas');
 var links = require('../../../../src/core/database/links');
 var subgraph = require('../../../../src/core/database/subgraph');
@@ -13,6 +14,8 @@ var subgraph = require('../../../../src/core/database/subgraph');
 // @param action_str: 'left' or 'right'
 // @param actuator_context: a list of contexts to apply to the idea
 exports.turn = function(directions, agent, cycle_value, action_str, actuator_context) {
+  // the agent has a direction
+  // (literally, that's the only requirement)
   var a = new actuator.Action();
   var agentInstance = a.requirements.addVertex(subgraph.matcher.filler);
   var agentDirection = a.requirements.addVertex(subgraph.matcher.similar, {unit: directions.id}, {transitionable:true});
@@ -23,7 +26,10 @@ exports.turn = function(directions, agent, cycle_value, action_str, actuator_con
   );
   a.requirements.addEdge(agentInstance, links.list.wumpus_sense_agent_dir, agentDirection);
 
+
+  // change the agent's direction
   a.transitions.push({ vertex_id: agentDirection, cycle: {value: cycle_value, unit: directions.id} });
+
 
   a.action = 'wumpus_known_discrete_'+action_str;
   a.save();
@@ -40,7 +46,7 @@ exports.turn = function(directions, agent, cycle_value, action_str, actuator_con
 exports.forward = function(directions, agent, room, actuator_context) {
   var a = new actuator.Action();
 
-  // build the agent
+  // the agent is in a room and facing a particular direction
   var agentInstance = a.requirements.addVertex(subgraph.matcher.filler);
   var agentDirection = a.requirements.addVertex(subgraph.matcher.similar, {unit: directions.id});
   // we don't have the roomDefinition at this point
@@ -55,7 +61,7 @@ exports.forward = function(directions, agent, room, actuator_context) {
   a.requirements.addEdge(agentInstance, links.list.wumpus_sense_agent_loc, agentLocation);
 
 
-  // build the room set
+  // there must be a door/room in that direction
   var currentRoom = a.requirements.addVertex(subgraph.matcher.discrete, agentLocation, {matchRef:true});
   var roomDirection = a.requirements.addVertex(subgraph.matcher.discrete, agentDirection, {matchRef:true});
   var targetRoom = a.requirements.addVertex(subgraph.matcher.filler);
@@ -68,7 +74,7 @@ exports.forward = function(directions, agent, room, actuator_context) {
   // TODO targetRoom must not have a pit
 
 
-  // all so we can move the agent into the target room
+  // move through the door
   a.transitions.push({ vertex_id: agentLocation, replace_id: targetRoom });
 
 
@@ -80,8 +86,48 @@ exports.forward = function(directions, agent, room, actuator_context) {
   ideas.save(a.idea);
 };
 
-exports.grab = function() {
+
+// @param agent: the agent type idea
+// @param room: the room type idea
+// @param actuator_context: a list of contexts to apply to the idea
+exports.grab = function(agent, room, actuator_context) {
+  var a = new actuator.Action();
+
+  // the agent is in a room
+  // the agent does not have gold
+  var agentInstance = a.requirements.addVertex(subgraph.matcher.filler);
+  var agentLocation = a.requirements.addVertex(subgraph.matcher.filler);
+  var agentHasGold = a.requirements.addVertex(subgraph.matcher.discrete, {value:false, unit: discrete.definitions.list.boolean}, {transitionable:true});
+  a.requirements.addEdge(
+    agentInstance,
+    links.list.type_of,
+    a.requirements.addVertex(subgraph.matcher.id, agent),
+    5
+  );
+  a.requirements.addEdge(agentInstance, links.list.wumpus_sense_agent_loc, agentLocation, 4);
+  a.requirements.addEdge(agentInstance, links.list.wumpus_sense_hasGold, agentHasGold, 4);
+
+  // that room has gold
+  var currentRoom = a.requirements.addVertex(subgraph.matcher.discrete, agentLocation, {matchRef:true});
+  var roomType = a.requirements.addVertex(subgraph.matcher.id, room);
+  var roomHasGold = a.requirements.addVertex(subgraph.matcher.discrete, {value:true, unit: discrete.definitions.list.boolean}, {transitionable:true});
+  a.requirements.addEdge(currentRoom, links.list.type_of, roomType, 2);
+  a.requirements.addEdge(currentRoom, links.list.wumpus_sense_hasGold, roomHasGold, 1);
+
+
+  // pick up gold
+  a.transitions.push({ vertex_id: agentHasGold, replace: {value:true, unit: discrete.definitions.list.boolean} });
+  a.transitions.push({ vertex_id: roomHasGold, replace: {value:false, unit: discrete.definitions.list.boolean} });
+
+
+  a.action = 'wumpus_known_discrete_grab';
+  a.save();
+  actuator_context.forEach(function(ac) {
+    ideas.load(a.idea).link(links.list.context, ac);
+  });
+  ideas.save(a.idea);
 };
 
 exports.exit = function() {
+  // TODO finish (oops, commit the stub)
 };
