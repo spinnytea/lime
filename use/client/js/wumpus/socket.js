@@ -51,6 +51,9 @@ exports.connect = function($scope, protocol, host) {
 exports.emit = function(event, message) {
   socket.emit(event, message);
 };
+exports.on = function(event, callback) {
+  socket.on(event, callback);
+};
 
 exports.sense = function() {
   var cave = angular.extend({}, game.cave);

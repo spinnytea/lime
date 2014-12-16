@@ -2,6 +2,8 @@
 
 // XXX I am managing the data AAALLLLLL wrong
 //  - In many cases, I am writing this under the impression that there "might be multiple instances"
+//    - multiple connections
+//    - multiple games going on at one time
 //  - In other cases, I am writing this assuming there will only be one.
 
 var config = require('./impl/config');
@@ -12,7 +14,9 @@ var socket = require('./socket');
 // and puts a border between the game area and the HUD
 var GAME_BOX_BORDER = 12;
 
-module.exports = angular.module('lime.client.wumpus', [])
+module.exports = angular.module('lime.client.wumpus', [
+  require('../subgraph/subgraphModule').name,
+])
 .controller('lime.client.wumpus.app', [
   '$scope',
   function($scope) {
@@ -39,10 +43,11 @@ module.exports = angular.module('lime.client.wumpus', [])
   }
 ]) // end lime.client.wumpus.app controller
 .directive('wumpusSocket', [
-  '$location',
-  function($location) {
+  '$location', 'lime.client.subgraph.data',
+  function($location, subgraphData) {
     var COMMAND_TYPES = {
       'command': 'command', 'c': 'command',
+      'context': 'context',
       'actuator': 'actuator', 'a': 'actuator',
       'goal': 'goal', 'g': 'goal',
     };
@@ -55,10 +60,14 @@ module.exports = angular.module('lime.client.wumpus', [])
         if(config.game.player === 'lemon' && config.game.timing === 'static')
           socket.sense();
 
+        socket.on('context', subgraphData.add);
+
         $scope.message = '';
         $scope.keyup = function($event) {
           if($event.keyCode === 13) { // enter
-            var type = $scope.message.substring(0, $scope.message.indexOf(' '));
+            var idx = $scope.message.indexOf(' ');
+            if(idx === -1) idx = $scope.message.length;
+            var type = $scope.message.substring(0, idx);
 
             // only process this if it starts with a valid command
             if(type in COMMAND_TYPES) {

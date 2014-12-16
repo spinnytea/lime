@@ -21,6 +21,7 @@ exports.setup = function(io) {
     // --
     // later, lemon will send these command itself
     socket.on('command', function(str) { socket.emit('action', str); socket.emit('message', 'echo'); });
+    socket.on('context', function() { socket.emit('context', subgraph.stringify(context.subgraph)); });
 
     socket.on('actuator', function(str) {
       // find the list of actions for this str
