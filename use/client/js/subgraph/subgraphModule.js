@@ -16,14 +16,27 @@ module.exports = angular.module('lime.client.subgraph', [])
   return instance;
 })
 .controller('lime.client.subgraph.example', [
+  '$scope',
+  function($scope) {
+    $scope.myData = require('./exampleData');
+  }
+])
+.directive('renderSubgraph', [
   function() {
-    buildGraph(require('./exampleData'));
+    return {
+      scope: {
+        renderSubgraph: '=',
+      },
+      link: function($scope, elem) {
+        buildGraph($scope.renderSubgraph, elem[0]);
+      }
+    };
   }
 ])
 ;
 
 
-function buildGraph(graph) {
+function buildGraph(graph, elem) {
   var width = 960,
       height = 500;
 
@@ -34,7 +47,7 @@ function buildGraph(graph) {
       .linkDistance(30)
       .size([width, height]);
 
-  var svg = d3.select('div#myd3graph').append('svg')
+  var svg = d3.select(elem).append('svg')
       .attr('width', width)
       .attr('height', height);
 
