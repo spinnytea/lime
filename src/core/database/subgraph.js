@@ -184,13 +184,16 @@ exports.matcher = {
 // serialize a subgraph object
 // a straight JSON.stringify will not work
 // we need to convert some objects and methods into a static mode that we can recover later
-exports.stringify = function(sg) {
+// @param dump: output more data (not meant to be saved); this is useful for visualization
+exports.stringify = function(sg, dump) {
   // create a clone so we can modify it in place
   sg = sg.copy();
+  dump = (dump === true);
 
   // convert the verticies
   // _.map will flatten it into an array, but we store the id anyway
   sg.vertices = sg.vertices.map(function(v) {
+    if(dump) v.data;
     v.matcher = v.matcher.name;
     if(v.idea)
       v.idea = v.idea.id;

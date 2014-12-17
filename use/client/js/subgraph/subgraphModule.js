@@ -11,16 +11,26 @@ module.exports = angular.module('lime.client.subgraph', [])
   // parse subgraph.stringify
   instance.add = function(subgraph) {
     subgraph = JSON.parse(subgraph);
-
-    console.log(subgraph);
+//    console.log(subgraph);
 
     // TODO determine some basic groups
     // - context link?
     instance.list.push({
-      nodes: subgraph.vertices.map(function(vertex, idx) {
+      nodes: subgraph.vertices.map(function(vertex) {
+        var name;
+        if(vertex._data)
+          name = JSON.stringify(vertex._data);
+        else
+          name = vertex.matcher + '(' + JSON.stringify(vertex.matchData) + ')';
+
+        var type;
+        if((vertex.matchData && vertex.matchData.name) ||
+            subgraph.edges.some(function(e) { return e.dst === vertex.vertex_id && e.link === 'context'; }))
+          type = 'context';
+
         return {
-          name: vertex.matcher + '(' + JSON.stringify(vertex.matchData) + ')',
-          group: idx,
+          name: name,
+          type: type,
         };
       }),
       links: subgraph.edges.map(function(edge) {
@@ -31,7 +41,34 @@ module.exports = angular.module('lime.client.subgraph', [])
         };
       }),
     });
-  };
+  }; // end add
+
+  // remap the vertices/edges after some vertices have been removed
+  instance.remap = function(subgraph) {
+    // build a map of before->after
+    var map = {};
+    subgraph.vertices.forEach(function(v, idx) {
+      map[v.vertex_id] = idx;
+    });
+
+    // remap edges/remove
+    subgraph.edges = subgraph.edges.map(function(e) {
+      if(e.src in map && e.dst in map) {
+        e.src = map[e.src];
+        e.dst = map[e.dst];
+        return e;
+      } else {
+        return undefined;
+      }
+    }).filter(function(e) {
+      return e;
+    });
+
+    // re-id vertices
+    subgraph.vertices.forEach(function(v, idx) {
+      v.vertex_id = idx;
+    });
+  }; // end remap
 
   return instance;
 })
@@ -56,11 +93,13 @@ module.exports = angular.module('lime.client.subgraph', [])
 ;
 
 
-function buildGraph(graph, elem) {
-  var width = 960,
-      height = 500;
+var width = 960;
+var height = 500;
+var typeColor = {
+  context: '#ff7f0e',
+};
 
-  var color = d3.scale.category20();
+function buildGraph(graph, elem) {
 
   var force = d3.layout.force()
       .charge(-120)
@@ -87,7 +126,7 @@ function buildGraph(graph, elem) {
     .enter().append('circle')
       .attr('class', 'node')
       .attr('r', 5)
-      .style('fill', function(d) { return color(d.group); })
+      .style('fill', function(d) { return typeColor[d.type] || '#7f7f7f'; })
       .call(force.drag);
 
   node.append('title')
