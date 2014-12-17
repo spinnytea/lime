@@ -2,3 +2,5 @@
 
 <div data-ng-if="state==='config'" data-ng-include="'partials/wumpus/config.html'"></div>
 <div data-ng-if="state==='instance'" data-wumpus-instance></div>
+
+<div data-ng-repeat="d in contexts" data-render-subgraph="d"></div>

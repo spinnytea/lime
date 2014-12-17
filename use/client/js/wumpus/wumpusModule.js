@@ -18,8 +18,8 @@ module.exports = angular.module('lime.client.wumpus', [
   require('../subgraph/subgraphModule').name,
 ])
 .controller('lime.client.wumpus.app', [
-  '$scope',
-  function($scope) {
+  '$scope', 'lime.client.subgraph.data',
+  function($scope, subgraphData) {
     $scope.config = config;
     $scope.game = game;
     $scope.state = 'config';
@@ -40,6 +40,8 @@ module.exports = angular.module('lime.client.wumpus', [
       }, 0);
     };
     $scope.generateGame();
+
+    $scope.contexts = subgraphData.list;
   }
 ]) // end lime.client.wumpus.app controller
 .directive('wumpusSocket', [
@@ -61,8 +63,12 @@ module.exports = angular.module('lime.client.wumpus', [
           socket.sense();
 
         socket.on('context', subgraphData.add);
+        socket.emit('context');
 
         $scope.message = '';
+        socket.on('message', function(str) {
+          $scope.serverMessage = str;
+        });
         $scope.keyup = function($event) {
           if($event.keyCode === 13) { // enter
             var idx = $scope.message.indexOf(' ');

@@ -11,6 +11,26 @@ module.exports = angular.module('lime.client.subgraph', [])
   // parse subgraph.stringify
   instance.add = function(subgraph) {
     subgraph = JSON.parse(subgraph);
+
+    console.log(subgraph);
+
+    // TODO determine some basic groups
+    // - context link?
+    instance.list.push({
+      nodes: subgraph.vertices.map(function(vertex, idx) {
+        return {
+          name: vertex.matcher + '(' + JSON.stringify(vertex.matchData) + ')',
+          group: idx,
+        };
+      }),
+      links: subgraph.edges.map(function(edge) {
+        return {
+          source: edge.src,
+          target: edge.dst,
+          value: 2,
+        };
+      }),
+    });
   };
 
   return instance;

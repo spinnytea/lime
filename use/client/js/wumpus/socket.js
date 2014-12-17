@@ -5,12 +5,14 @@ var config = require('./impl/config');
 var game = require('./impl/game');
 
 var socket;
+var $scope;
 function disconnect() {
   if(socket) socket.disconnect();
   socket = undefined;
 }
-exports.connect = function($scope, protocol, host) {
+exports.connect = function(scope, protocol, host) {
   disconnect();
+  $scope = scope;
   socket = io(protocol + '://' + host + ':3000/wumpus').connect(); // TODO config port
   socket.emit('config', angular.extend({}, config, {
     chance: undefined, grain: undefined, timing: undefined, multi: undefined,
@@ -39,12 +41,6 @@ exports.connect = function($scope, protocol, host) {
       });
   });
 
-  socket.on('message', function(str) {
-    $scope.$apply(function() {
-      $scope.serverMessage = str;
-    });
-  });
-
   return disconnect;
 };
 
@@ -52,7 +48,9 @@ exports.emit = function(event, message) {
   socket.emit(event, message);
 };
 exports.on = function(event, callback) {
-  socket.on(event, callback);
+  socket.on(event, function(data) {
+    $scope.$apply(function() { callback(data); });
+  });
 };
 
 exports.sense = function() {
