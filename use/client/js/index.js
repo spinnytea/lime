@@ -1,14 +1,21 @@
 'use strict';
 angular.module('lime.client', [
   require('./wumpus/wumpusModule').name,
+  require('./subgraph/subgraphModule').name,
   'ngRoute',
 ]).config([
   '$routeProvider',
   function($routeProvider) {
-    $routeProvider.when('/wumpus', {
+    $routeProvider
+    .when('/wumpus', {
       templateUrl: 'partials/wumpus/app.html',
       controller: 'lime.client.wumpus.app',
-    });
+    })
+    .when('/subgraph/example', {
+      templateUrl: 'partials/subgraph/example.html',
+      controller: 'lime.client.subgraph.example',
+    })
+    ;
   }
 ]).controller('contentController', [
   '$scope', '$location',

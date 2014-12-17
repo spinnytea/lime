@@ -6,6 +6,7 @@
     <script src="/vender/bootstrap/dist/js/bootstrap.min.js"></script>
     <script src="/vender/angular/angular.min.js"></script>
     <script src="/vender/angular-route/angular-route.min.js"></script>
+    <script src="/vender/d3/d3.min.js"></script>
 
     <!-- index.js is build with browserify -->
     <script src="./index.js"></script>
@@ -15,7 +16,9 @@
 
 <div data-ng-show="showMenu">
     <h1>Menu</h1>
-    <a href="#wumpus">What's the Wumpus</a>
+
+    <div><a href="#wumpus">What's the Wumpus</a></div>
+    <div><a href="#subgraph/example">Subgraph Example</a></div>
 </div>
 
 <div data-ng-view></div>
