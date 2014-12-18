@@ -67,6 +67,10 @@
  * subgraph
  */
 
+svg.subgraph {
+  border: 1px solid lightgrey;
+}
+
 .node {
   stroke: #fff;
   stroke-width: 1.5px;

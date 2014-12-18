@@ -112,7 +112,8 @@ function buildGraph(graph, elem) {
 
   var svg = d3.select(elem).append('svg')
       .attr('width', width)
-      .attr('height', height);
+      .attr('height', height)
+      .attr('class', 'subgraph');
 
   force
       .nodes(graph.nodes)

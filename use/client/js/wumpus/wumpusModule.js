@@ -42,6 +42,9 @@ module.exports = angular.module('lime.client.wumpus', [
     $scope.generateGame();
 
     $scope.contexts = subgraphData.list;
+    $scope.removeContext = function(c) {
+      subgraphData.list.splice(subgraphData.list.indexOf(c), 1);
+    };
   }
 ]) // end lime.client.wumpus.app controller
 .directive('wumpusSocket', [
@@ -64,6 +67,7 @@ module.exports = angular.module('lime.client.wumpus', [
 
         socket.on('context', function(subgraph) {
           subgraph = JSON.parse(subgraph);
+//          subgraphData.add(subgraph);
 
           // build a change set
           var removeV = [];
