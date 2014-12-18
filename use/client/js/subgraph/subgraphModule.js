@@ -10,7 +10,8 @@ module.exports = angular.module('lime.client.subgraph', [])
 
   // parse subgraph.stringify
   instance.add = function(subgraph) {
-    subgraph = JSON.parse(subgraph);
+    if(typeof subgraph === 'string')
+      subgraph = JSON.parse(subgraph);
 //    console.log(subgraph);
 
     // TODO determine some basic groups
@@ -31,6 +32,7 @@ module.exports = angular.module('lime.client.subgraph', [])
         return {
           name: name,
           type: type,
+          color: vertex.color,
         };
       }),
       links: subgraph.edges.map(function(edge) {
@@ -68,6 +70,8 @@ module.exports = angular.module('lime.client.subgraph', [])
     subgraph.vertices.forEach(function(v, idx) {
       v.vertex_id = idx;
     });
+
+    return subgraph;
   }; // end remap
 
   return instance;
@@ -126,7 +130,7 @@ function buildGraph(graph, elem) {
     .enter().append('circle')
       .attr('class', 'node')
       .attr('r', 5)
-      .style('fill', function(d) { return typeColor[d.type] || '#7f7f7f'; })
+      .style('fill', function(d) { return typeColor[d.type] || d.color || '#7f7f7f'; })
       .call(force.drag);
 
   node.append('title')
