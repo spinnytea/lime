@@ -17,8 +17,8 @@ module.exports = angular.module('lime.client.subgraph', [])
     // TODO determine some basic groups
     // - context link?
     instance.list.push({
-      selected: false,
-      raw: subgraph,
+      selected: (instance.list.length === 0),
+      subgraph: subgraph,
       diff: diff,
 
       nodes: subgraph.vertices.map(function(vertex) {

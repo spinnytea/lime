@@ -45,13 +45,14 @@ module.exports = angular.module('lime.client.wumpus', [
     $scope.removeContext = function(c) {
       subgraphData.list.splice(subgraphData.list.indexOf(c), 1);
     };
-    $scope.pick = function(sg) {
+    // the sg in subgraphData.list
+    $scope.selectSubgraph = function(sg) {
       if(sg.selected) {
         sg.selected = false;
       } else {
         var some = subgraphData.list.some(function(d) {
           if(d.selected) {
-            subgraphData.add(d.raw, subgraphData.diff(d.raw, sg.raw));
+            subgraphData.add(d.subgraph, subgraphData.diff(d.subgraph, sg.subgraph));
             return true;
           }
           return false;
@@ -61,7 +62,7 @@ module.exports = angular.module('lime.client.wumpus', [
           sg.selected = true;
       }
     };
-    $scope.text = function(sg) {
+    $scope.selectSubgraphText = function(sg) {
       if(sg.diff) {
         return '[a diff]';
       } else if(sg.selected) {

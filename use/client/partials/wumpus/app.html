@@ -4,17 +4,17 @@
 <div data-ng-if="state==='instance'" data-wumpus-instance></div>
 
 <table class="table">
-    <tr data-ng-repeat="d in contexts">
+    <tr data-ng-repeat="sg in contexts">
         <td>
-            <span title="Remove" data-ng-click="removeContext(d)" class="text-danger glyphicon glyphicon-remove"></span>
+            <span title="Remove" data-ng-click="removeContext(sg)" class="text-danger glyphicon glyphicon-remove"></span>
             <br>
             <button class="btn btn-xs"
-                    data-ng-disabled="d.diff"
-                    data-ng-click="pick(d)"
-                    data-ng-class="{'btn-default':!d.selected, 'btn-primary':d.selected}">
-                {{text(d)}}
+                    data-ng-disabled="sg.diff"
+                    data-ng-click="selectSubgraph(sg)"
+                    data-ng-class="{'btn-default':!sg.selected, 'btn-primary':sg.selected}">
+                {{selectSubgraphText(sg)}}
             </button>
         </td>
-        <td data-render-subgraph="d"></td>
+        <td data-render-subgraph="sg"></td>
     </tr>
 </table>
