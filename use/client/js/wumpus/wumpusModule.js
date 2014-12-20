@@ -45,6 +45,33 @@ module.exports = angular.module('lime.client.wumpus', [
     $scope.removeContext = function(c) {
       subgraphData.list.splice(subgraphData.list.indexOf(c), 1);
     };
+    $scope.pick = function(sg) {
+      if(sg.selected) {
+        sg.selected = false;
+      } else {
+        var some = subgraphData.list.some(function(d) {
+          if(d.selected) {
+            subgraphData.add(d.raw, subgraphData.diff(d.raw, sg.raw));
+            return true;
+          }
+          return false;
+        });
+
+        if(!some)
+          sg.selected = true;
+      }
+    };
+    $scope.text = function(sg) {
+      if(sg.diff) {
+        return '[a diff]';
+      } else if(sg.selected) {
+        return 'deselect';
+      } else {
+        if(subgraphData.list.some(function(d) { return d.selected; }))
+          return 'diff';
+        return 'select';
+      }
+    };
   }
 ]) // end lime.client.wumpus.app controller
 .directive('wumpusSocket', [
@@ -65,9 +92,9 @@ module.exports = angular.module('lime.client.wumpus', [
         if(config.game.player === 'lemon' && config.game.timing === 'static')
           socket.sense();
 
-        socket.on('context', function(subgraph) {
+        socket.on('context', subgraphData.add);
+        socket.on('context_bak', function(subgraph) {
           subgraph = JSON.parse(subgraph);
-//          subgraphData.add(subgraph);
 
           // build a change set
           var removeV = [];

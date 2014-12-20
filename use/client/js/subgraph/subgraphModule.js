@@ -9,7 +9,7 @@ module.exports = angular.module('lime.client.subgraph', [])
   instance.list = [];
 
   // parse subgraph.stringify
-  instance.add = function(subgraph) {
+  instance.add = function(subgraph, diff) {
     if(typeof subgraph === 'string')
       subgraph = JSON.parse(subgraph);
 //    console.log(subgraph);
@@ -17,6 +17,10 @@ module.exports = angular.module('lime.client.subgraph', [])
     // TODO determine some basic groups
     // - context link?
     instance.list.push({
+      selected: false,
+      raw: subgraph,
+      diff: diff,
+
       nodes: subgraph.vertices.map(function(vertex) {
         var name;
         if(vertex._data)
@@ -31,15 +35,16 @@ module.exports = angular.module('lime.client.subgraph', [])
 
         return {
           name: name,
-          type: type,
-          color: vertex.color,
+          color: typeColor[type] || vertex.color || '#7f7f7f',
+          opacity: (diff && !diff.vertices[vertex.vertex_id])?0.3:1,
         };
       }),
-      links: subgraph.edges.map(function(edge) {
+      links: subgraph.edges.map(function(edge, idx) {
         return {
           source: edge.src,
           target: edge.dst,
           value: 2,
+          opacity: (diff && !diff.edges[idx])?0.3:1,
         };
       }),
     });
@@ -73,6 +78,26 @@ module.exports = angular.module('lime.client.subgraph', [])
 
     return subgraph;
   }; // end remap
+
+  // find the difference between two graphs
+  // annotate sg_a with the differences in sg_b
+  // sg_a.v.diff = sg_b.v
+  // sg_a.e.diff = sg_b.e
+  //
+  // assumption: v[] and e[] line up
+  instance.diff = function(sg_a, sg_b) {
+    var diff = { vertices: {}, edges: {} };
+    var i;
+
+    for(i=0; i<sg_a.vertices.length; i++)
+      if(!angular.equals(sg_a.vertices[i], sg_b.vertices[i]))
+        diff.vertices[i] = true;
+    for(i=0; i<sg_a.edges.length; i++)
+      if(!angular.equals(sg_a.edges[i], sg_b.edges[i]))
+        diff.edges[i] = true;
+
+    return diff;
+  }; // end diff
 
   return instance;
 })
@@ -124,14 +149,16 @@ function buildGraph(graph, elem) {
       .data(graph.links)
     .enter().append('line')
       .attr('class', 'link')
-      .style('stroke-width', function(d) { return Math.sqrt(d.value); });
+      .style('stroke-width', function(d) { return Math.sqrt(d.value); })
+      .style('stroke-opacity', function(d) { return d.opacity; });
 
   var node = svg.selectAll('.node')
       .data(graph.nodes)
     .enter().append('circle')
       .attr('class', 'node')
       .attr('r', 5)
-      .style('fill', function(d) { return typeColor[d.type] || d.color || '#7f7f7f'; })
+      .style('fill', function(d) { return d.color; })
+      .style('fill-opacity', function(d) { return d.opacity; })
       .call(force.drag);
 
   node.append('title')

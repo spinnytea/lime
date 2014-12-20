@@ -5,7 +5,16 @@
 
 <table class="table">
     <tr data-ng-repeat="d in contexts">
-        <td><span title="Remove" data-ng-click="removeContext(d)" class="text-danger glyphicon glyphicon-remove"></span></td>
+        <td>
+            <span title="Remove" data-ng-click="removeContext(d)" class="text-danger glyphicon glyphicon-remove"></span>
+            <br>
+            <button class="btn btn-xs"
+                    data-ng-disabled="d.diff"
+                    data-ng-click="pick(d)"
+                    data-ng-class="{'btn-default':!d.selected, 'btn-primary':d.selected}">
+                {{text(d)}}
+            </button>
+        </td>
         <td data-render-subgraph="d"></td>
     </tr>
 </table>
