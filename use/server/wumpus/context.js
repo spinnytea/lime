@@ -207,12 +207,12 @@ exports.sense = function(state) {
     state.rooms.forEach(function(room) {
       exports.roomLoc[room.id] = { x: room.x, y: room.y };
 
-      var roomInstance = ideas.create({value: room.id, unit: roomDefinition.id, loc: { x: room.x, y: room.y }});
+      var roomInstance = ideas.create(discrete.cast({value: room.id, unit: roomDefinition.id, loc: { x: room.x, y: room.y }}));
       roomDefinition.link(links.list.thought_description, roomInstance);
       roomInstance.link(links.list.type_of, exports.idea('room'));
-      var roomHasPit = ideas.create({value:room.hasPit, unit: discrete.definitions.list.boolean});
-      var roomHasGold = ideas.create({value:room.hasGold, unit: discrete.definitions.list.boolean});
-      var roomHasExit = ideas.create({value:room.hasExit, unit: discrete.definitions.list.boolean});
+      var roomHasPit = ideas.create(discrete.cast({value:room.hasPit, unit: discrete.definitions.list.boolean}));
+      var roomHasGold = ideas.create(discrete.cast({value:room.hasGold, unit: discrete.definitions.list.boolean}));
+      var roomHasExit = ideas.create(discrete.cast({value:room.hasExit, unit: discrete.definitions.list.boolean}));
       roomInstance.link(links.list.wumpus_sense_hasPit, roomHasPit);
       roomInstance.link(links.list.wumpus_sense_hasGold, roomHasGold);
       roomInstance.link(links.list.wumpus_sense_hasExit, roomHasExit);
@@ -239,8 +239,8 @@ exports.sense = function(state) {
             // room > r2
             // room is south of r2
             // if the agent is in r2 and goes south, then the agent is in room
-            south = ideas.create({value: 'south', unit: exports.idea('directions').id });
-            north = ideas.create({value: 'north', unit: exports.idea('directions').id });
+            south = ideas.create(discrete.cast({value: 'south', unit: exports.idea('directions').id }));
+            north = ideas.create(discrete.cast({value: 'north', unit: exports.idea('directions').id }));
             roomInstances[i].link(links.list.wumpus_room_door, south);
             south.link(links.list.wumpus_room_door, roomInstance);
             roomInstance.link(links.list.wumpus_room_door, north);
@@ -257,8 +257,8 @@ exports.sense = function(state) {
             // r2 > room
             // r2 is south of room
             // if the agent is in room and goes south, then the agent is in r2
-            north = ideas.create({value: 'north', unit: exports.idea('directions').id });
-            south = ideas.create({value: 'south', unit: exports.idea('directions').id });
+            north = ideas.create(discrete.cast({value: 'north', unit: exports.idea('directions').id }));
+            south = ideas.create(discrete.cast({value: 'south', unit: exports.idea('directions').id }));
             roomInstances[i].link(links.list.wumpus_room_door, north);
             north.link(links.list.wumpus_room_door, roomInstance);
             roomInstance.link(links.list.wumpus_room_door, south);
@@ -277,8 +277,8 @@ exports.sense = function(state) {
             // room > r2
             // room is east of r2
             // if the agent is in r2 and goes east, then the agent is in room
-            east = ideas.create({value: 'east', unit: exports.idea('directions').id });
-            west = ideas.create({value: 'west', unit: exports.idea('directions').id });
+            east = ideas.create(discrete.cast({value: 'east', unit: exports.idea('directions').id }));
+            west = ideas.create(discrete.cast({value: 'west', unit: exports.idea('directions').id }));
             roomInstances[i].link(links.list.wumpus_room_door, east);
             east.link(links.list.wumpus_room_door, roomInstance);
             roomInstance.link(links.list.wumpus_room_door, west);
@@ -295,8 +295,8 @@ exports.sense = function(state) {
             // r2 > room
             // r2 is east of room
             // if the agent is in room and goes east, then the agent is in r2
-            west = ideas.create({value: 'west', unit: exports.idea('directions').id });
-            east = ideas.create({value: 'east', unit: exports.idea('directions').id });
+            west = ideas.create(discrete.cast({value: 'west', unit: exports.idea('directions').id }));
+            east = ideas.create(discrete.cast({value: 'east', unit: exports.idea('directions').id }));
             roomInstances[i].link(links.list.wumpus_room_door, west);
             west.link(links.list.wumpus_room_door, roomInstance);
             roomInstance.link(links.list.wumpus_room_door, east);
@@ -370,13 +370,13 @@ function senseAgent(agent) {
     dir = 'west';
   if(Math.abs(agent.r-Math.PI*3/2) < ERROR_RANGE)
     dir = 'north';
-  exports.idea('agentDirection').update({value: dir, unit: exports.idea('directions').id});
+  exports.idea('agentDirection').update(discrete.cast({value: dir, unit: exports.idea('directions').id}));
 
   // update agent location
-  exports.idea('agentLocation').update({value: agent.inRoomIds[0], unit: exports.idea('roomDefinition').id, loc: { x: agent.x, y: agent.y }});
+  exports.idea('agentLocation').update(discrete.cast({value: agent.inRoomIds[0], unit: exports.idea('roomDefinition').id, loc: { x: agent.x, y: agent.y }}));
 
   // update agent hasGold
-  exports.idea('agentHasGold').update({value: agent.hasGold, unit: discrete.definitions.list.boolean});
+  exports.idea('agentHasGold').update(discrete.cast({value: agent.hasGold, unit: discrete.definitions.list.boolean}));
 
   // TODO create a function to reset vertex data cache
   exports.subgraph.vertices[exports.keys.agentDirection].data = undefined;

@@ -45,6 +45,12 @@ exports.isDiscrete = function(obj) {
   return true;
 };
 
+exports.cast = function(obj) {
+  if(exports.isDiscrete(obj))
+    return obj;
+  return undefined;
+};
+
 // { type, unit, value }
 exports.difference = function(d1, d2) {
   if(!exports.isDiscrete(d1) || !exports.isDiscrete(d2))

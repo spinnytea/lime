@@ -5,14 +5,19 @@
 module.exports = angular.module('lime.client.subgraph', [])
 .factory('lime.client.subgraph.data', function() {
   var instance = {};
-
   instance.list = [];
+
+  function buildName(vertex) {
+    if(vertex._data)
+      return JSON.stringify(vertex._data);
+    else
+      return vertex.matcher + '(' + JSON.stringify(vertex.matchData) + ')';
+  }
 
   // parse subgraph.stringify
   instance.add = function(subgraph, diff) {
     if(typeof subgraph === 'string')
       subgraph = JSON.parse(subgraph);
-//    console.log(subgraph);
 
     // TODO determine some basic groups
     // - context link?
@@ -22,11 +27,11 @@ module.exports = angular.module('lime.client.subgraph', [])
       diff: diff,
 
       nodes: subgraph.vertices.map(function(vertex) {
-        var name;
-        if(vertex._data)
-          name = JSON.stringify(vertex._data);
-        else
-          name = vertex.matcher + '(' + JSON.stringify(vertex.matchData) + ')';
+        var name = buildName(vertex);
+        if(diff && diff.vertices[vertex.vertex_id]) {
+          name = 'before: ' + name +
+            '\nafter: ' + buildName(diff.vertices[vertex.vertex_id]);
+        }
 
         var type;
         if((vertex.matchData && vertex.matchData.name) ||
@@ -91,10 +96,10 @@ module.exports = angular.module('lime.client.subgraph', [])
 
     for(i=0; i<sg_a.vertices.length; i++)
       if(!angular.equals(sg_a.vertices[i], sg_b.vertices[i]))
-        diff.vertices[i] = true;
+        diff.vertices[i] = sg_b.vertices[i];
     for(i=0; i<sg_a.edges.length; i++)
       if(!angular.equals(sg_a.edges[i], sg_b.edges[i]))
-        diff.edges[i] = true;
+        diff.edges[i] = sg_b.edges[i];
 
     return diff;
   }; // end diff

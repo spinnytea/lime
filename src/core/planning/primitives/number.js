@@ -44,6 +44,12 @@ exports.isNumber = function(obj) {
   return true;
 };
 
+exports.cast = function(obj) {
+  if(exports.isNumber(obj))
+    return obj;
+  return undefined;
+};
+
 // construct a value object (for ease)
 // (see the spec for examples)
 exports.value = function() {
