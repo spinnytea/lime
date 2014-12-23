@@ -78,6 +78,8 @@ exports.definitions.similar = {type: definitionTypeName};
 
 // some stock difference functions
 // more can be added during setup of application-specific uses
+// Note: differences need to be simple
+// - subgraph.matcher.discrete requires difference === 0
 exports.definitions.difference = {
   default: function(d1, d2) {
     if(d1.value === d2.value)

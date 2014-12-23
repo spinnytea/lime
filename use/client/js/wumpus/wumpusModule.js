@@ -36,6 +36,7 @@ module.exports = angular.module('lime.client.wumpus', [
         $scope.$apply(function() {
           game.generate();
           $scope.state = 'instance';
+          subgraphData.list.splice(0);
         });
       }, 0);
     };

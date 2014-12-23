@@ -41,6 +41,7 @@ room.radius = 48;
 Object.defineProperty(room, 'diameter', { get: function() { return room.radius * 2; } });
 // how far away to place the rooms from each other
 // this needs to be smaller than the diameter. This also means that the agent might be in two rooms at once
+// Note: for discrete to work, this number needs to terminate
 Object.defineProperty(room, 'spacing', { get: function() { return room.radius * 1.8; }, enumerable: true });
 // computer math isn't perfect, so we need to have a little bit of leeway in our comparisons
 Object.defineProperty(room, 'spacing_err', { get: function() { return room.spacing - 1; } });
