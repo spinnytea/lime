@@ -35,6 +35,7 @@ exports.search = function(start, goal) {
     // exit early?
     numPathsExpanded++;
     if(numPathsExpanded > config.settings.astar_max_paths)
+      // console.log('Did not find solution (paths expanded: ' + numPathsExpanded + ', frontier: ' + frontier.size() + ').');
       return undefined;
 
 
@@ -63,5 +64,6 @@ exports.search = function(start, goal) {
     }
   }
 
+  // console.log('Did not find solution (paths expanded: ' + numPathsExpanded + ', frontier: ' + frontier.size() + ').');
   return undefined;
 };
