@@ -68,6 +68,7 @@ exports.setup = function(io) {
       var roomDefinition = goal.addVertex(subgraph.matcher.id, context.idea('roomDefinition'));
 
       if(str.indexOf('room') === 0) {
+        // TODO sometimes we go to the wrong room
         // the agent needs to be in the location we provide
         var roomId = +str.substring(str.indexOf(' ')+1);
         var loc = context.roomLoc[roomId];

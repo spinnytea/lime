@@ -103,107 +103,117 @@ describe('blueprint', function() {
         it.skip('!i && o');
       });
 
-      it('numbers', function() {
-        var thing = { thing: 42 };
-        var n_10 = { value: number.value(10), unit: idea.id };
-        var n_20 = { value: number.value(20), unit: idea.id };
-        var _a = a.state.addVertex(subgraph.matcher.id, idea, {transitionable:true});
-        var _b = b.state.addVertex(subgraph.matcher.id, idea, {transitionable:true});
+      describe('concrete', function() {
+        it('numbers', function() {
+          var thing = { thing: 42 };
+          var n_10 = { value: number.value(10), unit: idea.id };
+          var n_20 = { value: number.value(20), unit: idea.id };
+          var _a = a.state.addVertex(subgraph.matcher.id, idea, {transitionable:true});
+          var _b = b.state.addVertex(subgraph.matcher.id, idea, {transitionable:true});
 
-        // init a to have a value, and b to not
-        // one is a number, the other is not a number
-        // how do we resolve this? the data must be invalid
-        a.state.vertices[_a].data = n_10;
-        b.state.vertices[_b].data = undefined;
-        expect(a.state.vertices[_a].data).to.deep.equal(n_10);
-        expect(b.state.vertices[_b].data).to.deep.equal(undefined);
-        expect(a.distance(b)).to.equal(Infinity);
-        // we should get the same result either way we compare
-        expect(b.distance(a)).to.equal(Infinity);
+          // init a to have a value, and b to not
+          // one is a number, the other is not a number
+          // how do we resolve this? the data must be invalid
+          a.state.vertices[_a].data = n_10;
+          b.state.vertices[_b].data = undefined;
+          expect(a.state.vertices[_a].data).to.deep.equal(n_10);
+          expect(b.state.vertices[_b].data).to.deep.equal(undefined);
+          expect(a.distance(b)).to.equal(Infinity);
+          // we should get the same result either way we compare
+          expect(b.distance(a)).to.equal(Infinity);
 
-        // if we have some data in b that isn't a number, it should be the same result
-        b.state.vertices[_b].data = thing;
-        expect(b.state.vertices[_b].data).to.deep.equal(thing);
-        expect(a.distance(b)).to.equal(Infinity);
-        expect(b.distance(a)).to.equal(Infinity);
+          // if we have some data in b that isn't a number, it should be the same result
+          b.state.vertices[_b].data = thing;
+          expect(b.state.vertices[_b].data).to.deep.equal(thing);
+          expect(a.distance(b)).to.equal(Infinity);
+          expect(b.distance(a)).to.equal(Infinity);
 
-        // if we put a number in b, our distance should work
-        b.state.vertices[_b].data = n_10;
-        expect(b.state.vertices[_b].data).to.deep.equal(n_10);
-        expect(a.distance(b)).to.equal(0);
-        expect(b.distance(a)).to.equal(0);
-        b.state.vertices[_b].data = n_20;
-        expect(b.state.vertices[_b].data).to.deep.equal(n_20);
-        expect(a.distance(b)).to.equal(10);
-        expect(b.distance(a)).to.equal(10);
-      });
+          // if we put a number in b, our distance should work
+          b.state.vertices[_b].data = n_10;
+          expect(b.state.vertices[_b].data).to.deep.equal(n_10);
+          expect(a.distance(b)).to.equal(0);
+          expect(b.distance(a)).to.equal(0);
+          b.state.vertices[_b].data = n_20;
+          expect(b.state.vertices[_b].data).to.deep.equal(n_20);
+          expect(a.distance(b)).to.equal(10);
+          expect(b.distance(a)).to.equal(10);
+        });
 
-      it('discrete', function() {
-        var thing = { thing: 42 };
-        var t = { value: true, unit: discrete.definitions.list.boolean };
-        var f = { value: false, unit: discrete.definitions.list.boolean };
-        var _a = a.state.addVertex(subgraph.matcher.id, idea, {transitionable:true});
-        var _b = b.state.addVertex(subgraph.matcher.id, idea, {transitionable:true});
+        it('discrete', function() {
+          var thing = { thing: 42 };
+          var t = { value: true, unit: discrete.definitions.list.boolean };
+          var f = { value: false, unit: discrete.definitions.list.boolean };
+          var _a = a.state.addVertex(subgraph.matcher.id, idea, {transitionable:true});
+          var _b = b.state.addVertex(subgraph.matcher.id, idea, {transitionable:true});
 
-        // init a to have a value, and b to not
-        // one is a discrete, the other is not a discrete
-        // how do we resolve this? the data must be invalid
-        a.state.vertices[_a].data = t;
-        b.state.vertices[_b].data = undefined;
-        expect(a.state.vertices[_a].data).to.deep.equal(t);
-        expect(b.state.vertices[_b].data).to.deep.equal(undefined);
-        expect(a.distance(b)).to.equal(Infinity);
-        // we should get the same result either way we compare
-        expect(b.distance(a)).to.equal(Infinity);
+          // init a to have a value, and b to not
+          // one is a discrete, the other is not a discrete
+          // how do we resolve this? the data must be invalid
+          a.state.vertices[_a].data = t;
+          b.state.vertices[_b].data = undefined;
+          expect(a.state.vertices[_a].data).to.deep.equal(t);
+          expect(b.state.vertices[_b].data).to.deep.equal(undefined);
+          expect(a.distance(b)).to.equal(Infinity);
+          // we should get the same result either way we compare
+          expect(b.distance(a)).to.equal(Infinity);
 
-        // if we have some data in b that isn't discrete, it should be the same result
-        b.state.vertices[_b].data = thing;
-        expect(b.state.vertices[_b].data).to.deep.equal(thing);
-        expect(a.distance(b)).to.equal(Infinity);
-        expect(b.distance(a)).to.equal(Infinity);
+          // if we have some data in b that isn't discrete, it should be the same result
+          b.state.vertices[_b].data = thing;
+          expect(b.state.vertices[_b].data).to.deep.equal(thing);
+          expect(a.distance(b)).to.equal(Infinity);
+          expect(b.distance(a)).to.equal(Infinity);
 
-        // if we put a discrete in b, our distance should work
-        b.state.vertices[_b].data = t;
-        expect(b.state.vertices[_b].data).to.deep.equal(t);
-        expect(a.distance(b)).to.equal(0);
-        expect(b.distance(a)).to.equal(0);
-        b.state.vertices[_b].data = f;
-        expect(b.state.vertices[_b].data).to.deep.equal(f);
-        expect(a.distance(b)).to.equal(1);
-        expect(b.distance(a)).to.equal(1);
-      });
+          // if we put a discrete in b, our distance should work
+          b.state.vertices[_b].data = t;
+          expect(b.state.vertices[_b].data).to.deep.equal(t);
+          expect(a.distance(b)).to.equal(0);
+          expect(b.distance(a)).to.equal(0);
+          b.state.vertices[_b].data = f;
+          expect(b.state.vertices[_b].data).to.deep.equal(f);
+          expect(a.distance(b)).to.equal(1);
+          expect(b.distance(a)).to.equal(1);
+        });
 
-      it('<any>', function() {
-        var t_1 = { thing: 42 };
-        var t_2 = { thing: 3.14 };
-        var _a = a.state.addVertex(subgraph.matcher.id, idea, {transitionable:true});
-        var _b = b.state.addVertex(subgraph.matcher.id, idea, {transitionable:true});
+        it('<any>', function() {
+          var t_1 = { thing: 42 };
+          var t_2 = { thing: 3.14 };
+          var _a = a.state.addVertex(subgraph.matcher.id, idea, {transitionable:true});
+          var _b = b.state.addVertex(subgraph.matcher.id, idea, {transitionable:true});
 
-        a.state.vertices[_a].data = undefined;
-        b.state.vertices[_b].data = undefined;
+          a.state.vertices[_a].data = undefined;
+          b.state.vertices[_b].data = undefined;
 
-        // they are both transitionable and the data matches
-        // (even though the data is undefined, it's the same)
-        expect(a.distance(b)).to.equal(0);
+          // they are both transitionable and the data matches
+          // (even though the data is undefined, it's the same)
+          expect(a.distance(b)).to.equal(0);
 
-        // so change the data in one of them
-        b.state.vertices[_b].data = t_1;
-        expect(b.state.vertices[_b].data).to.deep.equal(t_1);
-        expect(a.distance(b)).to.equal(1);
-        expect(b.distance(a)).to.equal(1);
+          // so change the data in one of them
+          b.state.vertices[_b].data = t_1;
+          expect(b.state.vertices[_b].data).to.deep.equal(t_1);
+          expect(a.distance(b)).to.equal(1);
+          expect(b.distance(a)).to.equal(1);
 
-        // and data in both
-        a.state.vertices[_a].data = t_2;
-        expect(a.state.vertices[_a].data).to.deep.equal(t_2);
-        expect(a.distance(b)).to.equal(1);
-        expect(b.distance(a)).to.equal(1);
+          // and data in both
+          a.state.vertices[_a].data = t_2;
+          expect(a.state.vertices[_a].data).to.deep.equal(t_2);
+          expect(a.distance(b)).to.equal(1);
+          expect(b.distance(a)).to.equal(1);
 
-        // and matching data
-        a.state.vertices[_a].data = t_1;
-        expect(a.state.vertices[_a].data).to.deep.equal(t_1);
-        expect(a.distance(b)).to.equal(0);
-        expect(b.distance(a)).to.equal(0);
-      });
+          // and matching data
+          a.state.vertices[_a].data = t_1;
+          expect(a.state.vertices[_a].data).to.deep.equal(t_1);
+          expect(a.distance(b)).to.equal(0);
+          expect(b.distance(a)).to.equal(0);
+        });
+      }); // end concrete
+
+      describe('inconcrete', function() {
+        it.skip('number');
+
+        it.skip('discrete');
+
+        it.skip('<any>');
+      }); // end inconcrete
 
       it('matchRef', function() {
         var idea2 = tools.ideas.create({ value: number.value(10), unit: idea.id });
