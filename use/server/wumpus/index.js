@@ -70,6 +70,7 @@ exports.setup = function(io) {
       if(str.indexOf('room') === 0) {
         // TODO sometimes we go to the wrong room
         // the agent needs to be in the location we provide
+        // TODO sometimes the actions happen twice
         var roomId = +str.substring(str.indexOf(' ')+1);
         var loc = context.roomLoc[roomId];
 
@@ -92,6 +93,7 @@ exports.setup = function(io) {
       // - let me run it from the UI
       // - make a delay
       // TODO discrete difference of 1 not enough
+      // TODO throw errors
       // - figure out how to do manhattan difference
       var sp = serialplan.create(start, goal);
 
