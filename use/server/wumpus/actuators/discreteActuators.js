@@ -130,6 +130,46 @@ exports.grab = function(agent, room, actuator_context) {
   ideas.save(a.idea);
 };
 
-exports.exit = function() {
-  // TODO finish (oops, commit the stub)
+
+// @param agent: the agent type idea
+// @param room: the room type idea
+// @param actuator_context: a list of contexts to apply to the idea
+exports.exit = function(agent, room, actuator_context) {
+  var a = new actuator.Action();
+
+  // the agent is in a room
+  // the agent has gold
+  var agentInstance = a.requirements.addVertex(subgraph.matcher.filler);
+  var agentLocation = a.requirements.addVertex(subgraph.matcher.filler);
+  var agentHasGold = a.requirements.addVertex(subgraph.matcher.discrete, {value:true, unit: discrete.definitions.list.boolean}, {transitionable:true});
+  a.requirements.addEdge(
+    agentInstance,
+    links.list.type_of,
+    a.requirements.addVertex(subgraph.matcher.id, agent),
+    5
+  );
+  a.requirements.addEdge(agentInstance, links.list.wumpus_sense_agent_loc, agentLocation, 4);
+  a.requirements.addEdge(agentInstance, links.list.wumpus_sense_hasGold, agentHasGold, 4);
+
+  // that room has an exit
+  var currentRoom = a.requirements.addVertex(subgraph.matcher.discrete, agentLocation, {matchRef:true});
+  var roomType = a.requirements.addVertex(subgraph.matcher.id, room);
+  var roomHasExit = a.requirements.addVertex(subgraph.matcher.discrete, {value:true, unit: discrete.definitions.list.boolean});
+  a.requirements.addEdge(currentRoom, links.list.type_of, roomType, 2);
+  a.requirements.addEdge(currentRoom, links.list.wumpus_sense_hasExit, roomHasExit, 1);
+
+
+  // Every action MUST have a transition
+  // Maybe this is a flaw, maybe this is a good thing?
+  // TODO make the exit change the state in some way, or remove this strict requirement
+  // well, for now, we can just change the gold back to itself
+  a.transitions.push({ vertex_id: agentHasGold, replace: {value:true, unit: discrete.definitions.list.boolean} });
+
+
+  a.action = 'wumpus_known_discrete_exit';
+  a.save();
+  actuator_context.forEach(function(ac) {
+    ideas.load(a.idea).link(links.list.context, ac);
+  });
+  ideas.save(a.idea);
 };

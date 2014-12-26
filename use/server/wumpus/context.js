@@ -41,7 +41,7 @@ function round(val) {
 exports.roomLoc = {};
 
 // create the actions that we can use
-['left', 'right', 'up', 'grab'].forEach(function(a) {
+['left', 'right', 'up', 'grab', 'exit'].forEach(function(a) {
   actuator.actions['wumpus_known_discrete_'+a] = function() { socket.emit('action', a); };
 });
 
@@ -105,10 +105,12 @@ var getDiscreteContext = function() {
   exports.keys.action_right = exports.subgraph.addVertex(subgraph.matcher.exact, {name:'action:right'});
   exports.keys.action_up = exports.subgraph.addVertex(subgraph.matcher.exact, {name:'action:up'});
   exports.keys.action_grab = exports.subgraph.addVertex(subgraph.matcher.exact, {name:'action:grab'});
+  exports.keys.action_exit = exports.subgraph.addVertex(subgraph.matcher.exact, {name:'action:exit'});
   exports.subgraph.addEdge(exports.keys.wumpus_world, links.list.thought_description, exports.keys.action_left);
   exports.subgraph.addEdge(exports.keys.wumpus_world, links.list.thought_description, exports.keys.action_right);
   exports.subgraph.addEdge(exports.keys.wumpus_world, links.list.thought_description, exports.keys.action_up);
   exports.subgraph.addEdge(exports.keys.wumpus_world, links.list.thought_description, exports.keys.action_grab);
+  exports.subgraph.addEdge(exports.keys.wumpus_world, links.list.thought_description, exports.keys.action_exit);
 
   // directions
   exports.keys.directions = exports.subgraph.addVertex(subgraph.matcher.similar, discrete.definitions.similar);
@@ -137,10 +139,12 @@ var getDiscreteContext = function() {
     var action_right = ideas.create({name:'action:right'});
     var action_up = ideas.create({name:'action:up'});
     var action_grab = ideas.create({name:'action:grab'});
+    var action_exit = ideas.create({name:'action:exit'});
     wumpus_world.link(links.list.thought_description, action_left);
     wumpus_world.link(links.list.thought_description, action_right);
     wumpus_world.link(links.list.thought_description, action_up);
     wumpus_world.link(links.list.thought_description, action_grab);
+    wumpus_world.link(links.list.thought_description, action_exit);
 
     // directions
     var directions = discrete.definitions.create(['east', 'south', 'west', 'north'], 'cycle');
@@ -161,11 +165,12 @@ var getDiscreteContext = function() {
     discreteActuators.turn(directions, agent, 1, 'right', [wumpus_world, action_right]);
     discreteActuators.forward(directions, agent, room, [wumpus_world, action_up]);
     discreteActuators.grab(agent, room, [wumpus_world, action_grab]);
+    discreteActuators.exit(agent, room, [wumpus_world, action_exit]);
 
 
     // save our the ideas
     [
-      wumpus_world, action_left, action_right, action_up, action_grab, ideas.context('blueprint'),
+      wumpus_world, action_left, action_right, action_up, action_grab, action_exit, ideas.context('blueprint'),
       directions, compass, agent, room,
     ].forEach(ideas.save);
     // now search again
