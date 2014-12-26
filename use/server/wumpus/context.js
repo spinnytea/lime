@@ -228,7 +228,7 @@ exports.sense = function(state) {
       exports.subgraph.addEdge(keys_rI, links.list.wumpus_sense_hasPit,
         exports.subgraph.addVertex(subgraph.matcher.id, roomHasPit));
       exports.subgraph.addEdge(keys_rI, links.list.wumpus_sense_hasGold,
-        exports.subgraph.addVertex(subgraph.matcher.id, roomHasGold));
+        exports.subgraph.addVertex(subgraph.matcher.id, roomHasGold, {transitionable:true}));
       exports.subgraph.addEdge(keys_rI, links.list.wumpus_sense_hasExit,
         exports.subgraph.addVertex(subgraph.matcher.id, roomHasExit));
 
