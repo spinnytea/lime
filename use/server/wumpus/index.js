@@ -90,9 +90,6 @@ exports.setup = function(io) {
       // TODO save serial plan
       // - let me run it from the UI
       // - make a delay
-      // TODO discrete difference of 1 not enough
-      // TODO throw errors
-      // - figure out how to do manhattan difference
       var sp = serialplan.create(start, goal);
 
       if(sp) {

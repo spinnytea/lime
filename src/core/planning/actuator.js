@@ -105,7 +105,7 @@ ActuatorAction.prototype.save = function() {
       idea: this.idea,
       requirements: subgraph.stringify(this.requirements),
       transitions: this.transitions,
-      action: this.action
+      action: this.action,
     }
   });
 
