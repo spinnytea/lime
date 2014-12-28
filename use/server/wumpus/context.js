@@ -18,7 +18,7 @@ links.create('wumpus_sense_hasGold');
 links.create('wumpus_sense_hasExit');
 links.create('wumpus_room_door');
 discrete.definitions.difference.wumpus_room = function(d1, d2) {
-  // TODO debug astar path expansions without this
+  // TODO debug astar path expansions with/out this
   // - what do they look like?
   // - it IS better than not using this at all
   // - why does this still take p60/f100 to get to a room?
@@ -36,6 +36,9 @@ function round(val) {
 // these are cached for ease of use in index.js
 // we want them to be stored with the idea (alongside the discrete value)
 // but there isn't a good way to recover the loc from the roomId
+// - i can build a subgraph and search for the room
+// - that seems ugly
+// - but I guess that's technically accurate
 // TODO specify new agent location based on room
 // - this is breaking and I wanted to get on with discrete.definitions.difference
 exports.roomLoc = {};

@@ -24,7 +24,7 @@ function disconnect() {
 exports.connect = function(scope, protocol, host) {
   disconnect();
   $scope = scope;
-  socket = io(protocol + '://' + host + ':3000/wumpus').connect(); // TODO config port
+  socket = io(protocol + '://' + host + ':3000/wumpus').connect();
   console.log('connect');
   socket.emit('config', angular.extend({}, config, {
     chance: undefined, grain: undefined, timing: undefined, multi: undefined,

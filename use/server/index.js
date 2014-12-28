@@ -12,6 +12,6 @@ app.listen(8888, function() {
 
 var server = require('http').Server(app);
 var io = require('socket.io')(server);
-server.listen(3000); // TODO configure port
+server.listen(3000);
 
 require('./wumpus/index.js').setup(io.of('/wumpus'));

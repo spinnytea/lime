@@ -32,7 +32,7 @@ exports.setup = function(io) {
 
       // load the actions
       var list = blueprint.list([context.idea('action_'+str), context.idea('wumpus_world')]).map(blueprint.load);
-      // build a state // TODO this should be in context (probably instead of subgraph)
+      // build a state // TODO should this be in context (probably instead of subgraph)
       var bs = new blueprint.State(context.subgraph, list);
 
       // find the first action that works and do it
@@ -87,25 +87,17 @@ exports.setup = function(io) {
       var start = new blueprint.State(context.subgraph, list);
       goal = new blueprint.State(goal, list);
 
+      if(start.matches(goal)) {
+        socket.emit('message', 'goal:'+str+'> here\'s the plan: do nothing');
+        return;
+      }
+
       // TODO save serial plan
       // - let me run it from the UI
       // - make a delay
       var sp = serialplan.create(start, goal);
 
       if(sp) {
-        if(sp.plans && sp.plans.length === 0) {
-          // TODO how can I determine this without going into sp?
-          // - should serialplan.create return undefined
-          //   - probably not
-          // - should there be a special "noop" plan?
-          //   - :/ no op implies wait; not that we have already succeeded
-          // - should there be a special "do nothing" plan?
-          // - or maybe we should be matching against the goal first to know there is nothing to do
-          //   - if(subgraph.match(start, goal)) /* skip the search */;
-          socket.emit('message', 'goal:'+str+'> here\'s the plan: do nothing');
-          return;
-        }
-
         var result = sp.tryTransition(start);
         if(result.length > 0) {
           sp.runBlueprint(start, result[0]);

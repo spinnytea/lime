@@ -159,6 +159,9 @@ exports.create = function(start, goal) {
     // do a little finagling
     // this plan shouldn't be broken
     // but that doesn't mean it needs to be useful
+    // TODO ensure this is a valid blueprint
+    // - can we tryTransition, runBlueprint?
+    // - write a unit test; although it really should be fine
     var sp = new SerialAction([]);
     sp.requirements = start.state;
     return sp;
