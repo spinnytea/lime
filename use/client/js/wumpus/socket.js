@@ -6,19 +6,31 @@ var game = require('./impl/game');
 
 var socket;
 var $scope;
+var listenerNames = [];
 function disconnect() {
-  if(socket) socket.disconnect();
+  if(socket) {
+    console.log('disconnect');
+    listenerNames.forEach(function(event) {
+      // Note: socket.removeAllListeners(event) didn't work
+      socket.listeners(event).forEach(function(callback) {
+        socket.removeListener(event, callback);
+      });
+    });
+    listenerNames.splice(0);
+    socket.disconnect();
+  }
   socket = undefined;
 }
 exports.connect = function(scope, protocol, host) {
   disconnect();
   $scope = scope;
   socket = io(protocol + '://' + host + ':3000/wumpus').connect(); // TODO config port
+  console.log('connect');
   socket.emit('config', angular.extend({}, config, {
     chance: undefined, grain: undefined, timing: undefined, multi: undefined,
   }));
 
-  socket.on('action', function(which) {
+  exports.on('action', function(which) {
     var keyCode;
 
     switch(which) {
@@ -33,12 +45,11 @@ exports.connect = function(scope, protocol, host) {
       default: console.log('invalid action: ' + which);
     }
 
-    if(keyCode)
-      $scope.$apply(function() {
-        game.keydown({ keyCode: keyCode, preventDefault: angular.noop });
-        if(config.game.timing === 'static')
-          exports.sense();
-      });
+    if(keyCode) {
+      game.keydown({ keyCode: keyCode, preventDefault: angular.noop });
+      if(config.game.timing === 'static')
+        exports.sense();
+    }
   });
 
   return disconnect;
@@ -48,6 +59,7 @@ exports.emit = function(event, message) {
   socket.emit(event, message);
 };
 exports.on = function(event, callback) {
+  listenerNames.push(event);
   socket.on(event, function(data) {
     $scope.$apply(function() { callback(data); });
   });
