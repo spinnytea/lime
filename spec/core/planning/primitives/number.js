@@ -17,7 +17,7 @@ describe('number', function() {
 
   it('init', function() {
     // this is to ensure we test everything
-    expect(Object.keys(number)).to.deep.equal(['isNumber', 'value', 'combine', 'remove', 'difference']);
+    expect(Object.keys(number)).to.deep.equal(['isNumber', 'cast', 'value', 'combine', 'remove', 'difference']);
   });
 
   // TODO should this throw an exception?
@@ -74,6 +74,16 @@ describe('number', function() {
 
     // after all that, we should have the original value
     expect(val).to.deep.equal({ type: 'lime_number', value: { bl: false, l: -Infinity, r: Infinity, br: false }, unit: 'test' });
+  });
+
+  it('cast', function() {
+    var num = { value: number.value(0), unit: 'test' };
+    expect(num).to.not.have.property('type');
+
+    number.cast(num);
+
+    expect(num).to.have.property('type');
+    expect(num.type).to.equal('lime_number');
   });
 
   it('value', function() {

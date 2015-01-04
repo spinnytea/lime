@@ -620,6 +620,10 @@ function vertexTransitionableAcceptable(vo, vi_transitionable, vi_data, unitOnly
 exports.rewrite = function(subgraph, transitions, actual) {
   if(!subgraph.concrete)
     return undefined;
+  // if there are no transitions, then this action doesn't make sense
+  // we could just return subgraph, but that may be confusing
+  if(transitions.length === 0)
+    return undefined;
 
   actual = (actual === true);
 

@@ -159,10 +159,9 @@ exports.exit = function(agent, room, actuator_context) {
   a.requirements.addEdge(currentRoom, links.list.wumpus_sense_hasExit, roomHasExit, 1);
 
 
-  // Every action MUST have a transition
-  // Maybe this is a flaw, maybe this is a good thing?
-  // TODO make the exit change the state in some way, or remove this strict requirement
-  // well, for now, we can just change the gold back to itself
+  // TODO make the exit change the state in some way
+  // - remove the player from the board? the roomDefinitions are per-run; how do we update the value?
+  // - add a state? playing/win/lose
   a.transitions.push({ vertex_id: agentHasGold, replace: {value:true, unit: discrete.definitions.list.boolean} });
 
 

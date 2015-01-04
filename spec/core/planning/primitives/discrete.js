@@ -8,7 +8,7 @@ var boolean = discrete.definitions.list.boolean;
 describe('discrete', function() {
   it('init', function() {
     // this is to ensure we test everything
-    expect(Object.keys(discrete)).to.deep.equal(['isDiscrete', 'difference', 'definitions']);
+    expect(Object.keys(discrete)).to.deep.equal(['isDiscrete', 'cast', 'difference', 'definitions']);
     expect(Object.keys(discrete.definitions)).to.deep.equal(['similar', 'difference', 'create', 'list']);
 
     expect(discrete.definitions.list.boolean).to.be.ok;
@@ -16,7 +16,6 @@ describe('discrete', function() {
 
   // TODO should this throw an exception?
   it('isDiscrete', function() {
-
     expect(discrete.isDiscrete(undefined)).to.equal(false);
     expect(discrete.isDiscrete({})).to.equal(false);
     expect(discrete.isDiscrete({ value: true })).to.equal(false);
@@ -36,6 +35,16 @@ describe('discrete', function() {
     expect(discrete.isDiscrete({ value: true, unit: boolean })).to.equal(true);
     expect(discrete.isDiscrete({ value: false, unit: boolean })).to.equal(true);
     expect(discrete.isDiscrete({ type: 'lime_discrete', value: true, unit: boolean })).to.equal(true);
+  });
+
+  it('cast', function() {
+    var crt = { value: true, unit: boolean };
+    expect(crt).to.not.have.property('type');
+
+    discrete.cast(crt);
+
+    expect(crt).to.have.property('type');
+    expect(crt.type).to.equal('lime_discrete');
   });
 
   it('difference', function() {
