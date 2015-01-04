@@ -17,6 +17,11 @@ links.create('wumpus_sense_hasPit');
 links.create('wumpus_sense_hasGold');
 links.create('wumpus_sense_hasExit');
 links.create('wumpus_room_door');
+// TODO write some basic unit tests for the server
+// - prove that our actions still work
+// - left, right, up, grab, exit
+// - goal/room
+// (just create a local socket io connection, call index.setup, send it commands, check context.idea)
 discrete.definitions.difference.wumpus_room = function(d1, d2) {
   // TODO debug astar path expansions with/out this
   // - what do they look like?
