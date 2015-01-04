@@ -71,7 +71,9 @@ exports.forward = function(directions, agent, room, actuator_context) {
   a.requirements.addEdge(currentRoom, links.list.type_of, roomType);
   // consider this link at a lower priority (find the target room last)
   a.requirements.addEdge(targetRoom, links.list.type_of, roomType, -1);
-  // TODO targetRoom must not have a pit
+  // targetRoom must not have a pit
+  var roomHasPit = a.requirements.addVertex(subgraph.matcher.discrete, {value:false, unit: discrete.definitions.list.boolean});
+  a.requirements.addEdge(targetRoom, links.list.wumpus_sense_hasPit, roomHasPit, -2);
 
 
   // move through the door

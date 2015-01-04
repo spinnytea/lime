@@ -47,7 +47,7 @@ Object.defineProperty(room, 'spacing', { get: function() { return room.radius * 
 Object.defineProperty(room, 'spacing_err', { get: function() { return room.spacing - 1; } });
 
 // How likely is it for a pit to be generated after we have placed the exit and the gold
-misc.pit.probability = 0;
+misc.pit.probability = 0.5;
 // some properties about firing an arrow
 Object.defineProperty(misc.arrow, 'radius', { get: function() { return agent.radius/4; }, enumerable: true });
 Object.defineProperty(misc.arrow, 'speed', { get: function() { return agent.radius/4; }, enumerable: true });
