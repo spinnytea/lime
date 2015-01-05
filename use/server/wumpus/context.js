@@ -29,15 +29,24 @@ discrete.definitions.difference.wumpus_room = function(d1, d2) {
   // - why does this still take p60/f100 to get to a room?
   if(d1.value === d2.value)
     return 0;
-  var dx = round(Math.abs(d1.loc.x-d2.loc.x))/gameConfig.room.spacing;
-  var dy = round(Math.abs(d1.loc.y-d2.loc.y))/gameConfig.room.spacing;
+
+  var dx = Math.abs(d1.loc.x-d2.loc.x);
+  if(dx < gameConfig.room.radius)
+    dx = 0;
+  else
+    dx /= gameConfig.room.spacing;
+
+  var dy = Math.abs(d1.loc.y-d2.loc.y);
+  if(dy < gameConfig.room.radius)
+    dy = 0;
+  else
+    dy /= gameConfig.room.spacing;
+
+
   if(dx === 0) return dy;
   if(dy === 0) return dx;
   return dx + dy + 1;
 };
-function round(val) {
-  return Math.floor(val/gameConfig.room.spacing + 0.5)*gameConfig.room.spacing;
-}
 // these are cached for ease of use in index.js
 // we want them to be stored with the idea (alongside the discrete value)
 // but there isn't a good way to recover the loc from the roomId
@@ -225,7 +234,7 @@ exports.sense = function(state) {
     state.rooms.forEach(function(room) {
       exports.roomLoc[room.id] = { x: room.x, y: room.y };
 
-      var roomInstance = ideas.create(discrete.cast({value: room.id, unit: roomDefinition.id, loc: { x: round(room.x), y: round(room.y) }}));
+      var roomInstance = ideas.create(discrete.cast({value: room.id, unit: roomDefinition.id, loc: { x: room.x, y: room.y }}));
       roomDefinition.link(links.list.thought_description, roomInstance);
       roomInstance.link(links.list.type_of, exports.idea('room'));
       var roomHasPit = ideas.create(discrete.cast({value:room.hasPit, unit: discrete.definitions.list.boolean}));
@@ -391,7 +400,7 @@ function senseAgent(agent) {
   exports.idea('agentDirection').update(discrete.cast({value: dir, unit: exports.idea('directions').id}));
 
   // update agent location
-  exports.idea('agentLocation').update(discrete.cast({value: agent.inRoomIds[0], unit: exports.idea('roomDefinition').id, loc: { x: round(agent.x), y: round(agent.y) }}));
+  exports.idea('agentLocation').update(discrete.cast({value: agent.inRoomIds[0], unit: exports.idea('roomDefinition').id, loc: { x: agent.x, y: agent.y }}));
 
   // update agent hasGold
   exports.idea('agentHasGold').update(discrete.cast({value: agent.hasGold, unit: discrete.definitions.list.boolean}));
