@@ -34,13 +34,13 @@ discrete.definitions.difference.wumpus_room = function(d1, d2) {
   if(dx < gameConfig.room.radius)
     dx = 0;
   else
-    dx /= gameConfig.room.spacing;
+    dx = Math.floor(dx/gameConfig.room.spacing + 0.5);
 
   var dy = Math.abs(d1.loc.y-d2.loc.y);
   if(dy < gameConfig.room.radius)
     dy = 0;
   else
-    dy /= gameConfig.room.spacing;
+    dy = Math.floor(dy/gameConfig.room.spacing + 0.5);
 
 
   if(dx === 0) return dy;
