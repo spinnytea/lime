@@ -7,6 +7,7 @@ var discrete = require('../../../../src/core/planning/primitives/discrete');
 var ideas = require('../../../../src/core/database/ideas');
 var links = require('../../../../src/core/database/links');
 var subgraph = require('../../../../src/core/database/subgraph');
+// TODO incorporate points
 
 // @param directions: the directions unit idea
 // @param agent: the agent type idea
@@ -162,6 +163,7 @@ exports.exit = function(agent, room, actuator_context) {
   // TODO make the exit change the state in some way
   // - remove the player from the board? the roomDefinitions are per-run; how do we update the value?
   // - add a state? playing/win/lose
+  // - winning should add points
   a.transitions.push({ vertex_id: agentHasGold, replace: {value:true, unit: discrete.definitions.list.boolean} });
 
 

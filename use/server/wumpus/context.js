@@ -378,6 +378,7 @@ exports.sense = function(state) {
 };
 
 function senseRooms() {
+// TODO sense rooms
 //  console.log(rooms[0]);
 }
 
