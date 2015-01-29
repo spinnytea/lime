@@ -18,7 +18,5 @@
   "white": true,
 
   "browser": false,
-  "node": true,
-
-  "predef": ["angular"]
+  "node": true
 }
