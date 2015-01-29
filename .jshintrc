@@ -1,15 +1,24 @@
 {
   "eqeqeq": true,
+  "expr": true,
+  "freeze": true,
+  "funcscope": true,
+  "immed": true,
   "indent": 2,
+  "latedef": false,
+  "laxcomma": false,
+  "newcap": true,
   "nonbsp": true,
   "nonew": true,
   "quotmark": "single",
+  "strict": true,
+  "sub": true,
   "undef": true,
   "unused": true,
-  "strict": true,
-  "laxcomma": true,
+  "white": true,
+
   "browser": false,
   "node": true,
-  "expr": true,
+
   "predef": ["angular"]
 }

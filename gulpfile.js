@@ -33,7 +33,7 @@ if(reporter === 'skipped') {
 
 var files = ['config.js', 'spec/**/*.js', 'src/core/**/*.js'];
 
-gulp.task('run-mocha', ['jshint'], function() {
+gulp.task('mocha', ['jshint'], function() {
   return gulp.src(['spec/**/*.js'], {read: false})
     .pipe(mocha({reporter: reporter}));
 });
@@ -44,13 +44,14 @@ gulp.task('jshint', [], function () {
     .pipe(jshint.reporter('fail'));
 });
 
-gulp.task('test', ['run-mocha'], function() {
-  gulp.watch(files, ['run-mocha']);
+gulp.task('test', ['mocha'], function() {
+  gulp.watch(files, ['mocha']);
 });
 
 
 //
 // targets for the use cases
+// TODO modify this section of the gulp file using ~/git/ggj-2015
 //
 var fork = require('child_process').fork;
 
@@ -124,4 +125,9 @@ gulp.task('use', [], function() {
 
   // try to start the server the first time
   return gulp.start('use-server');
+});
+
+gulp.task('use-mocha', ['use-server-jshint'], function() {
+  return gulp.src(['use-spec/**/*.js'], {read: false})
+    .pipe(mocha({reporter: reporter}));
 });
