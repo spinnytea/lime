@@ -44,6 +44,7 @@ gulp.task('jshint', [], function () {
     .pipe(jshint.reporter('fail'));
 });
 
-gulp.task('test', ['mocha'], function() {
+gulp.task('test', [], function() {
   gulp.watch(files, ['mocha']);
+  gulp.start('mocha');
 });
