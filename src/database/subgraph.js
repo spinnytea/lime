@@ -143,6 +143,12 @@ function loadVertexData(v) {
   }
 }
 
+Subgraph.prototype.invalidateCache = function() {
+  this.vertices.forEach(function(v) {
+    v.data = undefined;
+  });
+};
+
 exports.Subgraph = Subgraph;
 
 

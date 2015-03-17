@@ -30,7 +30,7 @@ describe('subgraph', function() {
   it('init', function() {
     // this is to ensure we test everything
     expect(Object.keys(subgraph)).to.deep.equal(['Subgraph', 'matcher', 'stringify', 'parse', 'search', 'match', 'rewrite']);
-    expect(Object.keys(subgraph.Subgraph.prototype)).to.deep.equal(['copy', 'addVertex', 'addEdge']);
+    expect(Object.keys(subgraph.Subgraph.prototype)).to.deep.equal(['copy', 'addVertex', 'addEdge', 'invalidateCache']);
     expect(Object.keys(subgraph.matcher)).to.deep.equal(['id', 'filler', 'exact', 'similar', 'number', 'discrete']);
   });
 
@@ -139,6 +139,8 @@ describe('subgraph', function() {
         expect(v._data).to.equal(null);
       });
     }); // end loadVertexData
+
+    it.skip('invalidateCache');
   }); // end Subgraph
 
   describe('matcher', function() {
