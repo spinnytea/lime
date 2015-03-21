@@ -3,6 +3,24 @@ var PriorityQueue = require('priorityqueuejs');
 var config = require('../../../config');
 var Path = require('../primitives/path');
 
+// apply all of the available actions to the selected path
+exports.step = function(path, frontier) {
+  var nextActions = path.last.actions();
+  nextActions.forEach(function(next) {
+    if(next.action && next.glue) {
+      // path for blueprints
+      // TODO remove action/glue from the return
+      // - incorporate glue into the action (this means making a copy of the actions)
+      var p = path.add(next.action.apply(path.last, next.glue), next.action);
+      if(p.cost + p.distFromGoal !== Infinity)
+        frontier.enq(p);
+    } else {
+      // vanilla path
+      frontier.enq(path.add(next.apply(path.last), next));
+    }
+  });
+};
+
 // @param start: a Path.State, initial
 // @param goal: a Path.State, final
 // @return: a path.Path if we find one, undefined if not
@@ -38,30 +56,7 @@ exports.search = function(start, goal) {
       // console.log('Did not find solution (paths expanded: ' + numPathsExpanded + ', frontier: ' + frontier.size() + ').');
       return undefined;
 
-
-    // this is a for() loop because jshint doesn't like it if I use [].forEach()
-    // it doesn't want me to create the callback function within the while statement
-    // and any function I pass to forEach can't take the extra arguments need to pass the scope data (path, frontier)
-    // I can get around this by setting the execution scope of the function when I call it, but that's just confusing
-    // (and jshint thinks it might be a strict violation)
-    // so.. I have to use a for() loop
-    //
-    // apply all of the available actions to the selected path
-    var nextActions = path.last.actions();
-    for(var i=0; i<nextActions.length; i++) {
-      var next = nextActions[i];
-      if(next.action && next.glue) {
-        // path for blueprints
-        // TODO remove action/glue from the return
-        // - incorporate glue into the action (this means making a copy of the actions)
-        var p = path.add(next.action.apply(path.last, next.glue), next.action);
-        if(p.cost + p.distFromGoal !== Infinity)
-          frontier.enq(p);
-      } else {
-        // vanilla path
-        frontier.enq(path.add(next.apply(path.last), next));
-      }
-    }
+    exports.step(path, frontier);
   }
 
   // console.log('Did not find solution (paths expanded: ' + numPathsExpanded + ', frontier: ' + frontier.size() + ').');

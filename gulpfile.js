@@ -30,7 +30,7 @@ if(reporter === 'skipped') {
 }
 
 
-var files = ['config.js', 'spec/**/*.js', 'src/core/**/*.js'];
+var files = ['config.js', 'spec/**/*.js', 'src/**/*.js'];
 
 gulp.task('mocha', ['jshint'], function() {
   return gulp.src(['spec/**/*.js'], {read: false})

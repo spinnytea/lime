@@ -12,7 +12,7 @@ describe('astar', function() {
   it('init', function() {
     expect(config.settings.astar_max_paths).to.be.a('number');
 
-    expect(Object.keys(astar)).to.deep.equal(['search']);
+    expect(Object.keys(astar)).to.deep.equal(['step', 'search']);
     expect(Object.keys(path)).to.deep.equal(['Path', 'Action', 'State']);
 
     expect(NumberSlide.Action).to.be.a('function');
@@ -26,6 +26,10 @@ describe('astar', function() {
     // Testing this would be testing the library (but I do need to make sure that I can use it)
     // ~ this has been moved to javascript.js
 //  it.skip('frontier order');
+
+  describe('step', function() {
+    it.skip('step');
+  });
 
   describe('search', function() {
     it('first!', function() {
