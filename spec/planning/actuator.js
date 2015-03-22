@@ -1,5 +1,5 @@
 'use strict';
-/* global describe, it, beforeEach */
+/* global describe, it, before, beforeEach */
 var expect = require('chai').expect;
 
 var actuator = require('../../src/planning/actuator');
@@ -13,7 +13,6 @@ var subgraph = require('../../src/database/subgraph');
 var tools = require('../testingTools');
 
 describe('actuator', function() {
-  it.skip('can we reduce the setup for these tests; can we use "before" instead of "beforeEach"');
   it('init', function() {
     // this is to ensure we test everything
     expect(Object.keys(actuator)).to.deep.equal(['Action', 'actions', 'list']);
@@ -23,7 +22,7 @@ describe('actuator', function() {
   var apple, money, price; // our idea graph is about .. money
   var bs, bs_a, bs_p; // a blueprint with a state with a price
   var a, a_a, a_p, actionImplCount; // an action that requires a price
-  beforeEach(function() {
+  before(function() {
     // init some data
     // we have a price (a number with a unit)
     apple = tools.ideas.create();
@@ -62,11 +61,18 @@ describe('actuator', function() {
     expect(bs_p).to.not.equal(a_p);
   });
 
+  beforeEach(function() {
+    actionImplCount = 0;
+    price.update({ value: number.value(10), unit: money.id });
+    bs.state.invalidateCache();
+    a.requirements.vertices[a_p].matchData.value = number.value(0, Infinity);
+  });
+
   it('runCost', function() {
     expect(a.runCost()).to.equal(1);
 
-    a = new actuator.Action();
-    expect(a.runCost()).to.equal(0);
+    var b = new actuator.Action();
+    expect(b.runCost()).to.equal(0);
   });
 
   it('tryTransition', function() {
@@ -74,7 +80,7 @@ describe('actuator', function() {
     var result = a.tryTransition(bs);
 
     expect(result.length).to.equal(1);
-    // the keys of an object are always strings
+    // the keys of an object are always strings, the need to be numbers to deep.equal
     expect(Object.keys(result[0]).map(function(k) {return +k;})).to.deep.equal([a_p, a_a]);
     expect(result[0][a_p]).to.equal(bs_p);
     expect(actionImplCount).to.equal(0);
@@ -82,6 +88,7 @@ describe('actuator', function() {
 
   it('runBlueprint', function() {
     expect(actionImplCount).to.equal(0);
+    expect(price.data().value).to.deep.equal(number.value(10));
     var expectedData = { type: 'lime_number', value: number.value(30), unit: money.id };
     var result = a.tryTransition(bs);
     expect(result.length).to.equal(1);
@@ -108,6 +115,7 @@ describe('actuator', function() {
 
     expect(actionImplCount).to.equal(0);
   });
+  it.skip('try setting the price data to a negative number; this should not be able to match');
 
   it('apply', function() {
     expect(actionImplCount).to.equal(0);
@@ -150,8 +158,10 @@ describe('actuator', function() {
     expect(loaded).to.deep.equal(a);
     // sans using the actuator in battle
     expect(loaded.tryTransition(bs).length).to.equal(1);
+    expect(price.data().value).to.deep.equal(number.value(10));
     loaded.runBlueprint(bs, loaded.tryTransition(bs)[0]);
     expect(actionImplCount).to.equal(1);
+    expect(price.data().value).to.deep.equal(number.value(30));
 
     tools.ideas.clean(id);
   });
