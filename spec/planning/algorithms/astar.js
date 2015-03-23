@@ -12,7 +12,7 @@ describe('astar', function() {
   it('init', function() {
     expect(config.settings.astar_max_paths).to.be.a('number');
 
-    expect(Object.keys(astar)).to.deep.equal(['step', 'search']);
+    expect(Object.keys(astar)).to.deep.equal(['units', 'search']);
     expect(Object.keys(path)).to.deep.equal(['Path', 'Action', 'State']);
 
     expect(NumberSlide.Action).to.be.a('function');
@@ -21,15 +21,16 @@ describe('astar', function() {
     expect(_.intersection(Object.keys(NumberSlide.State.prototype), Object.keys(path.State.prototype))).to.deep.equal(Object.keys(path.State.prototype));
   });
 
+  describe('units', function() {
+    it.skip('frontier');
+
     // I'm not sure how to test this, really
     // It probably works from the fact that we can solve the astar problems
     // Testing this would be testing the library (but I do need to make sure that I can use it)
-    // ~ this has been moved to javascript.js
-//  it.skip('frontier order');
+    //it.skip('frontier order');
 
-  describe('step', function() {
     it.skip('step');
-  });
+  }); // end unit
 
   describe('search', function() {
     it('first!', function() {

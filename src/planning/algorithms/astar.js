@@ -3,8 +3,22 @@ var PriorityQueue = require('priorityqueuejs');
 var config = require('../../../config');
 var Path = require('../primitives/path');
 
+// pull out some of the functions within search so we can unit test it easier
+// nothing inside exports.unit should need to be called or substituted
+// but I need SOME way of inspecting the search function with a fine toothed comb
+var units = exports.units = {};
+
+// create a priority queue to store the current plans
+units.frontier = function() {
+  return new PriorityQueue(function(a, b) {
+    return (b.cost + b.distFromGoal + b.actions.length) - (a.cost + a.distFromGoal + a.actions.length);
+    // XXX I'm still not convinced it's the right move to factor in actions.length
+//    return (b.cost + b.distFromGoal) - (a.cost + a.distFromGoal);
+  });
+};
+
 // apply all of the available actions to the selected path
-exports.step = function(path, frontier) {
+units.step = function(path, frontier) {
   var nextActions = path.last.actions();
   nextActions.forEach(function(next) {
     if(next.action && next.glue) {
@@ -27,11 +41,7 @@ exports.step = function(path, frontier) {
 // XXX is exiting early different from being unable to find a solution? should we exit differently?
 exports.search = function(start, goal) {
   // the current set of paths
-  var frontier = new PriorityQueue(function(a, b) {
-    return (b.cost + b.distFromGoal + b.actions.length) - (a.cost + a.distFromGoal + a.actions.length);
-    // XXX I'm still not convinced it's the right move to factor in actions.length
-//    return (b.cost + b.distFromGoal) - (a.cost + a.distFromGoal);
-  });
+  var frontier = units.frontier();
   frontier.enq(new Path.Path([start], [], goal));
 
   // how many paths have we compared to the goal
@@ -56,7 +66,7 @@ exports.search = function(start, goal) {
       // console.log('Did not find solution (paths expanded: ' + numPathsExpanded + ', frontier: ' + frontier.size() + ').');
       return undefined;
 
-    exports.step(path, frontier);
+    units.step(path, frontier);
   }
 
   // console.log('Did not find solution (paths expanded: ' + numPathsExpanded + ', frontier: ' + frontier.size() + ').');
