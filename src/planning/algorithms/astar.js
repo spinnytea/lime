@@ -11,9 +11,16 @@ var units = exports.units = {};
 // create a priority queue to store the current plans
 units.frontier = function() {
   return new PriorityQueue(function(a, b) {
-    return (b.cost + b.distFromGoal + b.actions.length) - (a.cost + a.distFromGoal + a.actions.length);
+    //return (b.cost + b.distFromGoal + b.actions.length) - (a.cost + a.distFromGoal + a.actions.length);
     // XXX I'm still not convinced it's the right move to factor in actions.length
-//    return (b.cost + b.distFromGoal) - (a.cost + a.distFromGoal);
+    // - afterall, the path cost is a sum of all steps, so more steps will inherently be have a larger cost
+    var ret = (b.cost + b.distFromGoal*2) - (a.cost + a.distFromGoal*2);
+    if(ret !== 0) return ret;
+
+    // if the composite is the same, then the one with the shorter distance wins
+    // (the higher cost is permissible)
+    // this is evident in how we value the distance from the goal more than the cost in the calc above
+    return b.distFromGoal - a.distFromGoal;
   });
 };
 

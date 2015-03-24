@@ -30,6 +30,7 @@ describe('astar', function() {
     //it.skip('frontier order');
 
     it.skip('step');
+    it.skip('step when at goal');
   }); // end unit
 
   describe('search', function() {

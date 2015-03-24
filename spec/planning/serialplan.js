@@ -260,8 +260,9 @@ describe('serialplan', function() {
       // this pattern has no meaning, really; it's '[deterministic] chance' that they show up in this order
       // astar factors plan length into the selection
       // 3xActuator = 1xSerial, but serial is shorter, so it will pick that first
+      // XXX a better test would be to count the number of times each appears
       expect(sp.plans.map(function(p) { return p.constructor.name; })).to.deep.equal([
-        'SerialAction', 'ActuatorAction', 'SerialAction', 'ActuatorAction'
+        'SerialAction', 'SerialAction', 'ActuatorAction', 'ActuatorAction'
       ]);
       expect(sp.runCost()).to.equal(8);
       expect(sp.cost(start, goal)).to.equal(16);
