@@ -59,22 +59,9 @@ SerialAction.prototype.tryTransition = function(state) {
   for(var i = 1; i < that.plans.length; i++) {
     nextList = [];
 
-  // I like the [].forEach notation much better
-//    currList.forEach(function(curr) {
-//      that.plans[i].tryTransition(curr.state).forEach(function(glue) {
-//        ...
-//      });
-//    });
-  // but jshint doesn't like when we create functions in a loop (loopfunc)
-  // so instead, we fall back to for(;;)
-
-    for(var c = 0; c < currList.length; c++) {
-      var curr = currList[c];
-
+    currList.forEach(function(curr) {
       var transitions = that.plans[i].tryTransition(curr.state);
-      for(var t = 0; t < transitions.length; t++) {
-        var glue = transitions[t];
-
+      transitions.forEach(function(glue) {
         var glues = [];
         Array.prototype.push.apply(glues, curr.glues);
         glues.push(glue);
@@ -86,8 +73,8 @@ SerialAction.prototype.tryTransition = function(state) {
           state = that.plans[i].apply(curr.state, glue);
 
         nextList.push({ glues: glues, state: state });
-      }
-    }
+      });
+    });
 
     // swap curr and next
     currList = nextList;

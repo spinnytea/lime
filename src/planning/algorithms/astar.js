@@ -56,7 +56,6 @@ exports.search = function(start, goal) {
   var numPathsExpanded = 0;
 
   while(!frontier.isEmpty()) {
-    // js hint loopfunc: true
 //    console.log(frontier._elements.map(function(path) { return path.cost + path.distFromGoal; }));
     var path = frontier.deq();
 
