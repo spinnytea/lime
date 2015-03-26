@@ -76,52 +76,94 @@ describe('serialplan', function() {
     expect(Object.keys(serialplan.Action.prototype)).to.deep.equal(['runCost', 'tryTransition', 'runBlueprint', 'cost', 'apply', 'save']);
   });
 
-  it('create', function() {
-    // standard case, success
-    var sp = serialplan.create(start, goal);
-    expect(sp).to.be.ok;
-    expect(sp.plans.length).to.equal(5);
+  describe('create', function() {
+    it('single', function() {
+      // standard case, success
+      var sp = serialplan.create(start, goal);
+      expect(sp).to.be.ok;
+      expect(sp.plans.length).to.equal(5);
+      expect(sp.runCost()).to.equal(5);
 
-    // there is no way to create a plan to get here
-    // since we know this test can't finish, lets minimize the depth it has to search for our test
-    var before = config.settings.astar_max_paths;
-    config.settings.astar_max_paths = 10;
-    sp = serialplan.create(goal, start);
-    expect(sp).to.not.be.ok;
-    config.settings.astar_max_paths = before;
+      // there is no way to create a plan to get here
+      // since we know this test can't finish, lets minimize the depth it has to search for our test
+      var before = config.settings.astar_max_paths;
+      config.settings.astar_max_paths = 10;
+      sp = serialplan.create(goal, start);
+      expect(sp).to.not.be.ok;
+      config.settings.astar_max_paths = before;
 
-    // only one step away
-    goal.state.vertices[state_count].data.value = number.value(1);
-    sp = serialplan.create(start, goal);
-    expect(sp).to.be.ok;
-    expect(sp).to.equal(a);
+      // only one step away
+      goal.state.vertices[state_count].data.value = number.value(1);
+      sp = serialplan.create(start, goal);
+      expect(sp).to.be.ok;
+      expect(sp).to.equal(a);
 
 
-    // right now, it creates a serial plan with no actions
-    // do we want to return undefined?
-    // - no because undefined usually indicates an error, or that we can't get from one place to the next
-    // so instead, we create a false runCost
-    // we shouldn't use this plan to get from A to A, because that's a waste of time
-    //
-    // we should check to see if we even need to make a plan before we try to make one
-    // but if we do (for some unforseen reason), I don't want to return undefined, nor throw an exception, nor even make an impossibly large plan
-    // you are already at the goal
-    // if you are using SP to get no where, well, it's better to just increase the runCost
-    // searching for a plan should exclude this because it's a waste (but not a blocker)
-    //
-    // as you can probably tell, there isn't yet a definitive answer
-    sp = serialplan.create(start, start);
-    expect(sp).to.be.ok;
-    expect(sp.plans.length).to.equal(0);
-    expect(sp.runCost()).to.equal(1);
-    expect(sp.cost(start, goal)).to.equal(2); // start:0 goal:1 + runCost()
-  });
+      // right now, it creates a serial plan with no actions
+      // do we want to return undefined?
+      // - no because undefined usually indicates an error, or that we can't get from one place to the next
+      // so instead, we create a false runCost
+      // we shouldn't use this plan to get from A to A, because that's a waste of time
+      //
+      // we should check to see if we even need to make a plan before we try to make one
+      // but if we do (for some unforseen reason), I don't want to return undefined, nor throw an exception, nor even make an impossibly large plan
+      // you are already at the goal
+      // if you are using SP to get no where, well, it's better to just increase the runCost
+      // searching for a plan should exclude this because it's a waste (but not a blocker)
+      //
+      // as you can probably tell, there isn't yet a definitive answer
+      sp = serialplan.create(start, start);
+      expect(sp).to.be.ok;
+      expect(sp.plans.length).to.equal(0);
+      expect(sp.runCost()).to.equal(1);
+      expect(sp.cost(start, goal)).to.equal(2); // start:0 goal:1 + runCost()
+    });
 
-  // is there a way that we can determine that a solution is unreachable without running astar to oblivion?
-  // something like:
-  //  'a value needs to change, and none of our plans will change that unit'
-  //  'there is no way to change that unit in that direction'
-  it.skip('create: fail early when impossible?');
+    it('array', function() {
+      var goal2 = new blueprint.State(goal.state.copy(), [a]);
+      goal2.state.vertices[state_count].data.value = number.value(10);
+
+      // standard list of goals
+      var sp = serialplan.create(start, [goal, goal2]);
+      expect(sp).to.be.ok;
+      expect(sp.plans.length).to.equal(2);
+      expect(sp.runCost()).to.equal(10);
+      var result = sp.tryTransition(start);
+      expect(result.length).to.equal(1); // one plan that we can perform
+      expect(result[0].length).to.equal(2); // serial plan of length 2 needs 2 glues
+      expect(result[0][0].length).to.equal(5); // this sub plan has 5 steps
+      expect(result[0][1].length).to.equal(5); // this sub plan has 5 steps
+
+      // standard list of goals
+      sp = serialplan.create(start, [goal, goal]);
+      expect(sp).to.be.ok;
+      expect(sp.plans.length).to.equal(2);
+      expect(sp.runCost()).to.equal(6);
+
+      // unwrap the single element
+      sp = serialplan.create(start, [goal]);
+      expect(sp).to.be.ok;
+      expect(sp.plans.length).to.equal(5);
+      expect(sp.runCost()).to.equal(5);
+
+      // cannot get to plans
+      var before = config.settings.astar_max_paths;
+      config.settings.astar_max_paths = 10;
+      sp = serialplan.create(start, [goal, goal2, goal]);
+      expect(sp).to.not.be.ok;
+      config.settings.astar_max_paths = before;
+    });
+    it.skip('array: [goal, goal], tryTransition');
+    it.skip('array: (start, goal, goal2)');
+
+    it.skip('undefined arguments');
+
+    // is there a way that we can determine that a solution is unreachable without running astar to oblivion?
+    // something like:
+    //  'a value needs to change, and none of our plans will change that unit'
+    //  'there is no way to change that unit in that direction'
+    it.skip('fail early when impossible?');
+  }); // end create
 
   describe('SerialPlan', function() {
     it('runCost', function() {

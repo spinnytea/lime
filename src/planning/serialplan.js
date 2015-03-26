@@ -148,8 +148,18 @@ blueprint.loaders.SerialAction = function(bp) {
 
 // create a serial plan
 // @param start: blueprint.State
-// @param goal: blueprint.State
+// @param goal: blueprint.State, or an array of States
 exports.create = function(start, goal) {
+  if(_.isArray(goal)) {
+    if(goal.length === 1)
+      return createSingle(start, goal[0]);
+    return createMultiple(start, goal);
+  } else {
+    return createSingle(start, goal);
+  }
+};
+
+function createSingle(start, goal) {
   var path = astar.search(start, goal);
 
   if(path === undefined)
@@ -171,4 +181,20 @@ exports.create = function(start, goal) {
     return path.actions[0];
 
   return new SerialAction(path.actions);
-};
+}
+
+function createMultiple(start, goals) {
+  // if every plan succeeds, then return a new serial action
+  // if one of the plans fails, then the whole thing fails
+  var plans = [];
+  if(goals.every(function(g) {
+      var p = createSingle(start, g);
+      if(p === undefined)
+        return false;
+      plans.push(p);
+      start = g;
+      return true;
+    }))
+    return new SerialAction(plans);
+  return undefined;
+}
