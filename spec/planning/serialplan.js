@@ -119,42 +119,51 @@ describe('serialplan', function() {
       expect(sp.cost(start, goal)).to.equal(2); // start:0 goal:1 + runCost()
     });
 
-    it('array', function() {
-      var goal2 = new blueprint.State(goal.state.copy(), [a]);
-      goal2.state.vertices[state_count].data.value = number.value(10);
+    describe('array', function() {
+      var goal2;
+      beforeEach(function() {
+        goal2 = new blueprint.State(goal.state.copy(), [a]);
+        goal2.state.vertices[state_count].data.value = number.value(10);
+      });
 
-      // standard list of goals
-      var sp = serialplan.create(start, [goal, goal2]);
-      expect(sp).to.be.ok;
-      expect(sp.plans.length).to.equal(2);
-      expect(sp.runCost()).to.equal(10);
-      var result = sp.tryTransition(start);
-      expect(result.length).to.equal(1); // one plan that we can perform
-      expect(result[0].length).to.equal(2); // serial plan of length 2 needs 2 glues
-      expect(result[0][0].length).to.equal(5); // this sub plan has 5 steps
-      expect(result[0][1].length).to.equal(5); // this sub plan has 5 steps
+      it('standard list of goals', function() {
+        var sp = serialplan.create(start, [goal, goal2]);
+        expect(sp).to.be.ok;
+        expect(sp.plans.length).to.equal(2);
+        expect(sp.runCost()).to.equal(10);
+        var result = sp.tryTransition(start);
+        expect(result.length).to.equal(1); // one plan that we can perform
+        expect(result[0].length).to.equal(2); // serial plan of length 2 needs 2 glues
+        expect(result[0][0].length).to.equal(5); // this sub plan has 5 steps
+        expect(result[0][1].length).to.equal(5); // this sub plan has 5 steps
+      });
 
-      // standard list of goals
-      sp = serialplan.create(start, [goal, goal]);
-      expect(sp).to.be.ok;
-      expect(sp.plans.length).to.equal(2);
-      expect(sp.runCost()).to.equal(6);
+      it('same goals', function() {
+        // standard list of goals
+        var sp = serialplan.create(start, [goal, goal]);
+        expect(sp).to.be.ok;
+        expect(sp.plans.length).to.equal(2);
+        expect(sp.runCost()).to.equal(6);
+      });
 
-      // unwrap the single element
-      sp = serialplan.create(start, [goal]);
-      expect(sp).to.be.ok;
-      expect(sp.plans.length).to.equal(5);
-      expect(sp.runCost()).to.equal(5);
+      it('unwrap the single element', function() {
+        var sp = serialplan.create(start, [goal]);
+        expect(sp).to.be.ok;
+        expect(sp.plans.length).to.equal(5);
+        expect(sp.runCost()).to.equal(5);
+      });
 
-      // cannot get to plans
-      var before = config.settings.astar_max_paths;
-      config.settings.astar_max_paths = 10;
-      sp = serialplan.create(start, [goal, goal2, goal]);
-      expect(sp).to.not.be.ok;
-      config.settings.astar_max_paths = before;
-    });
-    it.skip('array: [goal, goal], tryTransition');
-    it.skip('array: (start, goal, goal2)');
+      it('cannot get to plans', function() {
+        var before = config.settings.astar_max_paths;
+        config.settings.astar_max_paths = 10;
+        var sp = serialplan.create(start, [goal, goal2, goal]);
+        expect(sp).to.not.be.ok;
+        config.settings.astar_max_paths = before;
+      });
+      it.skip('[goal, goal], tryTransition');
+      it.skip('[goal], tryTransition'); // silly, I know
+      it.skip('(start, goal, goal2)');
+    }); // end array
 
     it.skip('undefined arguments');
 
