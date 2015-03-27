@@ -60,20 +60,31 @@ SerialAction.prototype.tryTransition = function(state) {
     nextList = [];
 
     currList.forEach(function(curr) {
-      var transitions = that.plans[i].tryTransition(curr.state);
-      transitions.forEach(function(glue) {
-        var glues = [];
-        Array.prototype.push.apply(glues, curr.glues);
-        glues.push(glue);
+      var action = that.plans[i];
 
-        // no need to apply the action on the last step
-        // reuse the state argument
-        state = undefined;
-        if(i < that.plans.length - 1)
-          state = that.plans[i].apply(curr.state, glue);
+      if(action instanceof SerialAction && action.plans.length === 0) {
+        // if we are going to allow serial plans with no actions,
+        // then this is essentially a noop
+        // and if it's a noop, then we need to account for it here
+        // there aren't any transitions to perform, which would halt the planning
+        // (no transitions means unable to transition)
+        nextList.push(curr);
+      } else {
+        var transitions = that.plans[i].tryTransition(curr.state);
+        transitions.forEach(function(glue) {
+          var glues = [];
+          Array.prototype.push.apply(glues, curr.glues);
+          glues.push(glue);
 
-        nextList.push({ glues: glues, state: state });
-      });
+          // no need to apply the action on the last step
+          // reuse the state argument
+          state = undefined;
+          if(i < that.plans.length - 1)
+            state = that.plans[i].apply(curr.state, glue);
+
+          nextList.push({ glues: glues, state: state });
+        });
+      }
     });
 
     // swap curr and next
@@ -156,9 +167,8 @@ function createSingle(start, goal) {
     // do a little finagling
     // this plan shouldn't be broken
     // but that doesn't mean it needs to be useful
-    // TODO ensure this is a valid blueprint
-    // - can we tryTransition, runBlueprint?
-    // - write a unit test; although it really should be fine
+    //
+    // XXX this impacts tryTransition and runBlueprint; need to allow this as a noop
     var sp = new SerialAction([]);
     sp.requirements = start.state;
     return sp;

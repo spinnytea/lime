@@ -131,11 +131,17 @@ describe('serialplan', function() {
         expect(sp).to.be.ok;
         expect(sp.plans.length).to.equal(2);
         expect(sp.runCost()).to.equal(10);
+        expect(sp.cost(start, goal2)).to.equal(20);
+
         var result = sp.tryTransition(start);
         expect(result.length).to.equal(1); // one plan that we can perform
         expect(result[0].length).to.equal(2); // serial plan of length 2 needs 2 glues
         expect(result[0][0].length).to.equal(5); // this sub plan has 5 steps
         expect(result[0][1].length).to.equal(5); // this sub plan has 5 steps
+
+        expect(count.data().value).to.deep.equal(number.value(0));
+        sp.runBlueprint(start, result[0]);
+        expect(count.data().value).to.deep.equal(number.value(10));
       });
 
       it('same goals', function() {
@@ -144,13 +150,31 @@ describe('serialplan', function() {
         expect(sp).to.be.ok;
         expect(sp.plans.length).to.equal(2);
         expect(sp.runCost()).to.equal(6);
+        expect(sp.cost(start, goal)).to.equal(11);
+        var result = sp.tryTransition(start);
+        expect(result.length).to.equal(1); // one plan that we can perform
+
+        expect(count.data().value).to.deep.equal(number.value(0));
+        sp.runBlueprint(start, result[0]);
+        expect(count.data().value).to.deep.equal(number.value(5));
       });
+
+      it.skip('[goal, goal, goal2]');
 
       it('unwrap the single element', function() {
         var sp = serialplan.create(start, [goal]);
         expect(sp).to.be.ok;
         expect(sp.plans.length).to.equal(5);
         expect(sp.runCost()).to.equal(5);
+        expect(sp.cost(start, goal)).to.equal(10);
+
+        var result = sp.tryTransition(start);
+        expect(result.length).to.equal(1); // one plan that we can perform
+        expect(result[0].length).to.equal(5); // serial plan with 5 steps
+
+        expect(count.data().value).to.deep.equal(number.value(0));
+        sp.runBlueprint(start, result[0]);
+        expect(count.data().value).to.deep.equal(number.value(5));
       });
 
       it('cannot get to plans', function() {
@@ -160,8 +184,7 @@ describe('serialplan', function() {
         expect(sp).to.not.be.ok;
         config.settings.astar_max_paths = before;
       });
-      it.skip('[goal, goal], tryTransition');
-      it.skip('[goal], tryTransition'); // silly, I know
+
       it.skip('(start, goal, goal2)');
     }); // end array
 
@@ -294,15 +317,15 @@ describe('serialplan', function() {
     it.skip('blueprint.load: cache currently loaded plans');
     // check sp.plans[0] === sp.plans[1]
 
-    it('nested blueprint cost', function() {
+    it('nested blueprint', function() {
       goal.state.vertices[state_count].data.value = number.value(3);
-      var sp3 = serialplan.create(start, goal);
-      expect(sp3).to.be.ok;
-      expect(sp3.plans).to.deep.equal([a, a, a]);
+      var sp2 = serialplan.create(start, goal);
+      expect(sp2).to.be.ok;
+      expect(sp2.plans).to.deep.equal([a, a, a]);
 
 
-      start.availableActions.push(sp3);
-      expect(start.availableActions).to.deep.equal([a, sp3]);
+      start.availableActions.push(sp2);
+      expect(start.availableActions).to.deep.equal([a, sp2]);
       expect(start.state.vertices[state_count].data.value).to.deep.equal(number.value(0));
 
       goal.state.vertices[state_count].data.value = number.value(8);
@@ -317,10 +340,15 @@ describe('serialplan', function() {
       ]);
       expect(sp.runCost()).to.equal(8);
       expect(sp.cost(start, goal)).to.equal(16);
+      var result = sp.tryTransition(start);
+      expect(result.length).to.equal(1); // only 1 plan
+      expect(result[0].length).to.equal(4); // this plan has 4 parts
+      expect(result[0].map(function(p) { return p.constructor.name; })).to.deep.equal([
+        'Array', 'Array', 'Object', 'Object'
+      ]);
 
 
-      // okay, so if we want to specifically get SerialPlans, then we need to use them
-      start.availableActions = [sp3];
+      // change the goal so we can get there with 2 serial plans
       goal.state.vertices[state_count].data.value = number.value(6);
       sp = serialplan.create(start, goal);
       expect(sp).to.be.ok;
@@ -328,5 +356,7 @@ describe('serialplan', function() {
         'SerialAction', 'SerialAction'
       ]);
     });
+
+    it.skip('nested blueprint: runBlueprint, apply, save');
   }); // end SerialPlan
 }); // end serialplan
