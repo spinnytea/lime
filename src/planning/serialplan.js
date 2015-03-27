@@ -68,6 +68,7 @@ SerialAction.prototype.tryTransition = function(state) {
         // and if it's a noop, then we need to account for it here
         // there aren't any transitions to perform, which would halt the planning
         // (no transitions means unable to transition)
+        curr.glues.push([]);
         nextList.push(curr);
       } else {
         var transitions = that.plans[i].tryTransition(curr.state);

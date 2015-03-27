@@ -145,21 +145,41 @@ describe('serialplan', function() {
       });
 
       it('same goals', function() {
-        // standard list of goals
         var sp = serialplan.create(start, [goal, goal]);
         expect(sp).to.be.ok;
         expect(sp.plans.length).to.equal(2);
         expect(sp.runCost()).to.equal(6);
         expect(sp.cost(start, goal)).to.equal(11);
+
         var result = sp.tryTransition(start);
         expect(result.length).to.equal(1); // one plan that we can perform
+        expect(result[0].length).to.equal(2);
+        expect(result[0][0].length).to.equal(5);
+        expect(result[0][1].length).to.equal(0);
 
         expect(count.data().value).to.deep.equal(number.value(0));
         sp.runBlueprint(start, result[0]);
         expect(count.data().value).to.deep.equal(number.value(5));
       });
 
-      it.skip('[goal, goal, goal2]');
+      it('[goal, goal, goal2]', function() {
+        var sp = serialplan.create(start, [goal, goal, goal2]);
+        expect(sp).to.be.ok;
+        expect(sp.plans.length).to.equal(3);
+        expect(sp.runCost()).to.equal(11);
+        expect(sp.cost(start, goal)).to.equal(16);
+
+        var result = sp.tryTransition(start);
+        expect(result.length).to.equal(1);
+        expect(result[0].length).to.equal(3);
+        expect(result[0][0].length).to.equal(5);
+        expect(result[0][1].length).to.equal(0);
+        expect(result[0][2].length).to.equal(5);
+
+        expect(count.data().value).to.deep.equal(number.value(0));
+        sp.runBlueprint(start, result[0]);
+        expect(count.data().value).to.deep.equal(number.value(10));
+      });
 
       it('unwrap the single element', function() {
         var sp = serialplan.create(start, [goal]);
