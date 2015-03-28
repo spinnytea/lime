@@ -125,7 +125,7 @@ SerialAction.prototype.save = function() {
     subtype: 'SerialAction',
     blueprint: {
       idea: this.idea,
-      plans: this.plans.map(function(p) { return p.save(); }),
+      plans: this.plans.map(function(p) { return p.save(); })
       // we can derive the requirements from the first plan
 //      requirements: subgraph.stringify(this.requirements),
       // fact is, we can just derive anything from the plan list
@@ -149,7 +149,9 @@ blueprint.loaders.SerialAction = function(bp) {
 // @param start: blueprint.State
 // @param goal: blueprint.State, or an array of States
 exports.create = function(start, goal) {
-  if(_.isArray(goal)) {
+  if(arguments.length > 2) {
+    return createMultiple(start, _.values(arguments).slice(1));
+  } else if(_.isArray(goal)) {
     if(goal.length === 1)
       return createSingle(start, goal[0]);
     return createMultiple(start, goal);

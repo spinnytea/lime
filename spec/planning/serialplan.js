@@ -205,7 +205,23 @@ describe('serialplan', function() {
         config.settings.astar_max_paths = before;
       });
 
-      it.skip('(start, goal, goal2)');
+      it('multiple inline goals (convenience)', function() {
+        var sp = serialplan.create(start, goal, goal2);
+        expect(sp).to.be.ok;
+        expect(sp.plans.length).to.equal(2);
+        expect(sp.runCost()).to.equal(10);
+        expect(sp.cost(start, goal2)).to.equal(20);
+
+        var result = sp.tryTransition(start);
+        expect(result.length).to.equal(1); // one plan that we can perform
+        expect(result[0].length).to.equal(2); // serial plan of length 2 needs 2 glues
+        expect(result[0][0].length).to.equal(5); // this sub plan has 5 steps
+        expect(result[0][1].length).to.equal(5); // this sub plan has 5 steps
+
+        expect(count.data().value).to.deep.equal(number.value(0));
+        sp.runBlueprint(start, result[0]);
+        expect(count.data().value).to.deep.equal(number.value(10));
+      });
     }); // end array
 
     it.skip('undefined arguments');
