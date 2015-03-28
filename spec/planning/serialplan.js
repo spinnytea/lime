@@ -410,6 +410,6 @@ describe('serialplan', function() {
       ]);
     });
 
-    it.skip('nested blueprint: runBlueprint, apply, save');
+    it.skip('nested blueprint: runBlueprint, apply, save & load');
   }); // end SerialPlan
 }); // end serialplan

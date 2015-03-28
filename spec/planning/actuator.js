@@ -115,7 +115,7 @@ describe('actuator', function() {
 
     expect(actionImplCount).to.equal(0);
   });
-  it.skip('try setting the price data to a negative number; this should not be able to match');
+  it.skip('setting the price data to a negative number should not be able to match');
 
   it('apply', function() {
     expect(actionImplCount).to.equal(0);

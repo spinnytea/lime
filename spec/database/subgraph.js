@@ -86,7 +86,7 @@ describe('subgraph', function() {
       expect(sg.copy()).to.deep.equal(sg);
     });
 
-    describe('lazy copy', function() {
+    describe('~~New!~~ lazy copy', function() {
       it.skip('nothing at first');
 
       it.skip('copy all when addEdge/addVertex');
@@ -140,7 +140,14 @@ describe('subgraph', function() {
       });
     }); // end loadVertexData
 
-    it.skip('invalidateCache');
+    it.skip('~~New!~~ invalidateCache', function() {
+      // I'm not sure what this should look like
+      // it seems reasonable enough that there is one method to invalidate every vertex
+      // but is it too much, should we invalidate each individually?
+      // should we just have both and decide when to use which?
+      // invalidating them individually seems more reasonable
+      // if you want to invalidate them all, then iterate yourself
+    });
   }); // end Subgraph
 
   describe('matcher', function() {
