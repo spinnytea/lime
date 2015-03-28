@@ -149,6 +149,9 @@ blueprint.loaders.SerialAction = function(bp) {
 // @param start: blueprint.State
 // @param goal: blueprint.State, or an array of States
 exports.create = function(start, goal) {
+  if(start === undefined || goal === undefined)
+    return undefined;
+
   if(arguments.length > 2) {
     return createMultiple(start, _.values(arguments).slice(1));
   } else if(_.isArray(goal)) {

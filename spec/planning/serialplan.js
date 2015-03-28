@@ -224,7 +224,16 @@ describe('serialplan', function() {
       });
     }); // end array
 
-    it.skip('undefined arguments');
+    it('undefined arguments', function() {
+      // one positive case (not that it really belongs here)
+      expect(serialplan.create(start, goal)).to.be.ok;
+
+      // okay, the negative cases
+      expect(serialplan.create(undefined, undefined)).to.not.be.ok;
+      expect(serialplan.create(start, undefined)).to.not.be.ok;
+      expect(serialplan.create(undefined, goal)).to.not.be.ok;
+      expect(serialplan.create(undefined, undefined, goal)).to.not.be.ok;
+    });
 
     // is there a way that we can determine that a solution is unreachable without running astar to oblivion?
     // something like:
