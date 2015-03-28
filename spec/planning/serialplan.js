@@ -1,5 +1,5 @@
 'use strict';
-/* global describe, it, beforeEach */
+/* global describe, it, beforeEach, before */
 var _ = require('lodash');
 var expect = require('chai').expect;
 var actuator = require('../../src/planning/actuator');
@@ -13,11 +13,10 @@ var subgraph = require('../../src/database/subgraph');
 var tools = require('../testingTools');
 
 describe('serialplan', function() {
-  it.skip('can we reduce the setup for these tests; can we use "before" instead of "beforeEach"');
   var count;
   var a, a_c, actionImplCount;
   var start, state_count, goal;
-  beforeEach(function() {
+  before(function() {
     // our state, just a simple object with a value of 0
     // athing -> count
     var athing = tools.ideas.create();
@@ -68,6 +67,15 @@ describe('serialplan', function() {
     // so I'm just gonna leave this in
     // the requirements need to match the initial state
     expect(subgraph.match(sg, a.requirements).length).to.equal(1);
+  });
+
+  // reset our data from our tests
+  beforeEach(function() {
+    var data = count.data();
+    count.update({ value: number.value(0), unit: data.unit });
+    actionImplCount = 0;
+    start.state.invalidateCache();
+    goal.state.vertices[state_count].data.value = number.value(5);
   });
 
   it('init', function() {
