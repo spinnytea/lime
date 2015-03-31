@@ -78,7 +78,7 @@ describe('ideas', function() {
           tools.ideas.exists(ideaA.id, 'links', true),
           tools.ideas.exists(ideaB.id, 'links', true),
           tools.ideas.exists(ideaA.id, 'data', false),
-          tools.ideas.exists(ideaB.id, 'data', false),
+          tools.ideas.exists(ideaB.id, 'data', false)
         ]).then(function(results) {
           expect(results).to.deep.equal([true, true, false, false]);
 
@@ -97,7 +97,7 @@ describe('ideas', function() {
 
         q.all([
           tools.ideas.exists(ideaA.id, 'links', true),
-          tools.ideas.exists(ideaB.id, 'links', true),
+          tools.ideas.exists(ideaB.id, 'links', true)
         ]).then(function(results) {
           expect(results).to.deep.equal([true, true]);
 
@@ -107,7 +107,7 @@ describe('ideas', function() {
 
           return q.all([
             tools.ideas.exists(ideaA.id, 'links', false),
-            tools.ideas.exists(ideaB.id, 'links', false),
+            tools.ideas.exists(ideaB.id, 'links', false)
           ]);
         }).then(function(results) {
           expect(results).to.deep.equal([false, false]);
@@ -160,7 +160,7 @@ describe('ideas', function() {
 
         q.all([
           tools.ideas.exists(idea.id, 'data', false),
-          tools.ideas.exists(idea.id, 'links', false),
+          tools.ideas.exists(idea.id, 'links', false)
         ]).then(function(results) {
           expect(results).to.deep.equal([false, false]);
 
@@ -178,7 +178,7 @@ describe('ideas', function() {
         ideas.save(idea);
         q.all([
           tools.ideas.exists(idea.id, 'data', true),
-          tools.ideas.exists(idea.id, 'links', false),
+          tools.ideas.exists(idea.id, 'links', false)
         ]).then(function(results) {
           expect(results).to.deep.equal([true, false]);
 
@@ -224,12 +224,12 @@ describe('ideas', function() {
 
   it('context', function() {
     // first, ensure the context has be
-    expect(config.data).to.be.ok;
-    expect(config.data.ideas).to.be.ok;
+    expect(config.data).to.not.equal(undefined);
+    expect(config.data.ideas).to.not.equal(undefined);
 
-    expect(config.data.ideas.context.test).to.not.be.ok;
-    expect(ideas.context('test')).to.be.ok;
-    expect(config.data.ideas.context.test).to.be.ok;
+    expect(config.data.ideas.context.test).to.equal(undefined);
+    expect(ideas.context('test')).to.be.an('object'); // proxy idea
+    expect(config.data.ideas.context.test).to.not.equal(undefined);
 
     // clean up after the test
     delete config.data.ideas.context.test;

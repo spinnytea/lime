@@ -4,7 +4,7 @@ var _ = require('lodash');
 var expect = require('chai').expect;
 var config = require('../../../config');
 var astar = require('../../../src/planning/algorithms/astar');
-var path = require('../../../src/planning/primitives/path');
+var Path = require('../../../src/planning/primitives/path');
 var NumberSlide = require('../NumberSlide');
 
 
@@ -13,12 +13,12 @@ describe('astar', function() {
     expect(config.settings.astar_max_paths).to.be.a('number');
 
     expect(Object.keys(astar)).to.deep.equal(['units', 'search']);
-    expect(Object.keys(path)).to.deep.equal(['Path', 'Action', 'State']);
+    expect(Object.keys(Path)).to.deep.equal(['Path', 'Action', 'State']);
 
     expect(NumberSlide.Action).to.be.a('function');
     expect(NumberSlide.State).to.be.a('function');
-    expect(_.intersection(Object.keys(NumberSlide.Action.prototype), Object.keys(path.Action.prototype))).to.deep.equal(Object.keys(path.Action.prototype));
-    expect(_.intersection(Object.keys(NumberSlide.State.prototype), Object.keys(path.State.prototype))).to.deep.equal(Object.keys(path.State.prototype));
+    expect(_.intersection(Object.keys(NumberSlide.Action.prototype), Object.keys(Path.Action.prototype))).to.deep.equal(Object.keys(Path.Action.prototype));
+    expect(_.intersection(Object.keys(NumberSlide.State.prototype), Object.keys(Path.State.prototype))).to.deep.equal(Object.keys(Path.State.prototype));
   });
 
   describe('units', function() {
@@ -41,7 +41,7 @@ describe('astar', function() {
 
       var path = astar.search(start, goal);
 
-      expect(path).to.be.ok;
+      expect(path).to.be.an.instanceOf(Path.Path);
       expect(path.states).to.deep.equal([start, goal]);
       expect(path.actions).to.deep.equal([right]);
     });
@@ -50,7 +50,7 @@ describe('astar', function() {
       var goal = new NumberSlide.State([[1, 2], [3, 0]]);
       var path = astar.search(goal, goal);
 
-      expect(path).to.be.ok;
+      expect(path).to.be.an.instanceOf(Path.Path);
       expect(path.states).to.deep.equal([goal]);
       expect(path.actions).to.deep.equal([]);
     });
@@ -64,7 +64,7 @@ describe('astar', function() {
                                          [4, 7, 8]]);
       var path = astar.search(start, goal);
 
-      expect(path).to.be.ok;
+      expect(path).to.be.an.instanceOf(Path.Path);
       expect(path.states[0].numbers).to.deep.equal(start.numbers);
       expect(_.last(path.states).numbers).to.deep.equal(goal.numbers);
       expect(_.pluck(path.actions, 'dir')).to.deep.equal([
@@ -79,12 +79,12 @@ describe('astar', function() {
       var start =  new NumberSlide.State([[0, 1, 2, 3, 4]]);
 
       var path = astar.search(start, goal);
-      expect(path).to.be.ok;
+      expect(path).to.be.an.instanceOf(Path.Path);
       expect(_.pluck(path.actions, 'dir')).to.deep.equal([ 'right', 'right', 'right', 'right' ]);
 
       config.settings.astar_max_paths = 2;
       path = astar.search(start, goal);
-      expect(path).to.not.be.ok;
+      expect(path).to.equal(undefined);
 
       // reset the config from before the test
       config.settings.astar_max_paths = before;
@@ -95,7 +95,7 @@ describe('astar', function() {
       var start =  new NumberSlide.State([[0, 1, 4, 2, 3]]);
       var path = astar.search(start, goal);
 
-      expect(path).to.not.be.ok;
+      expect(path).to.equal(undefined);
     });
   }); // end search
 }); // end astar

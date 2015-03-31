@@ -140,9 +140,9 @@ describe('actuator', function() {
 
   it('save & load', function() {
     // before an action is saved, there is no idea
-    expect(a.idea).to.not.be.ok;
+    expect(a.idea).to.equal(undefined);
     a.save();
-    expect(a.idea).to.be.ok;
+    expect(a.idea).to.not.equal(undefined);
     // if we save again, it should use the same idea
     var id = a.idea;
     a.save();
@@ -152,7 +152,7 @@ describe('actuator', function() {
     ideas.close(id);
 
     var loaded = blueprint.load(id);
-    expect(loaded).to.be.ok;
+    expect(loaded).to.be.an.instanceOf(actuator.Action);
 
     // this is the ultimate test of the load
     expect(loaded).to.deep.equal(a);
@@ -189,7 +189,7 @@ describe('actuator', function() {
 
       // apply the action to get a new state
       var next = a.apply(bs, glue);
-      expect(next).to.be.ok;
+      expect(next).to.be.an.instanceOf(blueprint.State);
       expect(next.state.vertices[bs_p].data).to.deep.equal({ type: 'lime_number', value: number.value(30), unit: money.id });
 
       // and now, we should match the goal
@@ -214,7 +214,7 @@ describe('actuator', function() {
 
       var path = astar.search(bs, goal);
 
-      expect(path).to.be.ok;
+      expect(path).to.not.equal(undefined);
       expect(path.states.length).to.equal(3);
       expect(path.states[0].state.vertices[bs_p].data).to.deep.equal({ type: 'lime_number', value: number.value(10), unit: money.id });
       expect(path.states[1].state.vertices[bs_p].data).to.deep.equal({ type: 'lime_number', value: number.value(30), unit: money.id });
@@ -236,7 +236,7 @@ describe('actuator', function() {
 
       var path = astar.search(bs, goal);
 
-      expect(path).to.be.ok;
+      expect(path).to.not.equal(undefined);
       expect(path.states.length).to.equal(3);
       expect(path.states[0].state.vertices[bs_p].data).to.deep.equal({ type: 'lime_number', value: number.value(10), unit: money.id });
       expect(path.states[1].state.vertices[bs_p].data).to.deep.equal({ type: 'lime_number', value: number.value(30), unit: money.id });
@@ -267,7 +267,7 @@ describe('actuator', function() {
 
       var path = astar.search(bs, goal);
 
-      expect(path).to.be.ok;
+      expect(path).to.not.equal(undefined);
       expect(path.states.length).to.equal(3);
       expect(path.states[0].state.vertices[bs_p].data).to.deep.equal({ type: 'lime_number', value: number.value(10), unit: money.id });
       expect(path.states[1].state.vertices[bs_p].data).to.deep.equal({ type: 'lime_number', value: number.value(30), unit: money.id });
@@ -286,7 +286,7 @@ describe('actuator', function() {
 
     // save our actuator
     a.save();
-    expect(a.idea).to.be.ok;
+    expect(a.idea).to.not.equal(undefined);
 
     // attach it to a dummy context
     var context = ideas.create();

@@ -99,7 +99,7 @@ describe('serialplan', function() {
     it('single', function() {
       // standard case, success
       var sp = serialplan.create(start, goal);
-      expect(sp).to.be.ok;
+      expect(sp).to.be.an.instanceOf(serialplan.Action);
       expect(sp.plans.length).to.equal(5);
       expect(sp.runCost()).to.equal(5);
 
@@ -108,13 +108,13 @@ describe('serialplan', function() {
       var before = config.settings.astar_max_paths;
       config.settings.astar_max_paths = 10;
       sp = serialplan.create(goal, start);
-      expect(sp).to.not.be.ok;
+      expect(sp).to.equal(undefined);
       config.settings.astar_max_paths = before;
 
       // only one step away
       goal.state.vertices[state_count].data.value = number.value(1);
       sp = serialplan.create(start, goal);
-      expect(sp).to.be.ok;
+      expect(sp).to.be.an.instanceOf(actuator.Action);
       expect(sp).to.equal(a);
 
 
@@ -132,12 +132,13 @@ describe('serialplan', function() {
       //
       // as you can probably tell, there isn't yet a definitive answer
       sp = serialplan.create(start, start);
-      expect(sp).to.be.ok;
+      expect(sp).to.be.an.instanceOf(serialplan.Action);
       expect(sp.plans.length).to.equal(0);
       expect(sp.runCost()).to.equal(1);
       expect(sp.cost(start, goal)).to.equal(2); // start:0 goal:1 + runCost()
     });
 
+    // XXX this is slated for deletion; it will probably be remove when we have a tiered plan
     describe('array', function() {
       var goal2;
       beforeEach(function() {
@@ -147,7 +148,7 @@ describe('serialplan', function() {
 
       it('standard list of goals', function() {
         var sp = serialplan.create(start, [goal, goal2]);
-        expect(sp).to.be.ok;
+        expect(sp).to.be.an.instanceOf(serialplan.Action);
         expect(sp.plans.length).to.equal(2);
         expect(sp.runCost()).to.equal(10);
         expect(sp.cost(start, goal2)).to.equal(20);
@@ -165,7 +166,7 @@ describe('serialplan', function() {
 
       it('same goals', function() {
         var sp = serialplan.create(start, [goal, goal]);
-        expect(sp).to.be.ok;
+        expect(sp).to.be.an.instanceOf(serialplan.Action);
         expect(sp.plans.length).to.equal(2);
         expect(sp.runCost()).to.equal(6);
         expect(sp.cost(start, goal)).to.equal(11);
@@ -183,7 +184,7 @@ describe('serialplan', function() {
 
       it('[goal, goal, goal2]', function() {
         var sp = serialplan.create(start, [goal, goal, goal2]);
-        expect(sp).to.be.ok;
+        expect(sp).to.be.an.instanceOf(serialplan.Action);
         expect(sp.plans.length).to.equal(3);
         expect(sp.runCost()).to.equal(11);
         expect(sp.cost(start, goal)).to.equal(16);
@@ -202,7 +203,7 @@ describe('serialplan', function() {
 
       it('unwrap the single element', function() {
         var sp = serialplan.create(start, [goal]);
-        expect(sp).to.be.ok;
+        expect(sp).to.be.an.instanceOf(serialplan.Action);
         expect(sp.plans.length).to.equal(5);
         expect(sp.runCost()).to.equal(5);
         expect(sp.cost(start, goal)).to.equal(10);
@@ -220,13 +221,13 @@ describe('serialplan', function() {
         var before = config.settings.astar_max_paths;
         config.settings.astar_max_paths = 10;
         var sp = serialplan.create(start, [goal, goal2, goal]);
-        expect(sp).to.not.be.ok;
+        expect(sp).to.be.equal(undefined);
         config.settings.astar_max_paths = before;
       });
 
       it('multiple inline goals (convenience)', function() {
         var sp = serialplan.create(start, goal, goal2);
-        expect(sp).to.be.ok;
+        expect(sp).to.be.an.instanceOf(serialplan.Action);
         expect(sp.plans.length).to.equal(2);
         expect(sp.runCost()).to.equal(10);
         expect(sp.cost(start, goal2)).to.equal(20);
@@ -245,13 +246,13 @@ describe('serialplan', function() {
 
     it('undefined arguments', function() {
       // one positive case (not that it really belongs here)
-      expect(serialplan.create(start, goal)).to.be.ok;
+      expect(serialplan.create(start, goal)).to.be.an.instanceOf(serialplan.Action);
 
       // okay, the negative cases
-      expect(serialplan.create(undefined, undefined)).to.not.be.ok;
-      expect(serialplan.create(start, undefined)).to.not.be.ok;
-      expect(serialplan.create(undefined, goal)).to.not.be.ok;
-      expect(serialplan.create(undefined, undefined, goal)).to.not.be.ok;
+      expect(serialplan.create(undefined, undefined)).to.equal(undefined);
+      expect(serialplan.create(start, undefined)).to.equal(undefined);
+      expect(serialplan.create(undefined, goal)).to.equal(undefined);
+      expect(serialplan.create(undefined, undefined, goal)).to.equal(undefined);
     });
 
     // is there a way that we can determine that a solution is unreachable without running astar to oblivion?
@@ -350,13 +351,13 @@ describe('serialplan', function() {
 
     it('save & load', function() {
       var sp = serialplan.create(start, goal);
-      expect(sp).to.be.ok;
+      expect(sp).to.be.an.instanceOf(serialplan.Action);
 
       // okay, so we save the plan for the first time
       // it should generate an idea
-      expect(sp.idea).to.not.be.ok;
+      expect(sp.idea).to.equal(undefined);
       sp.save();
-      expect(sp.idea).to.be.ok;
+      expect(sp.idea).to.not.equal(undefined);
       // but it shouldn't create a new one
       var id = sp.idea;
       sp.save();
@@ -367,7 +368,7 @@ describe('serialplan', function() {
       ideas.close(id);
 
       var loaded = blueprint.load(id);
-      expect(loaded).to.be.ok;
+      expect(loaded).to.be.an.instanceOf(serialplan.Action);
 
       // this is the ultimate test of the load
       expect(loaded).to.deep.equal(sp);
@@ -384,7 +385,7 @@ describe('serialplan', function() {
     it('nested blueprint', function() {
       goal.state.vertices[state_count].data.value = number.value(3);
       var sp2 = serialplan.create(start, goal);
-      expect(sp2).to.be.ok;
+      expect(sp2).to.be.an.instanceOf(serialplan.Action);
       expect(sp2.plans).to.deep.equal([a, a, a]);
 
 
@@ -394,7 +395,7 @@ describe('serialplan', function() {
 
       goal.state.vertices[state_count].data.value = number.value(8);
       var sp = serialplan.create(start, goal);
-      expect(sp).to.be.ok;
+      expect(sp).to.be.an.instanceOf(serialplan.Action);
       // this pattern has no meaning, really; it's '[deterministic] chance' that they show up in this order
       // astar factors plan length into the selection
       // 3xActuator = 1xSerial, but serial is shorter, so it will pick that first
@@ -415,7 +416,7 @@ describe('serialplan', function() {
       // change the goal so we can get there with 2 serial plans
       goal.state.vertices[state_count].data.value = number.value(6);
       sp = serialplan.create(start, goal);
-      expect(sp).to.be.ok;
+      expect(sp).to.be.an.instanceOf(serialplan.Action);
       expect(sp.plans.map(function(p) { return p.constructor.name; })).to.deep.equal([
         'SerialAction', 'SerialAction'
       ]);

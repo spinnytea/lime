@@ -11,7 +11,7 @@ describe('discrete', function() {
     expect(Object.keys(discrete)).to.deep.equal(['isDiscrete', 'cast', 'difference', 'definitions']);
     expect(Object.keys(discrete.definitions)).to.deep.equal(['similar', 'difference', 'create', 'list']);
 
-    expect(discrete.definitions.list.boolean).to.be.ok;
+    expect(discrete.definitions.list.boolean).to.not.equal(undefined);
   });
 
   // TODO should this throw an exception?
@@ -78,7 +78,7 @@ describe('discrete', function() {
 
       var states = ['r', 'o', 'y', 'g', 'b', 'i', 'v'];
       var roygbiv = discrete.definitions.create(states);
-      expect(roygbiv.data().type).to.be.ok;
+      expect(roygbiv.data().type).to.not.equal(undefined);
       expect(roygbiv.data().states).to.deep.equal(states);
 
       tools.ideas.clean(roygbiv);

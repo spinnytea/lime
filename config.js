@@ -11,7 +11,7 @@ exports.settings = {
   // XXX if we increase this number
   // - we should add some logic to prevent duplicate states
   // - (maybe we should anyway?)
-  astar_max_paths: 100,
+  astar_max_paths: 100
 };
 
 // a settings file store in the database

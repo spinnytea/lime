@@ -7,7 +7,7 @@ var ids = require('../src/ids');
 // copied from the src
 var tokens = [
 	'0', '1', '2', '3', '4', '5', '6', '7', '8', '9', // numbers
-	'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n', 'o', 'p', 'q', 'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z', // lower case letters
+	'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n', 'o', 'p', 'q', 'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z' // lower case letters
 ];
 
 describe('ids', function() {
@@ -21,7 +21,7 @@ describe('ids', function() {
 
   it('increment', function() {
     // the value should not be defined
-    expect(config.data.ids.testing).to.not.be.ok;
+    expect(config.data.ids.testing).to.equal(undefined);
 
     // an id must be supplied to next
     expect(function() { ids.next(); }).to.throw(TypeError);
@@ -56,7 +56,8 @@ describe('ids', function() {
     expect(config.data.ids.testing).to.equal('1000');
 
     delete config.data.ids.testing;
-    expect(config.data.ids).to.be.ok;
+    expect(config.data.ids.testing).to.equal(undefined);
+    expect(config.data.ids).to.not.equal(undefined);
   }); // end increment
 
   it('anonymous', function() {

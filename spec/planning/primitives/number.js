@@ -8,7 +8,7 @@ function num() {
   return {
     type: 'lime_number',
     value: number.value.apply({}, arguments),
-    unit: 'test',
+    unit: 'test'
   };
 }
 

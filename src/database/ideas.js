@@ -13,7 +13,7 @@ var ids = require('../ids');
 
 if(!config.data.ideas) {
   config.data.ideas = {
-    context: {},
+    context: {}
   };
   config.save();
 }
@@ -135,8 +135,7 @@ exports.load = function(idea) {
     if(fs.existsSync(linksPath))
       links = JSON.parse(fs.readFileSync(linksPath, {encoding:'utf8'}));
 
-    var core = new CoreIdea(id, data, links);
-    memory[id] = core;
+    memory[id] = new CoreIdea(id, data, links);
   }
 
   return new ProxyIdea(id);

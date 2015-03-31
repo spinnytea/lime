@@ -93,7 +93,7 @@ describe('path',  function() {
 //    it.skip('distance: Infinity');
 
     it('actions', function() {
-      expect(fourA._actions).to.be.null;
+      expect(fourA._actions).to.equal(null);
 
       expect(fourA.actions().length).to.equal(2);
       expect(sixB.actions().length).to.equal(3);
@@ -103,14 +103,14 @@ describe('path',  function() {
     });
 
     it('matches', function() {
-      expect(fourG.matches(fourG)).to.be.true;
-      expect(fourA.matches(fourG)).to.be.true;
-      expect(fourB.matches(fourG)).to.be.false;
-      expect(fourC.matches(fourG)).to.be.false;
+      expect(fourG.matches(fourG)).to.equal(true);
+      expect(fourA.matches(fourG)).to.equal(true);
+      expect(fourB.matches(fourG)).to.equal(false);
+      expect(fourC.matches(fourG)).to.equal(false);
 
-      expect(sixG.matches(sixG)).to.be.true;
-      expect(sixA.matches(sixG)).to.be.true;
-      expect(sixB.matches(sixG)).to.be.false;
+      expect(sixG.matches(sixG)).to.equal(true);
+      expect(sixA.matches(sixG)).to.equal(true);
+      expect(sixB.matches(sixG)).to.equal(false);
     });
   }); // end NumberSlideState
 
