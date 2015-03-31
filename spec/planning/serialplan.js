@@ -13,6 +13,17 @@ var subgraph = require('../../src/database/subgraph');
 var tools = require('../testingTools');
 
 describe('serialplan', function() {
+  it.skip('a tiered plan is a serial plan', function() {
+    // do we just add a boolean?
+    // do we just save the goals?
+
+    // when we find a tiered plan that does what we need, we can try to reuse it, or re-plan the sections
+    // when do we plan the sections in the first place? up front? when we get to them?
+    // maybe this is a different plan type?
+    // do we think of this in terms of "concrete"?
+    // does the whole thing need to be concrete, or just branches?
+  });
+
   var count;
   var a, a_c, actionImplCount;
   var start, state_count, goal;
