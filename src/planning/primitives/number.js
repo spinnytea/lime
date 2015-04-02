@@ -85,9 +85,9 @@ exports.combine = function(n1, n2) {
       bl: (n1.value.bl && n2.value.bl),
       l: (n1.value.l + n2.value.l),
       r: (n1.value.r + n2.value.r),
-      br: (n1.value.br && n2.value.br),
+      br: (n1.value.br && n2.value.br)
     },
-    unit: n1.unit,
+    unit: n1.unit
   };
 };
 
@@ -105,9 +105,9 @@ exports.remove = function(n1, n2) {
       bl: (n1.value.bl && n2.value.bl),
       l: (n1.value.l - n2.value.l),
       r: (n1.value.r - n2.value.r),
-      br: (n1.value.br && n2.value.br),
+      br: (n1.value.br && n2.value.br)
     },
-    unit: n1.unit,
+    unit: n1.unit
   };
 };
 

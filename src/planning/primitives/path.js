@@ -34,8 +34,6 @@ Path.prototype.add = function(state, action) {
   return new Path(states, actions, this.goal);
 };
 
-/* jshint ignore:start */
-
 // These are like abstract classes in Javas
 // They are a description of what needs to be implemented for Path to work
 // They shouldn't actually be created, this is just an example/documentation for implementing them
@@ -51,6 +49,8 @@ var State = exports.State = function() {};
 // @param to: a State
 // @return number; greater than zero
 Action.prototype.cost = function(from, to) {
+  void(from);
+  void(to);
   return 1;
 };
 
@@ -60,6 +60,7 @@ Action.prototype.cost = function(from, to) {
 // @return a new State
 // TODO rename this function
 Action.prototype.apply = function(from) {
+  void(from);
   return new State();
 };
 
@@ -69,6 +70,7 @@ Action.prototype.apply = function(from) {
 // @param to: a State
 // @return number; greater than zero
 State.prototype.distance = function(to) {
+  void(to);
   return 1;
 };
 
@@ -83,7 +85,6 @@ State.prototype.actions = function() {
 // @param state: a State
 // @return boolean
 State.prototype.matches = function(state) {
+  void(state);
   return false;
 };
-
-/* jshint ignore:end */

@@ -38,7 +38,7 @@ Subgraph.prototype.copy = function() {
 
     Object.defineProperty(copy, 'data', {
       get: function() { return loadVertexData(copy); },
-      set: function(value) { copy._data = value; },
+      set: function(value) { copy._data = value; }
     });
   });
   this.edges.forEach(function(e) {
@@ -60,13 +60,9 @@ Subgraph.prototype.copy = function() {
 // // TODO add support for matchRef in blueprints; look for any case where we use vertex.data
 // }
 Subgraph.prototype.addVertex = function(matcher, matchData, options) {
-  if(typeof options === 'boolean')
-    // TODO remove this after I feel like all the old usages are gone
-    throw new TypeError('options is now an object. use {transitionable:true}');
-
   options = _.merge({
     transitionable: false,
-    matchRef: false,
+    matchRef: false
   }, options);
 
   if(options.matchRef && !(matchData in this.vertices))
@@ -88,11 +84,11 @@ Subgraph.prototype.addVertex = function(matcher, matchData, options) {
     // this is for the rewrite
     // if undefined, it hasn't be fetched
     // otherwise, it's the value of idea.data() before we tried to change it
-    _data: undefined,
+    _data: undefined
   };
   Object.defineProperty(v, 'data', {
     get: function() { return loadVertexData(v); },
-    set: function(value) { v._data = value; },
+    set: function(value) { v._data = value; }
   });
 
   if(matcher === exports.matcher.id) {
@@ -116,7 +112,7 @@ Subgraph.prototype.addEdge = function(src, link, dst, pref) {
     src: this.vertices[src],
     link: link,
     dst: this.vertices[dst],
-    pref: (pref || 0),
+    pref: (pref || 0)
   });
   this.concrete = this.concrete && this.vertices[src].idea !== undefined && this.vertices[dst].idea !== undefined;
 };
@@ -184,7 +180,7 @@ exports.matcher = {
   },
   discrete: function discrete(vertex, matchData) {
     return crtcrt.difference(vertex.data, matchData) === 0;
-  },
+  }
 };
 
 // serialize a subgraph object
@@ -196,10 +192,10 @@ exports.stringify = function(sg, dump) {
   sg = sg.copy();
   dump = (dump === true);
 
-  // convert the verticies
+  // convert the vertices
   // _.map will flatten it into an array, but we store the id anyway
   sg.vertices = sg.vertices.map(function(v) {
-    if(dump) v.data;
+    if(dump) loadVertexData(v);
     v.matcher = v.matcher.name;
     if(v.idea)
       v.idea = v.idea.id;
@@ -296,7 +292,7 @@ exports.search = function(subgraph) {
   })) return []; // end if !edges.every
 
   // expand the edge
-  if(selectedEdge) {
+  if(selectedEdge && selectedBranches) {
     // pick the vertex to expand
     var vertex = _.isUndefined(selectedEdge.src.idea) ? selectedEdge.src : selectedEdge.dst;
     var matchData = vertex.options.matchRef?subgraph.vertices[vertex.matchData].data:vertex.matchData;
@@ -452,12 +448,11 @@ function subgraphMatch(subgraphOuter, subgraphInner, outerEdges, innerEdges, ver
   var matches = outerEdges.filter(function(currEdge) {
     if(innerEdge.link === currEdge.link.opposite) {
       // reverse edge
-      var swap = {
+      currEdge = {
         src: currEdge.dst,
         link: currEdge.link.opposite,
-        dst: currEdge.src,
+        dst: currEdge.src
       };
-      currEdge = swap;
     } else if(innerEdge.link !== currEdge.link)
       // the edges don't match
       return false;

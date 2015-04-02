@@ -102,7 +102,7 @@ exports.definitions.difference = {
       (i1-i2 + states.length)%states.length,
       (i2-i1 + states.length)%states.length
     );
-  },
+  }
 };
 
 // create a new definition of a discrete value
@@ -113,7 +113,7 @@ exports.definitions.create = function(states, differenceFnName) {
 
   var data = {
     type: definitionTypeName,
-    states: states,
+    states: states
   };
 
   if(differenceFnName) {
@@ -144,5 +144,5 @@ if(configNeedsSaving)
   config.save();
 
 exports.definitions.list = {
-  boolean: config.data.discrete.boolean,
+  boolean: config.data.discrete.boolean
 };
