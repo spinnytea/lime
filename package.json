@@ -11,14 +11,14 @@
   "private": true,
   "devDependencies": {
     "bluebird": "^2.9.24",
-    "chai": "^1.9.1",
+    "chai": "^2.2.0",
     "gulp": "^3.8.6",
     "gulp-jshint": "^1.8.3",
-    "gulp-mocha": "^0.5.2",
-    "jshint-stylish": "^0.4.0"
+    "gulp-mocha": "^2.0.1",
+    "jshint-stylish": "^1.0.1"
   },
   "dependencies": {
-    "lodash": "^2.4.1",
-    "priorityqueuejs": "^0.2.0"
+    "lodash": "^3.6.0",
+    "priorityqueuejs": "^1.0.0"
   }
 }
