@@ -104,7 +104,7 @@ describe('blueprint', function() {
       });
 
       describe('concrete', function() {
-        it('numbers', function() {
+        it('number', function() {
           var thing = { thing: 42 };
           var n_10 = { value: number.value(10), unit: idea.id };
           var n_20 = { value: number.value(20), unit: idea.id };
@@ -205,6 +205,29 @@ describe('blueprint', function() {
           expect(a.distance(b)).to.equal(0);
           expect(b.distance(a)).to.equal(0);
         });
+
+        it('matcher: similar', function() {
+          var data_outer = { thing1: 1, thing2: 2 };
+          var data_inner = { thing1: 1 };
+
+          var idea2 = tools.ideas.create(data_outer);
+          idea.link(links.list.thought_description, idea2);
+
+          a.state.addEdge(
+            a.state.addVertex(subgraph.matcher.id, idea),
+            links.list.thought_description,
+            a.state.addVertex(subgraph.matcher.id, idea2)
+          );
+
+          b.state.addEdge(
+            b.state.addVertex(subgraph.matcher.id, idea),
+            links.list.thought_description,
+            b.state.addVertex(subgraph.matcher.similar, data_inner)
+          );
+
+          expect(a.distance(b)).to.equal(0);
+          expect(function() { b.distance(a); }).to.throw(Error);
+        });
       }); // end concrete
 
       describe('inconcrete', function() {
@@ -213,6 +236,8 @@ describe('blueprint', function() {
         it.skip('discrete');
 
         it.skip('<any>');
+
+        it.skip('matcher: similar');
       }); // end inconcrete
 
       describe('matchRef', function() {
@@ -252,6 +277,22 @@ describe('blueprint', function() {
         });
 
         it.skip('b is inconcrete');
+
+        it.skip('to a similar', function() {
+          // when a vertex is matched with a similar matcher
+          // and there is another vertex that has a matchRef towards it
+          //
+          // e.g.
+          //// room with the gold
+          //ctx.roomInstance = goal.addVertex(subgraph.matcher.similar, { unit: context.idea('roomDefinition').id });
+          //goal.addEdge(ctx.roomDefinition, links.list.thought_description, ctx.roomInstance);
+          //ctx.roomHasGold = goal.addVertex(subgraph.matcher.discrete, discrete.cast({value:true, unit: discrete.definitions.list.boolean}), {transitionable:true,unitOnly:false});
+          //goal.addEdge(ctx.roomInstance, links.list.wumpus_sense_hasGold, ctx.roomHasGold);
+          //
+          //// the agent is at that room
+          //ctx.agentLocation = goal.addVertex(subgraph.matcher.discrete, ctx.roomInstance, {transitionable:true,matchRef:true});
+          //goal.addEdge(ctx.agentInstance, links.list.wumpus_sense_agent_loc, ctx.agentLocation);
+        });
       }); // end matchRef
     }); // end distance
 

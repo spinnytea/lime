@@ -168,7 +168,12 @@ BlueprintState.prototype.distance = function(to) {
 
       // check the values
       var diff = 0;
-      if(number.isNumber(o.data)) {
+      if (i.matcher === subgraph.matcher.similar) {
+        // if we are doing a similar match, then we don't have the data to compare against
+        // the outer element is by necessity the value we are looking for
+        // the distance is simply 0 (for this node)
+        diff = 0;
+      } else if(number.isNumber(o.data)) {
         diff = number.difference(o.data, i_data);
         if(diff === undefined) {
           cost += DISTANCE_ERROR;
