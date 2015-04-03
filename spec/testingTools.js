@@ -2,7 +2,7 @@
 /* global beforeEach, afterEach */
 var _ = require('lodash');
 var fs = require('fs');
-var q = require('q');
+var Promise = require('bluebird'); // jshint ignore:line
 var config = require('../config');
 var ideas = require('../src/database/ideas');
 var links = require('../src/database/links');
@@ -50,16 +50,16 @@ exports.ideas.filepath = function(id, which) {
 // - if the file existance doesn't match what we expect
 // - then try again in a little bit and just return that
 exports.ideas.exists = function(id, which, expected) {
-  var deferred = q.defer();
-  var filepath = exports.ideas.filepath(id, which);
-  if(expected === fs.existsSync(filepath)) {
-    deferred.resolve(expected);
-  } else {
-    setTimeout(function() {
-      deferred.resolve(fs.existsSync(filepath));
-    }, 500);
-  }
-  return deferred.promise;
+  return new Promise(function(resolve) {
+    var filepath = exports.ideas.filepath(id, which);
+    if(expected === fs.existsSync(filepath)) {
+      resolve(expected);
+    } else {
+      setTimeout(function() {
+        resolve(fs.existsSync(filepath));
+      }, 500);
+    }
+  });
 };
 
 

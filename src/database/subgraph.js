@@ -67,7 +67,7 @@ Subgraph.prototype.addVertex = function(matcher, matchData, options) {
 
   if(options.matchRef && !(matchData in this.vertices))
     // TODO Should I even check this? isn't this contractual programming?
-    throw new Error('matchData must already exist in the vertex list');
+    throw new Error('referred index (matchData) must already exist in the vertex list');
 
   var id = this.vertices.length;
   var v = this.vertices[id] = {

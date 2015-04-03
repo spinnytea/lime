@@ -1,7 +1,7 @@
 'use strict';
 /* global describe, it */
 var _ = require('lodash');
-var q = require('q');
+var Promise = require('bluebird'); // jshint ignore:line
 var expect = require('chai').expect;
 var config = require('../../config');
 var ideas = require('../../src/database/ideas');
@@ -74,7 +74,7 @@ describe('ideas', function() {
         ideas.close(ideaA);
         ideas.close(ideaB);
 
-        q.all([
+        Promise.all([
           tools.ideas.exists(ideaA.id, 'links', true),
           tools.ideas.exists(ideaB.id, 'links', true),
           tools.ideas.exists(ideaA.id, 'data', false),
@@ -95,7 +95,7 @@ describe('ideas', function() {
         ideas.close(ideaA);
         ideas.close(ideaB);
 
-        q.all([
+        Promise.all([
           tools.ideas.exists(ideaA.id, 'links', true),
           tools.ideas.exists(ideaB.id, 'links', true)
         ]).then(function(results) {
@@ -105,7 +105,7 @@ describe('ideas', function() {
           ideas.save(ideaA);
           ideas.save(ideaB);
 
-          return q.all([
+          return Promise.all([
             tools.ideas.exists(ideaA.id, 'links', false),
             tools.ideas.exists(ideaB.id, 'links', false)
           ]);
@@ -158,7 +158,7 @@ describe('ideas', function() {
 
         ideas.save(idea);
 
-        q.all([
+        Promise.all([
           tools.ideas.exists(idea.id, 'data', false),
           tools.ideas.exists(idea.id, 'links', false)
         ]).then(function(results) {
@@ -176,7 +176,7 @@ describe('ideas', function() {
         var idea = tools.ideas.create(data);
 
         ideas.save(idea);
-        q.all([
+        Promise.all([
           tools.ideas.exists(idea.id, 'data', true),
           tools.ideas.exists(idea.id, 'links', false)
         ]).then(function(results) {

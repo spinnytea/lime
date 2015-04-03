@@ -979,11 +979,12 @@ describe('subgraph', function() {
 
         it('inner target w/ data', function() {
           var prep = new subgraph.Subgraph();
-          var inner;
           var im = prep.addVertex(subgraph.matcher.id, mark);
           var id = prep.addVertex(subgraph.matcher.id, desire);
-          var i_ = prep.addVertex(subgraph.matcher.similar, id, {matchRef:true});
           prep.addEdge(im, links.list.thought_description, id);
+
+          var inner;
+          var i_ = prep.addVertex(subgraph.matcher.similar, id, {matchRef:true});
 
           inner = prep.copy();
           inner.addEdge(im, links.list.thought_description, i_, -1);
