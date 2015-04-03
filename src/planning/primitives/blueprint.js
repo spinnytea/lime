@@ -156,7 +156,7 @@ BlueprintState.prototype.distance = function(to) {
       if(i_data === undefined) {
         // if the data is not cached, then find it from the match ref
         if(i.options.matchRef)
-          i_data = to.state.vertices[i.matchData].data;
+          i_data = that.state.vertices[vertexMap[i.matchData]].data;
 
         // used when looking for a goal
         // TODO review this case; is this correct?
