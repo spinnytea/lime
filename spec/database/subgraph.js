@@ -278,6 +278,7 @@ describe('subgraph', function() {
     it('number: function', function() {
       var unit = tools.ideas.create();
       var vertex = { data: { value: number.value(10), unit: unit.id } };
+      expect(number.isNumber(vertex.data)).to.equal(true);
 
       expect(subgraph.matcher.number(vertex, { value: number.value(10), unit: unit.id })).to.equal(true);
       expect(subgraph.matcher.number(vertex, { value: number.value(0, 100), unit: unit.id })).to.equal(true);
@@ -312,9 +313,42 @@ describe('subgraph', function() {
       expect(result.length).to.equal(0);
     });
 
-    it.skip('discrete: function');
+    it('discrete: function', function() {
+      var vertex = { data: discrete.cast({value: true, unit: discrete.definitions.list.boolean }) };
+      expect(discrete.isDiscrete(vertex.data)).to.equal(true);
 
-    it.skip('discrete: basic search');
+      expect(subgraph.matcher.discrete(vertex, {value: true, unit: discrete.definitions.list.boolean })).to.equal(true);
+      expect(subgraph.matcher.discrete(vertex, {value: false, unit: discrete.definitions.list.boolean })).to.equal(false);
+
+      expect(subgraph.matcher.discrete(vertex, { value: true, unit: 'not an id' })).to.equal(false);
+      expect(subgraph.matcher.discrete(vertex, { value: true })).to.equal(false);
+      expect(subgraph.matcher.discrete(vertex, { unit: discrete.definitions.list.boolean })).to.equal(false);
+      expect(subgraph.matcher.discrete(vertex)).to.equal(false);
+    });
+
+    it('discrete: basic search', function() {
+      var unit = discrete.definitions.list.boolean;
+      var mark = tools.ideas.create();
+      var hasApple = tools.ideas.create({ value: false, unit: discrete.definitions.list.boolean });
+      mark.link(links.list.thought_description, hasApple);
+
+      var sg = new subgraph.Subgraph();
+      var m = sg.addVertex(subgraph.matcher.id, mark.id);
+      var a = sg.addVertex(subgraph.matcher.discrete, { value: false, unit: unit });
+      sg.addEdge(m, links.list.thought_description, a);
+
+      var result = subgraph.search(sg);
+      expect(result.length).to.equal(1);
+
+      // fail
+      sg = new subgraph.Subgraph();
+      m = sg.addVertex(subgraph.matcher.id, mark.id);
+      a = sg.addVertex(subgraph.matcher.discrete, { value: true, unit: unit });
+      sg.addEdge(m, links.list.thought_description, a);
+
+      result = subgraph.search(sg);
+      expect(result.length).to.equal(0);
+    });
   }); // end matchers
 
   it('stringify & parse', function() {
@@ -1003,11 +1037,12 @@ describe('subgraph', function() {
 
         it('outer target mapped / not mapped', function() {
           var prep = new subgraph.Subgraph();
-          var inner;
           var im = prep.addVertex(subgraph.matcher.id, mark);
           var id = prep.addVertex(subgraph.matcher.exact, {name: 'apple'});
-          var i_ = prep.addVertex(subgraph.matcher.similar, id, {matchRef:true});
           prep.addEdge(im, links.list.thought_description, id);
+
+          var inner;
+          var i_ = prep.addVertex(subgraph.matcher.similar, id, {matchRef:true});
 
           inner = prep.copy();
           inner.addEdge(im, links.list.thought_description, i_, -1);
@@ -1022,6 +1057,21 @@ describe('subgraph', function() {
           inner = prep.copy();
           inner.addEdge(i_, links.list.thought_description.opposite, im, +1);
           checkSubgraphMatch(subgraph.match(outer, inner), [om, od, o_], [im, id, i_]);
+        });
+
+        it('matchData not a vertex', function() {
+          var prep = new subgraph.Subgraph();
+          var im = prep.addVertex(subgraph.matcher.id, mark);
+          var id = prep.addVertex(subgraph.matcher.id, desire);
+          prep.addEdge(im, links.list.thought_description, id);
+
+          expect(function() {
+            prep.addVertex(subgraph.matcher.id, 'not a vertex', {matchRef:true});
+          }).to.throw(Error);
+
+          expect(function() {
+            prep.addVertex(subgraph.matcher.id, undefined, {matchRef:true});
+          }).to.throw(Error);
         });
       }); // end subgraphMatch
     }); // end matchRef
