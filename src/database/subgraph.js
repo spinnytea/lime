@@ -53,7 +53,7 @@ Subgraph.prototype.copy = function() {
 // // - if(matcher !== filler && options.matchData === undefined) throw new Error('matchData must be defined');
 // @param options: {
 //   transitionable: boolean, // if true, this part of a transition (subgraph.rewrite, blueprints, etc; subgraph.rewrite(transitions);)
-//                           // it means that we are intending to change the value
+//                            // it means that we are intending to change the value
 //   matchRef: boolean, // if true, this should use a different object for the matchData
 //                      // specifically, use vertex[matchData].data instead of matchData
 //                      // (it doesn't make sense to use this with matcher.filler)
