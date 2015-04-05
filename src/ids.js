@@ -2,6 +2,7 @@
 var config = require('../config');
 
 // ensure settings has a place for ids
+/* istanbul ignore if */
 if(!config.data.ids) {
   config.data.ids = {};
   // XXX should there be some kind of init process?

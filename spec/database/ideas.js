@@ -120,6 +120,13 @@ describe('ideas', function() {
         expect(function() { ideaA.link(); }).to.throw(TypeError);
         expect(function() { ideaA.link('thing'); }).to.throw(TypeError);
       });
+
+      it('remove: invalid arg', function() {
+        var ideaA = tools.ideas.create();
+
+        expect(function() { ideaA.unlink(); }).to.throw(TypeError);
+        expect(function() { ideaA.unlink('thing', ideaA); }).to.throw(TypeError);
+      });
     }); // end links
   }); // end ProxyIdea
 
@@ -228,8 +235,12 @@ describe('ideas', function() {
     expect(config.data.ideas).to.not.equal(undefined);
 
     expect(config.data.ideas.context.test).to.equal(undefined);
-    expect(ideas.context('test')).to.be.an('object'); // proxy idea
+    var test_context = ideas.context('test');
+    expect(test_context).to.be.an('object'); // proxy idea
     expect(config.data.ideas.context.test).to.not.equal(undefined);
+
+    // if we call it again, we should get the same thing
+    expect(ideas.context('test')).to.deep.equal(test_context);
 
     // clean up after the test
     delete config.data.ideas.context.test;

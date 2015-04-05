@@ -11,6 +11,7 @@ var ids = require('../ids');
 // internal functionality
 //
 
+/* istanbul ignore if */
 if(!config.data.ideas) {
   config.data.ideas = {
     context: {}
