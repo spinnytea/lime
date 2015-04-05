@@ -1078,8 +1078,8 @@ describe('subgraph', function() {
   }); // end match (part 2)
 
   describe('rewrite', function() {
-    var indeterminate, money, price, wumpus, any, wumpusUpdateIdea;
-    var sg, p, w, a, wu;
+    var indeterminate, money, price, wumpus, any, empty, wumpusUpdateIdea;
+    var sg, p, w, a, e, wu;
     var priceData, wumpusData, priceUpdate, priceUpdate2, wumpusUpdate, wumpusUpdate2, anyData, anyUpdate;
 
     beforeEach(function() {
@@ -1093,11 +1093,13 @@ describe('subgraph', function() {
       wumpus = tools.ideas.create(wumpusData);
       anyData = { thing: 42 };
       any = tools.ideas.create(anyData);
+      empty = tools.ideas.create();
 
       sg = new subgraph.Subgraph();
       p = sg.addVertex(subgraph.matcher.id, price, {transitionable:true});
       w = sg.addVertex(subgraph.matcher.id, wumpus, {transitionable:true});
       a = sg.addVertex(subgraph.matcher.id, any, {transitionable:true});
+      e = sg.addVertex(subgraph.matcher.id, empty);
 
       priceUpdate = { value: number.value(20), unit: money.id };
       priceUpdate2 = { value: number.value(30), unit: money.id };
@@ -1127,8 +1129,27 @@ describe('subgraph', function() {
       expect(subgraph.rewrite(sg)).to.equal(undefined);
     });
 
-    it('valildate transitions', function() {
+    it('validate transitions', function() {
+      // no transitions
+      expect(subgraph.rewrite(sg, [])).to.equal(undefined);
+
+      // invalid
       expect(subgraph.rewrite(sg, ['!@#$ not an id'])).to.equal(undefined);
+      expect(subgraph.rewrite(sg, [0])).to.equal(undefined);
+
+      // no transition types defined
+      expect(subgraph.rewrite(sg, [{ vertex_id: 0 }])).to.equal(undefined);
+
+      // vertex not transitionable
+      expect(subgraph.rewrite(sg, [{ vertex_id: e, replace_id: 0 }])).to.equal(undefined);
+
+      // no data in vertex to transition
+      sg.vertices[e].options.transitionable = true;
+      expect(subgraph.rewrite(sg, [{ vertex_id: e, replace: {thing:1} }])).to.equal(undefined);
+
+      // replace_id with wrong units
+      sg.vertices[e].data = {value: 0, unit: 'not an id'};
+      expect(subgraph.rewrite(sg, [{ vertex_id: e, replace_id: w }])).to.equal(undefined);
     });
 
     describe('!actual', function() {

@@ -642,7 +642,6 @@ exports.rewrite = function(subgraph, transitions, actual) {
         return false;
 
       if(!v.options.transitionable) {
-        console.log('cannot rewrite; v is not transitionable');
         return false;
       }
 
