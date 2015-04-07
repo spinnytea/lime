@@ -271,7 +271,7 @@ exports.list = function(contexts) {
   // search for matches
   var matches = subgraph.search(sg);
   if(matches.length === 0)
-    return undefined;
+    return [];
 
   // we have a set of subgraphs that match
   // we only care about the ideas that match

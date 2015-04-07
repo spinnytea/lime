@@ -301,6 +301,13 @@ describe('actuator', function() {
     expect(list.map(function(i) { return i.id; })).to.include(a.idea);
 
     // search for our actuator
+    // ([])
+    // an empty list is still valid; should be the same as providing no context
+    list = actuator.list([]);
+    expect(list.length).to.be.gt(0);
+    expect(list.map(function(i) { return i.id; })).to.include(a.idea);
+
+    // search for our actuator
     // (ID string)
     list = actuator.list(context.id);
     expect(list.length).to.equal(1);
@@ -323,5 +330,10 @@ describe('actuator', function() {
     list = actuator.list([context]);
     expect(list.length).to.equal(1);
     expect(list[0].id).to.equal(a.idea);
+
+    // search for our actuator
+    // returns nothing
+    list = actuator.list('not a valid context');
+    expect(list.length).to.equal(0);
   });
 }); // end actuator

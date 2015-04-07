@@ -279,6 +279,8 @@ describe('blueprint', function() {
         it.skip('b is inconcrete');
 
         it.skip('to a similar', function() {
+          // c --matchRef--> b --similar--> a
+
           // when a vertex is matched with a similar matcher
           // and there is another vertex that has a matchRef towards it
           //
@@ -323,6 +325,8 @@ describe('blueprint', function() {
 
       // the point of this isn't to unit test the actuator
     });
+
+    it.skip('matches');
 
 //    describe('save & load', function() {
 //      it.skip('loaded can be used in a plan');

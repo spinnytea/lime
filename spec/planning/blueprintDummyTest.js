@@ -6,6 +6,12 @@ var blueprint = require('../../src/planning/primitives/blueprint');
 var serialplan = require('../../src/planning/serialplan');
 var actuator = require('../../src/planning/actuator');
 
+function MockAction() {
+  blueprint.Action.call(this);
+}
+_.extend(MockAction.prototype, blueprint.Action.prototype);
+
+
 describe('blueprint_chain', function() {
   it('inheritance', function() {
     // constructor
@@ -25,11 +31,19 @@ describe('blueprint_chain', function() {
     expect(Object.keys(ba)).to.deep.equal(params);
     expect(_.intersection(Object.keys(sa), params)).to.deep.equal(params);
     expect(_.intersection(Object.keys(aa), params)).to.deep.equal(params);
+  });
 
+  it('throw errors', function() {
     // this isn't implemented by serialplan
-    expect(function() { ba.tryTransition(); }).to.throw('BlueprintAction does not implement tryTransition');
-
+    expect(function() { new blueprint.Action().tryTransition(); }).to.throw('BlueprintAction does not implement tryTransition');
     // this method is now implemented, but this is what it looked like before we did
-//    expect(function() { sa.tryTransition(); }).to.throw('SerialAction does not implement tryTransition');
+    //expect(function() { sa.tryTransition(); }).to.throw('SerialAction does not implement tryTransition');
+
+    var ma = new MockAction();
+    ['runCost', 'tryTransition', 'runBlueprint', 'apply', 'save'].forEach(function(p) {
+      expect(function() {
+        ma[p]();
+      }).to.throw('MockAction does not implement ' + p);
+    });
   });
 }); // end blueprint chain
