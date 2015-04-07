@@ -108,7 +108,7 @@ exports.definitions.difference = {
 // create a new definition of a discrete value
 // states must be an array of primitive javascript values (number, string, etc)
 exports.definitions.create = function(states, differenceFnName) {
-  if(!states.length || states.length <= 1)
+  if(!states || !states.length || states.length <= 1)
     throw new TypeError('must pass an array of states with more than one value');
 
   var data = {
@@ -118,7 +118,7 @@ exports.definitions.create = function(states, differenceFnName) {
 
   if(differenceFnName) {
     if(!exports.definitions.difference[differenceFnName])
-      throw new TypeError(differenceFnName + ' does not exist');
+      throw new TypeError('"' + differenceFnName + '" does not exist');
     data.difference = differenceFnName;
   }
 
@@ -130,16 +130,19 @@ exports.definitions.create = function(states, differenceFnName) {
 // setup some stock discrete definitions
 //
 var configNeedsSaving = false;
+/* istanbul ignore if */
 if(!config.data.discrete) {
   config.data.discrete = {};
   configNeedsSaving = true;
 }
+/* istanbul ignore if */
 if(!config.data.discrete.boolean) {
   var idea = exports.definitions.create([true, false]);
   config.data.discrete.boolean = idea.id;
   ideas.close(idea);
   configNeedsSaving = true;
 }
+/* istanbul ignore if */
 if(configNeedsSaving)
   config.save();
 

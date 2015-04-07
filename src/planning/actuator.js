@@ -59,7 +59,7 @@ ActuatorAction.prototype.runBlueprint = function(state, glue) {
   var ts = this.transitions.map(function(t) {
     t = _.clone(t);
     t.vertex_id = glue[t.vertex_id];
-    if(t.replace_id)
+    if(t.hasOwnProperty('replace_id'))
       t.replace_id = glue[t.replace_id];
     return t;
   });
@@ -79,7 +79,7 @@ ActuatorAction.prototype.apply = function(state, glue) {
   var ts = this.transitions.map(function(t) {
     t = _.clone(t);
     t.vertex_id = glue[t.vertex_id];
-    if(t.replace_id)
+    if(t.hasOwnProperty('replace_id'))
       t.replace_id = glue[t.replace_id];
     return t;
   });

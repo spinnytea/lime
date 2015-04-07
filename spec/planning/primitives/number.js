@@ -84,6 +84,12 @@ describe('number', function() {
 
     expect(num).to.have.property('type');
     expect(num.type).to.equal('lime_number');
+
+    // not a number
+    expect(number.cast()).to.equal(undefined);
+    expect(number.cast({})).to.equal(undefined);
+    expect(number.cast({value: 'only'})).to.equal(undefined);
+    expect(number.cast({unit: 'only'})).to.equal(undefined);
   });
 
   it('value', function() {

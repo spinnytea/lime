@@ -45,6 +45,12 @@ describe('discrete', function() {
 
     expect(crt).to.have.property('type');
     expect(crt.type).to.equal('lime_discrete');
+
+    // not a discrete
+    expect(discrete.cast()).to.equal(undefined);
+    expect(discrete.cast({})).to.equal(undefined);
+    expect(discrete.cast({value: 'only'})).to.equal(undefined);
+    expect(discrete.cast({unit: 'only'})).to.equal(undefined);
   });
 
   it('difference', function() {
@@ -72,9 +78,10 @@ describe('discrete', function() {
 
   describe('definitions', function() {
     it('create', function() {
-      expect(function() { discrete.definitions.create(); }).to.throw(Error);
-      expect(function() { discrete.definitions.create({}); }).to.throw(Error);
-      expect(function() { discrete.definitions.create([]); }).to.throw(Error);
+      var NOT_ENOUGH_STATES = 'must pass an array of states with more than one value';
+      expect(function() { discrete.definitions.create(); }).to.throw(NOT_ENOUGH_STATES);
+      expect(function() { discrete.definitions.create({}); }).to.throw(NOT_ENOUGH_STATES);
+      expect(function() { discrete.definitions.create([]); }).to.throw(NOT_ENOUGH_STATES);
 
       var states = ['r', 'o', 'y', 'g', 'b', 'i', 'v'];
       var roygbiv = discrete.definitions.create(states);
@@ -82,6 +89,9 @@ describe('discrete', function() {
       expect(roygbiv.data().states).to.deep.equal(states);
 
       tools.ideas.clean(roygbiv);
+
+      // difference fn doesn't exist
+      expect(function() { discrete.definitions.create(['a', 'b'], 'not a diff fn'); }).to.throw('"not a diff fn" does not exist');
     });
 
     it('difference', function() {
