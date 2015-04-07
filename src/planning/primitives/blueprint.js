@@ -167,6 +167,7 @@ BlueprintState.prototype.distance = function(to) {
       }
 
       // check the values
+      // TODO should all these ifs be based on matcher, rather than datatype?
       var diff = 0;
       if (i.matcher === subgraph.matcher.similar) {
         // if we are doing a similar match, then we don't have the data to compare against

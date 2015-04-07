@@ -241,59 +241,74 @@ describe('blueprint', function() {
       }); // end inconcrete
 
       describe('matchRef', function() {
-        var idea2, _aidea, _bidea, _b;
-        beforeEach(function() {
+        it('basic', function() {
           // idea --links to--> idea2
-          idea2 = tools.ideas.create();
+          var idea2 = tools.ideas.create();
           idea.link(links.list.thought_description, idea2);
 
           // concrete subgraph of idea-->idea2
-          _aidea = a.state.addVertex(subgraph.matcher.id, idea);
           a.state.addEdge(
-            _aidea,
+            a.state.addVertex(subgraph.matcher.id, idea),
             links.list.thought_description,
             a.state.addVertex(subgraph.matcher.id, idea2, {transitionable:true})
           );
 
           // inconcrete matchRef of idea--?
-          _bidea = b.state.addVertex(subgraph.matcher.id, idea);
-          _b = b.state.addVertex(subgraph.matcher.number, _bidea, {transitionable:true,matchRef:true});
-          b.state.addEdge(_bidea, links.list.thought_description, _b);
-        });
+          var _b1 = b.state.addVertex(subgraph.matcher.id, idea);
+          var _b2 = b.state.addVertex(subgraph.matcher.number, _b1, {transitionable:true,matchRef:true});
+          b.state.addEdge(_b1, links.list.thought_description, _b2);
 
-        it('basic', function() {
+
           idea.update({ value: number.value(10), unit: idea.id });
           idea2.update({ value: number.value(10), unit: idea.id });
           expect(a.distance(b)).to.equal(0);
         });
 
         it.skip('i have no idea ??? ? ? ', function() {
-          idea.update({ value: number.value(10), unit: idea.id });
-          idea2.update({ value: number.value(10), unit: idea.id });
-
-          a.state.vertices[_aidea].data.value = number.value(15);
-          b.state.vertices[_bidea].data.value = number.value(15);
-          expect(a.distance(b)).to.equal(5);
+          //idea.update({ value: number.value(10), unit: idea.id });
+          //idea2.update({ value: number.value(10), unit: idea.id });
+          //
+          //a.state.vertices[_aidea].data.value = number.value(15);
+          //b.state.vertices[_bidea].data.value = number.value(15);
+          //expect(a.distance(b)).to.equal(5);
         });
 
         it.skip('b is inconcrete');
 
-        it.skip('to a similar', function() {
-          // c --matchRef--> b --similar--> a
+        // c --matchRef--> b --similar--> a
+        it('to a similar', function() {
+          // the data
+          var DATA = discrete.cast({ value: true, unit: discrete.definitions.list.boolean });
+          var idea2 = tools.ideas.create(DATA);
+          var idea3 = tools.ideas.create(DATA);
+          idea.link(links.list.thought_description, idea2);
+          idea2.link(links.list.thought_description, idea3);
 
-          // when a vertex is matched with a similar matcher
-          // and there is another vertex that has a matchRef towards it
-          //
-          // e.g.
-          //// room with the gold
-          //ctx.roomInstance = goal.addVertex(subgraph.matcher.similar, { unit: context.idea('roomDefinition').id });
-          //goal.addEdge(ctx.roomDefinition, links.list.thought_description, ctx.roomInstance);
-          //ctx.roomHasGold = goal.addVertex(subgraph.matcher.discrete, discrete.cast({value:true, unit: discrete.definitions.list.boolean}), {transitionable:true,unitOnly:false});
-          //goal.addEdge(ctx.roomInstance, links.list.wumpus_sense_hasGold, ctx.roomHasGold);
-          //
-          //// the agent is at that room
-          //ctx.agentLocation = goal.addVertex(subgraph.matcher.discrete, ctx.roomInstance, {transitionable:true,matchRef:true});
-          //goal.addEdge(ctx.agentInstance, links.list.wumpus_sense_agent_loc, ctx.agentLocation);
+          // concrete base
+          var _a1 = a.state.addVertex(subgraph.matcher.id, idea);
+          var _a2 = a.state.addVertex(subgraph.matcher.id, idea2, {transitionable:true});
+          var _a3 = a.state.addVertex(subgraph.matcher.id, idea3, {transitionable:true});
+          a.state.addEdge(_a1, links.list.thought_description, _a2);
+          a.state.addEdge(_a2, links.list.thought_description, _a3);
+          expect(a.state.concrete).to.equal(true);
+
+          // abstract search
+          var _b1 = b.state.addVertex(subgraph.matcher.id, idea);
+          var _b2 = b.state.addVertex(subgraph.matcher.similar, {'unit': discrete.definitions.list.boolean}, {transitionable:true});
+          var _b3 = b.state.addVertex(subgraph.matcher.discrete, _b2, {transitionable:true,matchRef:true});
+          b.state.addEdge(_b1, links.list.thought_description, _b2);
+          b.state.addEdge(_b2, links.list.thought_description, _b3);
+
+
+          // test the match and difference
+          expect(subgraph.match(a.state, b.state, true).length).to.equal(1);
+          expect(a.distance(b)).to.equal(0);
+
+
+          // now update the data within the outer vertex for the similar matcher
+          a.state.vertices[_a2].data.value = false;
+          expect(subgraph.match(a.state, b.state, true).length).to.equal(1);
+          expect(a.distance(b)).to.equal(1);
         });
       }); // end matchRef
     }); // end distance
