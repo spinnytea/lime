@@ -28,3 +28,14 @@ On Programming
    - "This map is in a strict grid pattern" (maybe that doesn't make sense, or is too obvious, but it's still something)
   This language may not carry much information, but it's a start so I can understand the complexities
   It's a first step towards learning how to represent the real world.
+  --
+  what about a plan that always looks 10 steps out?
+  how do we know we are reaching the goal
+  this is like min-max
+  we need to have a way to weigh the options
+
+  is A* good enough for that?
+  we explore different possibilities, and after 10 steps (to 10 difference) we just cut off and pick the best one, then plan again from there
+  this would save space, and only save time if our heuristic is good.
+
+  no, in this case, it would be “distanceFromGoal”, you would pick the one that is closest to the goal and just do that
