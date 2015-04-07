@@ -292,6 +292,11 @@ describe('serialplan', function() {
       glues = sp.tryTransition(new blueprint.State(new subgraph.Subgraph(), []));
       expect(glues).to.deep.equal([]);
 
+      // if the serial plan doesn't have any plans, then it should still return with a result
+      sp = serialplan.create(start, start);
+      glues = sp.tryTransition(start);
+      expect(glues.length).to.equal(0);
+
       expect(actionImplCount).to.equal(0);
     });
 
