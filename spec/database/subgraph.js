@@ -385,6 +385,29 @@ describe('subgraph', function() {
     expect(subgraph.parse(subgraph.stringify(sg))).to.deep.equal(sg);
   });
 
+  it('stringify for dump', function() {
+    var unit = tools.ideas.create();
+    var mark = tools.ideas.create();
+    var apple = tools.ideas.create({ value: number.value(2), unit: unit.id });
+    mark.link(links.list.thought_description, apple);
+    var sg = new subgraph.Subgraph();
+    var m = sg.addVertex(subgraph.matcher.id, mark.id);
+    var a = sg.addVertex(subgraph.matcher.number, { value: number.value(0, Infinity), unit: unit.id }, {transitionable:true});
+    sg.addEdge(m, links.list.thought_description, a, 1);
+
+    // before search, this is inconcrete, so there is no data to back it
+    expect(
+      JSON.parse(subgraph.stringify(sg, true)).vertices.map(function(v) { return v._data; })
+    ).to.deep.equal([null, undefined]);
+
+    expect(subgraph.search(sg)).to.deep.equal([sg]);
+
+    // after search, there is underlying data
+    expect(
+      JSON.parse(subgraph.stringify(sg, true)).vertices.map(function(v) { return v._data; })
+    ).to.deep.equal([null, apple.data()]);
+  });
+
   describe('search', function() {
     it('nothing to do', function() {
       // invalid subgraph
