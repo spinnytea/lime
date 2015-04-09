@@ -61,7 +61,7 @@ gulp.task('coverage', [], function (cb) {
           reporter: 'list'
         }))
         .pipe(istanbul.writeReports({
-          reporters: ['lcov', 'html']
+          reporters: ['html']
         }))
         .on('end', cb);
     });

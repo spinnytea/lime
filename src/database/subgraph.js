@@ -57,15 +57,12 @@ Subgraph.prototype.copy = function() {
 //   matchRef: boolean, // if true, this should use a different object for the matchData
 //                      // specifically, use vertex[matchData].data instead of matchData
 //                      // (it doesn't make sense to use this with matcher.filler)
-//   unitOnly: boolean, // if false, subgraph.match will ignore the unitOnly flag when look for subgraph matches
-//                      // this helps us find goals that that match the data exactly, when distance values must === 0
 // // TODO add support for matchRef in blueprints; look for any case where we use vertex.data
 // }
 Subgraph.prototype.addVertex = function(matcher, matchData, options) {
   options = _.merge({
     transitionable: false,
-    matchRef: false,
-    unitOnly: true
+    matchRef: false
   }, options);
 
   if(options.matchRef && !(matchData in this.vertices))
@@ -524,15 +521,13 @@ function subgraphMatch(subgraphOuter, subgraphInner, outerEdges, innerEdges, ver
 
     // if matchRef, then we want to use the data we found as the matcher data
     // if !matchRef, then we need to use the matchData on the object
-
-    if(!(unitOnly && innerEdge.src.options.unitOnly)) {
+    if(!unitOnly || !innerEdge.src.options.transitionable) {
       if(!innerEdge.src.options.matchRef)
         srcData = innerEdge.src.matchData;
       if(!innerEdge.src.matcher(currEdge.src, srcData))
         return false;
     }
-
-    if(!(unitOnly && innerEdge.dst.options.unitOnly)) {
+    if(!unitOnly || !innerEdge.dst.options.transitionable) {
       if (!innerEdge.dst.options.matchRef)
         dstData = innerEdge.dst.matchData;
       if(!innerEdge.dst.matcher(currEdge.dst, dstData))

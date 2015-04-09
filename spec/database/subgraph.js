@@ -1098,31 +1098,6 @@ describe('subgraph', function() {
         });
       }); // end subgraphMatch
     }); // end matchRef
-
-    it('unitOnly', function() {
-      // if we match with {unitOnly:false} then it shouldn't actually match via unit only
-
-      var idea = tools.ideas.create();
-      var idea2 = tools.ideas.create({value: number.value(10), unit: idea});
-      idea.link(links.list.thought_description, idea2);
-
-      var outer = new subgraph.Subgraph();
-      var _o1 = outer.addVertex(subgraph.matcher.id, idea);
-      var _o2 = outer.addVertex(subgraph.matcher.id, idea2, {transitionable:true});
-      outer.addEdge(_o1, links.list.thought_description, _o2);
-
-      var inner = new subgraph.Subgraph();
-      var _i1 = inner.addVertex(subgraph.matcher.id, idea);
-      var _i2 = inner.addVertex(subgraph.matcher.number, {value: number.value(5), unit: idea}, {transitionable:true,unitOnly:true});
-      inner.addEdge(_i1, links.list.thought_description, _i2);
-
-      // the basic subgraph match stuff
-      expect(subgraph.match(outer, inner).length).to.equal(0);
-      expect(subgraph.match(outer, inner, true).length).to.equal(1);
-
-      inner.vertices[_i2].options.unitOnly = false;
-      expect(subgraph.match(outer, inner, true).length).to.equal(0);
-    });
   }); // end match (part 2)
 
   describe('rewrite', function() {
