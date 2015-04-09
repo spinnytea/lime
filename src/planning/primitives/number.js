@@ -3,6 +3,8 @@
 // e.g. '13.5 meters' or '22.3124 psi'
 // all numbers are a range of possible values
 
+var ideas = require('../../database/ideas');
+
 // TODO create a factory method
 var typeName = 'lime_number';
 
@@ -118,13 +120,15 @@ exports.difference = function(n1, n2) {
   if(n1.unit !== n2.unit)
     return undefined;
 
+  var scale = ideas.load(n1.unit).data().scale || 1;
+
   // if n2 is entirely larger than n1
   if(n1.value.r < n2.value.l)
-    return n2.value.l - n1.value.r;
+    return (n2.value.l - n1.value.r)*scale;
 
   // if n1 is entirely larger than n2
   if(n2.value.r < n1.value.l)
-    return n1.value.l - n2.value.r;
+    return (n1.value.l - n2.value.r)*scale;
 
   // the effective difference is zero
   return 0;

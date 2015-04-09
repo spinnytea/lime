@@ -3,12 +3,13 @@
 var _ = require('lodash');
 var expect = require('chai').expect;
 var number = require('../../../src/planning/primitives/number');
+var tools = require('../../testingTools');
 
 function num() {
   return {
     type: 'lime_number',
     value: number.value.apply({}, arguments),
-    unit: 'test'
+    unit: '0'
   };
 }
 
@@ -24,37 +25,37 @@ describe('number', function() {
   it('isNumber', function() {
     expect(number.isNumber(undefined)).to.equal(false);
     expect(number.isNumber({})).to.equal(false);
-    expect(number.isNumber({ value: { bl: 'true', l: 1, r: 1, br: true }, unit: 'test' })).to.equal(false);
+    expect(number.isNumber({ value: { bl: 'true', l: 1, r: 1, br: true }, unit: '0' })).to.equal(false);
     expect(number.isNumber({ value: { bl: true, l: 1, r: 1, br: true } })).to.deep.equal(false);
-    expect(number.isNumber({ unit: 'test' })).to.equal(false);
-    expect(number.isNumber({ value: { bl: true, l: Infinity, r: 1, br: true }, unit: 'test' })).to.equal(false);
-    expect(number.isNumber({ value: { bl: true, l: 1, r: Infinity, br: true }, unit: 'test' })).to.equal(false);
+    expect(number.isNumber({ unit: '0' })).to.equal(false);
+    expect(number.isNumber({ value: { bl: true, l: Infinity, r: 1, br: true }, unit: '0' })).to.equal(false);
+    expect(number.isNumber({ value: { bl: true, l: 1, r: Infinity, br: true }, unit: '0' })).to.equal(false);
 
     expect(number.isNumber({ type: 'lime_number' })).to.equal(false);
-    expect(number.isNumber({ value: { l: 1, r: 1, br: true }, unit: 'test' })).to.equal(false);
-    expect(number.isNumber({ value: { bl: true, r: 1, br: true }, unit: 'test' })).to.equal(false);
-    expect(number.isNumber({ value: { bl: true, l: 1, br: true }, unit: 'test' })).to.deep.equal(false);
-    expect(number.isNumber({ value: { bl: true, l: 1, r: 1 }, unit: 'test' })).to.deep.equal(false);
+    expect(number.isNumber({ value: { l: 1, r: 1, br: true }, unit: '0' })).to.equal(false);
+    expect(number.isNumber({ value: { bl: true, r: 1, br: true }, unit: '0' })).to.equal(false);
+    expect(number.isNumber({ value: { bl: true, l: 1, br: true }, unit: '0' })).to.deep.equal(false);
+    expect(number.isNumber({ value: { bl: true, l: 1, r: 1 }, unit: '0' })).to.deep.equal(false);
     expect(number.isNumber({ value: { bl: true, l: 1, r: 1, br: true } })).to.deep.equal(false);
 
     expect(number.isNumber(num(0))).to.deep.equal(true);
-    expect(number.isNumber({ value: { bl: true, l: 1, r: 1, br: true }, unit: 'test' })).to.deep.equal(true);
+    expect(number.isNumber({ value: { bl: true, l: 1, r: 1, br: true }, unit: '0' })).to.deep.equal(true);
 
     // unbounded Infinity should be a number
-    expect(number.isNumber({ value: { bl: true, l: 1, r: Infinity, br: false }, unit: 'test' })).to.equal(true);
-    expect(number.isNumber({ value: { bl: false, l: 1, r: Infinity, br: false }, unit: 'test' })).to.equal(true);
-    expect(number.isNumber({ value: { bl: false, l: -Infinity, r: 1, br: true }, unit: 'test' })).to.equal(true);
-    expect(number.isNumber({ value: { bl: false, l: -Infinity, r: 1, br: false }, unit: 'test' })).to.equal(true);
+    expect(number.isNumber({ value: { bl: true, l: 1, r: Infinity, br: false }, unit: '0' })).to.equal(true);
+    expect(number.isNumber({ value: { bl: false, l: 1, r: Infinity, br: false }, unit: '0' })).to.equal(true);
+    expect(number.isNumber({ value: { bl: false, l: -Infinity, r: 1, br: true }, unit: '0' })).to.equal(true);
+    expect(number.isNumber({ value: { bl: false, l: -Infinity, r: 1, br: false }, unit: '0' })).to.equal(true);
 
     // unbounded null should turn into unbounded infinity
-    expect(number.isNumber({ value: { bl: true, l: 1, r: null, br: false }, unit: 'test' })).to.equal(true);
-    expect(number.isNumber({ value: { bl: false, l: 1, r: null, br: false }, unit: 'test' })).to.equal(true);
-    expect(number.isNumber({ value: { bl: false, l: null, r: 1, br: true }, unit: 'test' })).to.equal(true);
-    expect(number.isNumber({ value: { bl: false, l: null, r: 1, br: false }, unit: 'test' })).to.equal(true);
+    expect(number.isNumber({ value: { bl: true, l: 1, r: null, br: false }, unit: '0' })).to.equal(true);
+    expect(number.isNumber({ value: { bl: false, l: 1, r: null, br: false }, unit: '0' })).to.equal(true);
+    expect(number.isNumber({ value: { bl: false, l: null, r: 1, br: true }, unit: '0' })).to.equal(true);
+    expect(number.isNumber({ value: { bl: false, l: null, r: 1, br: false }, unit: '0' })).to.equal(true);
 
     // bounded null should not be a number
-    expect(number.isNumber({ value: { bl: true, l: 1, r: null, br: true }, unit: 'test' })).to.equal(false);
-    expect(number.isNumber({ value: { bl: true, l: null, r: 1, br: true }, unit: 'test' })).to.equal(false);
+    expect(number.isNumber({ value: { bl: true, l: 1, r: null, br: true }, unit: '0' })).to.equal(false);
+    expect(number.isNumber({ value: { bl: true, l: null, r: 1, br: true }, unit: '0' })).to.equal(false);
   });
 
   // do we need to convert number.value.l to Infinity if no type specified?
@@ -73,11 +74,11 @@ describe('number', function() {
     expect(val.value.l).to.equal(-Infinity);
 
     // after all that, we should have the original value
-    expect(val).to.deep.equal({ type: 'lime_number', value: { bl: false, l: -Infinity, r: Infinity, br: false }, unit: 'test' });
+    expect(val).to.deep.equal({ type: 'lime_number', value: { bl: false, l: -Infinity, r: Infinity, br: false }, unit: '0' });
   });
 
   it('cast', function() {
-    var num = { value: number.value(0), unit: 'test' };
+    var num = { value: number.value(0), unit: '0' };
     expect(num).to.not.have.property('type');
 
     number.cast(num);
@@ -105,8 +106,8 @@ describe('number', function() {
     expect(number.value(0, 1, true, false)).to.deep.equal({ bl: true, l: 0, r: 1, br: false });
     expect(number.value(0, 1, false, true)).to.deep.equal({ bl: false, l: 0, r: 1, br: true });
 
-    expect(num(0)).to.deep.equal({ type: 'lime_number', value: { bl: true, l: 0, r: 0, br: true }, unit: 'test' });
-    expect(num(0, 1, true, false)).to.deep.equal({ type: 'lime_number', value: { bl: true, l: 0, r: 1, br: false }, unit: 'test' });
+    expect(num(0)).to.deep.equal({ type: 'lime_number', value: { bl: true, l: 0, r: 0, br: true }, unit: '0' });
+    expect(num(0, 1, true, false)).to.deep.equal({ type: 'lime_number', value: { bl: true, l: 0, r: 1, br: false }, unit: '0' });
 
     // auto unbound Infinity
     expect(number.value(-Infinity, Infinity, true, true)).to.deep.equal({ bl: false, l: -Infinity, r: Infinity, br: false });
@@ -153,5 +154,22 @@ describe('number', function() {
     expect(number.difference(num(1, 3), num(3))).to.equal(0);
     expect(number.difference(num(1, 3), num(4))).to.equal(1);
     expect(number.difference(num(1, 3), num(5))).to.equal(2);
+
+
+    var idea = tools.ideas.create({scale: 3});
+    function num2() {
+      var ret = num.apply({}, arguments);
+      ret.unit = idea.id;
+      return ret;
+    }
+    expect(num2(1, 3)).to.deep.equal({ type: 'lime_number', unit: idea.id, value: { bl: true, br: true, l: 1, r: 3 } });
+
+    // scale of 3
+    expect(number.difference(num2(1), num2(3))).to.deep.equal(6);
+    expect(number.difference(num2(1), num2(11))).to.deep.equal(30);
+
+    idea.update({scale: 0.5});
+    expect(number.difference(num2(1), num2(3))).to.deep.equal(1);
+    expect(number.difference(num2(1), num2(11))).to.deep.equal(5);
   });
 }); // end number

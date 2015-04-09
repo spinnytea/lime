@@ -898,27 +898,27 @@ describe('subgraph', function() {
         // AC: this is because we want to be able to use replace on anything
         // if we know ahead of time that we are going to use combine, then we can fail now
         // but, this shouldn't ever happen in practice
-        outer.vertices[o].data = { value: number.value(10), unit: 'a' };
-        expect(outer.vertices[o].data).to.deep.equal({ value: number.value(10), unit: 'a' });
+        outer.vertices[o].data = { value: number.value(10), unit: idea.id };
+        expect(outer.vertices[o].data).to.deep.equal({ value: number.value(10), unit: idea.id });
         expect(subgraph.match(outer, inner, true).length).to.equal(1);
         expect(subgraph.match(inner, outer, true).length).to.equal(1);
         expect(subgraph.match(outer, inner, false).length).to.equal(1);
         expect(subgraph.match(inner, outer, false).length).to.equal(1);
 
         // when the units match, then we should have a match... if the values match
-        inner.vertices[i].data = { value: number.value(10), unit: 'a' };
+        inner.vertices[i].data = { value: number.value(10), unit: idea.id };
         expect(subgraph.match(outer, inner, true).length).to.equal(1);
         expect(subgraph.match(inner, outer, true).length).to.equal(1);
         expect(subgraph.match(outer, inner, false).length).to.equal(1);
         expect(subgraph.match(inner, outer, false).length).to.equal(1);
-        inner.vertices[i].data = { value: number.value(20), unit: 'a' };
+        inner.vertices[i].data = { value: number.value(20), unit: idea.id };
         expect(subgraph.match(outer, inner, true).length).to.equal(1);
         expect(subgraph.match(inner, outer, true).length).to.equal(1);
         expect(subgraph.match(outer, inner, false).length).to.equal(0);
         expect(subgraph.match(inner, outer, false).length).to.equal(0);
 
         // and mismatched units should of course not match
-        inner.vertices[i].data = { value: number.value(0), unit: 'b' };
+        inner.vertices[i].data = { value: number.value(0), unit: '0' };
         expect(subgraph.match(outer, inner, true).length).to.equal(0);
         expect(subgraph.match(inner, outer, true).length).to.equal(0);
         expect(subgraph.match(outer, inner, false).length).to.equal(0);
