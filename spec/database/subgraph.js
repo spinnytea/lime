@@ -140,13 +140,45 @@ describe('subgraph', function() {
       });
     }); // end loadVertexData
 
-    it.skip('~~New!~~ invalidateCache', function() {
-      // I'm not sure what this should look like
-      // it seems reasonable enough that there is one method to invalidate every vertex
-      // but is it too much, should we invalidate each individually?
-      // should we just have both and decide when to use which?
-      // invalidating them individually seems more reasonable
-      // if you want to invalidate them all, then iterate yourself
+    it('invalidateCache', function() {
+      var a = tools.ideas.create({a: 1});
+      var b = tools.ideas.create({b: 2});
+      a.link(links.list.thought_description, b);
+
+      var sg = new subgraph.Subgraph();
+      var _a = sg.addVertex(subgraph.matcher.id, a.id);
+      var _b = sg.addVertex(subgraph.matcher.id, b.id);
+      sg.addEdge(_a, links.list.thought_description, _b);
+
+      function load() {
+        expect(sg.vertices[_a].data).to.deep.equal({a: 1});
+        expect(sg.vertices[_b].data).to.deep.equal({b: 2});
+        expect(sg.vertices[_a]._data).to.deep.equal({a: 1});
+        expect(sg.vertices[_b]._data).to.deep.equal({b: 2});
+      }
+
+      expect(sg.vertices[_a]._data).to.deep.equal(undefined);
+      expect(sg.vertices[_b]._data).to.deep.equal(undefined);
+
+      load();
+      sg.invalidateCache();
+      expect(sg.vertices[_a]._data).to.deep.equal(undefined);
+      expect(sg.vertices[_b]._data).to.deep.equal(undefined);
+
+      load();
+      sg.invalidateCache(_b);
+      expect(sg.vertices[_a]._data).to.deep.equal({a: 1});
+      expect(sg.vertices[_b]._data).to.deep.equal(undefined);
+
+      load();
+      sg.invalidateCache(_a);
+      expect(sg.vertices[_a]._data).to.deep.equal(undefined);
+      expect(sg.vertices[_b]._data).to.deep.equal({b: 2});
+
+      load();
+      sg.invalidateCache(_b, _a);
+      expect(sg.vertices[_a]._data).to.deep.equal(undefined);
+      expect(sg.vertices[_b]._data).to.deep.equal(undefined);
     });
   }); // end Subgraph
 

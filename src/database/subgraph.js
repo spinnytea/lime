@@ -140,9 +140,18 @@ function loadVertexData(v) {
 }
 
 Subgraph.prototype.invalidateCache = function() {
-  this.vertices.forEach(function(v) {
-    v.data = undefined;
-  });
+  if(arguments.length) {
+    // only reset the ones in the arguments
+    var that = this;
+    _.forEach(arguments, function(id) {
+      that.vertices[id].data = undefined;
+    });
+  } else {
+    // reset all vertices
+    this.vertices.forEach(function(v) {
+      v.data = undefined;
+    });
+  }
 };
 
 exports.Subgraph = Subgraph;
