@@ -1129,6 +1129,102 @@ describe('subgraph', function() {
           }).to.throw(Error);
         });
       }); // end subgraphMatch
+
+      it('edge case 1', function() {
+        // two sets of nodes
+        // root -> bool -> number
+        //
+        // first, we'll test if they match with the same data
+        // then we need to make sure they don't match when b has different data
+        //
+        // the edge case is how the inner subgraph uses it's matchers
+        // the two roots act as anchors for different branches
+        // branch a will use discrete/number matchers
+        // branch b will use discrete/number matchers via matchRef
+        var a_root = tools.ideas.create();
+        var a_crt = tools.ideas.create(discrete.cast({value: true, unit: discrete.definitions.list.boolean}));
+        var a_num = tools.ideas.create(number.cast({value: number.value(1), unit: '0'}));
+        a_root.link(links.list.thought_description, a_crt);
+        a_crt.link(links.list.thought_description, a_num);
+        var b_root = tools.ideas.create();
+        var b_crt = tools.ideas.create(a_crt.data());
+        var b_num = tools.ideas.create(a_num.data());
+        b_root.link(links.list.thought_description, b_crt);
+        b_crt.link(links.list.thought_description, b_num);
+
+        // the outer is pretty straight forward, all matchers are based in ids
+        // no need to even search
+        var outer = new subgraph.Subgraph();
+        var oa_root = outer.addVertex(subgraph.matcher.id, a_root);
+        var oa_crt = outer.addVertex(subgraph.matcher.id, a_crt);
+        var oa_num = outer.addVertex(subgraph.matcher.id, a_num);
+        outer.addEdge(oa_root, links.list.thought_description, oa_crt);
+        outer.addEdge(oa_crt, links.list.thought_description, oa_num);
+        var ob_root = outer.addVertex(subgraph.matcher.id, b_root);
+        var ob_crt = outer.addVertex(subgraph.matcher.id, b_crt, {transitionable:true});
+        var ob_num = outer.addVertex(subgraph.matcher.id, b_num, {transitionable:true});
+        outer.addEdge(ob_root, links.list.thought_description, ob_crt);
+        outer.addEdge(ob_crt, links.list.thought_description, ob_num);
+        expect(outer.concrete).to.equal(true);
+
+        // a uses discrete/number against the data
+        // b uses discrete/number against a using matchRef
+        var inner = new subgraph.Subgraph();
+        var ia_root = inner.addVertex(subgraph.matcher.id, a_root);
+        var ia_crt = inner.addVertex(subgraph.matcher.discrete, a_crt.data());
+        var ia_num = inner.addVertex(subgraph.matcher.number, a_num.data());
+        inner.addEdge(ia_root, links.list.thought_description, ia_crt);
+        inner.addEdge(ia_crt, links.list.thought_description, ia_num);
+        var ib_root = inner.addVertex(subgraph.matcher.id, b_root);
+        var ib_crt = inner.addVertex(subgraph.matcher.discrete, ia_crt, {transitionable:true,matchRef:true});
+        var ib_num = inner.addVertex(subgraph.matcher.number, ia_num, {transitionable:true,matchRef:true});
+        inner.addEdge(ib_root, links.list.thought_description, ib_crt);
+        inner.addEdge(ib_crt, links.list.thought_description, ib_num);
+        expect(inner.concrete).to.equal(false);
+
+        // save off our list of keys so we don't need to copypasta this list
+        var outerKeys = [oa_root, oa_crt, oa_num, ob_root, ob_crt, ob_num];
+        var innerKeys = [ia_root, ia_crt, ia_num, ib_root, ib_crt, ib_num];
+
+
+        // now... test our edge case to make sure we have the correct data
+        checkSubgraphMatch(subgraph.match(outer, inner), outerKeys, innerKeys);
+        checkSubgraphMatch(subgraph.match(outer, inner, true), outerKeys, innerKeys);
+
+        // well... that simply worked as expected
+
+
+        // now lets mess with the values a bit more
+        b_num.update(number.cast({value: number.value(5), unit: '0'}));
+        outer.invalidateCache();
+        expect(subgraph.match(outer, inner)).to.deep.equal([]); // no specific matches
+        checkSubgraphMatch(subgraph.match(outer, inner, true), outerKeys, innerKeys); // we do have matches by unit
+        inner.vertices[ib_num].options.transitionable = false;
+        expect(subgraph.match(outer, inner, true)).to.deep.equal([]); // unless we say the value isn't transitionable
+
+        // back to our roots
+        b_num.update(a_num.data());
+        inner.vertices[ib_num].options.transitionable = true;
+        outer.invalidateCache();
+        checkSubgraphMatch(subgraph.match(outer, inner), outerKeys, innerKeys);
+        checkSubgraphMatch(subgraph.match(outer, inner, true), outerKeys, innerKeys);
+
+
+        // same thing with crt
+        b_crt.update(discrete.cast({value: false, unit: discrete.definitions.list.boolean}));
+        outer.invalidateCache();
+        expect(subgraph.match(outer, inner)).to.deep.equal([]); // no specific matches
+        checkSubgraphMatch(subgraph.match(outer, inner, true), outerKeys, innerKeys); // we do have matches by unit
+        inner.vertices[ib_crt].options.transitionable = false;
+        expect(subgraph.match(outer, inner, true)).to.deep.equal([]); // unless we say the value isn't transitionable
+
+        //// back to our roots
+        //b_crt.update(a_crt.data());
+        //inner.vertices[ib_crt].options.transitionable = true;
+        //outer.invalidateCache();
+        //checkSubgraphMatch(subgraph.match(outer, inner), outerKeys, innerKeys);
+        //checkSubgraphMatch(subgraph.match(outer, inner, true), outerKeys, innerKeys);
+      });
     }); // end matchRef
   }); // end match (part 2)
 
