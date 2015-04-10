@@ -120,7 +120,10 @@ exports.difference = function(n1, n2) {
   if(n1.unit !== n2.unit)
     return undefined;
 
-  var scale = ideas.load(n1.unit).data().scale || 1;
+  var data = ideas.load(n1.unit).data();
+  var scale = 1;
+  if(data && data.hasOwnProperty('scale'))
+    scale = +data.scale;
 
   // if n2 is entirely larger than n1
   if(n1.value.r < n2.value.l)

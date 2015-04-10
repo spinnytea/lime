@@ -30,7 +30,11 @@ _.extend(ActuatorAction.prototype, blueprint.Action.prototype);
 // - sand != diamond
 // - 3 oz of Carbon Fiber vs 2 lbs of Cereal
 ActuatorAction.prototype.runCost = function() {
-  return this.transitions.length;
+  return this.transitions.reduce(function(sum, t) {
+    if(t.hasOwnProperty('cost'))
+      return sum + t.cost;
+    return sum + 1;
+  }, 0);
 };
 
 // blueprint.tryTransition
