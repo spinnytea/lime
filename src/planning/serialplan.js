@@ -156,18 +156,22 @@ exports.create = function(start, goal) {
     return createMultiple(start, _.values(arguments).slice(1));
   } else if(_.isArray(goal)) {
     if(goal.length === 1)
-      return createSingle(start, goal[0]);
+      return createSingle(start, goal[0]).action;
     return createMultiple(start, goal);
   } else {
-    return createSingle(start, goal);
+    return createSingle(start, goal).action;
   }
 };
 
+// @return {
+//   action: the Action we have found
+//   state: the last State of the path (if we need to chain
+// }
 function createSingle(start, goal) {
   var path = astar.search(start, goal);
 
   if(path === undefined)
-    return undefined;
+    return { action: undefined, state: undefined };
 
   if(path.actions.length === 0) {
     // do a little finagling
@@ -177,27 +181,27 @@ function createSingle(start, goal) {
     // XXX this impacts tryTransition and runBlueprint; need to allow this as a noop
     var sp = new SerialAction([]);
     sp.requirements = start.state;
-    return sp;
+    return { action: sp, state: start };
   }
 
   if(path.actions.length === 1)
-    return path.actions[0];
+    return { action: path.actions[0], state: path.last };
 
-  return new SerialAction(path.actions);
+  return { action: new SerialAction(path.actions), state: path.last };
 }
 
 function createMultiple(start, goals) {
   // if every plan succeeds, then return a new serial action
   // if one of the plans fails, then the whole thing fails
-  var plans = [];
+  var actions = [];
   if(goals.every(function(g) {
-      var p = createSingle(start, g);
-      if(p === undefined)
+      var as = createSingle(start, g);
+      if(as.action === undefined)
         return false;
-      plans.push(p);
-      start = g;
+      actions.push(as.action);
+      start = as.state;
       return true;
     }))
-    return new SerialAction(plans);
+    return new SerialAction(actions);
   return undefined;
 }
