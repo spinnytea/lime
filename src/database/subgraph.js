@@ -249,7 +249,7 @@ exports.parse = function(str) {
 // TODO don't modify the original
 // - this may break some tests/use cases, so check for every call to search
 //
-// use Prim's algorithm to expand the know subgraph
+// use Prim's algorithm to expand the known subgraph
 // we are trying to identify all of the vertices
 // we use edges to find new ones
 exports.search = function(subgraph) {
@@ -355,12 +355,10 @@ exports.search = function(subgraph) {
     return [ subgraph ];
   } else {
     // do the next iteration of searches
-    // TODO lodash accumulator
-    var ret = [];
-    nextSteps.forEach(function(sg) {
+    return nextSteps.reduce(function(ret, sg) {
       Array.prototype.push.apply(ret, exports.search(sg));
-    });
-    return ret;
+      return ret;
+    }, []);
   }
 
 }; // end exports.search
