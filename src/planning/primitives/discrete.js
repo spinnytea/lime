@@ -17,7 +17,6 @@ var ideas = require('../../database/ideas');
 // - and we need to signal as such
 // - (e.g. vertex_discrete)
 //	Number doesn't have this problem so it can be considered separately
-// TODO create a factory method
 var typeName = 'lime_discrete';
 
 // obj:

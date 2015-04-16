@@ -5,7 +5,6 @@
 
 var ideas = require('../../database/ideas');
 
-// TODO create a factory method
 var typeName = 'lime_number';
 
 // value:
@@ -27,7 +26,6 @@ exports.isNumber = function(obj) {
   ))
     return false;
 
-  // TODO combine this with above
   if(obj.value.l === null || obj.value.l === -Infinity) {
     if(obj.value.bl === true)
       return false;
