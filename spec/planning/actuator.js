@@ -65,7 +65,7 @@ describe('actuator', function() {
     actionImplCount = 0;
     price.update({ value: number.value(10), unit: money.id });
     bs.state.invalidateCache();
-    a.requirements.vertices[a_p].matchData.value = number.value(0, Infinity);
+    a.requirements.vertices[a_p].match.data.value = number.value(0, Infinity);
   });
 
   it('runCost', function() {
@@ -110,7 +110,7 @@ describe('actuator', function() {
     expect(a.cost(bs, goal)).to.equal(21);
 
     // action cannot be applied
-    a.requirements.vertices[a_p].matchData.value = number.value(0);
+    a.requirements.vertices[a_p].match.data.value = number.value(0);
     expect(a.cost(bs, goal)).to.equal(Infinity);
 
     expect(actionImplCount).to.equal(0);

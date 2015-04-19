@@ -86,7 +86,7 @@ describe('blueprint', function() {
         expect(a.distance(b)).to.equal(0);
 
         // if we make b transitionable, then this should no longer be valid
-        b.state.vertices[v].options.transitionable = true;
+        b.state.vertices[v].match.options.transitionable = true;
         expect(a.distance(b)).to.equal(Infinity);
       });
 

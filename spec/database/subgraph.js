@@ -44,7 +44,7 @@ describe('subgraph', function() {
       expect(_.size(sg.vertices)).to.equal(1);
       expect(sg.vertices[a]).to.not.equal(undefined);
       expect(sg.vertices[a].vertex_id).to.equal(a);
-      expect(sg.vertices[a].matcher).to.equal(subgraph.matcher.id);
+      expect(sg.vertices[a].match.matcher).to.equal(subgraph.matcher.id);
 
       var b = sg.addVertex(subgraph.matcher.id, idea);
       expect(a).to.not.equal(b);
@@ -909,18 +909,18 @@ describe('subgraph', function() {
         var i = inner.addVertex(subgraph.matcher.id, idea);
 
         // if both are not transitionable, then data doesn't matter
-        expect(outer.vertices[o].options.transitionable).to.equal(false);
-        expect(inner.vertices[i].options.transitionable).to.equal(false);
+        expect(outer.vertices[o].match.options.transitionable).to.equal(false);
+        expect(inner.vertices[i].match.options.transitionable).to.equal(false);
         expect(subgraph.match(outer, inner).length).to.equal(1);
 
         // if the inner is transitionable, and the outer is not, then it should fail
         // if the outer is transitionable, but the inner is not, then it should pass (because why not?)
-        outer.vertices[o].options.transitionable = true;
+        outer.vertices[o].match.options.transitionable = true;
         expect(subgraph.match(outer, inner).length).to.equal(1); // AC: if inner=false & outer=true, it can transition
         expect(subgraph.match(inner, outer).length).to.equal(0);
 
         // now with both transitionable, we need to test based on data (unit)
-        inner.vertices[i].options.transitionable = true;
+        inner.vertices[i].match.options.transitionable = true;
 
         // neither have data, so it's okay
         expect(subgraph.match(outer, inner, true).length).to.equal(1);
@@ -980,17 +980,17 @@ describe('subgraph', function() {
 
         // if inner is transitionable, then outer must be too
         // if inner is not transitionable, then outer doesn't matter
-        outer.vertices[o2].options.transitionable = true;
-        expect(outer.vertices[o2].options.transitionable).to.equal(true);
-        expect(outer.vertices[o3].options.transitionable).to.equal(false);
-        expect(inner.vertices[i].options.transitionable).to.equal(false);
+        outer.vertices[o2].match.options.transitionable = true;
+        expect(outer.vertices[o2].match.options.transitionable).to.equal(true);
+        expect(outer.vertices[o3].match.options.transitionable).to.equal(false);
+        expect(inner.vertices[i].match.options.transitionable).to.equal(false);
         expect(subgraph.match(outer, inner).length).to.equal(2);
-        inner.vertices[i].options.transitionable = true;
+        inner.vertices[i].match.options.transitionable = true;
         expect(subgraph.match(outer, inner).length).to.equal(1);
 
         // if transitionable is true for both, the unit checking starts to get interesting
         // if units are not defined, then unitOnly must match (because I want to replace)
-        outer.vertices[o3].options.transitionable = true;
+        outer.vertices[o3].match.options.transitionable = true;
         expect(subgraph.match(outer, inner).length).to.equal(2);
 
         // when we define units for both, now they must start matching
@@ -1199,12 +1199,12 @@ describe('subgraph', function() {
         outer.invalidateCache();
         expect(subgraph.match(outer, inner)).to.deep.equal([]); // no specific matches
         checkSubgraphMatch(subgraph.match(outer, inner, true), outerKeys, innerKeys); // we do have matches by unit
-        inner.vertices[ib_num].options.transitionable = false;
+        inner.vertices[ib_num].match.options.transitionable = false;
         expect(subgraph.match(outer, inner, true)).to.deep.equal([]); // unless we say the value isn't transitionable
 
         // back to our roots
         b_num.update(a_num.data());
-        inner.vertices[ib_num].options.transitionable = true;
+        inner.vertices[ib_num].match.options.transitionable = true;
         outer.invalidateCache();
         checkSubgraphMatch(subgraph.match(outer, inner), outerKeys, innerKeys);
         checkSubgraphMatch(subgraph.match(outer, inner, true), outerKeys, innerKeys);
@@ -1215,12 +1215,12 @@ describe('subgraph', function() {
         outer.invalidateCache();
         expect(subgraph.match(outer, inner)).to.deep.equal([]); // no specific matches
         checkSubgraphMatch(subgraph.match(outer, inner, true), outerKeys, innerKeys); // we do have matches by unit
-        inner.vertices[ib_crt].options.transitionable = false;
+        inner.vertices[ib_crt].match.options.transitionable = false;
         expect(subgraph.match(outer, inner, true)).to.deep.equal([]); // unless we say the value isn't transitionable
 
         //// back to our roots
         //b_crt.update(a_crt.data());
-        //inner.vertices[ib_crt].options.transitionable = true;
+        //inner.vertices[ib_crt].match.options.transitionable = true;
         //outer.invalidateCache();
         //checkSubgraphMatch(subgraph.match(outer, inner), outerKeys, innerKeys);
         //checkSubgraphMatch(subgraph.match(outer, inner, true), outerKeys, innerKeys);
@@ -1295,7 +1295,7 @@ describe('subgraph', function() {
       expect(subgraph.rewrite(sg, [{ vertex_id: e, replace_id: 0 }])).to.equal(undefined);
 
       // no data in vertex to transition
-      sg.vertices[e].options.transitionable = true;
+      sg.vertices[e].match.options.transitionable = true;
       expect(subgraph.rewrite(sg, [{ vertex_id: e, replace: {thing:1} }])).to.equal(undefined);
 
       // replace_id with wrong units

@@ -32,6 +32,8 @@ Subgraph.prototype.copy = function() {
     var copy = _.clone(v);
     sg.vertices[v.vertex_id] = copy;
 
+    copy.match = _.clone(v.match);
+
     // we need to copy the current state
     // (we can't just reload the data from idea)
     copy._data = _.cloneDeep(v._data);
@@ -59,13 +61,13 @@ Subgraph.prototype.copy = function() {
 //                      // (it doesn't make sense to use this with matcher.filler)
 // // TODO add support for matchRef in blueprints; look for any case where we use vertex.data
 // }
-Subgraph.prototype.addVertex = function(matcher, matchData, options) {
+Subgraph.prototype.addVertex = function(matcher, data, options) {
   options = _.merge({
     transitionable: false,
     matchRef: false
   }, options);
 
-  if(options.matchRef && !(matchData in this.vertices))
+  if(options.matchRef && !(data in this.vertices))
     // TODO Should I even check this? isn't this contractual programming?
     throw new Error('referred index (matchData) must already exist in the vertex list');
 
@@ -74,9 +76,11 @@ Subgraph.prototype.addVertex = function(matcher, matchData, options) {
     vertex_id: id,
 
     // this is how we are going to match an idea in the search and match
-    matcher: matcher,
-    matchData: matchData,
-    options: options,
+    match: {
+      matcher: matcher,
+      data: data,
+      options: options
+    },
 
     // this is what we are ultimately trying to find with a subgraph search
     idea: undefined,
@@ -92,14 +96,17 @@ Subgraph.prototype.addVertex = function(matcher, matchData, options) {
   });
 
   if(matcher === exports.matcher.id) {
-    v.matchData = (matchData.id || matchData);
-    this.vertices[id].idea = ideas.proxy(matchData);
+    v.match.data = (data.id || data);
+    this.vertices[id].idea = ideas.proxy(data);
   } else {
     this.concrete = false;
 
     if(matcher === exports.matcher.number)
       // should this fail if it is not a number?
-      numnum.isNumber(matchData);
+      numnum.isNumber(data);
+    else if(matcher === exports.matcher.discrete)
+      // should this fail if it is not a discrete?
+      crtcrt.isDiscrete(data);
   }
 
   return id;
@@ -205,7 +212,7 @@ exports.stringify = function(sg, dump) {
   // _.map will flatten it into an array, but we store the id anyway
   sg.vertices = sg.vertices.map(function(v) {
     if(dump) loadVertexData(v);
-    v.matcher = v.matcher.name;
+    v.match.matcher = v.match.matcher.name;
     if(v.idea)
       v.idea = v.idea.id;
     return v;
@@ -229,7 +236,7 @@ exports.parse = function(str) {
   str.vertices.forEach(function(v) {
     // XXX swap the vertex ID
     // - or convert the vertices object to a list
-    var id = sg.addVertex(exports.matcher[v.matcher], v.matchData, v.options);
+    var id = sg.addVertex(exports.matcher[v.match.matcher], v.match.data, v.match.options);
     if(v.idea)
       sg.vertices[id].idea = ideas.proxy(v.idea);
     sg.vertices[id]._data = v._data;
@@ -269,9 +276,9 @@ exports.search = function(subgraph) {
 
       // we can't consider this edge if the target object hasn't be identified
       // return true because this doesn't make the match invalid
-      if(isSrc && currEdge.dst.options.matchRef && subgraph.vertices[currEdge.dst.matchData].idea === undefined)
+      if(isSrc && currEdge.dst.match.options.matchRef && subgraph.vertices[currEdge.dst.match.data].idea === undefined)
         return true;
-      if(isDst && currEdge.src.options.matchRef && subgraph.vertices[currEdge.src.matchData].idea === undefined)
+      if(isDst && currEdge.src.match.options.matchRef && subgraph.vertices[currEdge.src.match.data].idea === undefined)
         return true;
 
       var currBranches = (isSrc ? (currEdge.src.idea.link(currEdge.link)) : (currEdge.dst.idea.link(currEdge.link.opposite)) );
@@ -304,7 +311,8 @@ exports.search = function(subgraph) {
   if(selectedEdge && selectedBranches) {
     // pick the vertex to expand
     var vertex = _.isUndefined(selectedEdge.src.idea) ? selectedEdge.src : selectedEdge.dst;
-    var matchData = vertex.options.matchRef?subgraph.vertices[vertex.matchData].data:vertex.matchData;
+    var matchData = vertex.match.options.matchRef?subgraph.vertices[vertex.match.data].data:vertex.match.data;
+    var matcher = vertex.match.matcher;
 
     // XXX following the transitions to the end requires a more complex pre match thing
 //    var matchData = vertex.matchData;
@@ -316,13 +324,13 @@ exports.search = function(subgraph) {
 //    }
 
     var matchedBranches = selectedBranches.filter(function(idea) {
-      if(vertex.matcher === exports.matcher.id)
+      if(matcher === exports.matcher.id)
         // XXX this should never happen here
-        return vertex.matcher({idea:idea}, matchData);
-      else if(vertex.matcher === exports.matcher.filler)
+        return matcher({idea:idea}, matchData);
+      else if(matcher === exports.matcher.filler)
         return true;
       else
-        return vertex.matcher({data:idea.data()}, matchData);
+        return matcher({data:idea.data()}, matchData);
     });
 
     if(matchedBranches.length === 0) {
@@ -400,7 +408,7 @@ exports.match = function(subgraphOuter, subgraphInner, unitOnly) {
           vertexMap[vi.vertex_id] = vo.vertex_id;
           // vi.idea has been identified
           // so we can use vi.data directly
-          possible = vertexTransitionableAcceptable(vo, vi.options.transitionable, vi.data, unitOnly);
+          possible = vertexTransitionableAcceptable(vo, vi.match.options.transitionable, vi.data, unitOnly);
         }
         return possible;
       });
@@ -484,15 +492,15 @@ function subgraphMatch(subgraphOuter, subgraphInner, outerEdges, innerEdges, ver
 
     // find the target data we are interested
     var srcData;
-    if(innerEdge.src.idea || !innerEdge.src.options.matchRef) {
+    if(innerEdge.src.idea || !innerEdge.src.match.options.matchRef) {
       // this is pretty simple for for !matchRef
       // or if the target is already associated with an idea
       srcData = innerEdge.src.data;
     } else {
-      if((srcData = subgraphInner.vertices[innerEdge.src.matchData]).data)
+      if((srcData = subgraphInner.vertices[innerEdge.src.match.data]).data)
         // if our inner graph has a value cached, use that
         srcData = srcData.data;
-      else if((srcData = subgraphOuter.vertices[vertexMap[innerEdge.src.matchData]]) !== undefined)
+      else if((srcData = subgraphOuter.vertices[vertexMap[innerEdge.src.match.data]]) !== undefined)
         // if we have already mapped the vertex in question, then use the outer data
         // (mapped, but the inner hasn't been updated with the idea)
         // (note: at this point, data could still be undefined, and that's okay)
@@ -502,15 +510,15 @@ function subgraphMatch(subgraphOuter, subgraphInner, outerEdges, innerEdges, ver
         return false;
     }
     var dstData;
-    if(innerEdge.dst.idea || !innerEdge.dst.options.matchRef) {
+    if(innerEdge.dst.idea || !innerEdge.dst.match.options.matchRef) {
       // this is pretty simple for for !matchRef
       // or if the target is already associated with an idea
       dstData = innerEdge.dst.data;
     } else {
-      if((dstData = subgraphInner.vertices[innerEdge.dst.matchData]).data)
+      if((dstData = subgraphInner.vertices[innerEdge.dst.match.data]).data)
         // if our inner graph has a value cached, use that
         dstData = dstData.data;
-      else if((dstData = subgraphOuter.vertices[vertexMap[innerEdge.dst.matchData]]) !== undefined)
+      else if((dstData = subgraphOuter.vertices[vertexMap[innerEdge.dst.match.data]]) !== undefined)
         // if we have already mapped the vertex in question, then use the outer data
         // (mapped, but the inner hasn't been updated with the idea)
         // (note: at this point, data could still be undefined, and that's okay)
@@ -521,23 +529,23 @@ function subgraphMatch(subgraphOuter, subgraphInner, outerEdges, innerEdges, ver
     }
 
     // check the transitionability of both src and dst
-    if(!vertexTransitionableAcceptable(currEdge.src, innerEdge.src.options.transitionable, srcData, unitOnly))
+    if(!vertexTransitionableAcceptable(currEdge.src, innerEdge.src.match.options.transitionable, srcData, unitOnly))
       return false;
-    if(!vertexTransitionableAcceptable(currEdge.dst, innerEdge.dst.options.transitionable, dstData, unitOnly))
+    if(!vertexTransitionableAcceptable(currEdge.dst, innerEdge.dst.match.options.transitionable, dstData, unitOnly))
       return false;
 
     // if matchRef, then we want to use the data we found as the matcher data
     // if !matchRef, then we need to use the matchData on the object
-    if(!unitOnly || !innerEdge.src.options.transitionable) {
-      if(!innerEdge.src.options.matchRef)
-        srcData = innerEdge.src.matchData;
-      if(!innerEdge.src.matcher(currEdge.src, srcData))
+    if(!unitOnly || !innerEdge.src.match.options.transitionable) {
+      if(!innerEdge.src.match.options.matchRef)
+        srcData = innerEdge.src.match.data;
+      if(!innerEdge.src.match.matcher(currEdge.src, srcData))
         return false;
     }
-    if(!unitOnly || !innerEdge.dst.options.transitionable) {
-      if (!innerEdge.dst.options.matchRef)
-        dstData = innerEdge.dst.matchData;
-      if(!innerEdge.dst.matcher(currEdge.dst, dstData))
+    if(!unitOnly || !innerEdge.dst.match.options.transitionable) {
+      if (!innerEdge.dst.match.options.matchRef)
+        dstData = innerEdge.dst.match.data;
+      if(!innerEdge.dst.match.matcher(currEdge.dst, dstData))
         return false;
     }
 
@@ -549,7 +557,7 @@ function subgraphMatch(subgraphOuter, subgraphInner, outerEdges, innerEdges, ver
     // because of indirection, we may need to skip an edge and try the next best one
     // so if our current edge uses inderection, and there are other edges to try, then, well, try again
     // but next time, don't consider this edge
-    if((innerEdge.src.options.matchRef || innerEdge.dst.options.matchRef) && innerEdges.length > skipThisTime.length) {
+    if((innerEdge.src.match.options.matchRef || innerEdge.dst.match.options.matchRef) && innerEdges.length > skipThisTime.length) {
       innerEdges.push(innerEdge);
       skipThisTime.push(innerEdge);
       return subgraphMatch(subgraphOuter, subgraphInner, outerEdges, innerEdges, vertexMap, unitOnly, skipThisTime);
@@ -593,7 +601,7 @@ function subgraphMatch(subgraphOuter, subgraphInner, outerEdges, innerEdges, ver
 // - we only need to care about transitions if vi wants it
 function vertexTransitionableAcceptable(vo, vi_transitionable, vi_data, unitOnly) {
   if(vi_transitionable) {
-    if(!vo.options.transitionable)
+    if(!vo.match.options.transitionable)
       return false;
 
     // if they are both transitionable, then the values must match
@@ -652,7 +660,7 @@ exports.rewrite = function(subgraph, transitions, actual) {
       if(!(t.replace || t.combine || t.hasOwnProperty('replace_id') || t.cycle))
         return false;
 
-      if(!v.options.transitionable) {
+      if(!v.match.options.transitionable) {
         return false;
       }
 
