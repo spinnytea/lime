@@ -31,14 +31,12 @@ function Subgraph() {
 Subgraph.prototype.copy = function() {
   var sg = new Subgraph();
   this.vertices.forEach(function(v) {
-    var copy = _.clone(v);
-    sg.vertices[v.vertex_id] = copy;
-
-    copy.match = _.clone(v.match);
-
-    // we need to copy the current state
-    // (we can't just reload the data from idea)
-    copy._data = _.cloneDeep(v._data);
+    var copy = sg.vertices[v.vertex_id] = {
+      vertex_id: v.vertex_id,
+      match: _.clone(v.match),
+      idea: v.idea,
+      _data: _.cloneDeep(v._data)
+    };
 
     Object.defineProperty(copy, 'data', {
       get: function() { return loadVertexData(copy); },
