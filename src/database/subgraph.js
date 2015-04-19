@@ -23,8 +23,10 @@ function Subgraph() {
   // - all of the vertices have a specific ID
   // false
   // - is it a description of something to find
+  // cache value for: sg.vertices.every(function(v) { return v.idea !== undefined; })
   this.concrete = true;
 }
+
 // TODO can I do a lazy copy?
 Subgraph.prototype.copy = function() {
   var sg = new Subgraph();
@@ -49,6 +51,7 @@ Subgraph.prototype.copy = function() {
   sg.concrete = this.concrete;
   return sg;
 };
+
 // @param matcher: exports.matcher or equivalent
 // @param matchData: passed to the matcher
 // // TODO should matchData be inside options?
@@ -76,6 +79,8 @@ Subgraph.prototype.addVertex = function(matcher, data, options) {
     vertex_id: id,
 
     // this is how we are going to match an idea in the search and match
+    // this is the recipe, the way we determined if this vertex can be pinned to the world (or another subgraph)
+    // TODO can we delete this once v.idea is defined?
     match: {
       matcher: matcher,
       data: data,
@@ -83,11 +88,13 @@ Subgraph.prototype.addVertex = function(matcher, data, options) {
     },
 
     // this is what we are ultimately trying to find with a subgraph search
+    // pinned context
     idea: undefined,
 
-    // this is for the rewrite
-    // if undefined, it hasn't be fetched
-    // otherwise, it's the value of idea.data() before we tried to change it
+    // theoretical state
+    // this is for the rewrite, planning in general
+    // if undefined, it hasn't be fetched from idea.data()
+    // set to null if there is no data (so we know not to query again)
     _data: undefined
   };
   Object.defineProperty(v, 'data', {
@@ -111,9 +118,11 @@ Subgraph.prototype.addVertex = function(matcher, data, options) {
 
   return id;
 };
-// src, dst: a vertex ID
-// link: the link from src to dst
-// pref: higher prefs will be considered first (default: 0)
+
+// @param src: a vertex ID
+// @param link: the link from src to dst
+// @param dst: a vertex ID
+// @param pref: higher prefs will be considered first (default: 0)
 Subgraph.prototype.addEdge = function(src, link, dst, pref) {
   this.edges.push({
     src: this.vertices[src],
@@ -122,6 +131,21 @@ Subgraph.prototype.addEdge = function(src, link, dst, pref) {
     pref: (pref || 0)
   });
   this.concrete = this.concrete && this.vertices[src].idea !== undefined && this.vertices[dst].idea !== undefined;
+};
+
+Subgraph.prototype.invalidateCache = function() {
+  if(arguments.length) {
+    // only reset the ones in the arguments
+    var that = this;
+    _.forEach(arguments, function(id) {
+      that.vertices[id].data = undefined;
+    });
+  } else {
+    // reset all vertices
+    this.vertices.forEach(function(v) {
+      v.data = undefined;
+    });
+  }
 };
 
 // returns undefined if there is no data, or the object if there is
@@ -145,21 +169,6 @@ function loadVertexData(v) {
     }
   }
 }
-
-Subgraph.prototype.invalidateCache = function() {
-  if(arguments.length) {
-    // only reset the ones in the arguments
-    var that = this;
-    _.forEach(arguments, function(id) {
-      that.vertices[id].data = undefined;
-    });
-  } else {
-    // reset all vertices
-    this.vertices.forEach(function(v) {
-      v.data = undefined;
-    });
-  }
-};
 
 exports.Subgraph = Subgraph;
 
