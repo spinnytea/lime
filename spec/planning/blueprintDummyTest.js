@@ -46,4 +46,9 @@ describe('blueprint_chain', function() {
       }).to.throw('MockAction does not implement ' + p);
     });
   });
+
+  it.skip('loaders', function() {
+    // check to see that an error is thrown if try to construct an object and there is no loader present
+    // blueprint.loaders[this.constructor.name]
+  });
 }); // end blueprint chain
