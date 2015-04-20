@@ -15,7 +15,7 @@ var tools = require('../testingTools');
 describe('actuator', function() {
   it('init', function() {
     // this is to ensure we test everything
-    expect(Object.keys(actuator)).to.deep.equal(['Action', 'actions', 'list']);
+    expect(Object.keys(actuator)).to.deep.equal(['Action', 'actions']);
     expect(Object.keys(actuator.Action.prototype)).to.deep.equal(['runCost', 'tryTransition', 'runBlueprint', 'cost', 'apply', 'save']);
   });
 
@@ -278,7 +278,7 @@ describe('actuator', function() {
   }); // end planning
 
   // we need to test a blueprint function
-  it('list', function() {
+  it('blueprint.list', function() {
     // create a node that is the base of blueprints
     // save this in config.data
     // when we do a blueprint.save(), hook it up as a child
@@ -296,44 +296,44 @@ describe('actuator', function() {
     // search for our actuator
     // (basic)
     // if we have data from a use case, so we need to ensure this actuator is included in the list
-    var list = actuator.list();
+    var list = blueprint.list();
     expect(list.length).to.be.gt(0);
     expect(list.map(function(i) { return i.id; })).to.include(a.idea);
 
     // search for our actuator
     // ([])
     // an empty list is still valid; should be the same as providing no context
-    list = actuator.list([]);
+    list = blueprint.list([]);
     expect(list.length).to.be.gt(0);
     expect(list.map(function(i) { return i.id; })).to.include(a.idea);
 
     // search for our actuator
     // (ID string)
-    list = actuator.list(context.id);
+    list = blueprint.list(context.id);
     expect(list.length).to.equal(1);
     expect(list[0].id).to.equal(a.idea);
 
     // search for our actuator
     // (proxy idea)
-    list = actuator.list(context);
+    list = blueprint.list(context);
     expect(list.length).to.equal(1);
     expect(list[0].id).to.equal(a.idea);
 
     // search for our actuator
     // ([ID string])
-    list = actuator.list([context.id]);
+    list = blueprint.list([context.id]);
     expect(list.length).to.equal(1);
     expect(list[0].id).to.equal(a.idea);
 
     // search for our actuator
     // ([proxy idea])
-    list = actuator.list([context]);
+    list = blueprint.list([context]);
     expect(list.length).to.equal(1);
     expect(list[0].id).to.equal(a.idea);
 
     // search for our actuator
     // returns nothing
-    list = actuator.list('not a valid context');
+    list = blueprint.list('not a valid context');
     expect(list.length).to.equal(0);
   });
 }); // end actuator
