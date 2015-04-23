@@ -15,6 +15,8 @@ function StubAction() {
   // subgraph.rewrite.transitions
   // what the stub will solve for later
   this.transitions = [];
+
+  this.solveAt = 'planCreate';
 }
 _.extend(StubAction.prototype, blueprint.Action.prototype);
 
@@ -55,3 +57,5 @@ blueprint.loaders.StubAction = function(blueprint) {
   a.transitions = blueprint.transitions;
   return a;
 };
+
+exports.solveAtList = ['planCreate'];
