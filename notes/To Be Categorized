@@ -39,5 +39,13 @@ On Programming
   this would save space, and only save time if our heuristic is good.
 
   no, in this case, it would be “distanceFromGoal”, you would pick the one that is closest to the goal and just do that
+  --
+  how do I tell astar that some plans are wrong?
+  like, if I want to specifically avoid doing something?
+  what if it's only PART of the plan? (you can't do X and then Y)
+  _.isEqual?
+  subgraph.stringify?
+  what if things are reordered? then there are n! options, what if SOME are valid? (think entering a PIN)
+  do I need to come up with some kind of query language for it?
 
 http://www.tinkerpop.com/
