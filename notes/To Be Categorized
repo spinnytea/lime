@@ -47,5 +47,6 @@ On Programming
   subgraph.stringify?
   what if things are reordered? then there are n! options, what if SOME are valid? (think entering a PIN)
   do I need to come up with some kind of query language for it?
+  is it enough to subtract the plans from BlueprintState.availablePlans before we start astar.search?
 
 http://www.tinkerpop.com/
