@@ -16,7 +16,7 @@ var numnum = require('../planning/primitives/number');
 
 function Subgraph() {
   this.vertices = [];
-  this.edges = [];
+  this._edges = [];
 
   // true
   // - does this represent a specific subgraph
@@ -43,7 +43,7 @@ Subgraph.prototype.copy = function() {
       set: function(value) { copy._data = value; }
     });
   });
-  this.edges.forEach(function(e) {
+  this._edges.forEach(function(e) {
     sg.addEdge(e.src.vertex_id, e.link, e.dst.vertex_id, e.pref);
   });
   sg.concrete = this.concrete;
@@ -122,7 +122,7 @@ Subgraph.prototype.addVertex = function(matcher, data, options) {
 // @param dst: a vertex ID
 // @param pref: higher prefs will be considered first (default: 0)
 Subgraph.prototype.addEdge = function(src, link, dst, pref) {
-  this.edges.push({
+  this._edges.push({
     src: this.vertices[src],
     link: link,
     dst: this.vertices[dst],
@@ -225,7 +225,7 @@ exports.stringify = function(sg, dump) {
     return v;
   });
 
-  sg.edges = sg.edges.map(function(e) {
+  sg._edges = sg._edges.map(function(e) {
     e.src = e.src.vertex_id;
     e.link = e.link.name;
     e.dst = e.dst.vertex_id;
@@ -249,7 +249,7 @@ exports.parse = function(str) {
     sg.vertices[id]._data = v._data;
   });
 
-  str.edges.forEach(function(e) {
+  str._edges.forEach(function(e) {
     sg.addEdge(e.src, links.list[e.link], e.dst, e.pref);
   });
 
@@ -275,7 +275,7 @@ exports.search = function(subgraph) {
   var nextSteps = [];
 
   // find an edge to expand
-  if(!subgraph.edges.every(function(currEdge) {
+  if(!subgraph._edges.every(function(currEdge) {
     var isSrc = (currEdge.src.idea !== undefined);
     var isDst = (currEdge.dst.idea !== undefined);
 
@@ -427,7 +427,7 @@ exports.match = function(subgraphOuter, subgraphInner, unitOnly) {
     return [];
 
   // if there are no edges, return the map
-  if(subgraphInner.edges.length === 0) {
+  if(subgraphInner._edges.length === 0) {
     // if there are edges, and all vertices have been mapped, we still need to check the edges to make sure they match
     // or we can just make the call to subgraphMatch
     // TODO do we need to run the matchers? we probably need to run the matchers
@@ -440,7 +440,7 @@ exports.match = function(subgraphOuter, subgraphInner, unitOnly) {
 
   // with this information, fill out the map using the edges
   // (note: there may not yet be any edges specified)
-  return subgraphMatch(subgraphOuter, subgraphInner, _.clone(subgraphOuter.edges), _.clone(subgraphInner.edges), vertexMap, unitOnly, [])
+  return subgraphMatch(subgraphOuter, subgraphInner, _.clone(subgraphOuter._edges), _.clone(subgraphInner._edges), vertexMap, unitOnly, [])
     .filter(function(map) {
       return Object.keys(map).length === numVertices;
     });

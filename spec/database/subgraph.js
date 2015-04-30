@@ -58,8 +58,8 @@ describe('subgraph', function() {
 
       sg.addEdge(a, links.list.thought_description, b);
 
-      expect(sg.edges.length).to.equal(1);
-      var edge = sg.edges[0];
+      expect(sg._edges.length).to.equal(1);
+      var edge = sg._edges[0];
       expect(edge.src).to.be.an('object');
       expect(edge.src.vertex_id).to.equal(a);
       expect(edge.link.name).to.equal(links.list.thought_description.name);
@@ -67,8 +67,8 @@ describe('subgraph', function() {
       expect(edge.pref).to.equal(0);
 
       sg.addEdge(a, links.list.thought_description, b, 100);
-      expect(sg.edges.length).to.equal(2);
-      expect(sg.edges[1].pref).to.equal(100);
+      expect(sg._edges.length).to.equal(2);
+      expect(sg._edges[1].pref).to.equal(100);
     });
 
     it('copy', function() {
@@ -403,7 +403,7 @@ describe('subgraph', function() {
     expect(parsed.vertices).to.deep.equal(sg.vertices);
     // edges are complicated
     // they probably won't ever be an issue
-    expect(parsed.edges).to.deep.equal(sg.edges);
+    expect(parsed._edges).to.deep.equal(sg._edges);
     expect(parsed).to.deep.equal(sg);
 
     expect(sg.concrete).to.equal(false);
