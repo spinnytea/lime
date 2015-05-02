@@ -30,11 +30,11 @@ describe('subgraph', function() {
   it('init', function() {
     // this is to ensure we test everything
     expect(Object.keys(subgraph)).to.deep.equal(['Subgraph', 'matcher', 'stringify', 'parse', 'search', 'match', 'rewrite']);
-    expect(Object.keys(subgraph.Subgraph.prototype)).to.deep.equal(['copy', 'addVertex', 'addEdge', 'invalidateCache']);
+    expect(Object.keys(subgraph.Subgraph.prototype)).to.deep.equal(['copy', 'addVertex', 'addEdge', 'getData', 'setData', 'deleteData']);
     expect(Object.keys(subgraph.matcher)).to.deep.equal(['id', 'filler', 'exact', 'similar', 'number', 'discrete']);
   });
 
-  describe('Subgraph', function() {
+  describe.only('Subgraph', function() {
     it('addVertex', function() {
       var idea = tools.ideas.create();
 
@@ -140,7 +140,11 @@ describe('subgraph', function() {
       });
     }); // end loadVertexData
 
-    it('invalidateCache', function() {
+    it.skip('getData');
+
+    it.skip('setData');
+
+    it('deleteData', function() {
       var a = tools.ideas.create({a: 1});
       var b = tools.ideas.create({b: 2});
       a.link(links.list.thought_description, b);
