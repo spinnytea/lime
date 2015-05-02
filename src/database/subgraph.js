@@ -281,9 +281,15 @@ exports.parse = function(str) {
   var sg = new Subgraph();
 
   _.forEach(str.match, function(value, key) {
+    var data = value.data;
+    if (value.matcher === exports.matcher.number.name) {
+      numnum.isNumber(data);
+    } else if(value.matcher === exports.matcher.discrete.name) {
+      crtcrt.isDiscrete(data);
+    }
     sg._match[key] = {
       matcher: exports.matcher[value.matcher],
-      data: value.data,
+      data: data,
       options: value.options
     };
   });
@@ -292,7 +298,7 @@ exports.parse = function(str) {
     sg._idea[key] = ideas.proxy(value);
   });
 
-  sg._data = str._data;
+  sg._data = str._data || sg._data;
 
   _.forEach(str.edges, function(e) {
     sg.addEdge(e.src, links.list[e.link], e.dst, e.pref);
