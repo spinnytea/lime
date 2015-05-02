@@ -111,7 +111,7 @@ Subgraph.prototype.addVertex = function(matcher, data, options) {
   if(options.matchRef && !(data in this._match))
     throw new Error('referred index (matchData) must already exist in the vertex list');
 
-  var id = ids.next.anonymous(this._nextVertexId);
+  var id = this._nextVertexId = ids.next.anonymous(this._nextVertexId);
 
   this._match[id] = {
     matcher: matcher,

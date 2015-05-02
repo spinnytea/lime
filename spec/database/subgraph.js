@@ -35,21 +35,36 @@ describe('subgraph', function() {
   });
 
   describe.only('Subgraph', function() {
-    it('addVertex', function() {
-      var idea = tools.ideas.create();
+    describe('addVertex', function() {
+      it.skip('default options');
 
-      var sg = new subgraph.Subgraph();
-      var a = sg.addVertex(subgraph.matcher.id, idea.id);
+      it.skip('matchRef target not defined');
 
-      expect(_.size(sg.vertices)).to.equal(1);
-      expect(sg.vertices[a]).to.not.equal(undefined);
-      expect(sg.vertices[a].vertex_id).to.equal(a);
-      expect(sg.vertices[a].match.matcher).to.equal(subgraph.matcher.id);
+      it.skip('matcher.filler');
 
-      var b = sg.addVertex(subgraph.matcher.id, idea);
-      expect(a).to.not.equal(b);
-      expect(_.size(sg.vertices)).to.equal(2);
-    });
+      it('matcher.id', function() {
+        var idea = tools.ideas.create();
+
+        var sg = new subgraph.Subgraph();
+        var a = sg.addVertex(subgraph.matcher.id, idea.id);
+
+        expect(_.size(sg._match)).to.equal(1);
+        expect(_.size(sg._idea)).to.equal(1);
+        expect(sg._match[a]).to.not.equal(undefined);
+        expect(sg._idea[a]).to.not.equal(undefined);
+        expect(sg._idea[a].id).to.equal(idea.id);
+        expect(sg._match[a].matcher).to.equal(subgraph.matcher.id);
+        expect(sg.concrete).to.equal(true);
+
+        var b = sg.addVertex(subgraph.matcher.id, idea);
+        expect(a).to.not.equal(b);
+        expect(_.size(sg._match)).to.equal(2);
+      });
+
+      it.skip('invalid matcher.number');
+
+      it.skip('invalid matcher.discrete');
+    }); // end addVertex
 
     it('addEdge', function() {
       var sg = new subgraph.Subgraph();
@@ -60,10 +75,9 @@ describe('subgraph', function() {
 
       expect(sg._edges.length).to.equal(1);
       var edge = sg._edges[0];
-      expect(edge.src).to.be.an('object');
-      expect(edge.src.vertex_id).to.equal(a);
-      expect(edge.link.name).to.equal(links.list.thought_description.name);
-      expect(edge.dst.vertex_id).to.equal(b);
+      expect(edge.src).to.equal(a);
+      expect(edge.link).to.equal(links.list.thought_description);
+      expect(edge.dst).to.equal(b);
       expect(edge.pref).to.equal(0);
 
       sg.addEdge(a, links.list.thought_description, b, 100);
@@ -72,6 +86,8 @@ describe('subgraph', function() {
     });
 
     it('copy', function() {
+      var idea = tools.ideas.create();
+
       // empty
       var sg = new subgraph.Subgraph();
       expect(sg.copy()).to.deep.equal(sg);
@@ -79,10 +95,13 @@ describe('subgraph', function() {
       var a = sg.addVertex(subgraph.matcher.filler);
       expect(sg.copy()).to.deep.equal(sg);
 
-      var b = sg.addVertex(subgraph.matcher.filler);
+      var b = sg.addVertex(subgraph.matcher.id, idea.id);
       expect(sg.copy()).to.deep.equal(sg);
 
       sg.addEdge(a, links.list.thought_description, b);
+      expect(sg.copy()).to.deep.equal(sg);
+
+      sg.setData(a, { some: 'thing' });
       expect(sg.copy()).to.deep.equal(sg);
     });
 
@@ -101,46 +120,54 @@ describe('subgraph', function() {
       // - maybe the one before
       // - maybe the original
       it.skip('copy of copy');
-    });
+    }); // end lazy copy
 
-    describe('loadVertexData', function() {
+    describe('getData', function() {
       it('with data', function() {
         var data = { somat: 42 };
         var idea = tools.ideas.create(data);
         var sg = new subgraph.Subgraph();
         var a = sg.addVertex(subgraph.matcher.id, idea.id);
-        expect(sg.concrete).to.equal(true);
-        var v = sg.vertices[a];
 
         // before we load data
-        expect(v._data).to.equal(undefined);
+        expect(sg._data[a]).to.equal(undefined);
 
         // the data is loaded
-        expect(v.data).to.deep.equal(data);
+        expect(sg.getData(a)).to.deep.equal(data);
 
         // after we load data
-        expect(v._data).to.deep.equal(data);
+        expect(sg._data[a]).to.deep.equal(data);
       });
 
       it('without data', function() {
         var idea = tools.ideas.create();
         var sg = new subgraph.Subgraph();
         var a = sg.addVertex(subgraph.matcher.id, idea.id);
-        expect(sg.concrete).to.equal(true);
-        var v = sg.vertices[a];
 
         // before we load data
-        expect(v._data).to.equal(undefined);
+        expect(sg._data[a]).to.equal(undefined);
 
         // the data is loaded
-        expect(v.data).to.equal(undefined);
+        expect(sg.getData(a)).to.equal(undefined);
 
         // after we load data
-        expect(v._data).to.equal(null);
+        expect(sg._data[a]).to.equal(null);
       });
-    }); // end loadVertexData
 
-    it.skip('getData');
+      it.skip('no idea', function() {
+        var sg = new subgraph.Subgraph();
+        var a = sg.addVertex(subgraph.matcher.filler);
+
+        // before we load data
+        expect(sg._data[a]).to.equal(undefined);
+
+        // the data is loaded
+        expect(sg.getData(a)).to.equal(undefined);
+
+        // after we load data
+        expect(sg._data[a]).to.equal(undefined);
+      });
+    }); // end getData
 
     it.skip('setData');
 
@@ -155,34 +182,34 @@ describe('subgraph', function() {
       sg.addEdge(_a, links.list.thought_description, _b);
 
       function load() {
-        expect(sg.vertices[_a].data).to.deep.equal({a: 1});
-        expect(sg.vertices[_b].data).to.deep.equal({b: 2});
-        expect(sg.vertices[_a]._data).to.deep.equal({a: 1});
-        expect(sg.vertices[_b]._data).to.deep.equal({b: 2});
+        expect(sg.getData(_a)).to.deep.equal({a: 1});
+        expect(sg.getData(_b)).to.deep.equal({b: 2});
+        expect(sg._data[_a]).to.deep.equal({a: 1});
+        expect(sg._data[_b]).to.deep.equal({b: 2});
       }
 
-      expect(sg.vertices[_a]._data).to.deep.equal(undefined);
-      expect(sg.vertices[_b]._data).to.deep.equal(undefined);
+      expect(sg._data[_a]).to.deep.equal(undefined);
+      expect(sg._data[_b]).to.deep.equal(undefined);
 
       load();
-      sg.invalidateCache();
-      expect(sg.vertices[_a]._data).to.deep.equal(undefined);
-      expect(sg.vertices[_b]._data).to.deep.equal(undefined);
+      sg.deleteData();
+      expect(sg._data[_a]).to.deep.equal(undefined);
+      expect(sg._data[_b]).to.deep.equal(undefined);
 
       load();
-      sg.invalidateCache(_b);
-      expect(sg.vertices[_a]._data).to.deep.equal({a: 1});
-      expect(sg.vertices[_b]._data).to.deep.equal(undefined);
+      sg.deleteData(_b);
+      expect(sg._data[_a]).to.deep.equal({a: 1});
+      expect(sg._data[_b]).to.deep.equal(undefined);
 
       load();
-      sg.invalidateCache(_a);
-      expect(sg.vertices[_a]._data).to.deep.equal(undefined);
-      expect(sg.vertices[_b]._data).to.deep.equal({b: 2});
+      sg.deleteData(_a);
+      expect(sg._data[_a]).to.deep.equal(undefined);
+      expect(sg._data[_b]).to.deep.equal({b: 2});
 
       load();
-      sg.invalidateCache(_b, _a);
-      expect(sg.vertices[_a]._data).to.deep.equal(undefined);
-      expect(sg.vertices[_b]._data).to.deep.equal(undefined);
+      sg.deleteData(_b, _a);
+      expect(sg._data[_a]).to.deep.equal(undefined);
+      expect(sg._data[_b]).to.deep.equal(undefined);
     });
   }); // end Subgraph
 
