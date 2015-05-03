@@ -148,7 +148,15 @@ Subgraph.prototype.addEdge = function(src, link, dst, pref) {
     dst: dst,
     pref: (pref || 0)
   });
-  this.concrete = this.concrete && (src in this._idea) && (dst in this._idea);
+  this.concrete = this.concrete && (this.getIdea(src) !== undefined) && (this.getIdea(dst) !== undefined);
+};
+
+Subgraph.prototype.getMatch = function(id) {
+  return this._match[id];
+};
+
+Subgraph.prototype.getIdea = function(id) {
+  return this._idea[id];
 };
 
 // returns undefined if there is no data, or the object if there is
@@ -157,11 +165,11 @@ Subgraph.prototype.getData = function(id) {
     return undefined;
   } else if(this._data[id] !== undefined) {
     return this._data[id];
-  } else if(this._idea[id] === undefined) {
+  } else if(this.getIdea(id) === undefined) {
     return undefined;
   } else {
     // try loading the data
-    var value = this._idea[id].data();
+    var value = this.getIdea(id).data();
     if(Object.keys(value).length === 0) {
       // cache the result
       this._data[id] = null;
@@ -201,36 +209,27 @@ exports.Subgraph = Subgraph;
 // - when working with inconcrete graphs in subgraph.match
 // - we need to work with the hypothetical data (sg.getData(id))
 //
-// TODO remove thrown error after testing with wumpus
 exports.matcher = {
-  id: function id(sg, vertex_id, matchData) {
-    if(arguments.length === 2) throw new Error('update matcher call');
+  id: function id(idea, matchData) {
     // XXX this could be an empty object
-    return matchData === sg._idea[vertex_id].id;
+    return matchData === idea.id;
   },
   filler: function filler() {
-    if(arguments.length === 2) throw new Error('update matcher call');
     return true;
   },
 
-  exact: function exact(sg, vertex_id, matchData) {
-    if(arguments.length === 2) throw new Error('update matcher call');
-    return _.isEqual(sg.getData(vertex_id), matchData);
+  exact: function exact(data, matchData) {
+    return _.isEqual(data, matchData);
   },
-  similar: function similar(sg, vertex_id, matchData) {
-    if(arguments.length === 2) throw new Error('update matcher call');
-    // FIXME this implementation is bad and it should feel bad
+  similar: function similar(data, matchData) {
     // matchData should be contained within data
-    var data = sg.getData(vertex_id);
     return _.isEqual(data, _.merge(_.cloneDeep(data), matchData));
   },
-  number: function number(sg, vertex_id, matchData) {
-    if(arguments.length === 2) throw new Error('update matcher call');
-    return numnum.difference(sg.getData(vertex_id), matchData) === 0;
+  number: function number(data, matchData) {
+    return numnum.difference(data, matchData) === 0;
   },
-  discrete: function discrete(sg, vertex_id, matchData) {
-    if(arguments.length === 2) throw new Error('update matcher call');
-    return crtcrt.difference(sg.getData(vertex_id), matchData) === 0;
+  discrete: function discrete(data, matchData) {
+    return crtcrt.difference(data, matchData) === 0;
   }
 };
 
@@ -328,19 +327,23 @@ exports.search = function(subgraph) {
 
   // find an edge to expand
   if(!subgraph._edges.every(function(currEdge) {
-    var isSrc = (currEdge.src.idea !== undefined);
-    var isDst = (currEdge.dst.idea !== undefined);
+    var srcIdea = subgraph.getIdea(currEdge.src);
+    var dstIdea = subgraph.getIdea(currEdge.dst);
+    var isSrc = (srcIdea !== undefined);
+    var isDst = (dstIdea !== undefined);
 
     if(isSrc ^ isDst) {
+      var srcMatch = subgraph.getMatch(currEdge.src);
+      var dstMatch = subgraph.getMatch(currEdge.dst);
 
       // we can't consider this edge if the target object hasn't be identified
       // return true because this doesn't make the match invalid
-      if(isSrc && currEdge.dst.match.options.matchRef && subgraph.vertices[currEdge.dst.match.data].idea === undefined)
+      if(isSrc && dstMatch.options.matchRef && subgraph.getIdea(dstMatch.data) === undefined)
         return true;
-      if(isDst && currEdge.src.match.options.matchRef && subgraph.vertices[currEdge.src.match.data].idea === undefined)
+      if(isDst && srcMatch.options.matchRef && subgraph.getIdea(srcMatch.data) === undefined)
         return true;
 
-      var currBranches = (isSrc ? (currEdge.src.idea.link(currEdge.link)) : (currEdge.dst.idea.link(currEdge.link.opposite)) );
+      var currBranches = (isSrc ? (srcIdea.link(currEdge.link)) : (dstIdea.link(currEdge.link.opposite)) );
 
       if(!selectedEdge) {
         selectedEdge = currEdge;
@@ -358,7 +361,7 @@ exports.search = function(subgraph) {
     } else if(isSrc && isDst) {
       // verify that all this edge is present
       // TODO cache the result so we don't need to check this for every subgraph
-      if(currEdge.src.idea.link(currEdge.link).filter(function(idea) { return idea.id === currEdge.dst.id; }) === 0)
+      if(!srcIdea.link(currEdge.link).some(function(idea) { return idea.id === dstIdea.id; }))
         // if we can't resolve this edge, then this graph is invalid
         return false;
     }
@@ -369,9 +372,9 @@ exports.search = function(subgraph) {
   // expand the edge
   if(selectedEdge && selectedBranches) {
     // pick the vertex to expand
-    var vertex = _.isUndefined(selectedEdge.src.idea) ? selectedEdge.src : selectedEdge.dst;
-    var matchData = vertex.match.options.matchRef?subgraph.vertices[vertex.match.data].data:vertex.match.data;
-    var matcher = vertex.match.matcher;
+    var vertex_id = (subgraph.getIdea(selectedEdge.src) === undefined) ? selectedEdge.src : selectedEdge.dst;
+    var match = subgraph.getMatch(vertex_id);
+    var matchData = match.options.matchRef?subgraph.getData(match.data):match.data;
 
     // XXX following the transitions to the end requires a more complex pre match thing
 //    var matchData = vertex.matchData;
@@ -383,26 +386,24 @@ exports.search = function(subgraph) {
 //    }
 
     var matchedBranches = selectedBranches.filter(function(idea) {
-      if(matcher === exports.matcher.id)
+      if(match.matcher === exports.matcher.id)
         // XXX this should never happen here
-        return matcher({idea:idea}, matchData);
-      else if(matcher === exports.matcher.filler)
-        return true;
+        return match.matcher(idea, matchData);
       else
-        return matcher({data:idea.data()}, matchData);
+        return match.matcher(idea.data(), matchData);
     });
 
     if(matchedBranches.length === 0) {
       return [];
     } else if(matchedBranches.length === 1) {
       // we can reuse subgraph at the next level
-      vertex.idea = matchedBranches[0];
+      subgraph._idea[vertex_id] = matchedBranches[0];
       nextSteps.push(subgraph);
     } else {
       // we need to branch; create a new subgraph instance for each level
       matchedBranches.forEach(function(idea) {
         var sg = subgraph.copy();
-        sg.vertices[vertex.vertex_id].idea = idea;
+        sg._idea[vertex_id] = idea;
         nextSteps.push(sg);
       });
     }
@@ -412,7 +413,7 @@ exports.search = function(subgraph) {
   // there are no edges that can be expanded
   if(nextSteps.length === 0) {
     // check all vertices to ensure they all have ideas defined
-    if(!subgraph.vertices.every(function(v) { return v.idea; }))
+    if(Object.keys(subgraph._match).length !== Object.keys(subgraph._idea).length)
       return [];
 
 //    if(!subgraph.edges.every(function(edge) { return edge.src.idea && edge.dst.idea; }))

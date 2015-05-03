@@ -30,11 +30,11 @@ describe('subgraph', function() {
   it('init', function() {
     // this is to ensure we test everything
     expect(Object.keys(subgraph)).to.deep.equal(['Subgraph', 'matcher', 'stringify', 'parse', 'search', 'match', 'rewrite']);
-    expect(Object.keys(subgraph.Subgraph.prototype)).to.deep.equal(['copy', 'addVertex', 'addEdge', 'getData', 'setData', 'deleteData']);
+    expect(Object.keys(subgraph.Subgraph.prototype)).to.deep.equal(['copy', 'addVertex', 'addEdge', 'getMatch', 'getIdea', 'getData', 'setData', 'deleteData']);
     expect(Object.keys(subgraph.matcher)).to.deep.equal(['id', 'filler', 'exact', 'similar', 'number', 'discrete']);
   });
 
-  describe.only('Subgraph', function() {
+  describe('Subgraph', function() {
     describe('addVertex', function() {
       it.skip('default options');
 
@@ -121,6 +121,10 @@ describe('subgraph', function() {
       // - maybe the original
       it.skip('copy of copy');
     }); // end lazy copy
+
+    it.skip('getMatch');
+
+    it.skip('getIdea');
 
     describe('getData', function() {
       it('with data', function() {
@@ -471,7 +475,7 @@ describe('subgraph', function() {
     ).to.deep.equal([null, apple.data()]);
   });
 
-  describe('search', function() {
+  describe.only('search', function() {
     it('nothing to do', function() {
       // invalid subgraph
       expect(function() { subgraph.search(); }).to.throw(TypeError);
@@ -521,9 +525,9 @@ describe('subgraph', function() {
 
       expect(subgraph.search(sg)).to.deep.equal([sg]);
       expect(sg.concrete).to.equal(true);
-      expect(sg.vertices[m].idea.id).to.deep.equal(mark.id);
-      expect(sg.vertices[a].idea.id).to.deep.equal(apple.id);
-      expect(sg.vertices[p].idea.id).to.deep.equal(price.id);
+      expect(sg.getIdea(m).id).to.deep.equal(mark.id);
+      expect(sg.getIdea(a).id).to.deep.equal(apple.id);
+      expect(sg.getIdea(p).id).to.deep.equal(price.id);
     });
 
     it('disjoint + filler', function() {
@@ -612,7 +616,7 @@ describe('subgraph', function() {
           desire.update({name: 'apple'});
 
           expect(subgraph.search(sg)).to.deep.equal([sg]);
-          expect(sg.vertices[_f].idea.id).to.equal(apple.id);
+          expect(sg.getIdea(_f).id).to.equal(apple.id);
         });
 
         it('idDst', function() {
@@ -630,9 +634,9 @@ describe('subgraph', function() {
           desire.update({name: 'banana'});
 
           expect(subgraph.search(sg)).to.deep.equal([sg]);
-          expect(sg.vertices[_f].idea.id).to.equal(banana.id);
+          expect(sg.getIdea(_f).id).to.equal(banana.id);
         });
-      });
+      }); // end matchRef
 
       describe('selectedEdge', function() {
         var mark, apple;
@@ -646,8 +650,8 @@ describe('subgraph', function() {
         afterEach(function() {
           expect(subgraph.search(sg)).to.deep.equal([sg]);
           expect(sg.concrete).to.equal(true);
-          expect(sg.vertices[m].idea.id).to.deep.equal(mark.id);
-          expect(sg.vertices[a].idea.id).to.deep.equal(apple.id);
+          expect(sg.getIdea(m).id).to.deep.equal(mark.id);
+          expect(sg.getIdea(a).id).to.deep.equal(apple.id);
         });
 
         it('isSrc && !isDst', function() {
@@ -671,6 +675,11 @@ describe('subgraph', function() {
           sg.addEdge(m, links.list.thought_description, a);
         });
       }); // end selectedEdge
+      describe('selectedEdge', function() {
+        it.skip('isSrc && isDst fail', function() {
+          // do the case that we return false
+        });
+      }); // end selectedEdge (part 2)
 
       describe('expand branches', function() {
         it('0', function() {
@@ -706,21 +715,21 @@ describe('subgraph', function() {
 
           var sg = new subgraph.Subgraph();
           var m = sg.addVertex(subgraph.matcher.id, mark);
-          var a = sg.addVertex(subgraph.matcher.filler);
-          sg.addEdge(m, links.list.thought_description, a);
+          var f = sg.addVertex(subgraph.matcher.filler);
+          sg.addEdge(m, links.list.thought_description, f);
 
           var result = subgraph.search(sg);
           expect(result.length).to.equal(2);
 
           var one = result[0];
           expect(one).to.not.equal(sg);
-          expect(one.vertices[m].idea.id).to.deep.equal(mark.id);
-          expect(one.vertices[a].idea.id).to.deep.equal(apple.id);
+          expect(one.getIdea(m).id).to.deep.equal(mark.id);
+          expect(one.getIdea(f).id).to.deep.equal(apple.id);
 
           var two = result[1];
           expect(two).to.not.equal(sg);
-          expect(two.vertices[m].idea.id).to.deep.equal(mark.id);
-          expect(two.vertices[a].idea.id).to.deep.equal(banana.id);
+          expect(two.getIdea(m).id).to.deep.equal(mark.id);
+          expect(two.getIdea(f).id).to.deep.equal(banana.id);
         });
       }); // end expand branches
 
@@ -747,9 +756,9 @@ describe('subgraph', function() {
           sg.addEdge(a, links.list.thought_description, p);
 
           expect(subgraph.search(sg)).to.deep.equal([sg]);
-          expect(sg.vertices[m].idea.id).to.deep.equal(mark.id);
-          expect(sg.vertices[a].idea.id).to.deep.equal(apple.id);
-          expect(sg.vertices[p].idea.id).to.deep.equal(price.id);
+          expect(sg.getIdea(m).id).to.deep.equal(mark.id);
+          expect(sg.getIdea(a).id).to.deep.equal(apple.id);
+          expect(sg.getIdea(p).id).to.deep.equal(price.id);
         });
       }); // end nextSteps
     }); // end clauses
