@@ -125,12 +125,14 @@ Subgraph.prototype.addVertex = function(matcher, data, options) {
   } else {
     this.concrete = false;
 
-    if (matcher === exports.matcher.number) {
-      if(!numnum.isNumber(data))
-        throw new Error('matcher.number using non-number');
-    } else if(matcher === exports.matcher.discrete) {
-      if(!crtcrt.isDiscrete(data))
-        throw new Error('matcher.discrete using non-discrete');
+    if(!options.matchRef) {
+      if (matcher === exports.matcher.number) {
+        if(!numnum.isNumber(data))
+          throw new Error('matcher.number using non-number');
+      } else if(matcher === exports.matcher.discrete) {
+        if(!crtcrt.isDiscrete(data))
+          throw new Error('matcher.discrete using non-discrete');
+      }
     }
   }
 
@@ -451,33 +453,38 @@ exports.match = function(subgraphOuter, subgraphInner, unitOnly) {
     throw new RangeError('the outer subgraph must be concrete before you can match against it');
 
   // if there are no vertices, return nothing
-  var numVertices = subgraphInner.vertices.length;
-  if(numVertices === 0)
+  if(subgraphInner._nextVertexId === undefined)
     return [];
 
   unitOnly = (unitOnly === true);
 
   // pre-fill a vertex map with identified thoughts
+  // TODO build a reverse map (outer.idea.id -> outer.vertex_id), then loop over inner.idea
   var vertexMap = {};
   var possible = true;
-  _.forEach(subgraphInner.vertices, function(vi) {
-    if(vi.idea) {
-      _.forEach(subgraphOuter.vertices, function(vo) {
-        // outer is concrete; vo.idea exists
-        if(vi.idea.id === vo.idea.id) {
-          vertexMap[vi.vertex_id] = vo.vertex_id;
-          // vi.idea has been identified
-          // so we can use vi.data directly
-          possible = vertexTransitionableAcceptable(vo, vi.match.options.transitionable, vi.data, unitOnly);
-        }
-        return possible;
-      });
-    }
+  _.forEach(subgraphInner._idea, function(vi_idea, vi_key) {
+    _.forEach(subgraphOuter._idea, function(vo_idea, vo_key) {
+      // outer is concrete; vo.idea exists
+      if(vi_idea.id === vo_idea.id) {
+        vertexMap[vi_key] = vo_key;
+        // vi.idea has been identified
+        // so we can use vi.data directly
+        possible = vertexTransitionableAcceptable(
+          subgraphOuter.getMatch(vo_key).options.transitionable,
+          subgraphOuter.getData(vo_key),
+          subgraphInner.getMatch(vi_key).options.transitionable,
+          subgraphInner.getData(vi_key),
+          unitOnly);
+      }
+      return possible;
+    });
     return possible;
   });
 
   if(!possible)
     return [];
+
+  var numVertices = Object.keys(subgraphInner._match).length;
 
   // if there are no edges, return the map
   if(subgraphInner._edges.length === 0) {

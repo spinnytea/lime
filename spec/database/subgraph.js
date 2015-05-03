@@ -26,7 +26,7 @@ function checkSubgraphMatch(match, outer, inner) {
   });
 }
 
-describe('subgraph', function() {
+describe.only('subgraph', function() {
   it('init', function() {
     // this is to ensure we test everything
     expect(Object.keys(subgraph)).to.deep.equal(['Subgraph', 'matcher', 'stringify', 'parse', 'search', 'match', 'rewrite']);
@@ -475,7 +475,7 @@ describe('subgraph', function() {
     ).to.deep.equal([null, apple.data()]);
   });
 
-  describe.only('search', function() {
+  describe('search', function() {
     it('nothing to do', function() {
       // invalid subgraph
       expect(function() { subgraph.search(); }).to.throw(TypeError);
@@ -925,6 +925,14 @@ describe('subgraph', function() {
       checkSubgraphMatch(subgraph.match(outer, sg), [m, a, p, b, bp], [_m, _a, _p, _b, _bp]);
     });
 
+    it.skip('multiple outer to same idea', function() {
+      // what if there are mulitple vertices in the outer graph that point to the same idea?
+    });
+
+    it.skip('multiple inner to same idea', function() {
+      // what if there are mulitple vertices in the inner graph that point to the same idea?
+    });
+
     // it shouldn't matter that the outer is larger
     // but the point is that the vertexMap will match all vertices in the inner map
     // ... this happens a lot; we don't need to test this specifically
@@ -1042,7 +1050,7 @@ describe('subgraph', function() {
       });
     }); // end transitionable
 
-    describe('matchRef', function() {
+    describe.skip('matchRef', function() {
 //      it.skip('pre-match');
 
       it('unit only', function() {
