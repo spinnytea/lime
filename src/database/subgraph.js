@@ -106,8 +106,10 @@ Subgraph.prototype.addVertex = function(matcher, data, options) {
     matchRef: false
   }, options);
 
+  if(!matcher || matcher !== exports.matcher[matcher.name])
+    throw new RangeError('invalid matcher');
   if(options.matchRef && !(data in this._match))
-    throw new Error('referred index (matchData) must already exist in the vertex list');
+    throw new RangeError('matchRef target (match.data) must already be a vertex');
 
   var id = this._vertexCount + '';
   this._vertexCount++;

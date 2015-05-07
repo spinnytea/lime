@@ -36,11 +36,37 @@ describe.only('subgraph', function() {
 
   describe('Subgraph', function() {
     describe('addVertex', function() {
-      it.skip('default options');
+      it('default options', function() {
+        var defaultOptions = {transitionable:false,matchRef:false};
+        var sg = new subgraph.Subgraph();
 
-      it.skip('matchRef target not defined');
+        var v = sg.addVertex(subgraph.matcher.filler);
+        expect(sg.getMatch(v).options).to.deep.equal(defaultOptions);
 
-      it.skip('matcher.filler');
+        v = sg.addVertex(subgraph.matcher.filler, undefined, {});
+        expect(sg.getMatch(v).options).to.deep.equal(defaultOptions);
+      });
+
+      it('invalid matcher', function() {
+        var errorStr = 'invalid matcher';
+        var sg = new subgraph.Subgraph();
+
+        expect(function() { sg.addVertex(); }).to.throw(errorStr);
+        expect(function() { sg.addVertex(1); }).to.throw(errorStr);
+        expect(function() { sg.addVertex('text'); }).to.throw(errorStr);
+        expect(function() { sg.addVertex('number'); }).to.throw(errorStr);
+
+        expect(function() { sg.addVertex(subgraph.matcher.filler); }).to.not.throw();
+      });
+
+      it('matchRef target not defined', function() {
+        var errorStr = 'matchRef target (match.data) must already be a vertex';
+        var sg = new subgraph.Subgraph();
+
+        expect(function() {
+          sg.addVertex(subgraph.matcher.id, 'not in sg', {matchRef:true});
+        }).to.throw(errorStr);
+      });
 
       it('matcher.id', function() {
         var idea = tools.ideas.create();
@@ -61,9 +87,39 @@ describe.only('subgraph', function() {
         expect(_.size(sg._match)).to.equal(2);
       });
 
-      it.skip('invalid matcher.number');
+      it('invalid matcher.number', function() {
+        var errorStr = 'matcher.number using non-number';
+        var sg = new subgraph.Subgraph();
+        var v = sg.addVertex(subgraph.matcher.filler);
 
-      it.skip('invalid matcher.discrete');
+        expect(function() {
+          sg.addVertex(subgraph.matcher.number);
+        }).to.throw(errorStr);
+        expect(function() {
+          sg.addVertex(subgraph.matcher.number, {});
+        }).to.throw(errorStr);
+
+        expect(function() {
+          sg.addVertex(subgraph.matcher.number, v, {matchRef:true});
+        }).to.not.throw();
+      });
+
+      it('invalid matcher.discrete', function() {
+        var errorStr = 'matcher.discrete using non-discrete';
+        var sg = new subgraph.Subgraph();
+        var v = sg.addVertex(subgraph.matcher.filler);
+
+        expect(function() {
+          sg.addVertex(subgraph.matcher.discrete);
+        }).to.throw(errorStr);
+        expect(function() {
+          sg.addVertex(subgraph.matcher.discrete, {});
+        }).to.throw(errorStr);
+
+        expect(function() {
+          sg.addVertex(subgraph.matcher.discrete, v, {matchRef:true});
+        }).to.not.throw();
+      });
     }); // end addVertex
 
     it('addEdge', function() {
