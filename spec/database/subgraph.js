@@ -216,7 +216,7 @@ describe.only('subgraph', function() {
         expect(sg._data[a]).to.equal(null);
       });
 
-      it.skip('no idea', function() {
+      it('no idea', function() {
         var sg = new subgraph.Subgraph();
         var a = sg.addVertex(subgraph.matcher.filler);
 
@@ -285,7 +285,8 @@ describe.only('subgraph', function() {
     });
 
     // matcher.id shouldn't ever actually be used in subgraph.search
-    it.skip('id: basic search', function() {
+    // it doesn't even really make sense in the context of matchRef (since it doesn't use data)
+    it('id: basic search', function() {
       var mark = tools.ideas.create();
       var apple = tools.ideas.create();
       mark.link(links.list.thought_description, apple);
@@ -299,8 +300,8 @@ describe.only('subgraph', function() {
       expect(result.length).to.equal(1);
       expect(sg).to.equal(result[0]);
 
-      expect(sg.vertices[m].idea.id).to.equal(mark.id);
-      expect(sg.vertices[a].idea.id).to.equal(apple.id);
+      expect(sg.getIdea(m).id).to.equal(mark.id);
+      expect(sg.getIdea(a).id).to.equal(apple.id);
     });
 
     it('filler: function', function() {
@@ -486,7 +487,7 @@ describe.only('subgraph', function() {
     });
   }); // end matchers
 
-  it.skip('stringify & parse', function() {
+  it('stringify & parse', function() {
     var unit = tools.ideas.create();
     var mark = tools.ideas.create();
     var apple = tools.ideas.create({ value: number.value(2), unit: unit.id });
@@ -503,7 +504,9 @@ describe.only('subgraph', function() {
 
     // there was some issue getting the vertices in and out
     // so let's keep this test to see if this is a problem
-    expect(parsed.vertices).to.deep.equal(sg.vertices);
+    expect(parsed._match).to.deep.equal(sg._match);
+    expect(parsed._idea).to.deep.equal(sg._idea);
+    expect(parsed._data).to.deep.equal(sg._data);
     // edges are complicated
     // they probably won't ever be an issue
     expect(parsed._edges).to.deep.equal(sg._edges);
@@ -512,15 +515,15 @@ describe.only('subgraph', function() {
     expect(sg.concrete).to.equal(false);
     expect(subgraph.search(sg)).to.deep.equal([sg]);
     expect(sg.concrete).to.equal(true);
-    expect(sg.vertices[m].idea.id).to.equal(mark.id);
-    expect(sg.vertices[a].idea.id).to.equal(apple.id);
+    expect(sg.getIdea(m).id).to.equal(mark.id);
+    expect(sg.getIdea(a).id).to.equal(apple.id);
 
     // we can copy this for other tests
     // (usually during debugging or something)
     expect(subgraph.parse(subgraph.stringify(sg))).to.deep.equal(sg);
   });
 
-  it.skip('stringify for dump', function() {
+  it('stringify for dump', function() {
     var unit = tools.ideas.create();
     var mark = tools.ideas.create();
     var apple = tools.ideas.create({ value: number.value(2), unit: unit.id });
@@ -530,17 +533,21 @@ describe.only('subgraph', function() {
     var a = sg.addVertex(subgraph.matcher.number, { value: number.value(0, Infinity), unit: unit.id }, {transitionable:true});
     sg.addEdge(m, links.list.thought_description, a, 1);
 
+    var expected = {};
+
     // before search, this is inconcrete, so there is no data to back it
+    expected[m] = null;
     expect(
-      JSON.parse(subgraph.stringify(sg, true)).vertices.map(function(v) { return v._data; })
-    ).to.deep.equal([null, undefined]);
+      JSON.parse(subgraph.stringify(sg, true)).data
+    ).to.deep.equal(expected);
 
     expect(subgraph.search(sg)).to.deep.equal([sg]);
 
     // after search, there is underlying data
+    expected[a] = apple.data();
     expect(
-      JSON.parse(subgraph.stringify(sg, true)).vertices.map(function(v) { return v._data; })
-    ).to.deep.equal([null, apple.data()]);
+      JSON.parse(subgraph.stringify(sg, true)).data
+    ).to.deep.equal(expected);
   });
 
   describe('search', function() {
@@ -1117,7 +1124,7 @@ describe.only('subgraph', function() {
       });
     }); // end transitionable
 
-    describe.skip('matchRef', function() {
+    describe('matchRef', function() {
 //      it.skip('pre-match');
 
       it('unit only', function() {
@@ -1243,6 +1250,8 @@ describe.only('subgraph', function() {
             prep.addVertex(subgraph.matcher.id, undefined, {matchRef:true});
           }).to.throw(Error);
         });
+
+        it.skip('matchRef against matcher.id');
       }); // end subgraphMatch
 
       it('edge case 1', function() {
@@ -1311,32 +1320,32 @@ describe.only('subgraph', function() {
 
         // now lets mess with the values a bit more
         b_num.update(number.cast({value: number.value(5), unit: '0'}));
-        outer.invalidateCache();
+        outer.deleteData();
         expect(subgraph.match(outer, inner)).to.deep.equal([]); // no specific matches
         checkSubgraphMatch(subgraph.match(outer, inner, true), outerKeys, innerKeys); // we do have matches by unit
-        inner.vertices[ib_num].match.options.transitionable = false;
+        inner.getMatch(ib_num).options.transitionable = false;
         expect(subgraph.match(outer, inner, true)).to.deep.equal([]); // unless we say the value isn't transitionable
 
         // back to our roots
         b_num.update(a_num.data());
-        inner.vertices[ib_num].match.options.transitionable = true;
-        outer.invalidateCache();
+        inner.getMatch(ib_num).options.transitionable = true;
+        outer.deleteData();
         checkSubgraphMatch(subgraph.match(outer, inner), outerKeys, innerKeys);
         checkSubgraphMatch(subgraph.match(outer, inner, true), outerKeys, innerKeys);
 
 
         // same thing with crt
         b_crt.update(discrete.cast({value: false, unit: discrete.definitions.list.boolean}));
-        outer.invalidateCache();
+        outer.deleteData();
         expect(subgraph.match(outer, inner)).to.deep.equal([]); // no specific matches
         checkSubgraphMatch(subgraph.match(outer, inner, true), outerKeys, innerKeys); // we do have matches by unit
-        inner.vertices[ib_crt].match.options.transitionable = false;
+        inner.getMatch(ib_crt).options.transitionable = false;
         expect(subgraph.match(outer, inner, true)).to.deep.equal([]); // unless we say the value isn't transitionable
 
         //// back to our roots
         //b_crt.update(a_crt.data());
-        //inner.vertices[ib_crt].match.options.transitionable = true;
-        //outer.invalidateCache();
+        //inner.getMatch(ib_crt).options.transitionable = true;
+        //outer.deleteData();
         //checkSubgraphMatch(subgraph.match(outer, inner), outerKeys, innerKeys);
         //checkSubgraphMatch(subgraph.match(outer, inner, true), outerKeys, innerKeys);
       });

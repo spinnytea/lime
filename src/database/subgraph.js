@@ -262,6 +262,8 @@ exports.stringify = function(sg, dump) {
         result[key] = sg._data[key];
       } else if(sg.getIdea(key)) {
         result[key] = sg.getIdea(key).data();
+        if(Object.keys(result[key]).length === 0)
+          result[key] = null;
       }
       return result;
     }, {}):sg._data),
