@@ -1,7 +1,6 @@
 'use strict';
 var _ = require('lodash');
 var ideas = require('./ideas');
-var ids = require('../ids');
 var links = require('./links');
 
 // these imports need to be a different name because we have exports.matcher.discrete and exports.matcher.number
@@ -38,8 +37,7 @@ function Subgraph() {
 
 
   // when we generate a new vertex, we need a new key
-  // we will use ids to do this
-  this._nextVertexId = undefined;
+  this._vertexCount = 0;
 
   // true
   //   does this represent a specific subgraph
@@ -80,7 +78,7 @@ Subgraph.prototype.copy = function() {
     sg.addEdge(e.src, e.link, e.dst, e.pref);
   });
 
-  sg._nextVertexId = this._nextVertexId;
+  sg._vertexCount = this._vertexCount;
   sg.concrete = this.concrete;
 
   return sg;
@@ -111,7 +109,8 @@ Subgraph.prototype.addVertex = function(matcher, data, options) {
   if(options.matchRef && !(data in this._match))
     throw new Error('referred index (matchData) must already exist in the vertex list');
 
-  var id = this._nextVertexId = ids.next.anonymous(this._nextVertexId);
+  var id = this._vertexCount + '';
+  this._vertexCount++;
 
   this._match[id] = {
     matcher: matcher,
@@ -159,6 +158,9 @@ Subgraph.prototype.getMatch = function(id) {
 
 Subgraph.prototype.getIdea = function(id) {
   return this._idea[id];
+};
+Subgraph.prototype.allIdeas = function() {
+  return _.assign({}, this._idea);
 };
 
 // returns undefined if there is no data, or the object if there is
@@ -249,15 +251,15 @@ exports.stringify = function(sg, dump) {
       };
       return result;
     }, {}),
-    idea: _.reduce(sg._idea, function(result, value, key) {
+    idea: _.reduce(sg.allIdeas(), function(result, value, key) {
       result[key] = value.id;
       return result;
     }, {}),
     data: ((dump===true)?_.reduce(sg._match, function(result, ignore, key) {
       if(sg._data[key]) {
         result[key] = sg._data[key];
-      } else if(sg._idea[key]) {
-        result[key] = sg._idea[key].data();
+      } else if(sg.getIdea(key)) {
+        result[key] = sg.getIdea(key).data();
       }
       return result;
     }, {}):sg._data),
@@ -271,7 +273,7 @@ exports.stringify = function(sg, dump) {
       };
     }),
 
-    nextVertexId: sg._nextVertexId,
+    vertexCount: sg._vertexCount,
     concrete: sg.concrete
   });
 };
@@ -305,7 +307,7 @@ exports.parse = function(str) {
     sg.addEdge(e.src, links.list[e.link], e.dst, e.pref);
   });
 
-  sg._nextVertexId = str.nextVertexId;
+  sg._vertexCount = str.vertexCount;
   sg.concrete = str.concrete;
 
   return sg;
@@ -415,7 +417,7 @@ exports.search = function(subgraph) {
   // there are no edges that can be expanded
   if(nextSteps.length === 0) {
     // check all vertices to ensure they all have ideas defined
-    if(Object.keys(subgraph._match).length !== Object.keys(subgraph._idea).length)
+    if(subgraph._vertexCount !== Object.keys(subgraph._idea).length)
       return [];
 
 //    if(!subgraph.edges.every(function(edge) { return edge.src.idea && edge.dst.idea; }))
@@ -453,7 +455,7 @@ exports.match = function(subgraphOuter, subgraphInner, unitOnly) {
     throw new RangeError('the outer subgraph must be concrete before you can match against it');
 
   // if there are no vertices, return nothing
-  if(subgraphInner._nextVertexId === undefined)
+  if(subgraphInner._vertexCount === 0)
     return [];
 
   unitOnly = (unitOnly === true);
@@ -462,8 +464,8 @@ exports.match = function(subgraphOuter, subgraphInner, unitOnly) {
   // TODO build a reverse map (outer.idea.id -> outer.vertex_id), then loop over inner.idea
   var vertexMap = {};
   var possible = true;
-  _.forEach(subgraphInner._idea, function(vi_idea, vi_key) {
-    _.forEach(subgraphOuter._idea, function(vo_idea, vo_key) {
+  _.forEach(subgraphInner.allIdeas(), function(vi_idea, vi_key) {
+    _.forEach(subgraphOuter.allIdeas(), function(vo_idea, vo_key) {
       // outer is concrete; vo.idea exists
       if(vi_idea.id === vo_idea.id) {
         vertexMap[vi_key] = vo_key;
@@ -484,8 +486,6 @@ exports.match = function(subgraphOuter, subgraphInner, unitOnly) {
   if(!possible)
     return [];
 
-  var numVertices = Object.keys(subgraphInner._match).length;
-
   // if there are no edges, return the map
   if(subgraphInner._edges.length === 0) {
     // if there are edges, and all vertices have been mapped, we still need to check the edges to make sure they match
@@ -493,7 +493,7 @@ exports.match = function(subgraphOuter, subgraphInner, unitOnly) {
     // TODO do we need to run the matchers? we probably need to run the matchers
     // TODO what does it mean to call subgraph.match with inner.concrete? is this really targeted for !inner.concrete?
     // - they probably both make sense, but they are distinctly different operations
-    if(Object.keys(vertexMap).length === numVertices)
+    if(Object.keys(vertexMap).length === subgraphInner._vertexCount)
       return [vertexMap];
     return [];
   }
@@ -502,7 +502,7 @@ exports.match = function(subgraphOuter, subgraphInner, unitOnly) {
   // (note: there may not yet be any edges specified)
   return subgraphMatch(subgraphOuter, subgraphInner, _.clone(subgraphOuter._edges), _.clone(subgraphInner._edges), vertexMap, unitOnly, [])
     .filter(function(map) {
-      return Object.keys(map).length === numVertices;
+      return Object.keys(map).length === subgraphInner._vertexCount;
     });
 }; // end exports.match
 

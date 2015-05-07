@@ -26,11 +26,11 @@ function checkSubgraphMatch(match, outer, inner) {
   });
 }
 
-describe.only('subgraph', function() {
+describe('subgraph', function() {
   it('init', function() {
     // this is to ensure we test everything
     expect(Object.keys(subgraph)).to.deep.equal(['Subgraph', 'matcher', 'stringify', 'parse', 'search', 'match', 'rewrite']);
-    expect(Object.keys(subgraph.Subgraph.prototype)).to.deep.equal(['copy', 'addVertex', 'addEdge', 'getMatch', 'getIdea', 'getData', 'setData', 'deleteData']);
+    expect(Object.keys(subgraph.Subgraph.prototype)).to.deep.equal(['copy', 'addVertex', 'addEdge', 'getMatch', 'getIdea', 'allIdeas', 'getData', 'setData', 'deleteData']);
     expect(Object.keys(subgraph.matcher)).to.deep.equal(['id', 'filler', 'exact', 'similar', 'number', 'discrete']);
   });
 
@@ -125,6 +125,8 @@ describe.only('subgraph', function() {
     it.skip('getMatch');
 
     it.skip('getIdea');
+
+    it.skip('allIdeas');
 
     describe('getData', function() {
       it('with data', function() {
@@ -789,7 +791,7 @@ describe.only('subgraph', function() {
     });
   }); // end search
 
-  describe('match', function() {
+  describe.only('match', function() {
     var mark, apple, price;
     var outer, m, a, p;
     beforeEach(function() {
@@ -1276,7 +1278,7 @@ describe.only('subgraph', function() {
     }); // end matchRef
   }); // end match (part 2)
 
-  describe('rewrite', function() {
+  describe.skip('rewrite', function() {
     var indeterminate, money, price, wumpus, any, empty, wumpusUpdateIdea;
     var sg, p, w, a, e, wu;
     var priceData, wumpusData, priceUpdate, priceUpdate2, wumpusUpdate, wumpusUpdate2, anyData, anyUpdate;
