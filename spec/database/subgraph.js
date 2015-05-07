@@ -1352,7 +1352,7 @@ describe.only('subgraph', function() {
     }); // end matchRef
   }); // end match (part 2)
 
-  describe.skip('rewrite', function() {
+  describe('rewrite', function() {
     var indeterminate, money, price, wumpus, any, empty, wumpusUpdateIdea;
     var sg, p, w, a, e, wu;
     var priceData, wumpusData, priceUpdate, priceUpdate2, wumpusUpdate, wumpusUpdate2, anyData, anyUpdate;
@@ -1419,11 +1419,11 @@ describe.only('subgraph', function() {
       expect(subgraph.rewrite(sg, [{ vertex_id: e, replace_id: 0 }])).to.equal(undefined);
 
       // no data in vertex to transition
-      sg.vertices[e].match.options.transitionable = true;
+      sg.getMatch(e).options.transitionable = true;
       expect(subgraph.rewrite(sg, [{ vertex_id: e, replace: {thing:1} }])).to.equal(undefined);
 
       // replace_id with wrong units
-      sg.vertices[e].data = {value: 0, unit: 'not an id'};
+      sg.setData(e, {value: 0, unit: 'not an id'});
       expect(subgraph.rewrite(sg, [{ vertex_id: e, replace_id: w }])).to.equal(undefined);
     });
 
@@ -1433,24 +1433,24 @@ describe.only('subgraph', function() {
         expect(sg2).to.be.an.instanceOf(subgraph.Subgraph);
         expect(sg2).to.not.equal(sg);
         // update the new value
-        expect(sg.vertices[p]._data).to.equal(undefined);
-        expect(sg2.vertices[p].data).to.deep.equal(priceUpdate);
-        // don't update the id
-        expect(sg.vertices[p].idea.data()).to.deep.equal(priceData);
-        expect(sg2.vertices[p].idea.data()).to.deep.equal(priceData);
+        expect(sg.getData(p)).to.deep.equal(priceData);
+        expect(sg2.getData(p)).to.deep.equal(priceUpdate);
+        // don't update the idea
+        expect(sg.getIdea(p).data()).to.deep.equal(priceData);
+        expect(sg2.getIdea(p).data()).to.deep.equal(priceData);
 
         var sg3 = subgraph.rewrite(sg2, [{vertex_id: p, replace: priceUpdate2 }]);
         expect(sg3).to.be.an.instanceOf(subgraph.Subgraph);
         expect(sg3).to.not.equal(sg);
         expect(sg3).to.not.equal(sg2);
         // update the new value
-        expect(sg.vertices[p]._data).to.equal(undefined);
-        expect(sg2.vertices[p].data).to.deep.equal(priceUpdate);
-        expect(sg3.vertices[p].data).to.deep.equal(priceUpdate2);
-        // don't update the id
-        expect(sg.vertices[p].idea.data()).to.deep.equal(priceData);
-        expect(sg2.vertices[p].idea.data()).to.deep.equal(priceData);
-        expect(sg3.vertices[p].idea.data()).to.deep.equal(priceData);
+        expect(sg.getData(p)).to.deep.equal(priceData);
+        expect(sg2.getData(p)).to.deep.equal(priceUpdate);
+        expect(sg3.getData(p)).to.deep.equal(priceUpdate2);
+        // don't update the idea
+        expect(sg.getIdea(p).data()).to.deep.equal(priceData);
+        expect(sg2.getIdea(p).data()).to.deep.equal(priceData);
+        expect(sg3.getIdea(p).data()).to.deep.equal(priceData);
 
         // wumpus Data units don't match
         expect(subgraph.rewrite(sg, [{ vertex_id: p, replace: wumpusUpdate }])).to.equal(undefined);
@@ -1460,11 +1460,11 @@ describe.only('subgraph', function() {
         expect(sg4).to.be.an.instanceOf(subgraph.Subgraph);
         expect(sg4).to.not.equal(sg3);
         // update the new value
-        expect(sg3.vertices[p].data).to.equal(priceUpdate2);
-        expect(sg4.vertices[p].data).to.equal(anyUpdate);
-        // don't update the id
-        expect(sg3.vertices[p].idea.data()).to.deep.equal(priceData);
-        expect(sg4.vertices[p].idea.data()).to.deep.equal(priceData);
+        expect(sg3.getData(p)).to.deep.equal(priceUpdate2);
+        expect(sg4.getData(p)).to.deep.equal(anyUpdate);
+        // don't update the idea
+        expect(sg3.getIdea(p).data()).to.deep.equal(priceData);
+        expect(sg4.getIdea(p).data()).to.deep.equal(priceData);
       });
 
       it('replace discrete', function() {
@@ -1472,24 +1472,24 @@ describe.only('subgraph', function() {
         expect(sg2).to.be.an.instanceOf(subgraph.Subgraph);
         expect(sg2).to.not.equal(sg);
         // update the new value
-        expect(sg.vertices[w]._data).to.equal(undefined);
-        expect(sg2.vertices[w].data).to.deep.equal(wumpusUpdate);
-        // don't update the id
-        expect(sg.vertices[w].idea.data()).to.deep.equal(wumpusData);
-        expect(sg2.vertices[w].idea.data()).to.deep.equal(wumpusData);
+        expect(sg.getData(w)).to.deep.equal(wumpusData);
+        expect(sg2.getData(w)).to.deep.equal(wumpusUpdate);
+        // don't update the idea
+        expect(sg.getIdea(w).data()).to.deep.equal(wumpusData);
+        expect(sg2.getIdea(w).data()).to.deep.equal(wumpusData);
 
         var sg3 = subgraph.rewrite(sg2, [{vertex_id: w, replace: wumpusUpdate2 }]);
         expect(sg3).to.be.an.instanceOf(subgraph.Subgraph);
         expect(sg3).to.not.equal(sg);
         expect(sg3).to.not.equal(sg2);
         // update the new value
-        expect(sg.vertices[w]._data).to.equal(undefined);
-        expect(sg2.vertices[w].data).to.deep.equal(wumpusUpdate);
-        expect(sg3.vertices[w].data).to.deep.equal(wumpusUpdate2);
-        // don't update the id
-        expect(sg.vertices[w].idea.data()).to.deep.equal(wumpusData);
-        expect(sg2.vertices[w].idea.data()).to.deep.equal(wumpusData);
-        expect(sg3.vertices[w].idea.data()).to.deep.equal(wumpusData);
+        expect(sg.getData(w)).to.deep.equal(wumpusData);
+        expect(sg2.getData(w)).to.deep.equal(wumpusUpdate);
+        expect(sg3.getData(w)).to.deep.equal(wumpusUpdate2);
+        // don't update the idea
+        expect(sg.getIdea(w).data()).to.deep.equal(wumpusData);
+        expect(sg2.getIdea(w).data()).to.deep.equal(wumpusData);
+        expect(sg3.getIdea(w).data()).to.deep.equal(wumpusData);
 
         // price Data units don't match
         expect(subgraph.rewrite(sg, [{ vertex_id: w, replace: priceUpdate }])).to.equal(undefined);
@@ -1499,11 +1499,11 @@ describe.only('subgraph', function() {
         expect(sg4).to.be.an.instanceOf(subgraph.Subgraph);
         expect(sg4).to.not.equal(sg3);
         // update the new value
-        expect(sg3.vertices[w].data).to.deep.equal(wumpusUpdate2);
-        expect(sg4.vertices[w].data).to.deep.equal(anyUpdate);
-        // don't update the id
-        expect(sg3.vertices[w].idea.data()).to.deep.equal(wumpusData);
-        expect(sg4.vertices[w].idea.data()).to.deep.equal(wumpusData);
+        expect(sg3.getData(w)).to.deep.equal(wumpusUpdate2);
+        expect(sg4.getData(w)).to.deep.equal(anyUpdate);
+        // don't update the idea
+        expect(sg3.getIdea(w).data()).to.deep.equal(wumpusData);
+        expect(sg4.getIdea(w).data()).to.deep.equal(wumpusData);
       });
 
       it('replace anything', function() {
@@ -1511,31 +1511,31 @@ describe.only('subgraph', function() {
         expect(sg2).to.be.an.instanceOf(subgraph.Subgraph);
         expect(sg2).to.not.equal(sg);
         // update the new value
-        expect(sg.vertices[a]._data).to.equal(undefined);
-        expect(sg2.vertices[a].data).to.deep.equal(anyUpdate);
-        // don't update the id
-        expect(sg.vertices[a].idea.data()).to.deep.equal(anyData);
-        expect(sg2.vertices[a].idea.data()).to.deep.equal(anyData);
+        expect(sg.getData(a)).to.deep.equal(anyData);
+        expect(sg2.getData(a)).to.deep.equal(anyUpdate);
+        // don't update the idea
+        expect(sg.getIdea(a).data()).to.deep.equal(anyData);
+        expect(sg2.getIdea(a).data()).to.deep.equal(anyData);
 
         var sg3 = subgraph.rewrite(sg, [{vertex_id: a, replace: priceUpdate }]);
         expect(sg3).to.be.an.instanceOf(subgraph.Subgraph);
         expect(sg3).to.not.equal(sg);
         // update the new value
-        expect(sg.vertices[a]._data).to.equal(undefined);
-        expect(sg3.vertices[a].data).to.deep.equal(priceUpdate);
+        expect(sg.getData(a)).to.deep.equal(anyData);
+        expect(sg3.getData(a)).to.deep.equal(priceUpdate);
         // don't update the id
-        expect(sg.vertices[a].idea.data()).to.deep.equal(anyData);
-        expect(sg3.vertices[a].idea.data()).to.deep.equal(anyData);
+        expect(sg.getIdea(a).data()).to.deep.equal(anyData);
+        expect(sg3.getIdea(a).data()).to.deep.equal(anyData);
 
         var sg4 = subgraph.rewrite(sg, [{vertex_id: a, replace: wumpusUpdate }]);
         expect(sg4).to.be.an.instanceOf(subgraph.Subgraph);
         expect(sg4).to.not.equal(sg);
         // update the new value
-        expect(sg.vertices[a]._data).to.equal(undefined);
-        expect(sg4.vertices[a].data).to.deep.equal(wumpusUpdate);
-        // don't update the id
-        expect(sg.vertices[a].idea.data()).to.deep.equal(anyData);
-        expect(sg4.vertices[a].idea.data()).to.deep.equal(anyData);
+        expect(sg.getData(a)).to.deep.equal(anyData);
+        expect(sg4.getData(a)).to.deep.equal(wumpusUpdate);
+        // don't update the idea
+        expect(sg.getIdea(a).data()).to.deep.equal(anyData);
+        expect(sg4.getIdea(a).data()).to.deep.equal(anyData);
       });
 
       it('replace_id', function() {
@@ -1543,11 +1543,11 @@ describe.only('subgraph', function() {
         expect(sg2).to.be.an.instanceOf(subgraph.Subgraph);
         expect(sg2).to.not.equal(sg);
         // update the new value
-        expect(sg.vertices[w]._data).to.equal(undefined);
-        expect(sg2.vertices[w].data).to.deep.equal(wumpusUpdate);
-        // don't update the id
-        expect(sg.vertices[w].idea.data()).to.deep.equal(wumpusData);
-        expect(sg2.vertices[w].idea.data()).to.deep.equal(wumpusData);
+        expect(sg.getData(w)).to.deep.equal(wumpusData);
+        expect(sg2.getData(w)).to.deep.equal(wumpusUpdate);
+        // don't update the idea
+        expect(sg.getIdea(w).data()).to.deep.equal(wumpusData);
+        expect(sg2.getIdea(w).data()).to.deep.equal(wumpusData);
       });
 
       it('cycle discrete', function() {
@@ -1558,35 +1558,35 @@ describe.only('subgraph', function() {
         expect(sg2).to.be.an.instanceOf(subgraph.Subgraph);
         expect(sg2).to.not.equal(sg);
         // update the new value
-        expect(sg.vertices[w]._data).to.equal(undefined);
-        expect(sg2.vertices[w].data).to.deep.equal(currValue);
-        // don't update the id
-        expect(sg.vertices[w].idea.data()).to.deep.equal(wumpusData);
-        expect(sg2.vertices[w].idea.data()).to.deep.equal(wumpusData);
+        expect(sg.getData(w)).to.deep.equal(wumpusData);
+        expect(sg2.getData(w)).to.deep.equal(currValue);
+        // don't update the idea
+        expect(sg.getIdea(w).data()).to.deep.equal(wumpusData);
+        expect(sg2.getIdea(w).data()).to.deep.equal(wumpusData);
 
         var sg3 = subgraph.rewrite(sg2, [{vertex_id: w, cycle: { unit: indeterminate.id, value: 2 } }]);
         currValue.value = 'true';
         expect(sg3).to.be.an.instanceOf(subgraph.Subgraph);
         expect(sg3).to.not.equal(sg2);
-        expect(sg3.vertices[w].data).to.deep.equal(currValue);
+        expect(sg3.getData(w)).to.deep.equal(currValue);
 
         var sg4 = subgraph.rewrite(sg3, [{vertex_id: w, cycle: { unit: indeterminate.id, value: 3 } }]);
         expect(sg4).to.be.an.instanceOf(subgraph.Subgraph);
         expect(sg4).to.not.equal(sg3);
-        expect(sg4.vertices[w].data).to.deep.equal(currValue);
+        expect(sg4.getData(w)).to.deep.equal(currValue);
 
         var sg5 = subgraph.rewrite(sg4, [{vertex_id: w, cycle: { unit: indeterminate.id, value: -4 } }]);
         currValue.value = 'maybe';
         expect(sg5).to.be.an.instanceOf(subgraph.Subgraph);
         expect(sg5).to.not.equal(sg4);
-        expect(sg5.vertices[w].data).to.deep.equal(currValue);
+        expect(sg5.getData(w)).to.deep.equal(currValue);
 
-        // don't update the id
-        expect(sg.vertices[w].idea.data()).to.deep.equal(wumpusData);
-        expect(sg2.vertices[w].idea.data()).to.deep.equal(wumpusData);
-        expect(sg3.vertices[w].idea.data()).to.deep.equal(wumpusData);
-        expect(sg4.vertices[w].idea.data()).to.deep.equal(wumpusData);
-        expect(sg5.vertices[w].idea.data()).to.deep.equal(wumpusData);
+        // don't update the idea
+        expect(sg.getIdea(w).data()).to.deep.equal(wumpusData);
+        expect(sg2.getIdea(w).data()).to.deep.equal(wumpusData);
+        expect(sg3.getIdea(w).data()).to.deep.equal(wumpusData);
+        expect(sg4.getIdea(w).data()).to.deep.equal(wumpusData);
+        expect(sg5.getIdea(w).data()).to.deep.equal(wumpusData);
       });
 
       it('cycle number', function() {
@@ -1598,28 +1598,25 @@ describe.only('subgraph', function() {
         var sg2 = subgraph.rewrite(sg, [{vertex_id: p, combine: priceUpdate }]);
         expect(sg2).to.be.an.instanceOf(subgraph.Subgraph);
         expect(sg2).to.not.equal(sg);
-        expect(sg2.vertices[p]).to.not.equal(sg.vertices[p]);
         // update the new value
-        expect(sg.vertices[p]._data).to.equal(undefined);
-        expect(sg2.vertices[p].data).to.deep.equal({ type: 'lime_number', value: number.value(30), unit: money.id });
-        // don't update the id
-        expect(sg.vertices[p].idea.data()).to.deep.equal(priceData);
-        expect(sg2.vertices[p].idea.data()).to.deep.equal(priceData);
+        expect(sg.getData(p)).to.deep.equal(priceData);
+        expect(sg2.getData(p)).to.deep.equal({ type: 'lime_number', value: number.value(30), unit: money.id });
+        // don't update the idea
+        expect(sg.getIdea(p).data()).to.deep.equal(priceData);
+        expect(sg2.getIdea(p).data()).to.deep.equal(priceData);
 
         var sg3 = subgraph.rewrite(sg2, [{vertex_id: p, combine: priceUpdate2 }]);
         expect(sg3).to.be.an.instanceOf(subgraph.Subgraph);
         expect(sg3).to.not.equal(sg);
         expect(sg3).to.not.equal(sg2);
-        expect(sg3.vertices[p]).to.not.equal(sg2.vertices[p]);
-        expect(sg3.vertices[p].data).to.not.equal(sg2.vertices[p].data);
         // update the new value
-        expect(sg.vertices[p]._data).to.equal(undefined);
-        expect(sg2.vertices[p].data).to.deep.equal({ type: 'lime_number', value: number.value(30), unit: money.id });
-        expect(sg3.vertices[p].data).to.deep.equal({ type: 'lime_number', value: number.value(60), unit: money.id });
-        // don't update the id
-        expect(sg.vertices[p].idea.data()).to.deep.equal(priceData);
-        expect(sg2.vertices[p].idea.data()).to.deep.equal(priceData);
-        expect(sg3.vertices[p].idea.data()).to.deep.equal(priceData);
+        expect(sg.getData(p)).to.deep.equal(priceData);
+        expect(sg2.getData(p)).to.deep.equal({ type: 'lime_number', value: number.value(30), unit: money.id });
+        expect(sg3.getData(p)).to.deep.equal({ type: 'lime_number', value: number.value(60), unit: money.id });
+        // don't update the idea
+        expect(sg.getIdea(p).data()).to.deep.equal(priceData);
+        expect(sg2.getIdea(p).data()).to.deep.equal(priceData);
+        expect(sg3.getIdea(p).data()).to.deep.equal(priceData);
 
         // this should fail for a number of things
         // but we can't combine discrete date or any data
@@ -1645,29 +1642,29 @@ describe.only('subgraph', function() {
       var sg2 = subgraph.rewrite(sg, [{vertex_id: p, replace: priceUpdate }], true);
       expect(sg2).to.be.an.instanceOf(subgraph.Subgraph);
       expect(sg2).to.equal(sg);
-      expect(sg.vertices[p].data).to.deep.equal(priceUpdate);
-      expect(sg.vertices[p].idea.data()).to.deep.equal(priceUpdate);
+      expect(sg.getData(p)).to.deep.equal(priceUpdate);
+      expect(sg.getIdea(p).data()).to.deep.equal(priceUpdate);
 
       // replace discrete
       sg2 = subgraph.rewrite(sg, [{vertex_id: w, replace: wumpusUpdate2 }], true);
       expect(sg2).to.be.an.instanceOf(subgraph.Subgraph);
       expect(sg2).to.equal(sg);
-      expect(sg.vertices[w].data).to.deep.equal(wumpusUpdate2);
-      expect(sg.vertices[w].idea.data()).to.deep.equal(wumpusUpdate2);
+      expect(sg.getData(w)).to.deep.equal(wumpusUpdate2);
+      expect(sg.getIdea(w).data()).to.deep.equal(wumpusUpdate2);
 
       // replace_id
       sg2 = subgraph.rewrite(sg, [{vertex_id: w, replace_id: wu }], true);
       expect(sg2).to.be.an.instanceOf(subgraph.Subgraph);
       expect(sg2).to.equal(sg);
-      expect(sg.vertices[w].data).to.deep.equal(wumpusUpdate);
-      expect(sg.vertices[w].idea.data()).to.deep.equal(wumpusUpdate);
+      expect(sg.getData(w)).to.deep.equal(wumpusUpdate);
+      expect(sg.getIdea(w).data()).to.deep.equal(wumpusUpdate);
 
       // cycle discrete
       sg2 = subgraph.rewrite(sg, [{vertex_id: w, cycle: { unit: indeterminate.id, value: 1 } }], true);
       expect(sg2).to.be.an.instanceOf(subgraph.Subgraph);
       expect(sg2).to.equal(sg);
-      expect(sg.vertices[w].data).to.deep.equal({type: 'lime_discrete', unit: indeterminate.id, value: 'maybe'});
-      expect(sg.vertices[w].idea.data()).to.deep.equal({type: 'lime_discrete', unit: indeterminate.id, value: 'maybe'});
+      expect(sg.getData(w)).to.deep.equal({type: 'lime_discrete', unit: indeterminate.id, value: 'maybe'});
+      expect(sg.getIdea(w).data()).to.deep.equal({type: 'lime_discrete', unit: indeterminate.id, value: 'maybe'});
 
       // cycle number
       sg2 = subgraph.rewrite(sg, [{vertex_id: p, cycle: { unit: money.id, value: 1 } }], true);
@@ -1678,8 +1675,8 @@ describe.only('subgraph', function() {
       expect(sg2).to.be.an.instanceOf(subgraph.Subgraph);
       expect(sg2).to.equal(sg);
       // note: our previous update (replace) has taken effect; we are combining priceUpdate twice
-      expect(sg.vertices[p].data).to.deep.equal({ type: 'lime_number', value: number.value(40), unit: money.id });
-      expect(sg2.vertices[p].idea.data()).to.deep.equal({ type: 'lime_number', value: number.value(40), unit: money.id });
+      expect(sg.getData(p)).to.deep.equal({ type: 'lime_number', value: number.value(40), unit: money.id });
+      expect(sg2.getIdea(p).data()).to.deep.equal({ type: 'lime_number', value: number.value(40), unit: money.id });
 
       // combine discrete
       sg2 = subgraph.rewrite(sg, [{vertex_id: w, combine: wumpusData }], true);

@@ -758,57 +758,59 @@ exports.rewrite = function(subgraph, transitions, actual) {
 
   // validate transitions
   if(!transitions.every(function(t) {
-    var v = subgraph.vertices[t.vertex_id];
-    if(v) {
+      var match = subgraph.getMatch(t.vertex_id);
+      if(!match)
+        return false;
+
       // if a transition hasn't been specified, there is nothing to do
       if(!(t.replace || t.combine || t.hasOwnProperty('replace_id') || t.cycle))
         return false;
 
-      if(!v.match.options.transitionable) {
+      if(!match.options.transitionable) {
         return false;
       }
 
+      var data = subgraph.getData(t.vertex_id);
+
       // if there is no data, then there is nothing to transition
-      if(v.data === undefined)
+      if(data === undefined)
         return false;
 
       // verify the transition data
       if(t.replace) {
-        if(v.data.unit && t.replace.unit && v.data.unit !== t.replace.unit)
+        if(data.unit && t.replace.unit && data.unit !== t.replace.unit)
           return false;
       } else if(t.hasOwnProperty('replace_id')) {
-        var r = subgraph.vertices[t.replace_id];
-        if(v.data.unit && r.data.unit && v.data.unit !== r.data.unit)
+        var rdata = subgraph.getData(t.replace_id);
+        if(data.unit && data.unit && data.unit !== rdata.unit)
           return false;
       } else if(t.cycle) {
         // TODO does the discrete unit need to be defined as 'cyclical' before we can use 'cycle'
-        if(v.data.unit !== t.cycle.unit || !crtcrt.isDiscrete(v.data))
+        if(data.unit !== t.cycle.unit || !crtcrt.isDiscrete(data))
           return false;
       } else { // if(t.combine) {
-        if(v.data.unit !== t.combine.unit || !numnum.isNumber(v.data) || !numnum.isNumber(t.combine))
+        if(data.unit !== t.combine.unit || !numnum.isNumber(data) || !numnum.isNumber(t.combine))
           return false;
       }
 
       return true;
-    }
-    return false;
   })) return undefined; // if not all of the transitions are correct, return undefined
 
   // apply transitions
   transitions.forEach(function(t) {
-    var v = subgraph.vertices[t.vertex_id];
-
     if(t.replace) {
-      v.data = t.replace;
+      subgraph.setData(t.vertex_id, t.replace);
     } else if(t.hasOwnProperty('replace_id')) {
-      v.data = subgraph.vertices[t.replace_id].data;
+      subgraph.setData(t.vertex_id, subgraph.getData(t.replace_id));
     } else if(t.cycle) {
-      var states = ideas.load(v.data.unit).data().states;
-      var idx = states.indexOf(v.data.value)+t.cycle.value;
+      var data = subgraph.getData(t.vertex_id);
+      var states = ideas.load(data.unit).data().states;
+      var idx = states.indexOf(data.value)+t.cycle.value;
       idx = (((idx%states.length)+states.length)%states.length);
-      v.data.value = states[idx];
+      data.value = states[idx];
+      subgraph.setData(t.vertex_id, data);
     } else { // if(t.combine) {
-      v.data = numnum.combine(v.data, t.combine);
+      subgraph.setData(t.vertex_id, numnum.combine(subgraph.getData(t.vertex_id), t.combine));
     }
 
     if(actual)
@@ -816,7 +818,7 @@ exports.rewrite = function(subgraph, transitions, actual) {
       // - number.combine(v.idea.data(), t.combine)
       // - should number.difference(v.data, v.idea.data()) === 0 before combine?
       // - should _.isEqual(v.data, v.idea.data()) before combine?
-      v.idea.update(v.data);
+      subgraph.getIdea(t.vertex_id).update(subgraph.getData(t.vertex_id));
   });
 
   return subgraph;
