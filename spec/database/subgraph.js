@@ -26,7 +26,7 @@ function checkSubgraphMatch(match, outer, inner) {
   });
 }
 
-describe.only('subgraph', function() {
+describe('subgraph', function() {
   it('init', function() {
     // this is to ensure we test everything
     expect(Object.keys(subgraph)).to.deep.equal(['Subgraph', 'matcher', 'stringify', 'parse', 'search', 'match', 'rewrite']);

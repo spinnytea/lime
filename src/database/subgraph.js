@@ -305,7 +305,7 @@ exports.parse = function(str) {
     sg._idea[key] = ideas.proxy(value);
   });
 
-  sg._data = str._data || sg._data;
+  sg._data = str.data;
 
   _.forEach(str.edges, function(e) {
     sg.addEdge(e.src, links.list[e.link], e.dst, e.pref);

@@ -69,7 +69,7 @@ describe('serialplan', function() {
     start = new blueprint.State(sg, [a]);
 
     goal = new blueprint.State(sg.copy(), [a]);
-    goal.state.vertices[state_count].data = { value: number.value(5), unit: count_unit.id };
+    goal.state.setData(state_count, { value: number.value(5), unit: count_unit.id });
 
     // we need these to be different values to check our tryTansitions result
     expect(a_c).to.not.equal(state_count);
@@ -85,8 +85,8 @@ describe('serialplan', function() {
     var data = count.data();
     count.update({ value: number.value(0), unit: data.unit });
     actionImplCount = 0;
-    start.state.invalidateCache();
-    goal.state.vertices[state_count].data.value = number.value(5);
+    start.state.deleteData();
+    goal.state.getData(state_count).value = number.value(5);
   });
 
   it('init', function() {
@@ -112,7 +112,7 @@ describe('serialplan', function() {
       config.settings.astar_max_paths = before;
 
       // only one step away
-      goal.state.vertices[state_count].data.value = number.value(1);
+      goal.state.getData(state_count).value = number.value(1);
       sp = serialplan.create(start, goal);
       expect(sp).to.be.an.instanceOf(actuator.Action);
       expect(sp).to.equal(a);
@@ -143,7 +143,7 @@ describe('serialplan', function() {
       var goal2;
       beforeEach(function() {
         goal2 = new blueprint.State(goal.state.copy(), [a]);
-        goal2.state.vertices[state_count].data.value = number.value(10);
+        goal2.state.getData(state_count).value = number.value(10);
       });
 
       it('standard list of goals', function() {
@@ -309,7 +309,7 @@ describe('serialplan', function() {
       sp.runBlueprint(start, glues[0]);
 
       // the state and the ideas have been updated
-      expect(start.state.vertices[state_count].data.value).to.deep.equal(number.value(5));
+      expect(start.state.getData(state_count).value).to.deep.equal(number.value(5));
       expect(count.data().value).to.deep.equal(number.value(5));
       expect(actionImplCount).to.equal(5);
     });
@@ -320,9 +320,9 @@ describe('serialplan', function() {
 
       // so start cannot get to the goal
       // (since the start cannot manipulate that value)
-      start.state.vertices[state_count].match.options.transitionable = false;
+      start.state.getMatch(state_count).options.transitionable = false;
       expect(sp.cost(start, goal)).to.equal(Infinity);
-      start.state.vertices[state_count].match.options.transitionable = true;
+      start.state.getMatch(state_count).options.transitionable = true;
 
       // using this plan costs 5
       // the distance to the goal is 0
@@ -346,10 +346,10 @@ describe('serialplan', function() {
 
       // this is a new experimental state
       expect(result).to.not.equal(start);
-      expect(result.state.vertices[state_count].data.value).to.deep.equal(number.value(5));
+      expect(result.state.getData(state_count).value).to.deep.equal(number.value(5));
 
       // the state and the ideas have not changed
-      expect(start.state.vertices[state_count].data.value).to.deep.equal(number.value(0));
+      expect(start.state.getData(state_count).value).to.deep.equal(number.value(0));
       expect(count.data().value).to.deep.equal(number.value(0));
       expect(actionImplCount).to.equal(0);
     });
@@ -388,7 +388,7 @@ describe('serialplan', function() {
     // check sp.plans[0] === sp.plans[1]
 
     it('nested blueprint', function() {
-      goal.state.vertices[state_count].data.value = number.value(3);
+      goal.state.getData(state_count).value = number.value(3);
       var sp2 = serialplan.create(start, goal);
       expect(sp2).to.be.an.instanceOf(serialplan.Action);
       expect(sp2.plans).to.deep.equal([a, a, a]);
@@ -396,9 +396,9 @@ describe('serialplan', function() {
 
       start.availableActions.push(sp2);
       expect(start.availableActions).to.deep.equal([a, sp2]);
-      expect(start.state.vertices[state_count].data.value).to.deep.equal(number.value(0));
+      expect(start.state.getData(state_count).value).to.deep.equal(number.value(0));
 
-      goal.state.vertices[state_count].data.value = number.value(8);
+      goal.state.getData(state_count).value = number.value(8);
       var sp = serialplan.create(start, goal);
       expect(sp).to.be.an.instanceOf(serialplan.Action);
       // this pattern has no meaning, really; it's '[deterministic] chance' that they show up in this order
@@ -419,7 +419,7 @@ describe('serialplan', function() {
 
 
       // change the goal so we can get there with 2 serial plans
-      goal.state.vertices[state_count].data.value = number.value(6);
+      goal.state.getData(state_count).value = number.value(6);
       sp = serialplan.create(start, goal);
       expect(sp).to.be.an.instanceOf(serialplan.Action);
       expect(sp.plans.map(function(p) { return p.constructor.name; })).to.deep.equal([

@@ -64,8 +64,8 @@ describe('actuator', function() {
   beforeEach(function() {
     actionImplCount = 0;
     price.update({ value: number.value(10), unit: money.id });
-    bs.state.invalidateCache();
-    a.requirements.vertices[a_p].match.data.value = number.value(0, Infinity);
+    bs.state.deleteData();
+    a.requirements.getMatch(a_p).data.value = number.value(0, Infinity);
   });
 
   it('runCost', function() {
@@ -81,7 +81,7 @@ describe('actuator', function() {
 
     expect(result.length).to.equal(1);
     // the keys of an object are always strings, the need to be numbers to deep.equal
-    expect(Object.keys(result[0]).map(function(k) {return +k;})).to.deep.equal([a_p, a_a]);
+    expect(Object.keys(result[0])).to.deep.equal([a_p, a_a]);
     expect(result[0][a_p]).to.equal(bs_p);
     expect(actionImplCount).to.equal(0);
   });
@@ -94,7 +94,7 @@ describe('actuator', function() {
     expect(result.length).to.equal(1);
     a.runBlueprint(bs, result[0]);
 
-    expect(bs.state.vertices[bs_p].data).to.deep.equal(expectedData); // vertex data is updated
+    expect(bs.state.getData(bs_p)).to.deep.equal(expectedData); // vertex data is updated
     expect(price.data()).to.deep.equal(expectedData); // idea data has not
     expect(actionImplCount).to.equal(1); // action has been called
   });
@@ -104,13 +104,13 @@ describe('actuator', function() {
     expect(actionImplCount).to.equal(0);
 
     var goal = new blueprint.State(bs.state.copy(), [a]);
-    goal.state.vertices[bs_p].data = { value: number.value(30), unit: money.id };
+    goal.state.setData(bs_p, { value: number.value(30), unit: money.id });
 
     // distance of 20, action costs 1
     expect(a.cost(bs, goal)).to.equal(21);
 
     // action cannot be applied
-    a.requirements.vertices[a_p].match.data.value = number.value(0);
+    a.requirements.getMatch(a_p).data.value = number.value(0);
     expect(a.cost(bs, goal)).to.equal(Infinity);
 
     expect(actionImplCount).to.equal(0);
@@ -126,10 +126,10 @@ describe('actuator', function() {
     expect(bs2).to.not.equal(bs);
 
     // bs should not be changed
-    expect(bs.state.vertices[bs_p].data).to.deep.equal({ type: 'lime_number', value: number.value(10), unit: money.id });
+    expect(bs.state.getData(bs_p)).to.deep.equal({ type: 'lime_number', value: number.value(10), unit: money.id });
 
     // bs2 should be updated
-    expect(bs2.state.vertices[bs_p].data).to.deep.equal({ type: 'lime_number', value: number.value(30), unit: money.id });
+    expect(bs2.state.getData(bs_p)).to.deep.equal({ type: 'lime_number', value: number.value(30), unit: money.id });
 
     // the price data should not be updated (it matches the original vertex data)
     expect(price.data()).to.deep.equal({ value: number.value(10), unit: money.id });
@@ -190,7 +190,7 @@ describe('actuator', function() {
       // apply the action to get a new state
       var next = a.apply(bs, glue);
       expect(next).to.be.an.instanceOf(blueprint.State);
-      expect(next.state.vertices[bs_p].data).to.deep.equal({ type: 'lime_number', value: number.value(30), unit: money.id });
+      expect(next.state.getData(bs_p)).to.deep.equal({ type: 'lime_number', value: number.value(30), unit: money.id });
 
       // and now, we should match the goal
       // (this was the bug)
@@ -206,19 +206,19 @@ describe('actuator', function() {
 
     it('basic, concrete', function() {
       var goal = new blueprint.State(bs.state.copy(), bs.availableActions);
-      goal.state.vertices[bs_p].data = { value: number.value(50), unit: money.id };
+      goal.state.setData(bs_p, { value: number.value(50), unit: money.id });
 
-      expect(bs.state.vertices[bs_p].data).to.deep.equal({ value: number.value(10), unit: money.id });
-      expect(goal.state.vertices[bs_p].data).to.deep.equal({ value: number.value(50), unit: money.id });
+      expect(bs.state.getData(bs_p)).to.deep.equal({ value: number.value(10), unit: money.id });
+      expect(goal.state.getData(bs_p)).to.deep.equal({ value: number.value(50), unit: money.id });
       expect(bs.matches(goal)).to.equal(false);
 
       var path = astar.search(bs, goal);
 
       expect(path).to.not.equal(undefined);
       expect(path.states.length).to.equal(3);
-      expect(path.states[0].state.vertices[bs_p].data).to.deep.equal({ type: 'lime_number', value: number.value(10), unit: money.id });
-      expect(path.states[1].state.vertices[bs_p].data).to.deep.equal({ type: 'lime_number', value: number.value(30), unit: money.id });
-      expect(path.states[2].state.vertices[bs_p].data).to.deep.equal({ type: 'lime_number', value: number.value(50), unit: money.id });
+      expect(path.states[0].state.getData(bs_p)).to.deep.equal({ type: 'lime_number', value: number.value(10), unit: money.id });
+      expect(path.states[1].state.getData(bs_p)).to.deep.equal({ type: 'lime_number', value: number.value(30), unit: money.id });
+      expect(path.states[2].state.getData(bs_p)).to.deep.equal({ type: 'lime_number', value: number.value(50), unit: money.id });
 
       expect(path.actions).to.deep.equal([a, a]);
     });
@@ -238,9 +238,9 @@ describe('actuator', function() {
 
       expect(path).to.not.equal(undefined);
       expect(path.states.length).to.equal(3);
-      expect(path.states[0].state.vertices[bs_p].data).to.deep.equal({ type: 'lime_number', value: number.value(10), unit: money.id });
-      expect(path.states[1].state.vertices[bs_p].data).to.deep.equal({ type: 'lime_number', value: number.value(30), unit: money.id });
-      expect(path.states[2].state.vertices[bs_p].data).to.deep.equal({ type: 'lime_number', value: number.value(50), unit: money.id });
+      expect(path.states[0].state.getData(bs_p)).to.deep.equal({ type: 'lime_number', value: number.value(10), unit: money.id });
+      expect(path.states[1].state.getData(bs_p)).to.deep.equal({ type: 'lime_number', value: number.value(30), unit: money.id });
+      expect(path.states[2].state.getData(bs_p)).to.deep.equal({ type: 'lime_number', value: number.value(50), unit: money.id });
 
       expect(path.actions).to.deep.equal([a, a]);
     });
@@ -269,9 +269,9 @@ describe('actuator', function() {
 
       expect(path).to.not.equal(undefined);
       expect(path.states.length).to.equal(3);
-      expect(path.states[0].state.vertices[bs_p].data).to.deep.equal({ type: 'lime_number', value: number.value(10), unit: money.id });
-      expect(path.states[1].state.vertices[bs_p].data).to.deep.equal({ type: 'lime_number', value: number.value(30), unit: money.id });
-      expect(path.states[2].state.vertices[bs_p].data).to.deep.equal({ type: 'lime_number', value: number.value(50), unit: money.id });
+      expect(path.states[0].state.getData(bs_p)).to.deep.equal({ type: 'lime_number', value: number.value(10), unit: money.id });
+      expect(path.states[1].state.getData(bs_p)).to.deep.equal({ type: 'lime_number', value: number.value(30), unit: money.id });
+      expect(path.states[2].state.getData(bs_p)).to.deep.equal({ type: 'lime_number', value: number.value(50), unit: money.id });
 
       expect(path.actions).to.deep.equal([a, a]);
     });
