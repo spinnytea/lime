@@ -74,9 +74,7 @@ Subgraph.prototype.copy = function() {
   // it's best to make a deep copy of this
   sg._data = _.cloneDeep(this._data);
 
-  this._edges.forEach(function(e) {
-    sg.addEdge(e.src, e.link, e.dst, e.pref);
-  });
+  sg._edges = _.clone(this._edges);
 
   sg._vertexCount = this._vertexCount;
   sg.concrete = this.concrete;
