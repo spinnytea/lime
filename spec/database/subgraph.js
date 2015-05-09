@@ -343,11 +343,49 @@ describe('subgraph', function() {
       });
     }); // end getMatch
 
-    it.skip('getIdea');
+    it('getIdea', function() {
+      var idea = tools.ideas.create();
+      var sg = new subgraph.Subgraph();
+      var v = sg.addVertex(subgraph.matcher.id, idea);
 
-    it.skip('allIdeas');
+      expect(sg.getIdea(v).id).to.equal(idea.id);
+    });
 
-    it.skip('deleteIdea');
+    it('allIdeas', function() {
+      var ideaA = tools.ideas.create();
+      var ideaB = tools.ideas.create();
+      var ideaC = tools.ideas.create();
+      var sg = new subgraph.Subgraph();
+      sg.addVertex(subgraph.matcher.id, ideaA);
+
+      expect(_.pluck(sg.allIdeas(), 'id')).to.deep.equal([ideaA.id]);
+
+      sg = sg.copy();
+      sg.addVertex(subgraph.matcher.id, ideaB);
+      sg.addVertex(subgraph.matcher.id, ideaC);
+
+      expect(_.pluck(sg.allIdeas(), 'id')).to.deep.equal([ideaA.id, ideaB.id, ideaC.id]);
+    });
+
+    it('deleteIdea', function() {
+      var idea = tools.ideas.create();
+      var sg = new subgraph.Subgraph();
+      var v = sg.addVertex(subgraph.matcher.id, idea);
+
+      expect(sg.getIdea(v).id).to.equal(idea.id);
+      expect(sg.concrete).to.equal(true);
+
+      sg.deleteIdea(v);
+
+      expect(sg.getIdea(v)).to.equal(undefined);
+      expect(sg.concrete).to.equal(false);
+
+      sg.deleteIdea(v);
+
+      // no change from deleting again
+      expect(sg.getIdea(v)).to.equal(undefined);
+      expect(sg.concrete).to.equal(false);
+    });
 
     describe('getData', function() {
       it('with data', function() {
