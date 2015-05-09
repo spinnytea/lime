@@ -30,7 +30,7 @@ describe('subgraph', function() {
   it('init', function() {
     // this is to ensure we test everything
     expect(Object.keys(subgraph)).to.deep.equal(['Subgraph', 'matcher', 'stringify', 'parse', 'search', 'match', 'rewrite']);
-    expect(Object.keys(subgraph.Subgraph.prototype)).to.deep.equal(['copy', 'addVertex', 'addEdge', 'getMatch', 'getIdea', 'allIdeas', 'getData', 'setData', 'deleteData']);
+    expect(Object.keys(subgraph.Subgraph.prototype)).to.deep.equal(['copy', 'addVertex', 'addEdge', 'getMatch', 'getIdea', 'allIdeas', 'deleteIdea', 'getData', 'setData', 'deleteData']);
     expect(Object.keys(subgraph.matcher)).to.deep.equal(['id', 'filler', 'exact', 'similar', 'number', 'discrete']);
   });
 
@@ -87,10 +87,16 @@ describe('subgraph', function() {
         expect(_.size(sg._match)).to.equal(2);
       });
 
-      it('invalid matcher.number', function() {
+      it('matcher.number', function() {
+        var unit = tools.ideas.create();
         var errorStr = 'matcher.number using non-number';
         var sg = new subgraph.Subgraph();
         var v = sg.addVertex(subgraph.matcher.filler);
+
+        expect(function() {
+          // if the number data is valid, then it shouldn't error
+          sg.addVertex(subgraph.matcher.number, number.cast({value:number.value(0),unit:unit.id}));
+        }).to.not.throw();
 
         expect(function() {
           sg.addVertex(subgraph.matcher.number);
@@ -100,14 +106,20 @@ describe('subgraph', function() {
         }).to.throw(errorStr);
 
         expect(function() {
+          // can't check matchRef targets, so it's fine
           sg.addVertex(subgraph.matcher.number, v, {matchRef:true});
         }).to.not.throw();
       });
 
-      it('invalid matcher.discrete', function() {
+      it('matcher.discrete', function() {
         var errorStr = 'matcher.discrete using non-discrete';
         var sg = new subgraph.Subgraph();
         var v = sg.addVertex(subgraph.matcher.filler);
+
+        expect(function() {
+          // if the discrete data is valid, then it shouldn't error
+          sg.addVertex(subgraph.matcher.discrete, discrete.cast({value: true, unit: discrete.definitions.list.boolean }));
+        }).to.not.throw();
 
         expect(function() {
           sg.addVertex(subgraph.matcher.discrete);
@@ -122,24 +134,92 @@ describe('subgraph', function() {
       });
     }); // end addVertex
 
-    it('addEdge', function() {
-      var sg = new subgraph.Subgraph();
-      var a = sg.addVertex(subgraph.matcher.filler);
-      var b = sg.addVertex(subgraph.matcher.filler);
+    describe('addEdge', function() {
+      it('two filler', function() {
+        var sg = new subgraph.Subgraph();
+        var a = sg.addVertex(subgraph.matcher.filler);
+        var b = sg.addVertex(subgraph.matcher.filler);
 
-      sg.addEdge(a, links.list.thought_description, b);
+        sg.addEdge(a, links.list.thought_description, b);
 
-      expect(sg._edges.length).to.equal(1);
-      var edge = sg._edges[0];
-      expect(edge.src).to.equal(a);
-      expect(edge.link).to.equal(links.list.thought_description);
-      expect(edge.dst).to.equal(b);
-      expect(edge.pref).to.equal(0);
+        expect(sg._edges.length).to.equal(1);
+        var edge = sg._edges[0];
+        expect(edge.src).to.equal(a);
+        expect(edge.link).to.equal(links.list.thought_description);
+        expect(edge.dst).to.equal(b);
+        expect(edge.pref).to.equal(0);
 
-      sg.addEdge(a, links.list.thought_description, b, 100);
-      expect(sg._edges.length).to.equal(2);
-      expect(sg._edges[1].pref).to.equal(100);
-    });
+        sg.addEdge(a, links.list.thought_description, b, 100);
+        expect(sg._edges.length).to.equal(2);
+        expect(sg._edges[1].pref).to.equal(100);
+      });
+
+      it('id/filler', function() {
+        var ideaA = tools.ideas.create();
+
+        var sg = new subgraph.Subgraph();
+        var a = sg.addVertex(subgraph.matcher.id, ideaA);
+        var b = sg.addVertex(subgraph.matcher.filler);
+
+        sg.addEdge(a, links.list.thought_description, b, 3);
+
+        expect(sg._edges.length).to.equal(1);
+        var edge = sg._edges[0];
+        expect(edge.src).to.equal(a);
+        expect(edge.link).to.equal(links.list.thought_description);
+        expect(edge.dst).to.equal(b);
+        expect(edge.pref).to.equal(3);
+
+        sg.addEdge(a, links.list.thought_description, b, 100);
+        expect(sg._edges.length).to.equal(2);
+        expect(sg._edges[1].pref).to.equal(100);
+      });
+
+      it('two id match', function() {
+        var ideaA = tools.ideas.create();
+        var ideaB = tools.ideas.create();
+        ideaA.link(links.list.thought_description, ideaB);
+
+        var sg = new subgraph.Subgraph();
+        var a = sg.addVertex(subgraph.matcher.id, ideaA);
+        var b = sg.addVertex(subgraph.matcher.id, ideaB);
+
+        sg.addEdge(a, links.list.thought_description, b);
+
+        expect(sg._edges.length).to.equal(1);
+        var edge = sg._edges[0];
+        expect(edge.src).to.equal(a);
+        expect(edge.link).to.equal(links.list.thought_description);
+        expect(edge.dst).to.equal(b);
+        expect(edge.pref).to.equal(0);
+
+        expect(sg.concrete).to.equal(true);
+        expect(sg.getIdea(a).id).to.equal(ideaA.id);
+        expect(sg.getIdea(b).id).to.equal(ideaB.id);
+      });
+
+      it('two id mis-match', function() {
+        var ideaA = tools.ideas.create();
+        var ideaB = tools.ideas.create();
+
+        var sg = new subgraph.Subgraph();
+        var a = sg.addVertex(subgraph.matcher.id, ideaA);
+        var b = sg.addVertex(subgraph.matcher.id, ideaB);
+
+        sg.addEdge(a, links.list.thought_description, b);
+
+        expect(sg._edges.length).to.equal(1);
+        var edge = sg._edges[0];
+        expect(edge.src).to.equal(a);
+        expect(edge.link).to.equal(links.list.thought_description);
+        expect(edge.dst).to.equal(b);
+        expect(edge.pref).to.equal(0);
+
+        expect(sg.concrete).to.equal(false);
+        expect(sg.getIdea(a)).to.equal(undefined);
+        expect(sg.getIdea(b)).to.equal(undefined);
+      });
+    }); // end addEdge
 
     it('copy', function() {
       var idea = tools.ideas.create();
@@ -266,6 +346,8 @@ describe('subgraph', function() {
     it.skip('getIdea');
 
     it.skip('allIdeas');
+
+    it.skip('deleteIdea');
 
     describe('getData', function() {
       it('with data', function() {

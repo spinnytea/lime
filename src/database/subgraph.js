@@ -165,7 +165,25 @@ Subgraph.prototype.addEdge = function(src, link, dst, pref) {
     dst: dst,
     pref: (pref || 0)
   });
-  this.concrete = this.concrete && (this.getIdea(src) !== undefined) && (this.getIdea(dst) !== undefined);
+
+  var srcIdea = this.getIdea(src);
+  if(srcIdea) {
+    var dstIdea = this.getIdea(dst);
+    if(dstIdea) {
+      // both ideas are defined
+      // so we need to see if the edge fits this definition
+      if(!srcIdea.link(link).some(function(idea) { return idea.id === dstIdea.id; })) {
+        // if the edge doesn't match, then this is no longer concrete and these edges don't match
+        // the rest of the graph is fine, this section is invalid
+        this.deleteIdea(src);
+        this.deleteIdea(dst);
+        this.concrete = false;
+      }
+    }
+  }
+  // if only one of the vertices has an idea, then
+  // - this.concrete is already false
+  // - there is no idea to check for a match, anyway
 };
 
 Subgraph.prototype.getMatch = function(id) {
@@ -188,6 +206,12 @@ Subgraph.prototype.getIdea = function(id) {
 };
 Subgraph.prototype.allIdeas = function() {
   return _.assign({}, this._idea);
+};
+Subgraph.prototype.deleteIdea = function(id) {
+  if(id in this._idea) {
+    delete this._idea[id];
+    this.concrete = false;
+  }
 };
 
 // returns undefined if there is no data, or the object if there is
