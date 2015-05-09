@@ -178,7 +178,90 @@ describe('subgraph', function() {
       it.skip('flatten');
     }); // end lazy copy
 
-    it.skip('getMatch');
+    describe('getMatch', function() {
+      it('in root', function() {
+        var sg = new subgraph.Subgraph();
+        var v = sg.addVertex(subgraph.matcher.filler);
+
+        expect(sg._matchParent).to.equal(undefined);
+        expect(v in sg._match).to.equal(true);
+
+        expect(sg.getMatch(v)).to.not.equal(undefined);
+      });
+
+      it('no parent miss (special case)', function() {
+        var sg = new subgraph.Subgraph();
+        var v = 'not a vertex id';
+
+        expect(sg._matchParent).to.equal(undefined);
+        expect(v in sg._match).to.equal(false);
+
+        expect(sg.getMatch(v)).to.equal(undefined);
+      });
+
+      it('single parent (special case)', function() {
+        var sg = new subgraph.Subgraph();
+        var v = sg.addVertex(subgraph.matcher.filler);
+        sg = sg.copy();
+        sg.addVertex(subgraph.matcher.filler);
+
+        expect(sg._matchParent).to.not.equal(undefined);
+        expect(sg._matchParent.parent).to.equal(undefined);
+        expect(v in sg._match).to.equal(false);
+        expect(v in sg._matchParent.obj).to.equal(true);
+
+        expect(sg.getMatch(v)).to.not.equal(undefined);
+      });
+
+      it('two parents', function() {
+        var sg = new subgraph.Subgraph();
+        var v = sg.addVertex(subgraph.matcher.filler);
+        sg = sg.copy();
+        sg.addVertex(subgraph.matcher.filler);
+        sg = sg.copy();
+        sg.addVertex(subgraph.matcher.filler);
+
+        expect(sg._matchParent).to.not.equal(undefined);
+        expect(sg._matchParent.parent).to.not.equal(undefined);
+        expect(sg._matchParent.parent.parent).to.equal(undefined);
+
+        expect(sg.getMatch(v)).to.not.equal(undefined);
+      });
+
+      it('three parents', function() {
+        var sg = new subgraph.Subgraph();
+        var v = sg.addVertex(subgraph.matcher.filler);
+        sg = sg.copy();
+        sg.addVertex(subgraph.matcher.filler);
+        sg = sg.copy();
+        sg.addVertex(subgraph.matcher.filler);
+        sg = sg.copy();
+        sg.addVertex(subgraph.matcher.filler);
+
+        expect(sg._matchParent).to.not.equal(undefined);
+        expect(sg._matchParent.parent).to.not.equal(undefined);
+        expect(sg._matchParent.parent.parent).to.not.equal(undefined);
+        expect(sg._matchParent.parent.parent.parent).to.equal(undefined);
+
+        expect(sg.getMatch(v)).to.not.equal(undefined);
+      });
+
+      it('two parents', function() {
+        var sg = new subgraph.Subgraph();
+        var v = 'not a vertex id';
+        sg.addVertex(subgraph.matcher.filler);
+        sg = sg.copy();
+        sg.addVertex(subgraph.matcher.filler);
+        sg = sg.copy();
+        sg.addVertex(subgraph.matcher.filler);
+
+        expect(sg._matchParent).to.not.equal(undefined);
+        expect(sg._matchParent.parent).to.not.equal(undefined);
+        expect(sg._matchParent.parent.parent).to.equal(undefined);
+
+        expect(sg.getMatch(v)).to.equal(undefined);
+      });
+    }); // end getMatch
 
     it.skip('getIdea');
 
