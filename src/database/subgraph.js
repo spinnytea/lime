@@ -74,7 +74,7 @@ Subgraph.prototype.copy = function() {
   // make that a parent of this
   if(!_.isEmpty(this._match)) {
     this._matchParent = {
-      match: this._match,
+      obj: this._match,
       parent: this._matchParent
     };
     this._match = {};
@@ -172,14 +172,15 @@ Subgraph.prototype.getMatch = function(id) {
   if(id in this._match)
     return this._match[id];
 
+  // use case micro optimizations
+  // this will USUALLY be 0 or 1 layers deep
+  if(!this._matchParent)
+    return undefined;
   var parent = this._matchParent;
-  while(parent) {
-    if(id in parent.match)
-      return parent.match[id];
-    parent = parent.parent;
-  }
+  if(parent.parent === undefined)
+    return parent.obj[id];
 
-  return undefined;
+  return searchParent(id, parent);
 };
 
 Subgraph.prototype.getIdea = function(id) {
@@ -234,6 +235,14 @@ exports.Subgraph = Subgraph;
 function forAllVertices(sg, callback) {
   for(var i=0; i<sg._vertexCount; i++)
     callback(i+'');
+}
+function searchParent(id, parent) {
+  while(parent) {
+    if(id in parent.obj)
+      return parent.obj[id];
+    parent = parent.parent;
+  }
+  return undefined;
 }
 
 
