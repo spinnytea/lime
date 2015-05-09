@@ -164,18 +164,18 @@ describe('subgraph', function() {
     describe('~~New!~~ lazy copy', function() {
       it.skip('nothing at first');
 
-      it.skip('copy all when addEdge/addVertex');
-
-      // (not just the idea/data; that'll get confusing)
-      // (this IS supposed to be it's own entity
-      it.skip('copy vertex when accessed vertex');
+      it.skip('matchParent');
 
       it.skip('stringify');
 
       // ensure getting vertices goes back to most recent version
-      // - maybe the one before
+      // - maybe the one beforeƒ
       // - maybe the original
       it.skip('copy of copy');
+
+      it.skip('search');
+
+      it.skip('flatten');
     }); // end lazy copy
 
     it.skip('getMatch');

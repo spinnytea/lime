@@ -22,6 +22,10 @@ function Subgraph() {
   // this is how we are going to match an idea in the search and match
   // this is the recipe, the way we determined if this vertex can be pinned to the world (or another subgraph)
   this._match = {};
+  // do a lazy copy of match data
+  // don't copy the data if we don't need to
+  this._matchParent = undefined;
+
   // this is what we are ultimately trying to find with a subgraph search
   // pinned context
   this._idea = {};
@@ -37,6 +41,7 @@ function Subgraph() {
 
 
   // when we generate a new vertex, we need a new key
+  // we also want fast access to the number of vertices we have
   this._vertexCount = 0;
 
   // true
@@ -61,13 +66,24 @@ function Subgraph() {
   });
 }
 
-// TODO can I do a lazy copy?
 Subgraph.prototype.copy = function() {
   var sg = new Subgraph();
 
-  // the match data and ideas should/will never change
+  // if there is locally defined match data
+  // then put it in a parent object
+  // make that a parent of this
+  if(!_.isEmpty(this._match)) {
+    this._matchParent = {
+      match: this._match,
+      parent: this._matchParent
+    };
+    this._match = {};
+  }
+  // regardless, we need to pass the parent to the copy
+  sg._matchParent = this._matchParent;
+
+    // the match data and ideas should/will never change
   // so we can reference the original
-  _.assign(sg._match, this._match);
   _.assign(sg._idea, this._idea);
 
   // the data can be updated in whole or in part
@@ -106,7 +122,7 @@ Subgraph.prototype.addVertex = function(matcher, data, options) {
 
   if(!matcher || matcher !== exports.matcher[matcher.name])
     throw new RangeError('invalid matcher');
-  if(options.matchRef && !(data in this._match))
+  if(options.matchRef && this.getMatch(data) === undefined)
     throw new RangeError('matchRef target (match.data) must already be a vertex');
 
   var id = this._vertexCount + '';
@@ -153,7 +169,17 @@ Subgraph.prototype.addEdge = function(src, link, dst, pref) {
 };
 
 Subgraph.prototype.getMatch = function(id) {
-  return this._match[id];
+  if(id in this._match)
+    return this._match[id];
+
+  var parent = this._matchParent;
+  while(parent) {
+    if(id in parent.match)
+      return parent.match[id];
+    parent = parent.parent;
+  }
+
+  return undefined;
 };
 
 Subgraph.prototype.getIdea = function(id) {
@@ -165,16 +191,18 @@ Subgraph.prototype.allIdeas = function() {
 
 // returns undefined if there is no data, or the object if there is
 Subgraph.prototype.getData = function(id) {
-  if(this._data[id] === null) {
+  var data = this._data[id];
+
+  if(data === null) {
     return undefined;
-  } else if(this._data[id] !== undefined) {
-    return this._data[id];
+  } else if(data !== undefined) {
+    return data;
   } else if(this.getIdea(id) === undefined) {
     return undefined;
   } else {
     // try loading the data
     var value = this.getIdea(id).data();
-    if(Object.keys(value).length === 0) {
+    if(_.isEmpty(value)) {
       // cache the result
       this._data[id] = null;
       return undefined;
@@ -201,6 +229,12 @@ Subgraph.prototype.deleteData = function() {
 };
 
 exports.Subgraph = Subgraph;
+
+
+function forAllVertices(sg, callback) {
+  for(var i=0; i<sg._vertexCount; i++)
+    callback(i+'');
+}
 
 
 // matchers
@@ -242,29 +276,45 @@ exports.matcher = {
 // we need to convert some objects and methods into a static mode that we can recover later
 // @param dump: output more data (not meant to be saved); this is useful for visualization
 exports.stringify = function(sg, dump) {
+  var match = {};
+  forAllVertices(sg, function(id) {
+    var value = sg.getMatch(id);
+    match[id] = {
+      matcher: value.matcher.name,
+      data: value.data,
+      options: value.options
+    };
+  });
+
+  var data;
+  if(dump === true) {
+    data = {};
+    forAllVertices(sg, function(id) {
+      if(id in sg._data) {
+        data[id] = sg._data[id];
+      } else {
+        var idea = sg.getIdea(id);
+        if(idea) {
+          var value = idea.data();
+
+          if(_.isEmpty(value))
+            data[id] = null;
+          else
+            data[id] = value;
+        }
+      }
+    });
+  } else {
+    data = sg._data;
+  }
+
   return JSON.stringify({
-    match: _.reduce(sg._match, function(result, value, key) {
-      result[key] = {
-        matcher: value.matcher.name,
-        data: value.data,
-        options: value.options
-      };
-      return result;
-    }, {}),
+    match: match,
     idea: _.reduce(sg.allIdeas(), function(result, value, key) {
       result[key] = value.id;
       return result;
     }, {}),
-    data: ((dump===true)?_.reduce(sg._match, function(result, ignore, key) {
-      if(sg._data[key]) {
-        result[key] = sg._data[key];
-      } else if(sg.getIdea(key)) {
-        result[key] = sg.getIdea(key).data();
-        if(Object.keys(result[key]).length === 0)
-          result[key] = null;
-      }
-      return result;
-    }, {}):sg._data),
+    data: data,
 
     edges: _.map(sg._edges, function(value) {
       return {
