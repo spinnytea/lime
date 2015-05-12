@@ -402,6 +402,9 @@ describe('subgraph', function() {
 
         // after we load data
         expect(sg._data[a]).to.deep.equal(data);
+
+        // check the cached condition
+        expect(sg.getData(a)).to.deep.equal(data);
       });
 
       it('without data', function() {
@@ -417,6 +420,9 @@ describe('subgraph', function() {
 
         // after we load data
         expect(sg._data[a]).to.equal(null);
+
+        // check the cached condition
+        expect(sg.getData(a)).to.equal(undefined);
       });
 
       it('no idea', function() {
@@ -432,9 +438,29 @@ describe('subgraph', function() {
         // after we load data
         expect(sg._data[a]).to.equal(undefined);
       });
+
+      it.skip('check the call count', function() {
+        // do I use chai-spies?
+        // do I do a var idea = { id: 'myId', data: function() { /* ... */ } }; ?
+      });
     }); // end getData
 
-    it.skip('setData');
+    it('setData', function() {
+      var sg = new subgraph.Subgraph();
+      var a = sg.addVertex(subgraph.matcher.filler);
+      var data1 = { some: 'thing' };
+      var data2 = { another: 'value' };
+
+      expect(sg.getData(a)).to.equal(undefined);
+
+      sg.setData(a, data1);
+
+      expect(sg.getData(a)).to.deep.equal(data1);
+
+      sg.setData(a, data2);
+
+      expect(sg.getData(a)).to.deep.equal(data2);
+    });
 
     it('deleteData', function() {
       var a = tools.ideas.create({a: 1});
