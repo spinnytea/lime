@@ -980,8 +980,36 @@ describe('subgraph', function() {
         });
       }); // end selectedEdge
       describe('selectedEdge', function() {
-        it.skip('isSrc && isDst fail', function() {
-          // do the case that we return false
+        it('isSrc && isDst mismatch', function() {
+          var fruit, apple, banana;
+          fruit = tools.ideas.create();
+          apple = tools.ideas.create({name: 'apple'});
+          banana = tools.ideas.create({name: 'banana'});
+          fruit.link(links.list.thought_description, apple);
+          fruit.link(links.list.thought_description, banana);
+
+          var sg = new subgraph.Subgraph();
+          var f = sg.addVertex(subgraph.matcher.id, fruit);
+          var a = sg.addVertex(subgraph.matcher.id, apple);
+          // we need banana in the test since the idea for fruit and apple will be deleted
+          var b = sg.addVertex(subgraph.matcher.id, banana);
+          sg.addEdge(f, links.list.thought_description, a, 1); // expand this edge second
+          sg.addEdge(f, links.list.thought_description, b, 2); // expand this edge first
+          expect(sg.concrete).to.equal(true);
+
+          // expand this edge last
+          // by the time we get here, f and a will be pinned down
+          // but this edge is invalid, so the search will fail
+          sg.addEdge(a, links.list.type_of, f, 0);
+
+          // for our sanity, verify the underlying state
+          expect(sg.concrete).to.equal(false);
+          expect(sg.getIdea(f)).to.equal(undefined);
+          expect(sg.getIdea(a)).to.equal(undefined);
+          expect(sg.getIdea(b).id).to.equal(banana.id); // this is our defined node to allow the search
+
+          // our test case
+          expect(subgraph.search(sg)).to.deep.equal([]);
         });
       }); // end selectedEdge (part 2)
 
@@ -1094,20 +1122,24 @@ describe('subgraph', function() {
   }); // end search
 
   describe('match', function() {
-    var mark, apple, price;
-    var outer, m, a, p;
+    var context, mark, apple, price;
+    var outer, c, m, a, p;
     beforeEach(function() {
+      context = tools.ideas.create();
       mark = tools.ideas.create();
       apple = tools.ideas.create();
       var money = tools.ideas.create();
       price = tools.ideas.create({value: number.value(10), unit: money.id});
+      context.link(links.list.context, mark);
       mark.link(links.list.thought_description, apple);
       apple.link(links.list.thought_description, price);
 
       outer = new subgraph.Subgraph();
+      c = outer.addVertex(subgraph.matcher.id, context);
       m = outer.addVertex(subgraph.matcher.id, mark);
       a = outer.addVertex(subgraph.matcher.filler);
       p = outer.addVertex(subgraph.matcher.similar, {value: number.value(10)});
+      outer.addEdge(c, links.list.context, m);
       outer.addEdge(m, links.list.thought_description, a);
       outer.addEdge(a, links.list.thought_description, p);
 
@@ -1120,6 +1152,10 @@ describe('subgraph', function() {
       expect(function() { subgraph.match(outer); }).to.throw(Error);
 
       expect(subgraph.match(outer, new subgraph.Subgraph())).to.deep.equal([]);
+
+      outer.addVertex(subgraph.matcher.filler);
+      expect(outer.concrete).to.equal(false);
+      expect(function() { subgraph.match(outer, new subgraph.Subgraph()); }).to.throw('the outer subgraph must be concrete before you can match against it');
     });
 
     // how do you even test srcMapped, !srcMapped, dstMapped, !dstMapped
@@ -1127,7 +1163,7 @@ describe('subgraph', function() {
     // I've been over the logic QUITE A LOT (erma gerd) I'm pretty sure it's correct
 //    it.skip('mapped branching');
 
-    it.skip('isSrc && isDst failure');
+    it.skip('isSrc && isDst mismatch');
 
     it('fail', function() {
       var result = subgraph.match(outer, new subgraph.Subgraph());
