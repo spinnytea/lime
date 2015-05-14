@@ -1216,9 +1216,8 @@ describe('subgraph', function() {
       expect(result.length).to.equal(2);
 
       // not sure which is which
+      // so if this fails, just try swapping 0 and 1 indexes
       checkSubgraphMatch(result[0], [m, a], [x, y]);
-
-      // not sure which is which
       checkSubgraphMatch(result[1], [a, p], [x, y]);
     });
 
@@ -1541,6 +1540,8 @@ describe('subgraph', function() {
       }); // end subgraphMatch
 
       it('edge case 1', function() {
+        // came about from lm-wumpus discreteActuators forward
+        //
         // two sets of nodes
         // root -> bool -> number
         //

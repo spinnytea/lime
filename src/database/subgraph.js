@@ -813,7 +813,7 @@ function vertexTransitionableAcceptable(vo_transitionable, vo_data, vi_transitio
 //  - { vertex_id: id, replace: number }
 //  - { vertex_id: id, combine: number }
 //  - { vertex_id: id, replace: discrete }
-//  - { vertex_id: id, cycle: { value: number, unit: idea.id } }
+//  - { vertex_id: id, cycle: { value: javascript number, unit: idea.id } } // the value is the number of steps to cycle
 //  - { vertex_id: id, replace_id: id } // (both are vertex_id's)
 //  - AC: actuator.runBlueprint depends on this structure
 //  - AC: actuator.runBlueprint does a _.clone() on each object, and replaces vertex_id
