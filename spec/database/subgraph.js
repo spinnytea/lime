@@ -718,13 +718,22 @@ describe('subgraph', function() {
 
   it('stringify & parse', function() {
     var unit = tools.ideas.create();
+    var num = tools.ideas.create({ value: number.value(2), unit: unit.id });
+    var crt = tools.ideas.create({ value: true, unit: discrete.definitions.list.boolean });
     var mark = tools.ideas.create();
-    var apple = tools.ideas.create({ value: number.value(2), unit: unit.id });
-    mark.link(links.list.thought_description, apple);
+    mark.link(links.list.thought_description, num);
+    mark.link(links.list.thought_description, crt);
+
     var sg = new subgraph.Subgraph();
     var m = sg.addVertex(subgraph.matcher.id, mark.id);
-    var a = sg.addVertex(subgraph.matcher.number, { value: number.value(0, Infinity), unit: unit.id }, {transitionable:true});
-    sg.addEdge(m, links.list.thought_description, a, 1);
+    var c = sg.addVertex(subgraph.matcher.discrete, { value: true, unit: discrete.definitions.list.boolean }, {transitionable:true});
+    var mc = sg.addVertex(subgraph.matcher.discrete, c, {matchRef:true});
+    var n = sg.addVertex(subgraph.matcher.number, { value: number.value(0, Infinity), unit: unit.id }, {transitionable:true});
+    var mn = sg.addVertex(subgraph.matcher.number, n, {matchRef:true});
+    sg.addEdge(m, links.list.thought_description, n, 1);
+    sg.addEdge(m, links.list.thought_description, c, 1);
+    sg.addEdge(m, links.list.thought_description, mc, 1);
+    sg.addEdge(m, links.list.thought_description, mn, 1);
 
     var str = subgraph.stringify(sg);
     expect(str).to.be.a('string');
@@ -736,16 +745,21 @@ describe('subgraph', function() {
     expect(parsed._match).to.deep.equal(sg._match);
     expect(parsed._idea).to.deep.equal(sg._idea);
     expect(parsed._data).to.deep.equal(sg._data);
-    // edges are complicated
+    // edges are not as complicated
     // they probably won't ever be an issue
     expect(parsed._edges).to.deep.equal(sg._edges);
     expect(parsed).to.deep.equal(sg);
 
-    expect(sg.concrete).to.equal(false);
-    expect(subgraph.search(sg)).to.deep.equal([sg]);
-    expect(sg.concrete).to.equal(true);
-    expect(sg.getIdea(m).id).to.equal(mark.id);
-    expect(sg.getIdea(a).id).to.equal(apple.id);
+    expect(parsed.concrete).to.equal(false);
+    expect(subgraph.search(parsed)).to.deep.equal([parsed]);
+    expect(parsed.concrete).to.equal(true);
+    expect(parsed.getIdea(m).id).to.equal(mark.id);
+    expect(parsed.getIdea(c).id).to.equal(crt.id);
+    expect(parsed.getIdea(mc).id).to.equal(crt.id);
+    expect(parsed.getIdea(n).id).to.equal(num.id);
+    expect(parsed.getIdea(mn).id).to.equal(num.id);
+    expect(parsed.getMatch(mc).data).to.equal(c);
+    expect(parsed.getMatch(mn).data).to.equal(n);
 
     // we can copy this for other tests
     // (usually during debugging or something)
@@ -774,6 +788,13 @@ describe('subgraph', function() {
 
     // after search, there is underlying data
     expected[a] = apple.data();
+    expect(
+      JSON.parse(subgraph.stringify(sg, true)).data
+    ).to.deep.equal(expected);
+
+    // use the cached data
+    expected[a] = { value: number.value(1), unit: unit.id };
+    sg.setData(a, expected[a]);
     expect(
       JSON.parse(subgraph.stringify(sg, true)).data
     ).to.deep.equal(expected);

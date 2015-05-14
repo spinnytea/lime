@@ -15,13 +15,14 @@ exports.isNumber = function(obj) {
   if(typeof obj !== 'object')
     return false;
 
-  if(!(typeof obj.unit === 'string' &&
+  if(!(
+    (!obj.type || obj.type === typeName) &&
+    typeof obj.unit === 'string' &&
     typeof obj.value === 'object' &&
     typeof obj.value.bl === 'boolean' &&
     (typeof obj.value.l === 'number' || obj.value.l === null) &&
     (typeof obj.value.r === 'number' || obj.value.r === null) &&
     typeof obj.value.br === 'boolean' &&
-    (!obj.type || obj.type === typeName) &&
     (obj.value.l <= obj.value.r || obj.value.l === null || obj.value.r === null)
   ))
     return false;

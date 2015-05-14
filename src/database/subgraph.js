@@ -369,15 +369,16 @@ exports.parse = function(str) {
   var sg = new Subgraph();
 
   _.forEach(str.match, function(value, key) {
-    var data = value.data;
-    if (value.matcher === exports.matcher.number.name) {
-      numnum.isNumber(data);
-    } else if(value.matcher === exports.matcher.discrete.name) {
-      crtcrt.isDiscrete(data);
+    if (!value.options.matchRef) {
+      if (value.matcher === exports.matcher.number.name) {
+        numnum.isNumber(value.data);
+      } else if (value.matcher === exports.matcher.discrete.name) {
+        crtcrt.isDiscrete(value.data);
+      }
     }
     sg._match[key] = {
       matcher: exports.matcher[value.matcher],
-      data: data,
+      data: value.data,
       options: value.options
     };
   });
