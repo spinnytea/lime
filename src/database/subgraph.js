@@ -674,7 +674,7 @@ function subgraphMatch(subgraphOuter, subgraphInner, outerEdges, innerEdges, ver
       dstData = subgraphInner.getData(innerEdge.dst);
     } else {
       // if our inner graph has a value cached, use that
-      dstData = subgraphOuter.getData(innerDstMatch.data);
+      dstData = subgraphInner.getData(innerDstMatch.data);
 
       if(!dstData) {
         // if we have already mapped the vertex in question (the matchRef target; match.data), then use the outer data
