@@ -30,48 +30,200 @@ describe('subgraph', function() {
   it('init', function() {
     // this is to ensure we test everything
     expect(Object.keys(subgraph)).to.deep.equal(['Subgraph', 'matcher', 'stringify', 'parse', 'search', 'match', 'rewrite']);
-    expect(Object.keys(subgraph.Subgraph.prototype)).to.deep.equal(['copy', 'addVertex', 'addEdge', 'invalidateCache']);
+    expect(Object.keys(subgraph.Subgraph.prototype)).to.deep.equal(['copy', 'addVertex', 'addEdge', 'getMatch', 'getIdea', 'allIdeas', 'deleteIdea', 'getData', 'setData', 'deleteData']);
     expect(Object.keys(subgraph.matcher)).to.deep.equal(['id', 'filler', 'exact', 'similar', 'number', 'discrete']);
   });
 
   describe('Subgraph', function() {
-    it('addVertex', function() {
-      var idea = tools.ideas.create();
+    describe('addVertex', function() {
+      it('default options', function() {
+        var defaultOptions = {transitionable:false,matchRef:false};
+        var sg = new subgraph.Subgraph();
 
-      var sg = new subgraph.Subgraph();
-      var a = sg.addVertex(subgraph.matcher.id, idea.id);
+        var v = sg.addVertex(subgraph.matcher.filler);
+        expect(sg.getMatch(v).options).to.deep.equal(defaultOptions);
 
-      expect(_.size(sg.vertices)).to.equal(1);
-      expect(sg.vertices[a]).to.not.equal(undefined);
-      expect(sg.vertices[a].vertex_id).to.equal(a);
-      expect(sg.vertices[a].match.matcher).to.equal(subgraph.matcher.id);
+        v = sg.addVertex(subgraph.matcher.filler, undefined, {});
+        expect(sg.getMatch(v).options).to.deep.equal(defaultOptions);
+      });
 
-      var b = sg.addVertex(subgraph.matcher.id, idea);
-      expect(a).to.not.equal(b);
-      expect(_.size(sg.vertices)).to.equal(2);
-    });
+      it('invalid matcher', function() {
+        var errorStr = 'invalid matcher';
+        var sg = new subgraph.Subgraph();
 
-    it('addEdge', function() {
-      var sg = new subgraph.Subgraph();
-      var a = sg.addVertex(subgraph.matcher.filler);
-      var b = sg.addVertex(subgraph.matcher.filler);
+        expect(function() { sg.addVertex(); }).to.throw(errorStr);
+        expect(function() { sg.addVertex(1); }).to.throw(errorStr);
+        expect(function() { sg.addVertex('text'); }).to.throw(errorStr);
+        expect(function() { sg.addVertex('number'); }).to.throw(errorStr);
 
-      sg.addEdge(a, links.list.thought_description, b);
+        expect(function() { sg.addVertex(subgraph.matcher.filler); }).to.not.throw();
+      });
 
-      expect(sg.edges.length).to.equal(1);
-      var edge = sg.edges[0];
-      expect(edge.src).to.be.an('object');
-      expect(edge.src.vertex_id).to.equal(a);
-      expect(edge.link.name).to.equal(links.list.thought_description.name);
-      expect(edge.dst.vertex_id).to.equal(b);
-      expect(edge.pref).to.equal(0);
+      it('matchRef target not defined', function() {
+        var errorStr = 'matchRef target (match.data) must already be a vertex';
+        var sg = new subgraph.Subgraph();
 
-      sg.addEdge(a, links.list.thought_description, b, 100);
-      expect(sg.edges.length).to.equal(2);
-      expect(sg.edges[1].pref).to.equal(100);
-    });
+        expect(function() {
+          sg.addVertex(subgraph.matcher.id, 'not in sg', {matchRef:true});
+        }).to.throw(errorStr);
+      });
+
+      it('matcher.id', function() {
+        var idea = tools.ideas.create();
+
+        var sg = new subgraph.Subgraph();
+        var a = sg.addVertex(subgraph.matcher.id, idea.id);
+
+        expect(_.size(sg._match)).to.equal(1);
+        expect(_.size(sg._idea)).to.equal(1);
+        expect(sg._match[a]).to.not.equal(undefined);
+        expect(sg._idea[a]).to.not.equal(undefined);
+        expect(sg._idea[a].id).to.equal(idea.id);
+        expect(sg._match[a].matcher).to.equal(subgraph.matcher.id);
+        expect(sg.concrete).to.equal(true);
+
+        var b = sg.addVertex(subgraph.matcher.id, idea);
+        expect(a).to.not.equal(b);
+        expect(_.size(sg._match)).to.equal(2);
+      });
+
+      it('matcher.number', function() {
+        var unit = tools.ideas.create();
+        var errorStr = 'matcher.number using non-number';
+        var sg = new subgraph.Subgraph();
+        var v = sg.addVertex(subgraph.matcher.filler);
+
+        expect(function() {
+          // if the number data is valid, then it shouldn't error
+          sg.addVertex(subgraph.matcher.number, number.cast({value:number.value(0),unit:unit.id}));
+        }).to.not.throw();
+
+        expect(function() {
+          sg.addVertex(subgraph.matcher.number);
+        }).to.throw(errorStr);
+        expect(function() {
+          sg.addVertex(subgraph.matcher.number, {});
+        }).to.throw(errorStr);
+
+        expect(function() {
+          // can't check matchRef targets, so it's fine
+          sg.addVertex(subgraph.matcher.number, v, {matchRef:true});
+        }).to.not.throw();
+      });
+
+      it('matcher.discrete', function() {
+        var errorStr = 'matcher.discrete using non-discrete';
+        var sg = new subgraph.Subgraph();
+        var v = sg.addVertex(subgraph.matcher.filler);
+
+        expect(function() {
+          // if the discrete data is valid, then it shouldn't error
+          sg.addVertex(subgraph.matcher.discrete, discrete.cast({value: true, unit: discrete.definitions.list.boolean }));
+        }).to.not.throw();
+
+        expect(function() {
+          sg.addVertex(subgraph.matcher.discrete);
+        }).to.throw(errorStr);
+        expect(function() {
+          sg.addVertex(subgraph.matcher.discrete, {});
+        }).to.throw(errorStr);
+
+        expect(function() {
+          sg.addVertex(subgraph.matcher.discrete, v, {matchRef:true});
+        }).to.not.throw();
+      });
+    }); // end addVertex
+
+    describe('addEdge', function() {
+      it('two filler', function() {
+        var sg = new subgraph.Subgraph();
+        var a = sg.addVertex(subgraph.matcher.filler);
+        var b = sg.addVertex(subgraph.matcher.filler);
+
+        sg.addEdge(a, links.list.thought_description, b);
+
+        expect(sg._edges.length).to.equal(1);
+        var edge = sg._edges[0];
+        expect(edge.src).to.equal(a);
+        expect(edge.link).to.equal(links.list.thought_description);
+        expect(edge.dst).to.equal(b);
+        expect(edge.pref).to.equal(0);
+
+        sg.addEdge(a, links.list.thought_description, b, 100);
+        expect(sg._edges.length).to.equal(2);
+        expect(sg._edges[1].pref).to.equal(100);
+      });
+
+      it('id/filler', function() {
+        var ideaA = tools.ideas.create();
+
+        var sg = new subgraph.Subgraph();
+        var a = sg.addVertex(subgraph.matcher.id, ideaA);
+        var b = sg.addVertex(subgraph.matcher.filler);
+
+        sg.addEdge(a, links.list.thought_description, b, 3);
+
+        expect(sg._edges.length).to.equal(1);
+        var edge = sg._edges[0];
+        expect(edge.src).to.equal(a);
+        expect(edge.link).to.equal(links.list.thought_description);
+        expect(edge.dst).to.equal(b);
+        expect(edge.pref).to.equal(3);
+
+        sg.addEdge(a, links.list.thought_description, b, 100);
+        expect(sg._edges.length).to.equal(2);
+        expect(sg._edges[1].pref).to.equal(100);
+      });
+
+      it('two id match', function() {
+        var ideaA = tools.ideas.create();
+        var ideaB = tools.ideas.create();
+        ideaA.link(links.list.thought_description, ideaB);
+
+        var sg = new subgraph.Subgraph();
+        var a = sg.addVertex(subgraph.matcher.id, ideaA);
+        var b = sg.addVertex(subgraph.matcher.id, ideaB);
+
+        sg.addEdge(a, links.list.thought_description, b);
+
+        expect(sg._edges.length).to.equal(1);
+        var edge = sg._edges[0];
+        expect(edge.src).to.equal(a);
+        expect(edge.link).to.equal(links.list.thought_description);
+        expect(edge.dst).to.equal(b);
+        expect(edge.pref).to.equal(0);
+
+        expect(sg.concrete).to.equal(true);
+        expect(sg.getIdea(a).id).to.equal(ideaA.id);
+        expect(sg.getIdea(b).id).to.equal(ideaB.id);
+      });
+
+      it('two id mis-match', function() {
+        var ideaA = tools.ideas.create();
+        var ideaB = tools.ideas.create();
+
+        var sg = new subgraph.Subgraph();
+        var a = sg.addVertex(subgraph.matcher.id, ideaA);
+        var b = sg.addVertex(subgraph.matcher.id, ideaB);
+
+        sg.addEdge(a, links.list.thought_description, b);
+
+        expect(sg._edges.length).to.equal(1);
+        var edge = sg._edges[0];
+        expect(edge.src).to.equal(a);
+        expect(edge.link).to.equal(links.list.thought_description);
+        expect(edge.dst).to.equal(b);
+        expect(edge.pref).to.equal(0);
+
+        expect(sg.concrete).to.equal(false);
+        expect(sg.getIdea(a)).to.equal(undefined);
+        expect(sg.getIdea(b)).to.equal(undefined);
+      });
+    }); // end addEdge
 
     it('copy', function() {
+      var idea = tools.ideas.create();
+
       // empty
       var sg = new subgraph.Subgraph();
       expect(sg.copy()).to.deep.equal(sg);
@@ -79,68 +231,238 @@ describe('subgraph', function() {
       var a = sg.addVertex(subgraph.matcher.filler);
       expect(sg.copy()).to.deep.equal(sg);
 
-      var b = sg.addVertex(subgraph.matcher.filler);
+      var b = sg.addVertex(subgraph.matcher.id, idea.id);
       expect(sg.copy()).to.deep.equal(sg);
 
       sg.addEdge(a, links.list.thought_description, b);
+      expect(sg.copy()).to.deep.equal(sg);
+
+      sg.setData(a, { some: 'thing' });
       expect(sg.copy()).to.deep.equal(sg);
     });
 
     describe('~~New!~~ lazy copy', function() {
       it.skip('nothing at first');
 
-      it.skip('copy all when addEdge/addVertex');
-
-      // (not just the idea/data; that'll get confusing)
-      // (this IS supposed to be it's own entity
-      it.skip('copy vertex when accessed vertex');
+      it.skip('matchParent');
 
       it.skip('stringify');
 
       // ensure getting vertices goes back to most recent version
-      // - maybe the one before
+      // - maybe the one beforeƒ
       // - maybe the original
       it.skip('copy of copy');
+
+      it.skip('search');
+
+      it.skip('flatten');
+    }); // end lazy copy
+
+    describe('getMatch', function() {
+      it('in root', function() {
+        var sg = new subgraph.Subgraph();
+        var v = sg.addVertex(subgraph.matcher.filler);
+
+        expect(sg._matchParent).to.equal(undefined);
+        expect(v in sg._match).to.equal(true);
+
+        expect(sg.getMatch(v)).to.not.equal(undefined);
+      });
+
+      it('no parent miss (special case)', function() {
+        var sg = new subgraph.Subgraph();
+        var v = 'not a vertex id';
+
+        expect(sg._matchParent).to.equal(undefined);
+        expect(v in sg._match).to.equal(false);
+
+        expect(sg.getMatch(v)).to.equal(undefined);
+      });
+
+      it('single parent (special case)', function() {
+        var sg = new subgraph.Subgraph();
+        var v = sg.addVertex(subgraph.matcher.filler);
+        sg = sg.copy();
+        sg.addVertex(subgraph.matcher.filler);
+
+        expect(sg._matchParent).to.not.equal(undefined);
+        expect(sg._matchParent.parent).to.equal(undefined);
+        expect(v in sg._match).to.equal(false);
+        expect(v in sg._matchParent.obj).to.equal(true);
+
+        expect(sg.getMatch(v)).to.not.equal(undefined);
+      });
+
+      it('two parents', function() {
+        var sg = new subgraph.Subgraph();
+        var v = sg.addVertex(subgraph.matcher.filler);
+        sg = sg.copy();
+        sg.addVertex(subgraph.matcher.filler);
+        sg = sg.copy();
+        sg.addVertex(subgraph.matcher.filler);
+
+        expect(sg._matchParent).to.not.equal(undefined);
+        expect(sg._matchParent.parent).to.not.equal(undefined);
+        expect(sg._matchParent.parent.parent).to.equal(undefined);
+
+        expect(sg.getMatch(v)).to.not.equal(undefined);
+      });
+
+      it('three parents', function() {
+        var sg = new subgraph.Subgraph();
+        var v = sg.addVertex(subgraph.matcher.filler);
+        sg = sg.copy();
+        sg.addVertex(subgraph.matcher.filler);
+        sg = sg.copy();
+        sg.addVertex(subgraph.matcher.filler);
+        sg = sg.copy();
+        sg.addVertex(subgraph.matcher.filler);
+
+        expect(sg._matchParent).to.not.equal(undefined);
+        expect(sg._matchParent.parent).to.not.equal(undefined);
+        expect(sg._matchParent.parent.parent).to.not.equal(undefined);
+        expect(sg._matchParent.parent.parent.parent).to.equal(undefined);
+
+        expect(sg.getMatch(v)).to.not.equal(undefined);
+      });
+
+      it('two parents', function() {
+        var sg = new subgraph.Subgraph();
+        var v = 'not a vertex id';
+        sg.addVertex(subgraph.matcher.filler);
+        sg = sg.copy();
+        sg.addVertex(subgraph.matcher.filler);
+        sg = sg.copy();
+        sg.addVertex(subgraph.matcher.filler);
+
+        expect(sg._matchParent).to.not.equal(undefined);
+        expect(sg._matchParent.parent).to.not.equal(undefined);
+        expect(sg._matchParent.parent.parent).to.equal(undefined);
+
+        expect(sg.getMatch(v)).to.equal(undefined);
+      });
+    }); // end getMatch
+
+    it('getIdea', function() {
+      var idea = tools.ideas.create();
+      var sg = new subgraph.Subgraph();
+      var v = sg.addVertex(subgraph.matcher.id, idea);
+
+      expect(sg.getIdea(v).id).to.equal(idea.id);
     });
 
-    describe('loadVertexData', function() {
+    it('allIdeas', function() {
+      var ideaA = tools.ideas.create();
+      var ideaB = tools.ideas.create();
+      var ideaC = tools.ideas.create();
+      var sg = new subgraph.Subgraph();
+      sg.addVertex(subgraph.matcher.id, ideaA);
+
+      expect(_.pluck(sg.allIdeas(), 'id')).to.deep.equal([ideaA.id]);
+
+      sg = sg.copy();
+      sg.addVertex(subgraph.matcher.id, ideaB);
+      sg.addVertex(subgraph.matcher.id, ideaC);
+
+      expect(_.pluck(sg.allIdeas(), 'id')).to.deep.equal([ideaA.id, ideaB.id, ideaC.id]);
+    });
+
+    it('deleteIdea', function() {
+      var idea = tools.ideas.create();
+      var sg = new subgraph.Subgraph();
+      var v = sg.addVertex(subgraph.matcher.id, idea);
+
+      expect(sg.getIdea(v).id).to.equal(idea.id);
+      expect(sg.concrete).to.equal(true);
+
+      sg.deleteIdea(v);
+
+      expect(sg.getIdea(v)).to.equal(undefined);
+      expect(sg.concrete).to.equal(false);
+
+      sg.deleteIdea(v);
+
+      // no change from deleting again
+      expect(sg.getIdea(v)).to.equal(undefined);
+      expect(sg.concrete).to.equal(false);
+    });
+
+    describe('getData', function() {
       it('with data', function() {
         var data = { somat: 42 };
         var idea = tools.ideas.create(data);
         var sg = new subgraph.Subgraph();
         var a = sg.addVertex(subgraph.matcher.id, idea.id);
-        expect(sg.concrete).to.equal(true);
-        var v = sg.vertices[a];
 
         // before we load data
-        expect(v._data).to.equal(undefined);
+        expect(sg._data[a]).to.equal(undefined);
 
         // the data is loaded
-        expect(v.data).to.deep.equal(data);
+        expect(sg.getData(a)).to.deep.equal(data);
 
         // after we load data
-        expect(v._data).to.deep.equal(data);
+        expect(sg._data[a]).to.deep.equal(data);
+
+        // check the cached condition
+        expect(sg.getData(a)).to.deep.equal(data);
       });
 
       it('without data', function() {
         var idea = tools.ideas.create();
         var sg = new subgraph.Subgraph();
         var a = sg.addVertex(subgraph.matcher.id, idea.id);
-        expect(sg.concrete).to.equal(true);
-        var v = sg.vertices[a];
 
         // before we load data
-        expect(v._data).to.equal(undefined);
+        expect(sg._data[a]).to.equal(undefined);
 
         // the data is loaded
-        expect(v.data).to.equal(undefined);
+        expect(sg.getData(a)).to.equal(undefined);
 
         // after we load data
-        expect(v._data).to.equal(null);
-      });
-    }); // end loadVertexData
+        expect(sg._data[a]).to.equal(null);
 
-    it('invalidateCache', function() {
+        // check the cached condition
+        expect(sg.getData(a)).to.equal(undefined);
+      });
+
+      it('no idea', function() {
+        var sg = new subgraph.Subgraph();
+        var a = sg.addVertex(subgraph.matcher.filler);
+
+        // before we load data
+        expect(sg._data[a]).to.equal(undefined);
+
+        // the data is loaded
+        expect(sg.getData(a)).to.equal(undefined);
+
+        // after we load data
+        expect(sg._data[a]).to.equal(undefined);
+      });
+
+      it.skip('check the call count', function() {
+        // do I use chai-spies?
+        // do I do a var idea = { id: 'myId', data: function() { /* ... */ } }; ?
+      });
+    }); // end getData
+
+    it('setData', function() {
+      var sg = new subgraph.Subgraph();
+      var a = sg.addVertex(subgraph.matcher.filler);
+      var data1 = { some: 'thing' };
+      var data2 = { another: 'value' };
+
+      expect(sg.getData(a)).to.equal(undefined);
+
+      sg.setData(a, data1);
+
+      expect(sg.getData(a)).to.deep.equal(data1);
+
+      sg.setData(a, data2);
+
+      expect(sg.getData(a)).to.deep.equal(data2);
+    });
+
+    it('deleteData', function() {
       var a = tools.ideas.create({a: 1});
       var b = tools.ideas.create({b: 2});
       a.link(links.list.thought_description, b);
@@ -151,34 +473,34 @@ describe('subgraph', function() {
       sg.addEdge(_a, links.list.thought_description, _b);
 
       function load() {
-        expect(sg.vertices[_a].data).to.deep.equal({a: 1});
-        expect(sg.vertices[_b].data).to.deep.equal({b: 2});
-        expect(sg.vertices[_a]._data).to.deep.equal({a: 1});
-        expect(sg.vertices[_b]._data).to.deep.equal({b: 2});
+        expect(sg.getData(_a)).to.deep.equal({a: 1});
+        expect(sg.getData(_b)).to.deep.equal({b: 2});
+        expect(sg._data[_a]).to.deep.equal({a: 1});
+        expect(sg._data[_b]).to.deep.equal({b: 2});
       }
 
-      expect(sg.vertices[_a]._data).to.deep.equal(undefined);
-      expect(sg.vertices[_b]._data).to.deep.equal(undefined);
+      expect(sg._data[_a]).to.deep.equal(undefined);
+      expect(sg._data[_b]).to.deep.equal(undefined);
 
       load();
-      sg.invalidateCache();
-      expect(sg.vertices[_a]._data).to.deep.equal(undefined);
-      expect(sg.vertices[_b]._data).to.deep.equal(undefined);
+      sg.deleteData();
+      expect(sg._data[_a]).to.deep.equal(undefined);
+      expect(sg._data[_b]).to.deep.equal(undefined);
 
       load();
-      sg.invalidateCache(_b);
-      expect(sg.vertices[_a]._data).to.deep.equal({a: 1});
-      expect(sg.vertices[_b]._data).to.deep.equal(undefined);
+      sg.deleteData(_b);
+      expect(sg._data[_a]).to.deep.equal({a: 1});
+      expect(sg._data[_b]).to.deep.equal(undefined);
 
       load();
-      sg.invalidateCache(_a);
-      expect(sg.vertices[_a]._data).to.deep.equal(undefined);
-      expect(sg.vertices[_b]._data).to.deep.equal({b: 2});
+      sg.deleteData(_a);
+      expect(sg._data[_a]).to.deep.equal(undefined);
+      expect(sg._data[_b]).to.deep.equal({b: 2});
 
       load();
-      sg.invalidateCache(_b, _a);
-      expect(sg.vertices[_a]._data).to.deep.equal(undefined);
-      expect(sg.vertices[_b]._data).to.deep.equal(undefined);
+      sg.deleteData(_b, _a);
+      expect(sg._data[_a]).to.deep.equal(undefined);
+      expect(sg._data[_b]).to.deep.equal(undefined);
     });
   }); // end Subgraph
 
@@ -186,13 +508,14 @@ describe('subgraph', function() {
     it('id: function', function() {
       var idea = tools.ideas.create();
 
-      expect(subgraph.matcher.id({idea: idea}, idea.id)).to.equal(true);
-      expect(subgraph.matcher.id({idea: idea}, '')).to.equal(false);
-      expect(subgraph.matcher.id({idea: idea}, undefined)).to.equal(false);
+      expect(subgraph.matcher.id(idea, idea.id)).to.equal(true);
+      expect(subgraph.matcher.id(idea, '')).to.equal(false);
+      expect(subgraph.matcher.id(idea, undefined)).to.equal(false);
     });
 
     // matcher.id shouldn't ever actually be used in subgraph.search
-    it.skip('id: basic search', function() {
+    // it doesn't even really make sense in the context of matchRef (since it doesn't use data)
+    it('id: basic search', function() {
       var mark = tools.ideas.create();
       var apple = tools.ideas.create();
       mark.link(links.list.thought_description, apple);
@@ -206,8 +529,8 @@ describe('subgraph', function() {
       expect(result.length).to.equal(1);
       expect(sg).to.equal(result[0]);
 
-      expect(sg.vertices[m].idea.id).to.equal(mark.id);
-      expect(sg.vertices[a].idea.id).to.equal(apple.id);
+      expect(sg.getIdea(m).id).to.equal(mark.id);
+      expect(sg.getIdea(a).id).to.equal(apple.id);
     });
 
     it('filler: function', function() {
@@ -230,16 +553,16 @@ describe('subgraph', function() {
       expect(result.length).to.equal(1);
       expect(sg).to.equal(result[0]);
 
-      expect(sg.vertices[m].idea.id).to.equal(mark.id);
-      expect(sg.vertices[a].idea.id).to.equal(apple.id);
+      expect(sg.getIdea(m).id).to.equal(mark.id);
+      expect(sg.getIdea(a).id).to.equal(apple.id);
     });
 
     it('exact: function', function() {
-      var vertex = { data: {'thing': 3.14} };
+      var data = { 'thing': 3.14 };
 
-      expect(subgraph.matcher.exact(vertex, {'thing': 3.14})).to.equal(true);
-      expect(subgraph.matcher.exact(vertex, {'thing': 6.28})).to.equal(false);
-      expect(subgraph.matcher.exact(vertex, {})).to.equal(false);
+      expect(subgraph.matcher.exact(data, {'thing': 3.14})).to.equal(true);
+      expect(subgraph.matcher.exact(data, {'thing': 6.28})).to.equal(false);
+      expect(subgraph.matcher.exact(data, {})).to.equal(false);
     });
 
     it('exact: basic search', function() {
@@ -256,8 +579,8 @@ describe('subgraph', function() {
       expect(result.length).to.equal(1);
       expect(sg).to.equal(result[0]);
 
-      expect(sg.vertices[m].idea.id).to.equal(mark.id);
-      expect(sg.vertices[a].idea.id).to.equal(apple.id);
+      expect(sg.getIdea(m).id).to.equal(mark.id);
+      expect(sg.getIdea(a).id).to.equal(apple.id);
 
       // fail
       sg = new subgraph.Subgraph();
@@ -270,18 +593,18 @@ describe('subgraph', function() {
     });
 
     it('similar: function', function() {
-      var vertex = { data: {'thing1': 3.14, 'thing2': 2.71} };
-      var before = _.cloneDeep(vertex);
+      var data = { 'thing1': 3.14, 'thing2': 2.71 };
+      var before = _.cloneDeep(data);
 
-      expect(subgraph.matcher.similar(vertex, {'thing1': 3.14})).to.equal(true);
-      expect(subgraph.matcher.similar(vertex, {'thing2': 2.71})).to.equal(true);
-      expect(subgraph.matcher.similar(vertex, {})).to.equal(true);
-      expect(subgraph.matcher.similar(vertex)).to.equal(true);
-      expect(subgraph.matcher.similar(vertex, {'thing2': 42})).to.equal(false);
-      expect(subgraph.matcher.similar(vertex, {'others': 42})).to.equal(false);
+      expect(subgraph.matcher.similar(data, {'thing1': 3.14})).to.equal(true);
+      expect(subgraph.matcher.similar(data, {'thing2': 2.71})).to.equal(true);
+      expect(subgraph.matcher.similar(data, {})).to.equal(true);
+      expect(subgraph.matcher.similar(data)).to.equal(true);
+      expect(subgraph.matcher.similar(data, {'thing2': 42})).to.equal(false);
+      expect(subgraph.matcher.similar(data, {'others': 42})).to.equal(false);
 
       // the data shouldn't have been changed after any of this
-      expect(vertex).to.deep.equal(before);
+      expect(data).to.deep.equal(before);
     });
 
     it('similar: basic search', function() {
@@ -296,6 +619,10 @@ describe('subgraph', function() {
 
       var result = subgraph.search(sg);
       expect(result.length).to.equal(1);
+      expect(sg).to.equal(result[0]);
+
+      expect(sg.getIdea(m).id).to.equal(mark.id);
+      expect(sg.getIdea(a).id).to.equal(apple.id);
 
       // fail
       sg = new subgraph.Subgraph();
@@ -309,16 +636,15 @@ describe('subgraph', function() {
 
     it('number: function', function() {
       var unit = tools.ideas.create();
-      var vertex = { data: { value: number.value(10), unit: unit.id } };
-      expect(number.isNumber(vertex.data)).to.equal(true);
+      var data = number.cast({ value: number.value(10), unit: unit.id });
 
-      expect(subgraph.matcher.number(vertex, { value: number.value(10), unit: unit.id })).to.equal(true);
-      expect(subgraph.matcher.number(vertex, { value: number.value(0, 100), unit: unit.id })).to.equal(true);
+      expect(subgraph.matcher.number(data, { value: number.value(10), unit: unit.id })).to.equal(true);
+      expect(subgraph.matcher.number(data, { value: number.value(0, 100), unit: unit.id })).to.equal(true);
 
-      expect(subgraph.matcher.number(vertex, { value: number.value(10), unit: '_'+unit.id })).to.equal(false);
-      expect(subgraph.matcher.number(vertex, { value: number.value(10) })).to.equal(false);
-      expect(subgraph.matcher.number(vertex, { unit: unit.id })).to.equal(false);
-      expect(subgraph.matcher.number(vertex)).to.equal(false);
+      expect(subgraph.matcher.number(data, { value: number.value(10), unit: '_'+unit.id })).to.equal(false);
+      expect(subgraph.matcher.number(data, { value: number.value(10) })).to.equal(false);
+      expect(subgraph.matcher.number(data, { unit: unit.id })).to.equal(false);
+      expect(subgraph.matcher.number(data)).to.equal(false);
     });
 
     it('number: basic search', function() {
@@ -334,6 +660,10 @@ describe('subgraph', function() {
 
       var result = subgraph.search(sg);
       expect(result.length).to.equal(1);
+      expect(sg).to.equal(result[0]);
+
+      expect(sg.getIdea(m).id).to.equal(mark.id);
+      expect(sg.getIdea(a).id).to.equal(apple.id);
 
       // fail
       sg = new subgraph.Subgraph();
@@ -346,16 +676,15 @@ describe('subgraph', function() {
     });
 
     it('discrete: function', function() {
-      var vertex = { data: discrete.cast({value: true, unit: discrete.definitions.list.boolean }) };
-      expect(discrete.isDiscrete(vertex.data)).to.equal(true);
+      var data = discrete.cast({value: true, unit: discrete.definitions.list.boolean });
 
-      expect(subgraph.matcher.discrete(vertex, {value: true, unit: discrete.definitions.list.boolean })).to.equal(true);
-      expect(subgraph.matcher.discrete(vertex, {value: false, unit: discrete.definitions.list.boolean })).to.equal(false);
+      expect(subgraph.matcher.discrete(data, {value: true, unit: discrete.definitions.list.boolean })).to.equal(true);
+      expect(subgraph.matcher.discrete(data, {value: false, unit: discrete.definitions.list.boolean })).to.equal(false);
 
-      expect(subgraph.matcher.discrete(vertex, { value: true, unit: 'not an id' })).to.equal(false);
-      expect(subgraph.matcher.discrete(vertex, { value: true })).to.equal(false);
-      expect(subgraph.matcher.discrete(vertex, { unit: discrete.definitions.list.boolean })).to.equal(false);
-      expect(subgraph.matcher.discrete(vertex)).to.equal(false);
+      expect(subgraph.matcher.discrete(data, { value: true, unit: 'not an id' })).to.equal(false);
+      expect(subgraph.matcher.discrete(data, { value: true })).to.equal(false);
+      expect(subgraph.matcher.discrete(data, { unit: discrete.definitions.list.boolean })).to.equal(false);
+      expect(subgraph.matcher.discrete(data)).to.equal(false);
     });
 
     it('discrete: basic search', function() {
@@ -371,6 +700,10 @@ describe('subgraph', function() {
 
       var result = subgraph.search(sg);
       expect(result.length).to.equal(1);
+      expect(sg).to.equal(result[0]);
+
+      expect(sg.getIdea(m).id).to.equal(mark.id);
+      expect(sg.getIdea(a).id).to.equal(hasApple.id);
 
       // fail
       sg = new subgraph.Subgraph();
@@ -385,13 +718,22 @@ describe('subgraph', function() {
 
   it('stringify & parse', function() {
     var unit = tools.ideas.create();
+    var num = tools.ideas.create({ value: number.value(2), unit: unit.id });
+    var crt = tools.ideas.create({ value: true, unit: discrete.definitions.list.boolean });
     var mark = tools.ideas.create();
-    var apple = tools.ideas.create({ value: number.value(2), unit: unit.id });
-    mark.link(links.list.thought_description, apple);
+    mark.link(links.list.thought_description, num);
+    mark.link(links.list.thought_description, crt);
+
     var sg = new subgraph.Subgraph();
     var m = sg.addVertex(subgraph.matcher.id, mark.id);
-    var a = sg.addVertex(subgraph.matcher.number, { value: number.value(0, Infinity), unit: unit.id }, {transitionable:true});
-    sg.addEdge(m, links.list.thought_description, a, 1);
+    var c = sg.addVertex(subgraph.matcher.discrete, { value: true, unit: discrete.definitions.list.boolean }, {transitionable:true});
+    var mc = sg.addVertex(subgraph.matcher.discrete, c, {matchRef:true});
+    var n = sg.addVertex(subgraph.matcher.number, { value: number.value(0, Infinity), unit: unit.id }, {transitionable:true});
+    var mn = sg.addVertex(subgraph.matcher.number, n, {matchRef:true});
+    sg.addEdge(m, links.list.thought_description, n, 1);
+    sg.addEdge(m, links.list.thought_description, c, 1);
+    sg.addEdge(m, links.list.thought_description, mc, 1);
+    sg.addEdge(m, links.list.thought_description, mn, 1);
 
     var str = subgraph.stringify(sg);
     expect(str).to.be.a('string');
@@ -400,17 +742,24 @@ describe('subgraph', function() {
 
     // there was some issue getting the vertices in and out
     // so let's keep this test to see if this is a problem
-    expect(parsed.vertices).to.deep.equal(sg.vertices);
-    // edges are complicated
+    expect(parsed._match).to.deep.equal(sg._match);
+    expect(parsed._idea).to.deep.equal(sg._idea);
+    expect(parsed._data).to.deep.equal(sg._data);
+    // edges are not as complicated
     // they probably won't ever be an issue
-    expect(parsed.edges).to.deep.equal(sg.edges);
+    expect(parsed._edges).to.deep.equal(sg._edges);
     expect(parsed).to.deep.equal(sg);
 
-    expect(sg.concrete).to.equal(false);
-    expect(subgraph.search(sg)).to.deep.equal([sg]);
-    expect(sg.concrete).to.equal(true);
-    expect(sg.vertices[m].idea.id).to.equal(mark.id);
-    expect(sg.vertices[a].idea.id).to.equal(apple.id);
+    expect(parsed.concrete).to.equal(false);
+    expect(subgraph.search(parsed)).to.deep.equal([parsed]);
+    expect(parsed.concrete).to.equal(true);
+    expect(parsed.getIdea(m).id).to.equal(mark.id);
+    expect(parsed.getIdea(c).id).to.equal(crt.id);
+    expect(parsed.getIdea(mc).id).to.equal(crt.id);
+    expect(parsed.getIdea(n).id).to.equal(num.id);
+    expect(parsed.getIdea(mn).id).to.equal(num.id);
+    expect(parsed.getMatch(mc).data).to.equal(c);
+    expect(parsed.getMatch(mn).data).to.equal(n);
 
     // we can copy this for other tests
     // (usually during debugging or something)
@@ -427,17 +776,28 @@ describe('subgraph', function() {
     var a = sg.addVertex(subgraph.matcher.number, { value: number.value(0, Infinity), unit: unit.id }, {transitionable:true});
     sg.addEdge(m, links.list.thought_description, a, 1);
 
+    var expected = {};
+
     // before search, this is inconcrete, so there is no data to back it
+    expected[m] = null;
     expect(
-      JSON.parse(subgraph.stringify(sg, true)).vertices.map(function(v) { return v._data; })
-    ).to.deep.equal([null, undefined]);
+      JSON.parse(subgraph.stringify(sg, true)).data
+    ).to.deep.equal(expected);
 
     expect(subgraph.search(sg)).to.deep.equal([sg]);
 
     // after search, there is underlying data
+    expected[a] = apple.data();
     expect(
-      JSON.parse(subgraph.stringify(sg, true)).vertices.map(function(v) { return v._data; })
-    ).to.deep.equal([null, apple.data()]);
+      JSON.parse(subgraph.stringify(sg, true)).data
+    ).to.deep.equal(expected);
+
+    // use the cached data
+    expected[a] = { value: number.value(1), unit: unit.id };
+    sg.setData(a, expected[a]);
+    expect(
+      JSON.parse(subgraph.stringify(sg, true)).data
+    ).to.deep.equal(expected);
   });
 
   describe('search', function() {
@@ -490,9 +850,9 @@ describe('subgraph', function() {
 
       expect(subgraph.search(sg)).to.deep.equal([sg]);
       expect(sg.concrete).to.equal(true);
-      expect(sg.vertices[m].idea.id).to.deep.equal(mark.id);
-      expect(sg.vertices[a].idea.id).to.deep.equal(apple.id);
-      expect(sg.vertices[p].idea.id).to.deep.equal(price.id);
+      expect(sg.getIdea(m).id).to.deep.equal(mark.id);
+      expect(sg.getIdea(a).id).to.deep.equal(apple.id);
+      expect(sg.getIdea(p).id).to.deep.equal(price.id);
     });
 
     it('disjoint + filler', function() {
@@ -581,7 +941,7 @@ describe('subgraph', function() {
           desire.update({name: 'apple'});
 
           expect(subgraph.search(sg)).to.deep.equal([sg]);
-          expect(sg.vertices[_f].idea.id).to.equal(apple.id);
+          expect(sg.getIdea(_f).id).to.equal(apple.id);
         });
 
         it('idDst', function() {
@@ -599,9 +959,9 @@ describe('subgraph', function() {
           desire.update({name: 'banana'});
 
           expect(subgraph.search(sg)).to.deep.equal([sg]);
-          expect(sg.vertices[_f].idea.id).to.equal(banana.id);
+          expect(sg.getIdea(_f).id).to.equal(banana.id);
         });
-      });
+      }); // end matchRef
 
       describe('selectedEdge', function() {
         var mark, apple;
@@ -615,8 +975,8 @@ describe('subgraph', function() {
         afterEach(function() {
           expect(subgraph.search(sg)).to.deep.equal([sg]);
           expect(sg.concrete).to.equal(true);
-          expect(sg.vertices[m].idea.id).to.deep.equal(mark.id);
-          expect(sg.vertices[a].idea.id).to.deep.equal(apple.id);
+          expect(sg.getIdea(m).id).to.deep.equal(mark.id);
+          expect(sg.getIdea(a).id).to.deep.equal(apple.id);
         });
 
         it('isSrc && !isDst', function() {
@@ -640,6 +1000,39 @@ describe('subgraph', function() {
           sg.addEdge(m, links.list.thought_description, a);
         });
       }); // end selectedEdge
+      describe('selectedEdge', function() {
+        it('isSrc && isDst mismatch', function() {
+          var fruit, apple, banana;
+          fruit = tools.ideas.create();
+          apple = tools.ideas.create({name: 'apple'});
+          banana = tools.ideas.create({name: 'banana'});
+          fruit.link(links.list.thought_description, apple);
+          fruit.link(links.list.thought_description, banana);
+
+          var sg = new subgraph.Subgraph();
+          var f = sg.addVertex(subgraph.matcher.id, fruit);
+          var a = sg.addVertex(subgraph.matcher.id, apple);
+          // we need banana in the test since the idea for fruit and apple will be deleted
+          var b = sg.addVertex(subgraph.matcher.id, banana);
+          sg.addEdge(f, links.list.thought_description, a, 1); // expand this edge second
+          sg.addEdge(f, links.list.thought_description, b, 2); // expand this edge first
+          expect(sg.concrete).to.equal(true);
+
+          // expand this edge last
+          // by the time we get here, f and a will be pinned down
+          // but this edge is invalid, so the search will fail
+          sg.addEdge(a, links.list.type_of, f, 0);
+
+          // for our sanity, verify the underlying state
+          expect(sg.concrete).to.equal(false);
+          expect(sg.getIdea(f)).to.equal(undefined);
+          expect(sg.getIdea(a)).to.equal(undefined);
+          expect(sg.getIdea(b).id).to.equal(banana.id); // this is our defined node to allow the search
+
+          // our test case
+          expect(subgraph.search(sg)).to.deep.equal([]);
+        });
+      }); // end selectedEdge (part 2)
 
       describe('expand branches', function() {
         it('0', function() {
@@ -675,21 +1068,21 @@ describe('subgraph', function() {
 
           var sg = new subgraph.Subgraph();
           var m = sg.addVertex(subgraph.matcher.id, mark);
-          var a = sg.addVertex(subgraph.matcher.filler);
-          sg.addEdge(m, links.list.thought_description, a);
+          var f = sg.addVertex(subgraph.matcher.filler);
+          sg.addEdge(m, links.list.thought_description, f);
 
           var result = subgraph.search(sg);
           expect(result.length).to.equal(2);
 
           var one = result[0];
           expect(one).to.not.equal(sg);
-          expect(one.vertices[m].idea.id).to.deep.equal(mark.id);
-          expect(one.vertices[a].idea.id).to.deep.equal(apple.id);
+          expect(one.getIdea(m).id).to.deep.equal(mark.id);
+          expect(one.getIdea(f).id).to.deep.equal(apple.id);
 
           var two = result[1];
           expect(two).to.not.equal(sg);
-          expect(two.vertices[m].idea.id).to.deep.equal(mark.id);
-          expect(two.vertices[a].idea.id).to.deep.equal(banana.id);
+          expect(two.getIdea(m).id).to.deep.equal(mark.id);
+          expect(two.getIdea(f).id).to.deep.equal(banana.id);
         });
       }); // end expand branches
 
@@ -716,9 +1109,9 @@ describe('subgraph', function() {
           sg.addEdge(a, links.list.thought_description, p);
 
           expect(subgraph.search(sg)).to.deep.equal([sg]);
-          expect(sg.vertices[m].idea.id).to.deep.equal(mark.id);
-          expect(sg.vertices[a].idea.id).to.deep.equal(apple.id);
-          expect(sg.vertices[p].idea.id).to.deep.equal(price.id);
+          expect(sg.getIdea(m).id).to.deep.equal(mark.id);
+          expect(sg.getIdea(a).id).to.deep.equal(apple.id);
+          expect(sg.getIdea(p).id).to.deep.equal(price.id);
         });
       }); // end nextSteps
     }); // end clauses
@@ -750,20 +1143,24 @@ describe('subgraph', function() {
   }); // end search
 
   describe('match', function() {
-    var mark, apple, price;
-    var outer, m, a, p;
+    var context, mark, apple, price;
+    var outer, c, m, a, p;
     beforeEach(function() {
+      context = tools.ideas.create();
       mark = tools.ideas.create();
       apple = tools.ideas.create();
       var money = tools.ideas.create();
       price = tools.ideas.create({value: number.value(10), unit: money.id});
+      context.link(links.list.context, mark);
       mark.link(links.list.thought_description, apple);
       apple.link(links.list.thought_description, price);
 
       outer = new subgraph.Subgraph();
+      c = outer.addVertex(subgraph.matcher.id, context);
       m = outer.addVertex(subgraph.matcher.id, mark);
       a = outer.addVertex(subgraph.matcher.filler);
       p = outer.addVertex(subgraph.matcher.similar, {value: number.value(10)});
+      outer.addEdge(c, links.list.context, m);
       outer.addEdge(m, links.list.thought_description, a);
       outer.addEdge(a, links.list.thought_description, p);
 
@@ -776,6 +1173,10 @@ describe('subgraph', function() {
       expect(function() { subgraph.match(outer); }).to.throw(Error);
 
       expect(subgraph.match(outer, new subgraph.Subgraph())).to.deep.equal([]);
+
+      outer.addVertex(subgraph.matcher.filler);
+      expect(outer.concrete).to.equal(false);
+      expect(function() { subgraph.match(outer, new subgraph.Subgraph()); }).to.throw('the outer subgraph must be concrete before you can match against it');
     });
 
     // how do you even test srcMapped, !srcMapped, dstMapped, !dstMapped
@@ -783,7 +1184,7 @@ describe('subgraph', function() {
     // I've been over the logic QUITE A LOT (erma gerd) I'm pretty sure it's correct
 //    it.skip('mapped branching');
 
-    it.skip('isSrc && isDst failure');
+    it.skip('isSrc && isDst mismatch');
 
     it('fail', function() {
       var result = subgraph.match(outer, new subgraph.Subgraph());
@@ -815,9 +1216,8 @@ describe('subgraph', function() {
       expect(result.length).to.equal(2);
 
       // not sure which is which
+      // so if this fails, just try swapping 0 and 1 indexes
       checkSubgraphMatch(result[0], [m, a], [x, y]);
-
-      // not sure which is which
       checkSubgraphMatch(result[1], [a, p], [x, y]);
     });
 
@@ -885,6 +1285,14 @@ describe('subgraph', function() {
       checkSubgraphMatch(subgraph.match(outer, sg), [m, a, p, b, bp], [_m, _a, _p, _b, _bp]);
     });
 
+    it.skip('multiple outer to same idea', function() {
+      // what if there are mulitple vertices in the outer graph that point to the same idea?
+    });
+
+    it.skip('multiple inner to same idea', function() {
+      // what if there are mulitple vertices in the inner graph that point to the same idea?
+    });
+
     // it shouldn't matter that the outer is larger
     // but the point is that the vertexMap will match all vertices in the inner map
     // ... this happens a lot; we don't need to test this specifically
@@ -909,18 +1317,18 @@ describe('subgraph', function() {
         var i = inner.addVertex(subgraph.matcher.id, idea);
 
         // if both are not transitionable, then data doesn't matter
-        expect(outer.vertices[o].match.options.transitionable).to.equal(false);
-        expect(inner.vertices[i].match.options.transitionable).to.equal(false);
+        expect(outer.getMatch(o).options.transitionable).to.equal(false);
+        expect(inner.getMatch(i).options.transitionable).to.equal(false);
         expect(subgraph.match(outer, inner).length).to.equal(1);
 
         // if the inner is transitionable, and the outer is not, then it should fail
         // if the outer is transitionable, but the inner is not, then it should pass (because why not?)
-        outer.vertices[o].match.options.transitionable = true;
+        outer.getMatch(o).options.transitionable = true;
         expect(subgraph.match(outer, inner).length).to.equal(1); // AC: if inner=false & outer=true, it can transition
         expect(subgraph.match(inner, outer).length).to.equal(0);
 
         // now with both transitionable, we need to test based on data (unit)
-        inner.vertices[i].match.options.transitionable = true;
+        inner.getMatch(i).options.transitionable = true;
 
         // neither have data, so it's okay
         expect(subgraph.match(outer, inner, true).length).to.equal(1);
@@ -930,27 +1338,26 @@ describe('subgraph', function() {
         // AC: this is because we want to be able to use replace on anything
         // if we know ahead of time that we are going to use combine, then we can fail now
         // but, this shouldn't ever happen in practice
-        outer.vertices[o].data = { value: number.value(10), unit: idea.id };
-        expect(outer.vertices[o].data).to.deep.equal({ value: number.value(10), unit: idea.id });
+        outer.setData(o, { value: number.value(10), unit: idea.id });
         expect(subgraph.match(outer, inner, true).length).to.equal(1);
         expect(subgraph.match(inner, outer, true).length).to.equal(1);
         expect(subgraph.match(outer, inner, false).length).to.equal(1);
         expect(subgraph.match(inner, outer, false).length).to.equal(1);
 
         // when the units match, then we should have a match... if the values match
-        inner.vertices[i].data = { value: number.value(10), unit: idea.id };
+        inner.setData(i, { value: number.value(10), unit: idea.id });
         expect(subgraph.match(outer, inner, true).length).to.equal(1);
         expect(subgraph.match(inner, outer, true).length).to.equal(1);
         expect(subgraph.match(outer, inner, false).length).to.equal(1);
         expect(subgraph.match(inner, outer, false).length).to.equal(1);
-        inner.vertices[i].data = { value: number.value(20), unit: idea.id };
+        inner.setData(i, { value: number.value(20), unit: idea.id });
         expect(subgraph.match(outer, inner, true).length).to.equal(1);
         expect(subgraph.match(inner, outer, true).length).to.equal(1);
         expect(subgraph.match(outer, inner, false).length).to.equal(0);
         expect(subgraph.match(inner, outer, false).length).to.equal(0);
 
         // and mismatched units should of course not match
-        inner.vertices[i].data = { value: number.value(0), unit: '0' };
+        inner.setData(i, { value: number.value(0), unit: '0' });
         expect(subgraph.match(outer, inner, true).length).to.equal(0);
         expect(subgraph.match(inner, outer, true).length).to.equal(0);
         expect(subgraph.match(outer, inner, false).length).to.equal(0);
@@ -980,23 +1387,23 @@ describe('subgraph', function() {
 
         // if inner is transitionable, then outer must be too
         // if inner is not transitionable, then outer doesn't matter
-        outer.vertices[o2].match.options.transitionable = true;
-        expect(outer.vertices[o2].match.options.transitionable).to.equal(true);
-        expect(outer.vertices[o3].match.options.transitionable).to.equal(false);
-        expect(inner.vertices[i].match.options.transitionable).to.equal(false);
+        outer.getMatch(o2).options.transitionable = true;
+        expect(outer.getMatch(o2).options.transitionable).to.equal(true);
+        expect(outer.getMatch(o3).options.transitionable).to.equal(false);
+        expect(inner.getMatch(i).options.transitionable).to.equal(false);
         expect(subgraph.match(outer, inner).length).to.equal(2);
-        inner.vertices[i].match.options.transitionable = true;
+        inner.getMatch(i).options.transitionable = true;
         expect(subgraph.match(outer, inner).length).to.equal(1);
 
         // if transitionable is true for both, the unit checking starts to get interesting
         // if units are not defined, then unitOnly must match (because I want to replace)
-        outer.vertices[o3].match.options.transitionable = true;
+        outer.getMatch(o3).options.transitionable = true;
         expect(subgraph.match(outer, inner).length).to.equal(2);
 
         // when we define units for both, now they must start matching
-        outer.vertices[o2].data = { value: number.value(10), unit: id1.id };
-        outer.vertices[o3].data = { value: number.value(10), unit: id2.id };
-        inner.vertices[i].data = { value: number.value(20), unit: id1.id };
+        outer.setData(o2, { value: number.value(10), unit: id1.id });
+        outer.setData(o3, { value: number.value(10), unit: id2.id });
+        inner.setData(i, { value: number.value(20), unit: id1.id });
         expect(subgraph.match(outer, inner, true).length).to.equal(1);
         expect(subgraph.match(outer, inner, false).length).to.equal(0);
       });
@@ -1128,9 +1535,13 @@ describe('subgraph', function() {
             prep.addVertex(subgraph.matcher.id, undefined, {matchRef:true});
           }).to.throw(Error);
         });
+
+        it.skip('matchRef against matcher.id');
       }); // end subgraphMatch
 
       it('edge case 1', function() {
+        // came about from lm-wumpus discreteActuators forward
+        //
         // two sets of nodes
         // root -> bool -> number
         //
@@ -1196,32 +1607,32 @@ describe('subgraph', function() {
 
         // now lets mess with the values a bit more
         b_num.update(number.cast({value: number.value(5), unit: '0'}));
-        outer.invalidateCache();
+        outer.deleteData();
         expect(subgraph.match(outer, inner)).to.deep.equal([]); // no specific matches
         checkSubgraphMatch(subgraph.match(outer, inner, true), outerKeys, innerKeys); // we do have matches by unit
-        inner.vertices[ib_num].match.options.transitionable = false;
+        inner.getMatch(ib_num).options.transitionable = false;
         expect(subgraph.match(outer, inner, true)).to.deep.equal([]); // unless we say the value isn't transitionable
 
         // back to our roots
         b_num.update(a_num.data());
-        inner.vertices[ib_num].match.options.transitionable = true;
-        outer.invalidateCache();
+        inner.getMatch(ib_num).options.transitionable = true;
+        outer.deleteData();
         checkSubgraphMatch(subgraph.match(outer, inner), outerKeys, innerKeys);
         checkSubgraphMatch(subgraph.match(outer, inner, true), outerKeys, innerKeys);
 
 
         // same thing with crt
         b_crt.update(discrete.cast({value: false, unit: discrete.definitions.list.boolean}));
-        outer.invalidateCache();
+        outer.deleteData();
         expect(subgraph.match(outer, inner)).to.deep.equal([]); // no specific matches
         checkSubgraphMatch(subgraph.match(outer, inner, true), outerKeys, innerKeys); // we do have matches by unit
-        inner.vertices[ib_crt].match.options.transitionable = false;
+        inner.getMatch(ib_crt).options.transitionable = false;
         expect(subgraph.match(outer, inner, true)).to.deep.equal([]); // unless we say the value isn't transitionable
 
         //// back to our roots
         //b_crt.update(a_crt.data());
-        //inner.vertices[ib_crt].match.options.transitionable = true;
-        //outer.invalidateCache();
+        //inner.getMatch(ib_crt).options.transitionable = true;
+        //outer.deleteData();
         //checkSubgraphMatch(subgraph.match(outer, inner), outerKeys, innerKeys);
         //checkSubgraphMatch(subgraph.match(outer, inner, true), outerKeys, innerKeys);
       });
@@ -1295,11 +1706,11 @@ describe('subgraph', function() {
       expect(subgraph.rewrite(sg, [{ vertex_id: e, replace_id: 0 }])).to.equal(undefined);
 
       // no data in vertex to transition
-      sg.vertices[e].match.options.transitionable = true;
+      sg.getMatch(e).options.transitionable = true;
       expect(subgraph.rewrite(sg, [{ vertex_id: e, replace: {thing:1} }])).to.equal(undefined);
 
       // replace_id with wrong units
-      sg.vertices[e].data = {value: 0, unit: 'not an id'};
+      sg.setData(e, {value: 0, unit: 'not an id'});
       expect(subgraph.rewrite(sg, [{ vertex_id: e, replace_id: w }])).to.equal(undefined);
     });
 
@@ -1309,24 +1720,24 @@ describe('subgraph', function() {
         expect(sg2).to.be.an.instanceOf(subgraph.Subgraph);
         expect(sg2).to.not.equal(sg);
         // update the new value
-        expect(sg.vertices[p]._data).to.equal(undefined);
-        expect(sg2.vertices[p].data).to.deep.equal(priceUpdate);
-        // don't update the id
-        expect(sg.vertices[p].idea.data()).to.deep.equal(priceData);
-        expect(sg2.vertices[p].idea.data()).to.deep.equal(priceData);
+        expect(sg.getData(p)).to.deep.equal(priceData);
+        expect(sg2.getData(p)).to.deep.equal(priceUpdate);
+        // don't update the idea
+        expect(sg.getIdea(p).data()).to.deep.equal(priceData);
+        expect(sg2.getIdea(p).data()).to.deep.equal(priceData);
 
         var sg3 = subgraph.rewrite(sg2, [{vertex_id: p, replace: priceUpdate2 }]);
         expect(sg3).to.be.an.instanceOf(subgraph.Subgraph);
         expect(sg3).to.not.equal(sg);
         expect(sg3).to.not.equal(sg2);
         // update the new value
-        expect(sg.vertices[p]._data).to.equal(undefined);
-        expect(sg2.vertices[p].data).to.deep.equal(priceUpdate);
-        expect(sg3.vertices[p].data).to.deep.equal(priceUpdate2);
-        // don't update the id
-        expect(sg.vertices[p].idea.data()).to.deep.equal(priceData);
-        expect(sg2.vertices[p].idea.data()).to.deep.equal(priceData);
-        expect(sg3.vertices[p].idea.data()).to.deep.equal(priceData);
+        expect(sg.getData(p)).to.deep.equal(priceData);
+        expect(sg2.getData(p)).to.deep.equal(priceUpdate);
+        expect(sg3.getData(p)).to.deep.equal(priceUpdate2);
+        // don't update the idea
+        expect(sg.getIdea(p).data()).to.deep.equal(priceData);
+        expect(sg2.getIdea(p).data()).to.deep.equal(priceData);
+        expect(sg3.getIdea(p).data()).to.deep.equal(priceData);
 
         // wumpus Data units don't match
         expect(subgraph.rewrite(sg, [{ vertex_id: p, replace: wumpusUpdate }])).to.equal(undefined);
@@ -1336,11 +1747,11 @@ describe('subgraph', function() {
         expect(sg4).to.be.an.instanceOf(subgraph.Subgraph);
         expect(sg4).to.not.equal(sg3);
         // update the new value
-        expect(sg3.vertices[p].data).to.equal(priceUpdate2);
-        expect(sg4.vertices[p].data).to.equal(anyUpdate);
-        // don't update the id
-        expect(sg3.vertices[p].idea.data()).to.deep.equal(priceData);
-        expect(sg4.vertices[p].idea.data()).to.deep.equal(priceData);
+        expect(sg3.getData(p)).to.deep.equal(priceUpdate2);
+        expect(sg4.getData(p)).to.deep.equal(anyUpdate);
+        // don't update the idea
+        expect(sg3.getIdea(p).data()).to.deep.equal(priceData);
+        expect(sg4.getIdea(p).data()).to.deep.equal(priceData);
       });
 
       it('replace discrete', function() {
@@ -1348,24 +1759,24 @@ describe('subgraph', function() {
         expect(sg2).to.be.an.instanceOf(subgraph.Subgraph);
         expect(sg2).to.not.equal(sg);
         // update the new value
-        expect(sg.vertices[w]._data).to.equal(undefined);
-        expect(sg2.vertices[w].data).to.deep.equal(wumpusUpdate);
-        // don't update the id
-        expect(sg.vertices[w].idea.data()).to.deep.equal(wumpusData);
-        expect(sg2.vertices[w].idea.data()).to.deep.equal(wumpusData);
+        expect(sg.getData(w)).to.deep.equal(wumpusData);
+        expect(sg2.getData(w)).to.deep.equal(wumpusUpdate);
+        // don't update the idea
+        expect(sg.getIdea(w).data()).to.deep.equal(wumpusData);
+        expect(sg2.getIdea(w).data()).to.deep.equal(wumpusData);
 
         var sg3 = subgraph.rewrite(sg2, [{vertex_id: w, replace: wumpusUpdate2 }]);
         expect(sg3).to.be.an.instanceOf(subgraph.Subgraph);
         expect(sg3).to.not.equal(sg);
         expect(sg3).to.not.equal(sg2);
         // update the new value
-        expect(sg.vertices[w]._data).to.equal(undefined);
-        expect(sg2.vertices[w].data).to.deep.equal(wumpusUpdate);
-        expect(sg3.vertices[w].data).to.deep.equal(wumpusUpdate2);
-        // don't update the id
-        expect(sg.vertices[w].idea.data()).to.deep.equal(wumpusData);
-        expect(sg2.vertices[w].idea.data()).to.deep.equal(wumpusData);
-        expect(sg3.vertices[w].idea.data()).to.deep.equal(wumpusData);
+        expect(sg.getData(w)).to.deep.equal(wumpusData);
+        expect(sg2.getData(w)).to.deep.equal(wumpusUpdate);
+        expect(sg3.getData(w)).to.deep.equal(wumpusUpdate2);
+        // don't update the idea
+        expect(sg.getIdea(w).data()).to.deep.equal(wumpusData);
+        expect(sg2.getIdea(w).data()).to.deep.equal(wumpusData);
+        expect(sg3.getIdea(w).data()).to.deep.equal(wumpusData);
 
         // price Data units don't match
         expect(subgraph.rewrite(sg, [{ vertex_id: w, replace: priceUpdate }])).to.equal(undefined);
@@ -1375,11 +1786,11 @@ describe('subgraph', function() {
         expect(sg4).to.be.an.instanceOf(subgraph.Subgraph);
         expect(sg4).to.not.equal(sg3);
         // update the new value
-        expect(sg3.vertices[w].data).to.deep.equal(wumpusUpdate2);
-        expect(sg4.vertices[w].data).to.deep.equal(anyUpdate);
-        // don't update the id
-        expect(sg3.vertices[w].idea.data()).to.deep.equal(wumpusData);
-        expect(sg4.vertices[w].idea.data()).to.deep.equal(wumpusData);
+        expect(sg3.getData(w)).to.deep.equal(wumpusUpdate2);
+        expect(sg4.getData(w)).to.deep.equal(anyUpdate);
+        // don't update the idea
+        expect(sg3.getIdea(w).data()).to.deep.equal(wumpusData);
+        expect(sg4.getIdea(w).data()).to.deep.equal(wumpusData);
       });
 
       it('replace anything', function() {
@@ -1387,31 +1798,31 @@ describe('subgraph', function() {
         expect(sg2).to.be.an.instanceOf(subgraph.Subgraph);
         expect(sg2).to.not.equal(sg);
         // update the new value
-        expect(sg.vertices[a]._data).to.equal(undefined);
-        expect(sg2.vertices[a].data).to.deep.equal(anyUpdate);
-        // don't update the id
-        expect(sg.vertices[a].idea.data()).to.deep.equal(anyData);
-        expect(sg2.vertices[a].idea.data()).to.deep.equal(anyData);
+        expect(sg.getData(a)).to.deep.equal(anyData);
+        expect(sg2.getData(a)).to.deep.equal(anyUpdate);
+        // don't update the idea
+        expect(sg.getIdea(a).data()).to.deep.equal(anyData);
+        expect(sg2.getIdea(a).data()).to.deep.equal(anyData);
 
         var sg3 = subgraph.rewrite(sg, [{vertex_id: a, replace: priceUpdate }]);
         expect(sg3).to.be.an.instanceOf(subgraph.Subgraph);
         expect(sg3).to.not.equal(sg);
         // update the new value
-        expect(sg.vertices[a]._data).to.equal(undefined);
-        expect(sg3.vertices[a].data).to.deep.equal(priceUpdate);
+        expect(sg.getData(a)).to.deep.equal(anyData);
+        expect(sg3.getData(a)).to.deep.equal(priceUpdate);
         // don't update the id
-        expect(sg.vertices[a].idea.data()).to.deep.equal(anyData);
-        expect(sg3.vertices[a].idea.data()).to.deep.equal(anyData);
+        expect(sg.getIdea(a).data()).to.deep.equal(anyData);
+        expect(sg3.getIdea(a).data()).to.deep.equal(anyData);
 
         var sg4 = subgraph.rewrite(sg, [{vertex_id: a, replace: wumpusUpdate }]);
         expect(sg4).to.be.an.instanceOf(subgraph.Subgraph);
         expect(sg4).to.not.equal(sg);
         // update the new value
-        expect(sg.vertices[a]._data).to.equal(undefined);
-        expect(sg4.vertices[a].data).to.deep.equal(wumpusUpdate);
-        // don't update the id
-        expect(sg.vertices[a].idea.data()).to.deep.equal(anyData);
-        expect(sg4.vertices[a].idea.data()).to.deep.equal(anyData);
+        expect(sg.getData(a)).to.deep.equal(anyData);
+        expect(sg4.getData(a)).to.deep.equal(wumpusUpdate);
+        // don't update the idea
+        expect(sg.getIdea(a).data()).to.deep.equal(anyData);
+        expect(sg4.getIdea(a).data()).to.deep.equal(anyData);
       });
 
       it('replace_id', function() {
@@ -1419,11 +1830,11 @@ describe('subgraph', function() {
         expect(sg2).to.be.an.instanceOf(subgraph.Subgraph);
         expect(sg2).to.not.equal(sg);
         // update the new value
-        expect(sg.vertices[w]._data).to.equal(undefined);
-        expect(sg2.vertices[w].data).to.deep.equal(wumpusUpdate);
-        // don't update the id
-        expect(sg.vertices[w].idea.data()).to.deep.equal(wumpusData);
-        expect(sg2.vertices[w].idea.data()).to.deep.equal(wumpusData);
+        expect(sg.getData(w)).to.deep.equal(wumpusData);
+        expect(sg2.getData(w)).to.deep.equal(wumpusUpdate);
+        // don't update the idea
+        expect(sg.getIdea(w).data()).to.deep.equal(wumpusData);
+        expect(sg2.getIdea(w).data()).to.deep.equal(wumpusData);
       });
 
       it('cycle discrete', function() {
@@ -1434,35 +1845,35 @@ describe('subgraph', function() {
         expect(sg2).to.be.an.instanceOf(subgraph.Subgraph);
         expect(sg2).to.not.equal(sg);
         // update the new value
-        expect(sg.vertices[w]._data).to.equal(undefined);
-        expect(sg2.vertices[w].data).to.deep.equal(currValue);
-        // don't update the id
-        expect(sg.vertices[w].idea.data()).to.deep.equal(wumpusData);
-        expect(sg2.vertices[w].idea.data()).to.deep.equal(wumpusData);
+        expect(sg.getData(w)).to.deep.equal(wumpusData);
+        expect(sg2.getData(w)).to.deep.equal(currValue);
+        // don't update the idea
+        expect(sg.getIdea(w).data()).to.deep.equal(wumpusData);
+        expect(sg2.getIdea(w).data()).to.deep.equal(wumpusData);
 
         var sg3 = subgraph.rewrite(sg2, [{vertex_id: w, cycle: { unit: indeterminate.id, value: 2 } }]);
         currValue.value = 'true';
         expect(sg3).to.be.an.instanceOf(subgraph.Subgraph);
         expect(sg3).to.not.equal(sg2);
-        expect(sg3.vertices[w].data).to.deep.equal(currValue);
+        expect(sg3.getData(w)).to.deep.equal(currValue);
 
         var sg4 = subgraph.rewrite(sg3, [{vertex_id: w, cycle: { unit: indeterminate.id, value: 3 } }]);
         expect(sg4).to.be.an.instanceOf(subgraph.Subgraph);
         expect(sg4).to.not.equal(sg3);
-        expect(sg4.vertices[w].data).to.deep.equal(currValue);
+        expect(sg4.getData(w)).to.deep.equal(currValue);
 
         var sg5 = subgraph.rewrite(sg4, [{vertex_id: w, cycle: { unit: indeterminate.id, value: -4 } }]);
         currValue.value = 'maybe';
         expect(sg5).to.be.an.instanceOf(subgraph.Subgraph);
         expect(sg5).to.not.equal(sg4);
-        expect(sg5.vertices[w].data).to.deep.equal(currValue);
+        expect(sg5.getData(w)).to.deep.equal(currValue);
 
-        // don't update the id
-        expect(sg.vertices[w].idea.data()).to.deep.equal(wumpusData);
-        expect(sg2.vertices[w].idea.data()).to.deep.equal(wumpusData);
-        expect(sg3.vertices[w].idea.data()).to.deep.equal(wumpusData);
-        expect(sg4.vertices[w].idea.data()).to.deep.equal(wumpusData);
-        expect(sg5.vertices[w].idea.data()).to.deep.equal(wumpusData);
+        // don't update the idea
+        expect(sg.getIdea(w).data()).to.deep.equal(wumpusData);
+        expect(sg2.getIdea(w).data()).to.deep.equal(wumpusData);
+        expect(sg3.getIdea(w).data()).to.deep.equal(wumpusData);
+        expect(sg4.getIdea(w).data()).to.deep.equal(wumpusData);
+        expect(sg5.getIdea(w).data()).to.deep.equal(wumpusData);
       });
 
       it('cycle number', function() {
@@ -1474,28 +1885,25 @@ describe('subgraph', function() {
         var sg2 = subgraph.rewrite(sg, [{vertex_id: p, combine: priceUpdate }]);
         expect(sg2).to.be.an.instanceOf(subgraph.Subgraph);
         expect(sg2).to.not.equal(sg);
-        expect(sg2.vertices[p]).to.not.equal(sg.vertices[p]);
         // update the new value
-        expect(sg.vertices[p]._data).to.equal(undefined);
-        expect(sg2.vertices[p].data).to.deep.equal({ type: 'lime_number', value: number.value(30), unit: money.id });
-        // don't update the id
-        expect(sg.vertices[p].idea.data()).to.deep.equal(priceData);
-        expect(sg2.vertices[p].idea.data()).to.deep.equal(priceData);
+        expect(sg.getData(p)).to.deep.equal(priceData);
+        expect(sg2.getData(p)).to.deep.equal({ type: 'lime_number', value: number.value(30), unit: money.id });
+        // don't update the idea
+        expect(sg.getIdea(p).data()).to.deep.equal(priceData);
+        expect(sg2.getIdea(p).data()).to.deep.equal(priceData);
 
         var sg3 = subgraph.rewrite(sg2, [{vertex_id: p, combine: priceUpdate2 }]);
         expect(sg3).to.be.an.instanceOf(subgraph.Subgraph);
         expect(sg3).to.not.equal(sg);
         expect(sg3).to.not.equal(sg2);
-        expect(sg3.vertices[p]).to.not.equal(sg2.vertices[p]);
-        expect(sg3.vertices[p].data).to.not.equal(sg2.vertices[p].data);
         // update the new value
-        expect(sg.vertices[p]._data).to.equal(undefined);
-        expect(sg2.vertices[p].data).to.deep.equal({ type: 'lime_number', value: number.value(30), unit: money.id });
-        expect(sg3.vertices[p].data).to.deep.equal({ type: 'lime_number', value: number.value(60), unit: money.id });
-        // don't update the id
-        expect(sg.vertices[p].idea.data()).to.deep.equal(priceData);
-        expect(sg2.vertices[p].idea.data()).to.deep.equal(priceData);
-        expect(sg3.vertices[p].idea.data()).to.deep.equal(priceData);
+        expect(sg.getData(p)).to.deep.equal(priceData);
+        expect(sg2.getData(p)).to.deep.equal({ type: 'lime_number', value: number.value(30), unit: money.id });
+        expect(sg3.getData(p)).to.deep.equal({ type: 'lime_number', value: number.value(60), unit: money.id });
+        // don't update the idea
+        expect(sg.getIdea(p).data()).to.deep.equal(priceData);
+        expect(sg2.getIdea(p).data()).to.deep.equal(priceData);
+        expect(sg3.getIdea(p).data()).to.deep.equal(priceData);
 
         // this should fail for a number of things
         // but we can't combine discrete date or any data
@@ -1521,29 +1929,29 @@ describe('subgraph', function() {
       var sg2 = subgraph.rewrite(sg, [{vertex_id: p, replace: priceUpdate }], true);
       expect(sg2).to.be.an.instanceOf(subgraph.Subgraph);
       expect(sg2).to.equal(sg);
-      expect(sg.vertices[p].data).to.deep.equal(priceUpdate);
-      expect(sg.vertices[p].idea.data()).to.deep.equal(priceUpdate);
+      expect(sg.getData(p)).to.deep.equal(priceUpdate);
+      expect(sg.getIdea(p).data()).to.deep.equal(priceUpdate);
 
       // replace discrete
       sg2 = subgraph.rewrite(sg, [{vertex_id: w, replace: wumpusUpdate2 }], true);
       expect(sg2).to.be.an.instanceOf(subgraph.Subgraph);
       expect(sg2).to.equal(sg);
-      expect(sg.vertices[w].data).to.deep.equal(wumpusUpdate2);
-      expect(sg.vertices[w].idea.data()).to.deep.equal(wumpusUpdate2);
+      expect(sg.getData(w)).to.deep.equal(wumpusUpdate2);
+      expect(sg.getIdea(w).data()).to.deep.equal(wumpusUpdate2);
 
       // replace_id
       sg2 = subgraph.rewrite(sg, [{vertex_id: w, replace_id: wu }], true);
       expect(sg2).to.be.an.instanceOf(subgraph.Subgraph);
       expect(sg2).to.equal(sg);
-      expect(sg.vertices[w].data).to.deep.equal(wumpusUpdate);
-      expect(sg.vertices[w].idea.data()).to.deep.equal(wumpusUpdate);
+      expect(sg.getData(w)).to.deep.equal(wumpusUpdate);
+      expect(sg.getIdea(w).data()).to.deep.equal(wumpusUpdate);
 
       // cycle discrete
       sg2 = subgraph.rewrite(sg, [{vertex_id: w, cycle: { unit: indeterminate.id, value: 1 } }], true);
       expect(sg2).to.be.an.instanceOf(subgraph.Subgraph);
       expect(sg2).to.equal(sg);
-      expect(sg.vertices[w].data).to.deep.equal({type: 'lime_discrete', unit: indeterminate.id, value: 'maybe'});
-      expect(sg.vertices[w].idea.data()).to.deep.equal({type: 'lime_discrete', unit: indeterminate.id, value: 'maybe'});
+      expect(sg.getData(w)).to.deep.equal({type: 'lime_discrete', unit: indeterminate.id, value: 'maybe'});
+      expect(sg.getIdea(w).data()).to.deep.equal({type: 'lime_discrete', unit: indeterminate.id, value: 'maybe'});
 
       // cycle number
       sg2 = subgraph.rewrite(sg, [{vertex_id: p, cycle: { unit: money.id, value: 1 } }], true);
@@ -1554,8 +1962,8 @@ describe('subgraph', function() {
       expect(sg2).to.be.an.instanceOf(subgraph.Subgraph);
       expect(sg2).to.equal(sg);
       // note: our previous update (replace) has taken effect; we are combining priceUpdate twice
-      expect(sg.vertices[p].data).to.deep.equal({ type: 'lime_number', value: number.value(40), unit: money.id });
-      expect(sg2.vertices[p].idea.data()).to.deep.equal({ type: 'lime_number', value: number.value(40), unit: money.id });
+      expect(sg.getData(p)).to.deep.equal({ type: 'lime_number', value: number.value(40), unit: money.id });
+      expect(sg2.getIdea(p).data()).to.deep.equal({ type: 'lime_number', value: number.value(40), unit: money.id });
 
       // combine discrete
       sg2 = subgraph.rewrite(sg, [{vertex_id: w, combine: wumpusData }], true);

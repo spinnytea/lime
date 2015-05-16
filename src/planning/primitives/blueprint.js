@@ -141,41 +141,42 @@ BlueprintState.prototype.distance = function(to) {
   result.forEach(function(vertexMap) {
     var cost = 0;
     _.forEach(vertexMap, function(outer, inner) {
-      var o = that.state.vertices[outer];
-      var i = to.state.vertices[inner];
+      var oMatch = that.state.getMatch(outer);
+      var iMatch = to.state.getMatch(inner);
 
       // if the inner is transitionable,
       // but the outer is not,
       // then this is bad
-      if(i.match.options.transitionable && !o.match.options.transitionable) {
+      if(iMatch.options.transitionable && !oMatch.options.transitionable) {
         cost += DISTANCE_ERROR;
         return false;
       }
 
-      var i_data = i.data;
+      var o_data = that.state.getData(outer);
+      var i_data = to.state.getData(inner);
       if(i_data === undefined) {
         // if the data is not cached, then find it from the match ref
-        if(i.match.options.matchRef)
-          i_data = that.state.vertices[vertexMap[i.match.data]].data;
+        if(iMatch.options.matchRef)
+          i_data = that.state.getData(vertexMap[iMatch.data]);
 
         // used when looking for a goal
         // TODO review this case; is this correct?
         // - are there others? (basically, how else is the data used by subgraphs)
         // - specifically, review blueprints
-        else if(!i.idea && !to.concrete)
-          i_data = i.match.data;
+        else if(!to.state.getIdea(inner) && !to.concrete)
+          i_data = iMatch.data;
       }
 
       // check the values
       // TODO should all these ifs be based on matcher, rather than datatype?
       var diff = 0;
-      if (i.match.matcher === subgraph.matcher.similar) {
+      if (iMatch.matcher === subgraph.matcher.similar) {
         // if we are doing a similar match, then we don't have the data to compare against
         // the outer element is by necessity the value we are looking for
         // the distance is simply 0 (for this node)
         diff = 0;
-      } else if(number.isNumber(o.data)) {
-        diff = number.difference(o.data, i_data);
+      } else if(number.isNumber(o_data)) {
+        diff = number.difference(o_data, i_data);
         if(diff === undefined) {
           cost += DISTANCE_ERROR;
           // no need to check other vertices in this map
@@ -186,8 +187,8 @@ BlueprintState.prototype.distance = function(to) {
           cost += DISTANCE_ERROR;
           // no need to check other vertices in this map
           return false;
-      } else if(discrete.isDiscrete(o.data)) {
-        diff = discrete.difference(o.data, i_data);
+      } else if(discrete.isDiscrete(o_data)) {
+        diff = discrete.difference(o_data, i_data);
         if(diff === undefined) {
           cost += DISTANCE_ERROR;
           // no need to check other vertices in this map
@@ -199,11 +200,11 @@ BlueprintState.prototype.distance = function(to) {
           // no need to check other vertices in this map
           return false;
       } else {
-        if(!_.isEqual(o.data, i_data))
+        if(!_.isEqual(o_data, i_data))
           diff = DISTANCE_DEFAULT;
       }
 
-      if(!o.match.options.transitionable && diff > 0) {
+      if(!oMatch.options.transitionable && diff > 0) {
         // we can't change the outer value
         // but the outer value doesn't match
         cost += DISTANCE_ERROR;
@@ -279,6 +280,6 @@ exports.list = function(contexts) {
   // FIXME can I think of any situation where I want the ID and not the blueprint?
   // - why is this not returning blueprint.load(result.idea)?
   return matches.map(function(m) {
-    return m.vertices[result].idea;
+    return m.getIdea(result);
   });
 };
