@@ -4,7 +4,13 @@ var expect = require('chai').expect;
 
 var actuator = require('../../src/planning/actuator');
 var blueprint = require('../../src/planning/primitives/blueprint');
+var ideas = require('../../src/database/ideas');
+var links = require('../../src/database/links');
+var number = require('../../src/planning/primitives/number');
 var stub = require('../../src/planning/stub');
+var subgraph = require('../../src/database/subgraph');
+
+var tools = require('../testingTools');
 
 describe('stub', function() {
   it('init', function() {
@@ -14,9 +20,34 @@ describe('stub', function() {
   });
 
   describe('Action', function() {
-    var s;
+    var apple, money, price; // our idea graph is about .. money
+    var s, s_p, s_a; // an action that requires a price
+    var bs, bs_a, bs_p; // a blueprint with a state with a price
     before(function() {
+      // init some data
+      // we have a price (a number with a unit)
+      apple = tools.ideas.create();
+      money = tools.ideas.create();
+      price = tools.ideas.create({ value: number.value(10), unit: money.id });
+      apple.link(links.list.thought_description, price);
+
       s = new stub.Action();
+      s_p = s.requirements.addVertex(subgraph.matcher.number, { value: number.value(0, Infinity), unit: money.id }, {transitionable:true});
+      s_a = s.requirements.addVertex(subgraph.matcher.id, apple);
+      s.requirements.addEdge(s_a, links.list.thought_description, s_p);
+      s.transitions.push({ vertex_id: s_p, combine: { value: number.value(20), unit: money.id } });
+
+      // create a state
+      // our state is a price of 10
+      // and something else random
+      var sg = new subgraph.Subgraph();
+      sg.addVertex(subgraph.matcher.id, money); // this is just to make our tests more valid (see bs_p !== a_p)
+      bs_a = sg.addVertex(subgraph.matcher.id, apple);
+      bs_p = sg.addVertex(subgraph.matcher.id, price, {transitionable:true});
+      sg.addEdge(bs_a, links.list.thought_description, bs_p);
+      expect(subgraph.search(sg)).to.deep.equal([sg]);
+      expect(sg.concrete).to.equal(true);
+      bs = new blueprint.State(sg, [s]);
     });
 
     it('runCost', function() {
@@ -48,6 +79,32 @@ describe('stub', function() {
       expect(s.apply).to.equal(actuator.Action.prototype.apply);
     });
 
-    it.skip('save & load');
+    it('save & load', function() {
+      // before an action is saved, there is no idea
+      expect(s.idea).to.equal(undefined);
+      s.save();
+      expect(s.idea).to.not.equal(undefined);
+      // if we save again, it should use the same idea
+      var id = s.idea;
+      s.save();
+      expect(s.idea).to.equal(id);
+
+      // this is important, we need to serialize the object
+      ideas.close(id);
+
+      var loaded = blueprint.load(id);
+      expect(loaded).to.be.an.instanceOf(stub.Action);
+
+      // this is the ultimate test of the load
+      expect(loaded).to.deep.equal(s);
+      // sans using the actuator in battle
+      var results = loaded.tryTransition(bs);
+      expect(results.length).to.equal(1);
+      expect(price.data().value).to.deep.equal(number.value(10));
+      var bs_next = loaded.apply(bs, results[0]);
+      expect(bs_next.state.getData(bs_p).value).to.deep.equal(number.value(30));
+
+      tools.ideas.clean(id);
+    });
   }); // end Action
 }); // end stub
