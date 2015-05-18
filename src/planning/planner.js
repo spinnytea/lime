@@ -1,7 +1,9 @@
 'use strict';
 var _ = require('lodash');
 var astar = require('./algorithms/astar');
+var blueprint = require('./primitives/blueprint');
 var serialplan = require('./serialplan');
+var stub = require('./stub');
 
 // create a plan
 // @param start: blueprint.State
@@ -41,6 +43,25 @@ function createSingle(start, goal) {
     sp.requirements = start.state;
     return { action: sp, state: start };
   }
+
+  path.actions = path.actions.map(function(a, idx) {
+    if(a instanceof stub.Action) {
+      // re-plan this step, without the current stub
+      var curr_start = new blueprint.State(
+        path.states[idx].state,
+        start.availableActions.filter(function(s) { return s !== a; })
+      );
+      // available actions don't matter for a goal
+      var curr_goal = new blueprint.State(path.states[idx+1].state, []);
+
+      return createSingle(curr_start, curr_goal).action;
+    }
+    return a;
+  });
+  // after we've solved for stubs, we need to make sure that all of the actions check out
+  // if one of them doesn't work, then the whole plan doesn't work
+  if(path.actions.some(function(a) { return a === undefined; }))
+    return { action: undefined, state: undefined };
 
   if(path.actions.length === 1)
     return { action: path.actions[0], state: path.last };

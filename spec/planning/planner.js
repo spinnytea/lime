@@ -1,6 +1,7 @@
 'use strict';
 /* global describe, it, before, beforeEach */
 var expect = require('chai').expect;
+var astar = require('../../src/planning/algorithms/astar');
 var actuator = require('../../src/planning/actuator');
 var blueprint = require('../../src/planning/primitives/blueprint');
 var config = require('../../config');
@@ -8,6 +9,7 @@ var links = require('../../src/database/links');
 var number = require('../../src/planning/primitives/number');
 var planner = require('../../src/planning/planner');
 var serialplan = require('../../src/planning/serialplan');
+var stub = require('../../src/planning/stub');
 var subgraph = require('../../src/database/subgraph');
 var tools = require('../testingTools');
 
@@ -20,6 +22,7 @@ describe('planner', function() {
   describe('create', function() {
     var count;
     var a, a_c, actionImplCount;
+    var s;
     var start, state_count, goal;
     before(function() {
       // our state, just a simple object with a value of 0
@@ -46,6 +49,15 @@ describe('planner', function() {
       actionImplCount = 0;
       actuator.actions.serialplan_count_test = function() { actionImplCount++; };
       a.action = 'serialplan_count_test';
+
+      s = new stub.Action();
+      var s_c = s.requirements.addVertex(subgraph.matcher.number, { value: number.value(0, 10), unit: count_unit.id }, {transitionable:true});
+      s.requirements.addEdge(
+        s.requirements.addVertex(subgraph.matcher.id, athing),
+        links.list.thought_description,
+        s_c
+      );
+      s.transitions.push({ vertex_id: s_c, combine: { value: number.value(5), unit: count_unit.id } });
 
 
       // the state is based on concrete ideas
@@ -80,28 +92,29 @@ describe('planner', function() {
       actionImplCount = 0;
       start.state.deleteData();
       goal.state.getData(state_count).value = number.value(5);
+      start.availableActions = [a];
     });
 
     it('single', function() {
       // standard case, success
-      var sp = planner.create(start, goal);
-      expect(sp).to.be.an.instanceOf(serialplan.Action);
-      expect(sp.plans.length).to.equal(5);
-      expect(sp.runCost()).to.equal(5);
+      var plan = planner.create(start, goal);
+      expect(plan).to.be.an.instanceOf(serialplan.Action);
+      expect(plan.plans.length).to.equal(5);
+      expect(plan.runCost()).to.equal(5);
 
       // there is no way to create a plan to get here
       // since we know this test can't finish, lets minimize the depth it has to search for our test
       var before = config.settings.astar_max_paths;
       config.settings.astar_max_paths = 10;
-      sp = planner.create(goal, start);
-      expect(sp).to.equal(undefined);
+      plan = planner.create(goal, start);
+      expect(plan).to.equal(undefined);
       config.settings.astar_max_paths = before;
 
       // only one step away
       goal.state.getData(state_count).value = number.value(1);
-      sp = planner.create(start, goal);
-      expect(sp).to.be.an.instanceOf(actuator.Action);
-      expect(sp).to.equal(a);
+      plan = planner.create(start, goal);
+      expect(plan).to.be.an.instanceOf(actuator.Action);
+      expect(plan).to.equal(a);
 
 
       // right now, it creates a serial plan with no actions
@@ -113,15 +126,15 @@ describe('planner', function() {
       // we should check to see if we even need to make a plan before we try to make one
       // but if we do (for some unforseen reason), I don't want to return undefined, nor throw an exception, nor even make an impossibly large plan
       // you are already at the goal
-      // if you are using SP to get no where, well, it's better to just increase the runCost
+      // if you are using a serialplan to get no where, well, it's better to just increase the runCost
       // searching for a plan should exclude this because it's a waste (but not a blocker)
       //
       // as you can probably tell, there isn't yet a definitive answer
-      sp = planner.create(start, start);
-      expect(sp).to.be.an.instanceOf(serialplan.Action);
-      expect(sp.plans.length).to.equal(0);
-      expect(sp.runCost()).to.equal(1);
-      expect(sp.cost(start, goal)).to.equal(2); // start:0 goal:1 + runCost()
+      plan = planner.create(start, start);
+      expect(plan).to.be.an.instanceOf(serialplan.Action);
+      expect(plan.plans.length).to.equal(0);
+      expect(plan.runCost()).to.equal(1);
+      expect(plan.cost(start, goal)).to.equal(2); // start:0 goal:1 + runCost()
     });
 
     // XXX this is slated for deletion; it will probably be remove when we have a tiered plan
@@ -133,49 +146,49 @@ describe('planner', function() {
       });
 
       it('standard list of goals', function() {
-        var sp = planner.create(start, [goal, goal2]);
-        expect(sp).to.be.an.instanceOf(serialplan.Action);
-        expect(sp.plans.length).to.equal(2);
-        expect(sp.runCost()).to.equal(10);
-        expect(sp.cost(start, goal2)).to.equal(20);
+        var plan = planner.create(start, [goal, goal2]);
+        expect(plan).to.be.an.instanceOf(serialplan.Action);
+        expect(plan.plans.length).to.equal(2);
+        expect(plan.runCost()).to.equal(10);
+        expect(plan.cost(start, goal2)).to.equal(20);
 
-        var result = sp.tryTransition(start);
+        var result = plan.tryTransition(start);
         expect(result.length).to.equal(1); // one plan that we can perform
         expect(result[0].length).to.equal(2); // serial plan of length 2 needs 2 glues
         expect(result[0][0].length).to.equal(5); // this sub plan has 5 steps
         expect(result[0][1].length).to.equal(5); // this sub plan has 5 steps
 
         expect(count.data().value).to.deep.equal(number.value(0));
-        sp.runBlueprint(start, result[0]);
+        plan.runBlueprint(start, result[0]);
         expect(count.data().value).to.deep.equal(number.value(10));
       });
 
       it('same goals', function() {
-        var sp = planner.create(start, [goal, goal]);
-        expect(sp).to.be.an.instanceOf(serialplan.Action);
-        expect(sp.plans.length).to.equal(2);
-        expect(sp.runCost()).to.equal(6);
-        expect(sp.cost(start, goal)).to.equal(11);
+        var plan = planner.create(start, [goal, goal]);
+        expect(plan).to.be.an.instanceOf(serialplan.Action);
+        expect(plan.plans.length).to.equal(2);
+        expect(plan.runCost()).to.equal(6);
+        expect(plan.cost(start, goal)).to.equal(11);
 
-        var result = sp.tryTransition(start);
+        var result = plan.tryTransition(start);
         expect(result.length).to.equal(1); // one plan that we can perform
         expect(result[0].length).to.equal(2);
         expect(result[0][0].length).to.equal(5);
         expect(result[0][1].length).to.equal(0);
 
         expect(count.data().value).to.deep.equal(number.value(0));
-        sp.runBlueprint(start, result[0]);
+        plan.runBlueprint(start, result[0]);
         expect(count.data().value).to.deep.equal(number.value(5));
       });
 
       it('[goal, goal, goal2]', function() {
-        var sp = planner.create(start, [goal, goal, goal2]);
-        expect(sp).to.be.an.instanceOf(serialplan.Action);
-        expect(sp.plans.length).to.equal(3);
-        expect(sp.runCost()).to.equal(11);
-        expect(sp.cost(start, goal)).to.equal(16);
+        var plan = planner.create(start, [goal, goal, goal2]);
+        expect(plan).to.be.an.instanceOf(serialplan.Action);
+        expect(plan.plans.length).to.equal(3);
+        expect(plan.runCost()).to.equal(11);
+        expect(plan.cost(start, goal)).to.equal(16);
 
-        var result = sp.tryTransition(start);
+        var result = plan.tryTransition(start);
         expect(result.length).to.equal(1);
         expect(result[0].length).to.equal(3);
         expect(result[0][0].length).to.equal(5);
@@ -183,49 +196,49 @@ describe('planner', function() {
         expect(result[0][2].length).to.equal(5);
 
         expect(count.data().value).to.deep.equal(number.value(0));
-        sp.runBlueprint(start, result[0]);
+        plan.runBlueprint(start, result[0]);
         expect(count.data().value).to.deep.equal(number.value(10));
       });
 
       it('unwrap the single element', function() {
-        var sp = planner.create(start, [goal]);
-        expect(sp).to.be.an.instanceOf(serialplan.Action);
-        expect(sp.plans.length).to.equal(5);
-        expect(sp.runCost()).to.equal(5);
-        expect(sp.cost(start, goal)).to.equal(10);
+        var plan = planner.create(start, [goal]);
+        expect(plan).to.be.an.instanceOf(serialplan.Action);
+        expect(plan.plans.length).to.equal(5);
+        expect(plan.runCost()).to.equal(5);
+        expect(plan.cost(start, goal)).to.equal(10);
 
-        var result = sp.tryTransition(start);
+        var result = plan.tryTransition(start);
         expect(result.length).to.equal(1); // one plan that we can perform
         expect(result[0].length).to.equal(5); // serial plan with 5 steps
 
         expect(count.data().value).to.deep.equal(number.value(0));
-        sp.runBlueprint(start, result[0]);
+        plan.runBlueprint(start, result[0]);
         expect(count.data().value).to.deep.equal(number.value(5));
       });
 
       it('cannot get to plans', function() {
         var before = config.settings.astar_max_paths;
         config.settings.astar_max_paths = 10;
-        var sp = planner.create(start, [goal, goal2, goal]);
-        expect(sp).to.be.equal(undefined);
+        var plan = planner.create(start, [goal, goal2, goal]);
+        expect(plan).to.be.equal(undefined);
         config.settings.astar_max_paths = before;
       });
 
       it('multiple inline goals (convenience)', function() {
-        var sp = planner.create(start, goal, goal2);
-        expect(sp).to.be.an.instanceOf(serialplan.Action);
-        expect(sp.plans.length).to.equal(2);
-        expect(sp.runCost()).to.equal(10);
-        expect(sp.cost(start, goal2)).to.equal(20);
+        var plan = planner.create(start, goal, goal2);
+        expect(plan).to.be.an.instanceOf(serialplan.Action);
+        expect(plan.plans.length).to.equal(2);
+        expect(plan.runCost()).to.equal(10);
+        expect(plan.cost(start, goal2)).to.equal(20);
 
-        var result = sp.tryTransition(start);
+        var result = plan.tryTransition(start);
         expect(result.length).to.equal(1); // one plan that we can perform
         expect(result[0].length).to.equal(2); // serial plan of length 2 needs 2 glues
         expect(result[0][0].length).to.equal(5); // this sub plan has 5 steps
         expect(result[0][1].length).to.equal(5); // this sub plan has 5 steps
 
         expect(count.data().value).to.deep.equal(number.value(0));
-        sp.runBlueprint(start, result[0]);
+        plan.runBlueprint(start, result[0]);
         expect(count.data().value).to.deep.equal(number.value(10));
       });
     }); // end array
@@ -239,6 +252,43 @@ describe('planner', function() {
       expect(planner.create(start, undefined)).to.equal(undefined);
       expect(planner.create(undefined, goal)).to.equal(undefined);
       expect(planner.create(undefined, undefined, goal)).to.equal(undefined);
+    });
+
+    it('with stubs', function() {
+      start.availableActions.push(s);
+      goal.state.getData(state_count).value = number.value(10);
+
+      // if we try to find a path using astar, then to actions should contain stubs
+      var path = astar.search(start, goal);
+      expect(path).to.not.equal(undefined);
+      expect(path.actions.length).to.equal(2);
+      expect(path.actions[0]).to.be.an.instanceOf(stub.Action);
+      expect(path.actions[1]).to.be.an.instanceOf(stub.Action);
+      expect(path.actions[1]).to.not.be.an.instanceOf(actuator.Action);
+
+      // but, if we use our super fancy planner, then it will solve the stubs for us
+      var plan = planner.create(start, goal);
+      expect(plan).to.be.an.instanceOf(serialplan.Action);
+      expect(plan.plans.length).to.equal(2);
+      expect(plan.plans[0]).to.be.an.instanceOf(serialplan.Action);
+      expect(plan.plans[0].plans.length).to.equal(5);
+      expect(plan.plans[0].plans[1]).to.be.an.instanceOf(actuator.Action);
+      expect(plan.plans[1]).to.be.an.instanceOf(serialplan.Action);
+      expect(plan.plans[1].plans.length).to.equal(5);
+      expect(plan.plans[1].plans[1]).to.be.an.instanceOf(actuator.Action);
+    });
+
+    it('stub failure', function() {
+      goal.state.getData(state_count).value = number.value(10);
+
+      // just to verify our test
+      // we can create a plan with start and goal
+      expect(planner.create(start, goal)).to.not.equal(undefined);
+
+      // now, if our start only has stubs
+      // then our plan comes back as undefined
+      start.availableActions = [s];
+      expect(planner.create(start, goal)).to.equal(undefined);
     });
 
     // is there a way that we can determine that a solution is unreachable without running astar to oblivion?
