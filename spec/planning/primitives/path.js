@@ -37,7 +37,7 @@ describe('path',  function() {
 
     it('apply', function() {
       var before = _.cloneDeep(fourB.numbers);
-      var action = fourB.actions()[1];
+      var action = fourB.actions()[1].action;
       expect(action.dir).to.equal('right');
 
       // solve the puzzle
@@ -98,8 +98,8 @@ describe('path',  function() {
       expect(fourA.actions().length).to.equal(2);
       expect(sixB.actions().length).to.equal(3);
 
-      expect(_.pluck(fourA.actions(), 'dir')).to.deep.equal(['up', 'left']);
-      expect(_.pluck(sixB.actions(), 'dir')).to.deep.equal(['up', 'down', 'right']);
+      expect(fourA.actions().map(function(a) { return a.action.dir; })).to.deep.equal(['up', 'left']);
+      expect(sixB.actions().map(function(a) { return a.action.dir; })).to.deep.equal(['up', 'down', 'right']);
     });
 
     it('matches', function() {
@@ -116,8 +116,8 @@ describe('path',  function() {
 
   describe('Path', function() {
     it('constructor', function() {
-      var action = fourB.actions()[1];
-      var path = new Path.Path([fourB, fourG], [action], fourG);
+      var action = fourB.actions()[1].action;
+      var path = new Path.Path([fourB, fourG], [action], [undefined], fourG);
 
       expect(path.states).to.deep.equal([fourB, fourG]);
       expect(path.actions).to.deep.equal([action]);
@@ -142,7 +142,7 @@ describe('path',  function() {
       expect(path.cost).to.equal(8);
       expect(path.distFromGoal).to.equal(0);
 
-      path = new Path.Path([start], [], goal);
+      path = new Path.Path([start], [], [], goal);
       expect(path.cost).to.equal(0); // we didn't do anything yet
       expect(path.distFromGoal).to.equal(10);
       expect(start.distance(goal)).to.equal(10); // how many things are out of place and by how far
@@ -152,13 +152,12 @@ describe('path',  function() {
     it('add', function() {
       // prep
       var states = [fourB, fourG];
-      var right = fourB.actions()[1];
-      var left = fourG.actions()[1];
-      var actions = [right];
-      var path = new Path.Path(states, actions, fourG);
+      var right = fourB.actions()[1].action;
+      var left = fourG.actions()[1].action;
+      var path = new Path.Path(states, [right], [undefined], fourG);
 
       // action
-      var next = path.add(fourB, left);
+      var next = path.add(fourB, left, undefined);
 
       // tests
       expect(next).to.not.equal(path);

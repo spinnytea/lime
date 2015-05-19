@@ -4,6 +4,7 @@ var astar = require('./algorithms/astar');
 var blueprint = require('./primitives/blueprint');
 var serialplan = require('./serialplan');
 var stub = require('./stub');
+var subgraph = require('../database/subgraph');
 
 // create a plan
 // @param start: blueprint.State
@@ -44,6 +45,9 @@ function createSingle(start, goal) {
     return { action: sp, state: start };
   }
 
+  // TODO this doesn't make sense as actions.map; it updates state, too
+  // TODO this only works when either ALL actions are stubs, or NO actions are stubs
+  // - e.g. lm-wumpus: stub -> right -> stub ~ this doesn't make sense, because we don't know our direction after each stub
   path.actions = path.actions.map(function(a, idx) {
     if(a instanceof stub.Action) {
       // re-plan this step, without the current stub
@@ -52,9 +56,12 @@ function createSingle(start, goal) {
         start.availableActions.filter(function(s) { return s !== a; })
       );
       // available actions don't matter for a goal
-      var curr_goal = new blueprint.State(path.states[idx+1].state, []);
+      var goal_state = subgraph.createGoal(path.states[idx+1].state, path.actions[idx].requirements, path.glues[idx]);
+      var curr_goal = new blueprint.State(goal_state, []);
 
-      return createSingle(curr_start, curr_goal).action;
+      var result = createSingle(curr_start, curr_goal);
+      path.states[idx+1].state = result.state.state;
+      return result.action;
     }
     return a;
   });

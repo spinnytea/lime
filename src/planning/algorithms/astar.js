@@ -28,17 +28,9 @@ units.frontier = function() {
 units.step = function(path, frontier) {
   var nextActions = path.last.actions();
   nextActions.forEach(function(next) {
-    if(next.action && next.glue) {
-      // path for blueprints
-      // TODO remove action/glue from the return
-      // - incorporate glue into the action (this means making a copy of the actions)
-      var p = path.add(next.action.apply(path.last, next.glue), next.action);
-      if(p.cost + p.distFromGoal !== Infinity)
-        frontier.enq(p);
-    } else {
-      // vanilla path
-      frontier.enq(path.add(next.apply(path.last), next));
-    }
+    var p = path.add(next.action.apply(path.last, next.glue), next.action, next.glue);
+    if(p.cost + p.distFromGoal !== Infinity)
+      frontier.enq(p);
   });
 };
 
@@ -49,7 +41,7 @@ units.step = function(path, frontier) {
 exports.search = function(start, goal) {
   // the current set of paths
   var frontier = units.frontier();
-  frontier.enq(new Path.Path([start], [], goal));
+  frontier.enq(new Path.Path([start], [], [], goal));
 
   // how many paths have we compared to the goal
   // (used to end early if we don't find anything)

@@ -88,6 +88,10 @@ NumberSlideState.prototype.actions = function() {
       if(x < that.numbers[y].length-1)
         that._actions.push(new NumberSlideAction(DIRECTIONS.right));
     });
+
+    this._actions = this._actions.map(function(a) {
+      return { action: a, glue: undefined };
+    });
   }
   return this._actions;
 };

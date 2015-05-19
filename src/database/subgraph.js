@@ -905,3 +905,13 @@ exports.rewrite = function(subgraph, transitions, actual) {
 
   return subgraph;
 }; // end rewrite
+
+// inner and outer have already been subgraph.match, and vertexMap is the mapping
+exports.createGoal = function(outer, inner, vertexMap) {
+  var goal = inner.copy();
+  _.forEach(vertexMap, function(o_id, i_id) {
+    goal._idea[i_id] = outer.getIdea(o_id);
+    goal.setData(i_id, outer.getData(o_id));
+  });
+  return goal;
+};

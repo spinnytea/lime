@@ -291,6 +291,8 @@ describe('planner', function() {
       expect(planner.create(start, goal)).to.equal(undefined);
     });
 
+    it.skip('mismatch between stubs and actuators');
+
     // is there a way that we can determine that a solution is unreachable without running astar to oblivion?
     // something like:
     //  'a value needs to change, and none of our plans will change that unit'

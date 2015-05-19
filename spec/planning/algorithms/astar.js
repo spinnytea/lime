@@ -37,7 +37,7 @@ describe('astar', function() {
     it('first!', function() {
       var goal = new NumberSlide.State([[1, 2], [3, 0]]);
       var start = new NumberSlide.State([[1, 2], [0, 3]]);
-      var right = start.actions()[1];
+      var right = start.actions()[1].action;
 
       var path = astar.search(start, goal);
 
