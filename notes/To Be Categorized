@@ -50,5 +50,16 @@ AStar
   do I need to come up with some kind of query language for it?
   is it enough to subtract the plans from BlueprintState.availablePlans before we start astar.search?
 
+Planning Backwards
+  Right now, we have requirements --transition-> ( ??? )
+  This allows us to take actions in the world, and thus plan by going forward
+  If we had ( ??? ) <-inverse_transition-- goal_requirements
+  This would allow us to plan starting with the goal and move backwards
+  Generally speaking, planning FROM the goal and FINDING the start has a much lower branching factor
+  --
+  I did this in the preliminary java version, but didn't carry it over
+  the matching options (matchref) and improved transitions make this hard to infer for free
+  which is why I didn't do this at first
+  it's almost like we need to create a second matcher/transition for the other direction
 
 http://www.tinkerpop.com/

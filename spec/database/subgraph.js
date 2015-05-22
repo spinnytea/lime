@@ -255,7 +255,29 @@ describe('subgraph', function() {
 
       it.skip('search');
 
-      it.skip('flatten');
+      it.skip('flatten', function() {
+        // a function that takes the nested nature of the copy/subcopies and flattens a subgraph into it's own unparented copy
+      });
+
+      it.skip('of _idea', function() {
+        // is this even worth it?
+        // the only time this matters is during searching, and then it's just a LONG list of single matches
+        // which then requires flattening
+      });
+
+      it.skip('of _data', function() {
+        // do a lazy copy of the data, also
+        // we should also return a _.copy(_data) at first (or forever), and make a strict rule about manipulating the result
+        // basically, you can't do getData().value = 10, you need to do:
+        // > d = getData()
+        // > d.value = 10;
+        // > setData(d)
+        //
+        // during planning this will become densely packed
+        // there really isn't any way to expire old data unless we add reference counting,
+        // so it's probably just better to hope the planning process is swift
+        // but we don't want to leave it as a deep copy, because not all of the data will change at every step
+      });
     }); // end lazy copy
 
     describe('getMatch', function() {
