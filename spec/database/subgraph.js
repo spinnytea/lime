@@ -348,7 +348,7 @@ describe('subgraph', function() {
         expect(sg.getMatch(v)).to.not.equal(undefined);
       });
 
-      it('two parents', function() {
+      it('non-vertex with parents', function() {
         var sg = new subgraph.Subgraph();
         var v = 'not a vertex id';
         sg.addVertex(subgraph.matcher.filler);
@@ -465,6 +465,14 @@ describe('subgraph', function() {
         // do I use chai-spies?
         // do I do a var idea = { id: 'myId', data: function() { /* ... */ } }; ?
       });
+
+      it.skip('in root');
+
+      it.skip('two parents');
+
+      it.skip('three parents');
+
+      it.skip('non-vertex with parents');
     }); // end getData
 
     it('setData', function() {

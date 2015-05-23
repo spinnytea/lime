@@ -29,11 +29,15 @@ function Subgraph() {
   // this is what we are ultimately trying to find with a subgraph search
   // pinned context
   this._idea = {};
+
   // theoretical state
   // this is for the rewrite, planning in general
   // if undefined, it hasn't be fetched from idea.data()
   // set to null if there is no data (so we know not to query again)
   this._data = {};
+  // do a lazy copy of cache data
+  // don't copy the data if we don't need to
+  this._dataParent = undefined;
 
 
   // how the vertices are linked together
@@ -79,16 +83,27 @@ Subgraph.prototype.copy = function() {
     };
     this._match = {};
   }
-  // regardless, we need to pass the parent to the copy
+  // defined or undefined, we need to pass the parent to the copy
   sg._matchParent = this._matchParent;
+  // both this._match and sg._match will be empty
 
-    // the match data and ideas should/will never change
+  // the match data and ideas should/will never change
   // so we can reference the original
   _.assign(sg._idea, this._idea);
 
-  // the data can be updated in whole or in part
-  // it's best to make a deep copy of this
-  sg._data = _.cloneDeep(this._data);
+  // if there is locally defined cache data
+  // then put it in a parent object
+  // make that a parent of this
+  if(!_.isEmpty(this._data)) {
+    this._dataParent = {
+      obj: this._data,
+      parent: this._dataParent
+    };
+    this._data = {};
+  }
+  // defined or undefined, we need to pass the parent to the copy
+  sg._dataParent = this._dataParent;
+  // both this._data and sg._data will be empty
 
   sg._edges = _.clone(this._edges);
 
@@ -216,7 +231,12 @@ Subgraph.prototype.deleteIdea = function(id) {
 
 // returns undefined if there is no data, or the object if there is
 Subgraph.prototype.getData = function(id) {
-  var data = this._data[id];
+  var data;
+
+  if(id in this._data)
+    data = this._data[id];
+  else
+    data = searchParent(id, this._dataParent);
 
   if(data === null) {
     return undefined;
@@ -885,7 +905,7 @@ exports.rewrite = function(subgraph, transitions, actual) {
     } else if(t.hasOwnProperty('replace_id')) {
       subgraph.setData(t.vertex_id, subgraph.getData(t.replace_id));
     } else if(t.cycle) {
-      var data = subgraph.getData(t.vertex_id);
+      var data = _.clone(subgraph.getData(t.vertex_id));
       var states = ideas.load(data.unit).data().states;
       var idx = states.indexOf(data.value)+t.cycle.value;
       idx = (((idx%states.length)+states.length)%states.length);

@@ -208,7 +208,7 @@ describe('actuator', function() {
       var goal = new blueprint.State(bs.state.copy(), bs.availableActions);
       goal.state.setData(bs_p, { value: number.value(50), unit: money.id });
 
-      expect(bs.state.getData(bs_p)).to.deep.equal({ value: number.value(10), unit: money.id });
+      expect(bs.state.getData(bs_p)).to.deep.equal({ type: 'lime_number', value: number.value(10), unit: money.id });
       expect(goal.state.getData(bs_p)).to.deep.equal({ value: number.value(50), unit: money.id });
       expect(bs.matches(goal)).to.equal(false);
 
