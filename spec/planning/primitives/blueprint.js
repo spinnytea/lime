@@ -281,7 +281,7 @@ describe('blueprint', function() {
 
           // abstract search
           var _b1 = b.state.addVertex(subgraph.matcher.id, idea);
-          var _b2 = b.state.addVertex(subgraph.matcher.similar, {'unit': discrete.definitions.list.boolean}, {transitionable:true});
+          var _b2 = b.state.addVertex(subgraph.matcher.similar, {unit: discrete.definitions.list.boolean}, {transitionable:true});
           var _b3 = b.state.addVertex(subgraph.matcher.discrete, _b2, {transitionable:true,matchRef:true});
           b.state.addEdge(_b1, links.list.thought_description, _b2);
           b.state.addEdge(_b2, links.list.thought_description, _b3);
@@ -293,7 +293,7 @@ describe('blueprint', function() {
 
 
           // now update the data within the outer vertex for the similar matcher
-          a.state.getData(_a2).value = false;
+          a.state.setData(_a2, {value: false, unit: discrete.definitions.list.boolean});
           expect(subgraph.match(a.state, b.state, true).length).to.equal(1);
           expect(a.distance(b)).to.equal(1);
         });

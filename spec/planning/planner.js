@@ -20,7 +20,7 @@ describe('planner', function() {
   });
 
   describe('create', function() {
-    var count;
+    var count, count_unit;
     var a, a_c, actionImplCount;
     var s;
     var start, state_count, goal;
@@ -28,7 +28,7 @@ describe('planner', function() {
       // our state, just a simple object with a value of 0
       // athing -> count
       var athing = tools.ideas.create();
-      var count_unit = tools.ideas.create();
+      count_unit = tools.ideas.create();
       count = tools.ideas.create({ value: number.value(0), unit: count_unit.id });
       athing.link(links.list.thought_description, count);
 
@@ -91,7 +91,7 @@ describe('planner', function() {
       count.update({ value: number.value(0), unit: data.unit });
       actionImplCount = 0;
       start.state.deleteData();
-      goal.state.getData(state_count).value = number.value(5);
+      goal.state.setData(state_count, { value: number.value(5), unit: count_unit.id });
       start.availableActions = [a];
     });
 
@@ -111,7 +111,7 @@ describe('planner', function() {
       config.settings.astar_max_paths = before;
 
       // only one step away
-      goal.state.getData(state_count).value = number.value(1);
+      goal.state.setData(state_count, { value: number.value(1), unit: count_unit.id });
       plan = planner.create(start, goal);
       expect(plan).to.be.an.instanceOf(actuator.Action);
       expect(plan).to.equal(a);
@@ -142,7 +142,7 @@ describe('planner', function() {
       var goal2;
       beforeEach(function() {
         goal2 = new blueprint.State(goal.state.copy(), [a]);
-        goal2.state.getData(state_count).value = number.value(10);
+        goal2.state.setData(state_count, { value: number.value(10), unit: count_unit.id });
       });
 
       it('standard list of goals', function() {
@@ -258,7 +258,7 @@ describe('planner', function() {
 
     it('with stubs at CREATE', function() {
       start.availableActions.push(s);
-      goal.state.getData(state_count).value = number.value(10);
+      goal.state.setData(state_count, { value: number.value(10), unit: count_unit.id });
 
       // if we try to find a path using astar, then to actions should contain stubs
       var path = astar.search(start, goal);
@@ -281,7 +281,7 @@ describe('planner', function() {
     });
 
     it('stub failure at CREATE', function() {
-      goal.state.getData(state_count).value = number.value(10);
+      goal.state.setData(state_count, { value: number.value(10), unit: count_unit.id });
 
       // just to verify our test
       // we can create a plan with start and goal

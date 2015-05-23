@@ -23,14 +23,14 @@ describe('serialplan', function() {
     // does the whole thing need to be concrete, or just branches?
   });
 
-  var count;
+  var count, count_unit;
   var a, a_c, actionImplCount;
   var start, state_count, goal;
   before(function() {
     // our state, just a simple object with a value of 0
     // athing -> count
     var athing = tools.ideas.create();
-    var count_unit = tools.ideas.create();
+    count_unit = tools.ideas.create();
     count = tools.ideas.create({ value: number.value(0), unit: count_unit.id });
     athing.link(links.list.thought_description, count);
 
@@ -84,7 +84,7 @@ describe('serialplan', function() {
     count.update({ value: number.value(0), unit: data.unit });
     actionImplCount = 0;
     start.state.deleteData();
-    goal.state.getData(state_count).value = number.value(5);
+    goal.state.setData(state_count, { value: number.value(5), unit: count_unit.id });
   });
 
   it('init', function() {
@@ -228,7 +228,7 @@ describe('serialplan', function() {
     it('nested blueprint', function() {
       var sp2 = new serialplan.Action([a, a, a]);
       var sp = new serialplan.Action([sp2, sp2, a, a]);
-      goal.state.getData(state_count).value = number.value(8);
+      goal.state.setData(state_count, { value: number.value(8), unit: count_unit.id });
 
       // this pattern has no meaning, really; it's '[deterministic] chance' that they show up in this order
       // astar factors plan length into the selection
@@ -248,7 +248,7 @@ describe('serialplan', function() {
 
 
       sp = new serialplan.Action([sp2, sp2]);
-      goal.state.getData(state_count).value = number.value(6);
+      goal.state.setData(state_count, { value: number.value(6), unit: count_unit.id });
       expect(sp.plans.map(function(p) { return p.constructor.name; })).to.deep.equal([
         'SerialAction', 'SerialAction'
       ]);
