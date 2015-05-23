@@ -72,6 +72,17 @@ describe('astar', function() {
       ]);
     });
 
+    it.skip('stub stolveAt IMMEDIATE', function() {
+      // for now, this was tested using lm-wumpus
+      // but we really need one here in this source
+    });
+
+    it.skip('serial plan with only a serial plan', function() {
+      // lm-wumpus astar small step-through has a [['right', 'up']]
+      // we should probably unwrap that
+      // ['left', ['right', 'up']] is okay
+    });
+
     it('frontier too large', function() {
       var before = config.settings.astar_max_paths;
       expect(before).to.be.gt(10);

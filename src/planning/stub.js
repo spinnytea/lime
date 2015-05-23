@@ -63,6 +63,10 @@ blueprint.loaders.StubAction = function(blueprint) {
 };
 
 exports.solveAt = [
+  // this occurs durring astar.units.step
+  // it's sort of like a greedy depth-first search
+  'immediate',
+
   // this occurs during planner.create, after the whole plan has been constructed
   // it's sort of like a greedy breadth-first search
   'create'

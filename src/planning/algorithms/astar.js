@@ -1,7 +1,12 @@
 'use strict';
 var PriorityQueue = require('priorityqueuejs');
+
+var blueprint = require('../primitives/blueprint');
 var config = require('../../../config');
 var Path = require('../primitives/path');
+var planner = require('../planner');
+var stub = require('../stub');
+var subgraph = require('../../database/subgraph');
 
 // pull out some of the functions within search so we can unit test it easier
 // nothing inside exports.unit should need to be called or substituted
@@ -27,6 +32,41 @@ units.frontier = function() {
 // apply all of the available actions to the selected path
 units.step = function(path, frontier) {
   var nextActions = path.last.actions();
+
+  var immediateStubs = [];
+  nextActions = nextActions.filter(function(next) {
+    if(next.action instanceof stub.Action && next.action.solveAt === 'immediate') {
+
+      // create a goal state to plan to
+      var goal = next.action.apply(path.last, next.glue);
+      // only use the section of the graph needed by the requirements
+      goal = subgraph.createGoal(goal.state, next.action.requirements, next.glue);
+      goal = new blueprint.State(goal, []);
+
+      // construct an  initial state
+      // what's important here is that we don't allow THIS stub to follow through
+      // TODO should we use !_.equals instead of !==
+      var start = new blueprint.State(
+        path.last.state,
+        path.last.availableActions.filter(function(s) { return s !== next.action; })
+      );
+
+      var action = planner.create(start, goal);
+      if(action) {
+        // populate the list of nextActions from this action instead of the stub
+        Array.prototype.push.apply(immediateStubs,
+          new blueprint.State(path.last.state, [action]).actions());
+      }
+
+      // don't use the stub
+      // instead, we'll append the immediateStubs list after the filter
+      return false;
+    }
+
+    return true;
+  });
+  Array.prototype.push.apply(nextActions, immediateStubs);
+
   nextActions.forEach(function(next) {
     var p = path.add(next.action.apply(path.last, next.glue), next.action, next.glue);
     if(p.cost + p.distFromGoal !== Infinity)
