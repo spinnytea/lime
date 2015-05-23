@@ -19,7 +19,10 @@ units.frontier = function() {
     //return (b.cost + b.distFromGoal + b.actions.length) - (a.cost + a.distFromGoal + a.actions.length);
     // XXX I'm still not convinced it's the right move to factor in actions.length
     // - afterall, the path cost is a sum of all steps, so more steps will inherently be have a larger cost
-    var ret = (b.cost + b.distFromGoal*2) - (a.cost + a.distFromGoal*2);
+    // TODO add some "emotion config" to astar frontier expansion
+    // - if distFromGoal is more important, then we will charge straight for the goal (depth first)
+    // - if cost is important, then we will find the "optimal" solution (breadth first), but this takes a while
+    var ret = (b.cost + b.distFromGoal*10) - (a.cost + a.distFromGoal*10);
     if(ret !== 0) return ret;
 
     // if the composite is the same, then the one with the shorter distance wins
