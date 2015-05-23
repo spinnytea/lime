@@ -49,7 +49,7 @@ function createSingle(start, goal) {
   // TODO this only works when either ALL actions are stubs, or NO actions are stubs
   // - e.g. lm-wumpus: stub -> right -> stub ~ this doesn't make sense, because we don't know our direction after each stub
   path.actions = path.actions.map(function(a, idx) {
-    if(a instanceof stub.Action) {
+    if(a instanceof stub.Action && a.solveAt === 'create') {
       // re-plan this step, without the current stub
       var curr_start = new blueprint.State(
         path.states[idx].state,
@@ -60,6 +60,8 @@ function createSingle(start, goal) {
       var curr_goal = new blueprint.State(goal_state, []);
 
       var result = createSingle(curr_start, curr_goal);
+      if(result.action === undefined)
+        return result.action;
       path.states[idx+1].state = result.state.state;
       return result.action;
     }

@@ -50,7 +50,7 @@ describe('planner', function() {
       actuator.actions.serialplan_count_test = function() { actionImplCount++; };
       a.action = 'serialplan_count_test';
 
-      s = new stub.Action();
+      s = new stub.Action('create');
       var s_c = s.requirements.addVertex(subgraph.matcher.number, { value: number.value(0, 10), unit: count_unit.id }, {transitionable:true});
       s.requirements.addEdge(
         s.requirements.addVertex(subgraph.matcher.id, athing),
@@ -254,7 +254,9 @@ describe('planner', function() {
       expect(planner.create(undefined, undefined, goal)).to.equal(undefined);
     });
 
-    it('with stubs', function() {
+    it.skip('with stubs at not CREATE');
+
+    it('with stubs at CREATE', function() {
       start.availableActions.push(s);
       goal.state.getData(state_count).value = number.value(10);
 
@@ -278,7 +280,7 @@ describe('planner', function() {
       expect(plan.plans[1].plans[1]).to.be.an.instanceOf(actuator.Action);
     });
 
-    it('stub failure', function() {
+    it('stub failure at CREATE', function() {
       goal.state.getData(state_count).value = number.value(10);
 
       // just to verify our test
@@ -291,7 +293,12 @@ describe('planner', function() {
       expect(planner.create(start, goal)).to.equal(undefined);
     });
 
-    it.skip('mismatch between stubs and actuators');
+    it.skip('mismatch between stubs and actuators', function() {
+      // does this matter?
+      // should we just stop the plan?
+      // will it always be invalid?
+      // most fo the time we will probably need to recover due to inconsistencies between the plan/world states
+    });
 
     // is there a way that we can determine that a solution is unreachable without running astar to oblivion?
     // something like:

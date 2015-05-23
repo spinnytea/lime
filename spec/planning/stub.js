@@ -15,7 +15,7 @@ var tools = require('../testingTools');
 describe('stub', function() {
   it('init', function() {
     // this is to ensure we test everything
-    expect(Object.keys(stub)).to.deep.equal(['Action']);
+    expect(Object.keys(stub)).to.deep.equal(['Action', 'solveAt']);
     expect(Object.keys(stub.Action.prototype)).to.deep.equal(['runCost', 'tryTransition', 'runBlueprint', 'cost', 'apply', 'save']);
   });
 
@@ -31,7 +31,7 @@ describe('stub', function() {
       price = tools.ideas.create({ value: number.value(10), unit: money.id });
       apple.link(links.list.thought_description, price);
 
-      s = new stub.Action();
+      s = new stub.Action('create');
       s_p = s.requirements.addVertex(subgraph.matcher.number, { value: number.value(0, Infinity), unit: money.id }, {transitionable:true});
       s_a = s.requirements.addVertex(subgraph.matcher.id, apple);
       s.requirements.addEdge(s_a, links.list.thought_description, s_p);

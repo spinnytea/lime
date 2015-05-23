@@ -9,8 +9,13 @@ var ideas = require('../database/ideas');
 var links = require('../database/links');
 var subgraph = require('../database/subgraph');
 
-function StubAction() {
+function StubAction(solveAt) {
   blueprint.Action.call(this);
+
+  if(exports.solveAt.indexOf(solveAt) === -1)
+    throw new Error('solveAt must be defined and well known');
+
+  this.solveAt = solveAt;
 
   // subgraph.rewrite.transitions
   // what the stub will solve for later
@@ -40,7 +45,8 @@ StubAction.prototype.save = function() {
     blueprint: {
       idea: this.idea,
       requirements: subgraph.stringify(this.requirements),
-      transitions: this.transitions
+      transitions: this.transitions,
+      solveAt: this.solveAt
     }
   });
 
@@ -49,9 +55,15 @@ StubAction.prototype.save = function() {
 
 exports.Action = StubAction;
 blueprint.loaders.StubAction = function(blueprint) {
-  var a = new StubAction();
+  var a = new StubAction(blueprint.solveAt);
   a.idea = blueprint.idea;
   a.requirements = subgraph.parse(blueprint.requirements);
   a.transitions = blueprint.transitions;
   return a;
 };
+
+exports.solveAt = [
+  // this occurs during planner.create, after the whole plan has been constructed
+  // it's sort of like a greedy breadth-first search
+  'create'
+];
