@@ -49,9 +49,20 @@ units.step = function(path, frontier) {
       // construct an  initial state
       // what's important here is that we don't allow THIS stub to follow through
       // TODO should we use !_.equals instead of !==
+      // find the actions that we can use for this plan
+      // if the stub designates what can be used, then use those
+      // if it doesn't, then use the same pool of actions without this stub (no recursion)
+      var subActions = [];
+      if(next.action.idea)
+        subActions = blueprint.list(next.action.idea);
+      if(subActions.length > 0) {
+        subActions = subActions.map(blueprint.load);
+      } else {
+        subActions = path.last.availableActions.filter(function(s) { return s !== next.action; });
+      }
       var start = new blueprint.State(
         path.last.state,
-        path.last.availableActions.filter(function(s) { return s !== next.action; })
+        subActions
       );
 
       var action = planner.create(start, goal);

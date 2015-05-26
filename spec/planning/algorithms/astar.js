@@ -79,6 +79,8 @@ describe('astar', function() {
       // TODO why does this take SSOOOO LONG
     });
 
+    it.skip('stub solveAt IMMEDIATE with subactions');
+
     it.skip('serial plan with only a serial plan', function() {
       // lm-wumpus astar small step-through has a [['right', 'up']]
       // we should probably unwrap that
