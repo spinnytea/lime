@@ -92,6 +92,7 @@ exports.search = function(start, goal) {
 
   while(!frontier.isEmpty()) {
 //    console.log(frontier._elements.map(function(path) { return path.cost + path.distFromGoal; }));
+//    printActions(path, '*');
     var path = frontier.deq();
 
     // do we win?
@@ -113,3 +114,30 @@ exports.search = function(start, goal) {
   // console.log('Did not find solution (paths expanded: ' + numPathsExpanded + ', frontier: ' + frontier.size() + ').');
   return undefined;
 };
+
+
+// this is meant for debugging
+// it's left here as an example, but shouldn't be used normally
+function printActions(path, prefix) { // jshint ignore:line
+  console.log((prefix || '') +
+    formatNumber(path.cost + path.distFromGoal, 2) + ' ' +
+    JSON.stringify(path.actions.map(getName)));
+}
+
+function getName(obj) {
+  if(obj.constructor.name === 'ActuatorAction')
+    return obj.action; // .substr(22);
+  if(obj.constructor.name === 'SerialAction')
+    return obj.plans.map(getName);
+  return obj.constructor.name;
+}
+
+// there is no built in format for this
+// util.format doesn't do any more than specify the type
+// I could get a third party package, but this is stupid simple and only for debugging anyway
+function formatNumber(num, length) {
+  num = ''+num;
+  while(num.length < length)
+    num = ' ' + num;
+  return num;
+}
