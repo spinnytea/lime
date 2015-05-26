@@ -265,11 +265,12 @@ Subgraph.prototype.deleteData = function() {
     // only reset the ones in the arguments
     var sg = this;
     _.forEach(arguments, function(id) {
-      delete sg._data[id];
+      sg._data[id] = undefined;
     });
   } else {
     // reset all vertices
     this._data = {};
+    this._dataParent = undefined;
   }
 };
 
