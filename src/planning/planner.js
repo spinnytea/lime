@@ -50,14 +50,32 @@ function createSingle(start, goal) {
   // - e.g. lm-wumpus: stub -> right -> stub ~ this doesn't make sense, because we don't know our direction after each stub
   path.actions = path.actions.map(function(a, idx) {
     if(a instanceof stub.Action && a.solveAt === 'create') {
-      // re-plan this step, without the current stub
+      // re-plan this step
+
+      // find the actions that we can use for this plan
+      // if the stub designates what can be used, then use those
+      // if it doesn't, then use the same pool of actions without this stub (no recursion)
+      var subActions = [];
+      if(a.idea)
+        subActions = blueprint.list(a.idea);
+      if(subActions.length > 0) {
+        subActions = subActions.map(blueprint.load);
+      } else {
+        subActions = start.availableActions.filter(function(s) { return s !== a; });
+      }
+
+      // same starting state
+      // with the selected actions
       var curr_start = new blueprint.State(
         path.states[idx].state,
-        start.availableActions.filter(function(s) { return s !== a; })
+        subActions
       );
+      // we only need the part of the goal state that this stub declares
       // available actions don't matter for a goal
-      var goal_state = subgraph.createGoal(path.states[idx+1].state, path.actions[idx].requirements, path.glues[idx]);
-      var curr_goal = new blueprint.State(goal_state, []);
+      var curr_goal = new blueprint.State(
+        subgraph.createGoal(path.states[idx+1].state, path.actions[idx].requirements, path.glues[idx]),
+        []
+      );
 
       var result = createSingle(curr_start, curr_goal);
       if(result.action === undefined)

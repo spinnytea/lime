@@ -280,6 +280,8 @@ describe('planner', function() {
       expect(plan.plans[1].plans[1]).to.be.an.instanceOf(actuator.Action);
     });
 
+    it.skip('with stubs at CREATE and defined sub actions');
+
     it('stub failure at CREATE', function() {
       goal.state.setData(state_count, { value: number.value(10), unit: count_unit.id });
 

@@ -49,6 +49,14 @@ describe('blueprint', function() {
     expect(didcall).to.equal(true);
   });
 
+  it.skip('load(undefined)', function() {
+    // should this always return undefined?
+    // should this throw a type error?
+    // is there ever a situation where we want AAALLLL the actions?
+    // we people NEED to have a heirarchy of some kind, or load domain-specific actions
+    // right?
+  });
+
   describe('State', function() {
     it.skip('blueprint.BlueprintState distance: this needs a complete context upgrade');
     // like, seriously. What does the distance even mean?
