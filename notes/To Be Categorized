@@ -61,5 +61,8 @@ Planning Backwards
   the matching options (matchref) and improved transitions make this hard to infer for free
   which is why I didn't do this at first
   it's almost like we need to create a second matcher/transition for the other direction
+  --
+  can we automatically calculate the expected goal? (do a rewrite on the requirements)
+  can we automatically reverse the rewrite? (we need a different reversal for each type of rewrite)
 
 http://www.tinkerpop.com/
