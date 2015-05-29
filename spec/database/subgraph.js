@@ -466,13 +466,49 @@ describe('subgraph', function() {
         // do I do a var idea = { id: 'myId', data: function() { /* ... */ } }; ?
       });
 
-      it.skip('in root');
+      it('in root', function() {
+        var sg = new subgraph.Subgraph();
+        var v = sg.addVertex(subgraph.matcher.filler);
+        sg.setData(v, 10);
 
-      it.skip('two parents');
+        expect(sg._dataParent).to.equal(undefined);
+        expect(v in sg._data).to.equal(true);
 
-      it.skip('three parents');
+        expect(sg.getData(v)).to.equal(10);
+      });
 
-      it.skip('non-vertex with parents');
+      it('two parents', function() {
+        var sg = new subgraph.Subgraph();
+        var v = sg.addVertex(subgraph.matcher.filler);
+        sg.setData(v, 10);
+        sg = sg.copy();
+        sg.setData(v, 20);
+        sg = sg.copy();
+        sg.setData(v, 30);
+
+        expect(sg._dataParent).to.not.equal(undefined);
+        expect(sg._dataParent.parent).to.not.equal(undefined);
+        expect(sg._dataParent.parent.parent).to.equal(undefined);
+
+        expect(sg.getData(v)).to.equal(30);
+      });
+
+
+      it('non-vertex with parents', function() {
+        var sg = new subgraph.Subgraph();
+        var v = sg.addVertex(subgraph.matcher.filler);
+        sg.setData(v, 10);
+        sg = sg.copy();
+        sg.setData(v, 20);
+        sg = sg.copy();
+        sg.setData(v, 30);
+
+        expect(sg._dataParent).to.not.equal(undefined);
+        expect(sg._dataParent.parent).to.not.equal(undefined);
+        expect(sg._dataParent.parent.parent).to.equal(undefined);
+
+        expect(sg.getData('not a vertex id')).to.equal(undefined);
+      });
     }); // end getData
 
     it('setData', function() {
