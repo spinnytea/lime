@@ -107,4 +107,9 @@ describe('stub', function() {
       tools.ideas.clean(id);
     });
   }); // end Action
+
+  it.skip('createStates', function() {
+    // planner.create and astar.units.step both need to create a start/goal
+    // that seems to be done in a standard way, so it should be done within stub
+  });
 }); // end stub

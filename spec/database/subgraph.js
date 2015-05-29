@@ -492,46 +492,54 @@ describe('subgraph', function() {
       expect(sg.getData(a)).to.deep.equal(data2);
     });
 
-    it('deleteData', function() {
-      var a = tools.ideas.create({a: 1});
-      var b = tools.ideas.create({b: 2});
-      a.link(links.list.thought_description, b);
+    describe('deleteData', function() {
+      it('basic', function() {
+        var a = tools.ideas.create({a: 1});
+        var b = tools.ideas.create({b: 2});
+        a.link(links.list.thought_description, b);
 
-      var sg = new subgraph.Subgraph();
-      var _a = sg.addVertex(subgraph.matcher.id, a.id);
-      var _b = sg.addVertex(subgraph.matcher.id, b.id);
-      sg.addEdge(_a, links.list.thought_description, _b);
+        var sg = new subgraph.Subgraph();
+        var _a = sg.addVertex(subgraph.matcher.id, a.id);
+        var _b = sg.addVertex(subgraph.matcher.id, b.id);
+        sg.addEdge(_a, links.list.thought_description, _b);
 
-      function load() {
-        expect(sg.getData(_a)).to.deep.equal({a: 1});
-        expect(sg.getData(_b)).to.deep.equal({b: 2});
+        function load() {
+          expect(sg.getData(_a)).to.deep.equal({a: 1});
+          expect(sg.getData(_b)).to.deep.equal({b: 2});
+          expect(sg._data[_a]).to.deep.equal({a: 1});
+          expect(sg._data[_b]).to.deep.equal({b: 2});
+        }
+
+        expect(sg._data[_a]).to.deep.equal(undefined);
+        expect(sg._data[_b]).to.deep.equal(undefined);
+
+        load();
+        sg.deleteData();
+        expect(sg._data[_a]).to.deep.equal(undefined);
+        expect(sg._data[_b]).to.deep.equal(undefined);
+
+        load();
+        sg.deleteData(_b);
         expect(sg._data[_a]).to.deep.equal({a: 1});
+        expect(sg._data[_b]).to.deep.equal(undefined);
+
+        load();
+        sg.deleteData(_a);
+        expect(sg._data[_a]).to.deep.equal(undefined);
         expect(sg._data[_b]).to.deep.equal({b: 2});
-      }
 
-      expect(sg._data[_a]).to.deep.equal(undefined);
-      expect(sg._data[_b]).to.deep.equal(undefined);
+        load();
+        sg.deleteData(_b, _a);
+        expect(sg._data[_a]).to.deep.equal(undefined);
+        expect(sg._data[_b]).to.deep.equal(undefined);
+      });
 
-      load();
-      sg.deleteData();
-      expect(sg._data[_a]).to.deep.equal(undefined);
-      expect(sg._data[_b]).to.deep.equal(undefined);
-
-      load();
-      sg.deleteData(_b);
-      expect(sg._data[_a]).to.deep.equal({a: 1});
-      expect(sg._data[_b]).to.deep.equal(undefined);
-
-      load();
-      sg.deleteData(_a);
-      expect(sg._data[_a]).to.deep.equal(undefined);
-      expect(sg._data[_b]).to.deep.equal({b: 2});
-
-      load();
-      sg.deleteData(_b, _a);
-      expect(sg._data[_a]).to.deep.equal(undefined);
-      expect(sg._data[_b]).to.deep.equal(undefined);
-    });
+      it.skip('parentage', function() {
+        // create parent with data + 2 children with data (overlapping and non)
+        // delete data in one
+        // data should be gone from that one but still available in the other
+      });
+    }); // end deleteData
   }); // end Subgraph
 
   describe('matcher', function() {

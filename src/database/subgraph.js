@@ -568,25 +568,30 @@ exports.match = function(subgraphOuter, subgraphInner, unitOnly) {
   unitOnly = (unitOnly === true);
 
   // pre-fill a vertex map with identified thoughts
-  // TODO build a reverse map (outer.idea.id -> outer.vertex_id), then loop over inner.idea
   var vertexMap = {};
+  // build a reverse map (outer.idea.id -> outer.vertex_id)
+  // this way we only need to loop over the outer ideas once (it can get large)
+  // this makes it O(ni*log(no)), instead of O(ni*no)
+  var inverseOuterMap = _.reduce(subgraphOuter.allIdeas(), function(map, vo_idea, vo_key) {
+    map[vo_idea.id] = vo_key;
+    return map;
+  }, {});
+  // if the match is not possible, then exit early and return []
   var possible = true;
+
   _.forEach(subgraphInner.allIdeas(), function(vi_idea, vi_key) {
-    _.forEach(subgraphOuter.allIdeas(), function(vo_idea, vo_key) {
-      // outer is concrete; vo.idea exists
-      if(vi_idea.id === vo_idea.id) {
-        vertexMap[vi_key] = vo_key;
-        // vi.idea has been identified
-        // so we can use vi.data directly
-        possible = vertexTransitionableAcceptable(
-          subgraphOuter.getMatch(vo_key).options.transitionable,
-          subgraphOuter.getData(vo_key),
-          subgraphInner.getMatch(vi_key).options.transitionable,
-          subgraphInner.getData(vi_key),
-          unitOnly);
-      }
-      return possible;
-    });
+    var vo_key = inverseOuterMap[vi_idea.id];
+    if(vo_key) {
+      vertexMap[vi_key] = vo_key;
+      // vi.idea has been identified
+      // so we can use vi.data directly
+      possible = vertexTransitionableAcceptable(
+        subgraphOuter.getMatch(vo_key).options.transitionable,
+        subgraphOuter.getData(vo_key),
+        subgraphInner.getMatch(vi_key).options.transitionable,
+        subgraphInner.getData(vi_key),
+        unitOnly);
+    }
     return possible;
   });
 
