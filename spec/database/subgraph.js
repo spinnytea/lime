@@ -242,18 +242,7 @@ describe('subgraph', function() {
     });
 
     describe('~~New!~~ lazy copy', function() {
-      it.skip('nothing at first');
-
-      it.skip('matchParent');
-
       it.skip('stringify');
-
-      // ensure getting vertices goes back to most recent version
-      // - maybe the one beforeƒ
-      // - maybe the original
-      it.skip('copy of copy');
-
-      it.skip('search');
 
       it.skip('flatten', function() {
         // a function that takes the nested nature of the copy/subcopies and flattens a subgraph into it's own unparented copy
@@ -263,20 +252,6 @@ describe('subgraph', function() {
         // is this even worth it?
         // the only time this matters is during searching, and then it's just a LONG list of single matches
         // which then requires flattening
-      });
-
-      it.skip('of _data', function() {
-        // do a lazy copy of the data, also
-        // we should also return a _.copy(_data) at first (or forever), and make a strict rule about manipulating the result
-        // basically, you can't do getData().value = 10, you need to do:
-        // > d = getData()
-        // > d.value = 10;
-        // > setData(d)
-        //
-        // during planning this will become densely packed
-        // there really isn't any way to expire old data unless we add reference counting,
-        // so it's probably just better to hope the planning process is swift
-        // but we don't want to leave it as a deep copy, because not all of the data will change at every step
       });
     }); // end lazy copy
 
@@ -840,6 +815,30 @@ describe('subgraph', function() {
     expect(subgraph.parse(subgraph.stringify(sg))).to.deep.equal(sg);
   });
 
+  it.only('stringify & parse with parents', function() {
+    var sg = new subgraph.Subgraph();
+    var a = sg.addVertex(subgraph.matcher.filler);
+    var b = sg.addVertex(subgraph.matcher.filler);
+    sg.addEdge(a, links.list.thought_description, b);
+    sg.setData(a, 10);
+    var copy = sg.copy();
+    copy.setData(b, 20);
+
+    expect(copy.getData(b)).to.equal(20);
+    expect(sg.getData(b)).to.equal(undefined);
+
+    var str = subgraph.stringify(copy);
+    expect(str).to.be.a('string');
+
+    var parsed = subgraph.parse(str);
+
+    expect(Object.keys(parsed._match)).to.deep.equal([a, b]);
+    expect(parsed._matchParent).to.equal(undefined);
+    expect(Object.keys(parsed._data)).to.deep.equal([a, b]);
+    expect(_.values(parsed._data)).to.deep.equal([10, 20]);
+    expect(parsed._dataParent).to.equal(undefined);
+  });
+
   it('stringify for dump', function() {
     var unit = tools.ideas.create();
     var mark = tools.ideas.create();
@@ -873,6 +872,8 @@ describe('subgraph', function() {
       JSON.parse(subgraph.stringify(sg, true)).data
     ).to.deep.equal(expected);
   });
+
+  it.skip('stringify for dump with parents');
 
   describe('search', function() {
     it('nothing to do', function() {

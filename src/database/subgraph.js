@@ -289,6 +289,12 @@ function searchParent(id, parent) {
   }
   return undefined;
 }
+function acrossParents(parent, callback) {
+  while(parent) {
+    _.forEach(parent.obj, callback);
+    parent = parent.parent;
+  }
+}
 
 
 // matchers
@@ -340,13 +346,14 @@ exports.stringify = function(sg, dump) {
     };
   });
 
-  var data;
+  var data = _.clone(sg._data);
+  acrossParents(sg._dataParent, function(value, id) {
+    if(!(id in data))
+      data[id] = value;
+  });
   if(dump === true) {
-    data = {};
     forAllVertices(sg, function(id) {
-      if(id in sg._data) {
-        data[id] = sg._data[id];
-      } else {
+      if(!(id in data)) {
         var idea = sg.getIdea(id);
         if(idea) {
           var value = idea.data();
@@ -358,8 +365,6 @@ exports.stringify = function(sg, dump) {
         }
       }
     });
-  } else {
-    data = sg._data;
   }
 
   return JSON.stringify({
