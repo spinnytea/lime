@@ -815,7 +815,7 @@ describe('subgraph', function() {
     expect(subgraph.parse(subgraph.stringify(sg))).to.deep.equal(sg);
   });
 
-  it.only('stringify & parse with parents', function() {
+  it('stringify & parse with parents', function() {
     var sg = new subgraph.Subgraph();
     var a = sg.addVertex(subgraph.matcher.filler);
     var b = sg.addVertex(subgraph.matcher.filler);
@@ -839,14 +839,17 @@ describe('subgraph', function() {
     expect(parsed._dataParent).to.equal(undefined);
   });
 
-  it('stringify for dump', function() {
-    var unit = tools.ideas.create();
+  it('stringify for dump (+ with parents)', function() {
+    var aunit = tools.ideas.create();
+    var bunit = tools.ideas.create();
     var mark = tools.ideas.create();
-    var apple = tools.ideas.create({ value: number.value(2), unit: unit.id });
+    var apple = tools.ideas.create({ value: number.value(2), unit: aunit.id });
     mark.link(links.list.thought_description, apple);
+    var banana = tools.ideas.create({ value: number.value(4), unit: bunit.id });
+    mark.link(links.list.thought_description, banana);
     var sg = new subgraph.Subgraph();
     var m = sg.addVertex(subgraph.matcher.id, mark.id);
-    var a = sg.addVertex(subgraph.matcher.number, { value: number.value(0, Infinity), unit: unit.id }, {transitionable:true});
+    var a = sg.addVertex(subgraph.matcher.number, { value: number.value(0, Infinity), unit: aunit.id }, {transitionable:true});
     sg.addEdge(m, links.list.thought_description, a, 1);
 
     var expected = {};
@@ -866,14 +869,42 @@ describe('subgraph', function() {
     ).to.deep.equal(expected);
 
     // use the cached data
-    expected[a] = { value: number.value(1), unit: unit.id };
+    expected[a] = { value: number.value(1), unit: aunit.id };
     sg.setData(a, expected[a]);
     expect(
       JSON.parse(subgraph.stringify(sg, true)).data
     ).to.deep.equal(expected);
-  });
 
-  it.skip('stringify for dump with parents');
+    //
+    // + with parents
+    //
+
+    sg = sg.copy();
+    var b = sg.addVertex(subgraph.matcher.number, { value: number.value(0, Infinity), unit: bunit.id }, {transitionable:true});
+    sg.addEdge(m, links.list.thought_description, b);
+
+    // just to make sure we are using parents
+    expect(sg._dataParent.obj[a]).to.equal(expected[a]);
+
+    expect(
+      JSON.parse(subgraph.stringify(sg, true)).data
+    ).to.deep.equal(expected);
+
+    expect(subgraph.search(sg)).to.deep.equal([sg]);
+
+    // after search, there is underlying data
+    expected[b] = banana.data();
+    expect(
+      JSON.parse(subgraph.stringify(sg, true)).data
+    ).to.deep.equal(expected);
+
+    // use the cached data
+    expected[b] = { value: number.value(200), unit: bunit.id };
+    sg.setData(b, expected[b]);
+    expect(
+      JSON.parse(subgraph.stringify(sg, true)).data
+    ).to.deep.equal(expected);
+  });
 
   describe('search', function() {
     it('nothing to do', function() {
