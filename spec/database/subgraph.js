@@ -242,8 +242,6 @@ describe('subgraph', function() {
     });
 
     describe('~~New!~~ lazy copy', function() {
-      it.skip('stringify');
-
       it.skip('flatten', function() {
         // a function that takes the nested nature of the copy/subcopies and flattens a subgraph into it's own unparented copy
       });
@@ -1391,13 +1389,14 @@ describe('subgraph', function() {
       checkSubgraphMatch(subgraph.match(outer, sg), [m, a, p, b, bp], [_m, _a, _p, _b, _bp]);
     });
 
-    it.skip('multiple outer to same idea', function() {
-      // what if there are mulitple vertices in the outer graph that point to the same idea?
-    });
-
-    it.skip('multiple inner to same idea', function() {
-      // what if there are mulitple vertices in the inner graph that point to the same idea?
-    });
+    // when we construct subgraphs, each node represents a single idea
+    // it doesn't make sense to intend multiple nodes to match the same idea
+    // ... these tests don't make sense; they break the definition of a subgraph
+    // ... unless they are negative tests? but how do we even DO that
+    // what if there are multiple vertices in the outer graph that point to the same idea?
+    //it.skip('multiple outer to same idea');
+    // what if there are multiple vertices in the inner graph that point to the same idea?
+    //it.skip('multiple inner to same idea');
 
     // it shouldn't matter that the outer is larger
     // but the point is that the vertexMap will match all vertices in the inner map
@@ -2077,5 +2076,40 @@ describe('subgraph', function() {
     });
   }); // end rewrite
 
-  it.skip('createGoal');
+  it('createGoal', function() {
+    var a = tools.ideas.create('a');
+    var b = tools.ideas.create('b');
+    var c = tools.ideas.create('c');
+    a.link(links.list.thought_description, b);
+    b.link(links.list.thought_description, c);
+
+    var outer = new subgraph.Subgraph();
+    var oa = outer.addVertex(subgraph.matcher.id, a);
+    var ob = outer.addVertex(subgraph.matcher.id, b);
+    var oc = outer.addVertex(subgraph.matcher.id, c);
+    outer.addEdge(oa, links.list.thought_description, ob);
+    outer.addEdge(ob, links.list.thought_description, oc);
+
+    var inner = new subgraph.Subgraph();
+    var ib = inner.addVertex(subgraph.matcher.exact, 'b');
+    var ic = inner.addVertex(subgraph.matcher.exact, 'c');
+    inner.addEdge(ib, links.list.thought_description, ic);
+
+    var vertexMap = subgraph.match(outer, inner);
+    expect(vertexMap.length).to.equal(1);
+    checkSubgraphMatch(vertexMap, [ob, oc], [ib, ic]);
+
+    expect(inner._data).to.deep.equal({});
+    expect(inner._dataParent).to.equal(undefined);
+
+    var goal = subgraph.createGoal(outer, inner, vertexMap[0]);
+
+    expect(inner._data).to.deep.equal({});
+    expect(inner._dataParent).to.equal(undefined);
+    expect(_.keys(goal._data)).to.deep.equal([ib, ic]);
+    expect(_.values(goal._data)).to.deep.equal(['b', 'c']);
+    expect(goal._dataParent).to.equal(undefined);
+    expect(goal.getIdea(ib).id).to.equal(b.id);
+    expect(goal.getIdea(ic).id).to.equal(c.id);
+  });
 }); // end subgraph
