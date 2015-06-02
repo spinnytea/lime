@@ -19,6 +19,15 @@ describe('stub', function() {
     expect(Object.keys(stub.Action.prototype)).to.deep.equal(['runCost', 'tryTransition', 'runBlueprint', 'cost', 'apply', 'save']);
   });
 
+  it('invalid solveAt', function() {
+    var at = 'invalid solve at';
+    expect(stub.solveAt.indexOf(at)).to.equal(-1);
+
+    expect(function() {
+      new stub.Action(at); // jshint ignore:line
+    }).to.throw('solveAt must be defined and well known');
+  });
+
   describe('Action', function() {
     var apple, money, price; // our idea graph is about .. money
     var s, s_p, s_a; // an action that requires a price
