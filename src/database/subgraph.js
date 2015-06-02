@@ -57,17 +57,6 @@ function Subgraph() {
   //   sg._match.every(function(v, id) { return (id in sg._idea); })
   //   Object.keys(sg._match).deep.equals(Object.keys(sg._idea))
   this.concrete = true;
-
-
-  // TODO remove these after testing with wumpus
-  Object.defineProperty(this, 'vertices', {
-    get: function() { throw new Error('vertices is deprecated'); },
-    set: function() { throw new Error('uhm... crow?'); }
-  });
-  Object.defineProperty(this, 'invalidateCache', {
-    get: function() { throw new Error('invalidateCache is deprecated'); },
-    set: function() { throw new Error('uhm... crow?'); }
-  });
 }
 
 Subgraph.prototype.copy = function() {

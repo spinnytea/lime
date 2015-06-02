@@ -7,8 +7,6 @@ var _ = require('lodash');
 // XXX error checking? actions must be 1 shorter than states
 // XXX error checking? state/action implementation
 var Path = exports.Path = function(states, actions, glues, goal) {
-  if(arguments.length !== 4)
-    throw new Error('update constructor arguments');
   this.states = states;
   this.actions = actions;
   this.glues = glues;
@@ -27,8 +25,6 @@ var Path = exports.Path = function(states, actions, glues, goal) {
 // @return a new Path
 // XXX error checking? should we verify that apply the action to this.last will generate state?
 Path.prototype.add = function(state, action, glue) {
-  if(arguments.length !== 3)
-    throw new Error('update path.add arguments');
   var states = [];
   var actions = [];
   var glues = [];
