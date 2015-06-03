@@ -6,7 +6,6 @@ var config = require('../../../config');
 var Path = require('../primitives/path');
 var planner = require('../planner');
 var stub = require('../stub');
-var subgraph = require('../../database/subgraph');
 
 // pull out some of the functions within search so we can unit test it easier
 // nothing inside exports.unit should need to be called or substituted
@@ -40,32 +39,9 @@ units.step = function(path, frontier) {
   nextActions = nextActions.filter(function(next) {
     if(next.action instanceof stub.Action && next.action.solveAt === 'immediate') {
 
-      // create a goal state to plan to
-      var goal = next.action.apply(path.last, next.glue);
-      // only use the section of the graph needed by the requirements
-      goal = subgraph.createGoal(goal.state, next.action.requirements, next.glue);
-      goal = new blueprint.State(goal, []);
+      var curr = stub.createStates(path.last, next.action, next.glue, next.action.apply(path.last, next.glue));
 
-      // construct an  initial state
-      // what's important here is that we don't allow THIS stub to follow through
-      // TODO should we use !_.equals instead of !==
-      // find the actions that we can use for this plan
-      // if the stub designates what can be used, then use those
-      // if it doesn't, then use the same pool of actions without this stub (no recursion)
-      var subActions = [];
-      if(next.action.idea)
-        subActions = blueprint.list(next.action.idea);
-      if(subActions.length > 0) {
-        subActions = subActions.map(blueprint.load);
-      } else {
-        subActions = path.last.availableActions.filter(function(s) { return s !== next.action; });
-      }
-      var start = new blueprint.State(
-        path.last.state,
-        subActions
-      );
-
-      var action = planner.create(start, goal);
+      var action = planner.create(curr.start, curr.goal);
       if(action) {
         // populate the list of nextActions from this action instead of the stub
         Array.prototype.push.apply(immediateStubs,

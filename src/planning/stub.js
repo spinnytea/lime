@@ -71,3 +71,32 @@ exports.solveAt = [
   // it's sort of like a greedy breadth-first search
   'create'
 ];
+
+// @param start: the BlueprintState we are starting from
+// @param action: the stub action we are trying to fulfill
+// @param glue: how the action is related to the start
+// @param goal: the BlueprintState we are trying to get to (the complete state)
+exports.createStates = function(start, action, glue, goal) {
+  // find the actions that we can use for this plan
+  // if the stub designates what can be used, then use those
+  // if it doesn't, then use the same pool of actions without this stub (no recursion)
+  var subActions = [];
+  if(action.idea)
+    subActions = blueprint.list(action.idea);
+  if(subActions.length > 0) {
+    subActions = subActions.map(blueprint.load);
+  } else {
+    subActions = start.availableActions.filter(function(s) { return s !== action; });
+  }
+
+  return {
+    start: new blueprint.State(
+      start.state,
+      subActions
+    ),
+    goal: new blueprint.State(
+      subgraph.createGoal(goal.state, action.requirements, glue),
+      []
+    )
+  };
+};

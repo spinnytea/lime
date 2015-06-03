@@ -16,15 +16,21 @@ exports.create = function(name) {
   Object.defineProperty(exports.list, name, { enumerable: true, get: function() { return link; } });
 };
 
-exports.list = {};
+exports.list = {
+  // listing them out here lets the IDE know that they exist
+  thought_description: undefined,
+  type_of: undefined,
+  property: undefined,
+  context: undefined
+};
 
-// no imbedded structural meaning
+// no embedded structural meaning
 // heavily used in testing
 exports.create('thought_description');
 
 
 // apple
-//  machintosh --typeof_of-> apple
+//  macintosh --typeof_of-> apple
 //  gala       --typeof_of-> apple
 //
 // mark --typeof_of-> person

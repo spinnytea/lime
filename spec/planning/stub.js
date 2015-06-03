@@ -15,7 +15,7 @@ var tools = require('../testingTools');
 describe('stub', function() {
   it('init', function() {
     // this is to ensure we test everything
-    expect(Object.keys(stub)).to.deep.equal(['Action', 'solveAt']);
+    expect(Object.keys(stub)).to.deep.equal(['Action', 'solveAt', 'createStates']);
     expect(Object.keys(stub.Action.prototype)).to.deep.equal(['runCost', 'tryTransition', 'runBlueprint', 'cost', 'apply', 'save']);
   });
 
