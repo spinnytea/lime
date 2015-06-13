@@ -342,7 +342,7 @@ exports.stringify = function(sg, dump) {
   });
   if(dump === true) {
     forAllVertices(sg, function(id) {
-      if(!(id in data)) {
+      if(data[id] === undefined) {
         var idea = sg.getIdea(id);
         if(idea) {
           var value = idea.data();
