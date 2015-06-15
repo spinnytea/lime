@@ -1255,7 +1255,7 @@ describe('subgraph', function() {
       apple = tools.ideas.create();
       var money = tools.ideas.create();
       price = tools.ideas.create({value: number.value(10), unit: money.id});
-      context.link(links.list.context, mark);
+      mark.link(links.list.context, context);
       mark.link(links.list.thought_description, apple);
       apple.link(links.list.thought_description, price);
 
@@ -1264,7 +1264,7 @@ describe('subgraph', function() {
       m = outer.addVertex(subgraph.matcher.id, mark);
       a = outer.addVertex(subgraph.matcher.filler);
       p = outer.addVertex(subgraph.matcher.similar, {value: number.value(10)});
-      outer.addEdge(c, links.list.context, m);
+      outer.addEdge(m, links.list.context, c);
       outer.addEdge(m, links.list.thought_description, a);
       outer.addEdge(a, links.list.thought_description, p);
 
