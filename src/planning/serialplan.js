@@ -124,6 +124,7 @@ SerialAction.prototype.save = function() {
     subtype: 'SerialAction',
     blueprint: {
       idea: this.idea,
+      causeAndEffect: this.causeAndEffect,
       plans: this.plans.map(function(p) { return p.save(); })
       // we can derive the requirements from the first plan
 //      requirements: subgraph.stringify(this.requirements),
@@ -140,5 +141,6 @@ blueprint.loaders.SerialAction = function(bp) {
   var plans = bp.plans.map(function(id) { return blueprint.load(id); });
   var sa = new SerialAction(plans);
   sa.idea = bp.idea;
+  sa.causeAndEffect = bp.causeAndEffect;
   return sa;
 };

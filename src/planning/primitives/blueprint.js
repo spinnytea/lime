@@ -25,6 +25,10 @@ function BlueprintAction() {
   // if the state matches the requirements, the action can be performed
   // (these statements are intentionally redundant)
   this.requirements = new subgraph.Subgraph();
+
+  // is this a cause-and-effect action?
+  // does this happen automatically within the world?
+  this.causeAndEffect = false;
 }
 
 // how much effort does it take to run this plan?
@@ -226,16 +230,24 @@ BlueprintState.prototype.actions = function() {
     // TODO do I throw an error or silently fail? (return [])
     throw new Error('blueprint states must be concrete to plan from');
   var that = this;
-  var ret = [];
+  var awi = []; // actions with intentionality
+  var cae = []; // cause and effect actions
+
   // the actions need relate to this state
   // XXX should I just explode the possible actions to begin with?
   // - or cache the results from the first run?
   this.availableActions.forEach(function(action) {
+    if(cae.length && action.causeAndEffect)
+      // if we have cause and effect actions,
+      // then they are the only ones that will be returned this round
+      // so if this is NOT a CAE action, then we can skip it
+      return true;
     action.tryTransition(that).forEach(function(glue) {
-      ret.push({ action: action, glue: glue });
+      (action.causeAndEffect?cae:awi).push({ action: action, glue: glue });
     });
   });
-  return ret;
+
+  return (cae.length?cae:awi);
 };
 
 // path.State.matches

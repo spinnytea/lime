@@ -45,6 +45,7 @@ StubAction.prototype.save = function() {
     blueprint: {
       idea: this.idea,
       requirements: subgraph.stringify(this.requirements),
+      causeAndEffect: this.causeAndEffect,
       transitions: this.transitions,
       solveAt: this.solveAt
     }
@@ -58,6 +59,7 @@ blueprint.loaders.StubAction = function(blueprint) {
   var a = new StubAction(blueprint.solveAt);
   a.idea = blueprint.idea;
   a.requirements = subgraph.parse(blueprint.requirements);
+  a.causeAndEffect = blueprint.causeAndEffect;
   a.transitions = blueprint.transitions;
   return a;
 };

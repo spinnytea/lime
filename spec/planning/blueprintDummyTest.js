@@ -27,7 +27,7 @@ describe('blueprint_chain', function() {
     var ba = new blueprint.Action();
     var sa = new serialplan.Action([]);
     var aa = new actuator.Action();
-    var params = ['requirements'];
+    var params = ['requirements', 'causeAndEffect'];
     expect(Object.keys(ba)).to.deep.equal(params);
     expect(_.intersection(Object.keys(sa), params)).to.deep.equal(params);
     expect(_.intersection(Object.keys(aa), params)).to.deep.equal(params);
