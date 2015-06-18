@@ -247,6 +247,13 @@ BlueprintState.prototype.actions = function() {
     });
   });
 
+  // TODO do we need to keep planning with automatic actions, even when we reach the goal?
+  // - what does this mean about "thinking ahead"?
+  // - how do we know when to stop thinking ahead?
+  // - does it matter at this level (lowest level planning?)
+  // - what will higher level planning look like? what will it use? won't it be the same?
+  // - do we need a configuration option? something that gets passed in?
+  // - do the actions themselves get the weight (consume more actions until we've 'had enough')
   return (cae.length?cae:awi);
 };
 
