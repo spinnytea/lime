@@ -127,6 +127,26 @@ describe('path',  function() {
       expect(path.distFromGoal).to.equal(0);
     });
 
+    it('constructor with [goal]', function() {
+      // this path is setup backwards
+      // other tests want to have multiple starting points to converge on one goal
+      // this one wants to see how one starting point fairs against multiple destinations
+      var path = new Path.Path([fourG], [], [undefined], [fourB, fourC]);
+
+      expect(path.states).to.deep.equal([fourG]);
+      expect(path.actions).to.deep.equal([]);
+      expect(path.goal).to.deep.equal([fourB, fourC]);
+      expect(path.cost).to.equal(0);
+      expect(path.last).to.equal(fourG);
+      expect(path.distFromGoal).to.equal(2);
+
+      // fourB is of dist 2
+      // fourC is of dist 4
+      // it picked the smallest distance to represent
+      expect(path.goal.map(function(g) { return fourG.distance(g); }))
+        .to.deep.equal([2, 4]);
+    });
+
     it('cost / distanceFromGoal', function() {
       var goal =  new NumberSlide.State([[1, 2, 3],
                                          [4, 5, 6],

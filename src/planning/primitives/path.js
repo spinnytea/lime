@@ -15,8 +15,15 @@ var Path = exports.Path = function(states, actions, glues, goal) {
     return sum + action.cost(states[idx], states[idx+1]);
   }, 0);
 
-  this.last = _.last(states);
-  this.distFromGoal = this.last.distance(goal);
+  var last = this.last = _.last(states);
+  this.distFromGoal = undefined;
+
+  if(_.isArray(goal))
+    this.distFromGoal = goal.reduce(function(ret, g) {
+      return Math.min(ret, last.distance(g));
+    }, Number.MAX_VALUE);
+  else
+    this.distFromGoal = last.distance(goal);
 };
 
 // adds another state and action to the existing path

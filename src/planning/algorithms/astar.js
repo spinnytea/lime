@@ -1,4 +1,5 @@
 'use strict';
+var _ = require('lodash');
 var PriorityQueue = require('priorityqueuejs');
 
 var blueprint = require('../primitives/blueprint');
@@ -84,9 +85,14 @@ exports.search = function(start, goal) {
 
     // do we win?
     if(path.distFromGoal === 0) {
-      if(path.last.matches(goal))
-        // console.log('Found solution (paths expanded: ' + numPathsExpanded + ', frontier: ' + frontier.size() + ').');
-        return path;
+      if(_.isArray(goal)) {
+        if(goal.some(function(g) { return path.last.matches(g); }))
+          return path;
+      } else {
+        if(path.last.matches(goal))
+          // console.log('Found solution (paths expanded: ' + numPathsExpanded + ', frontier: ' + frontier.size() + ').');
+          return path;
+      }
     }
 
     // exit early?

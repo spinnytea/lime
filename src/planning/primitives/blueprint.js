@@ -132,6 +132,7 @@ function BlueprintState(subgraph, availableActions) {
 }
 
 // path.State.distance
+// TODO accept vertexMap as an argument
 BlueprintState.prototype.distance = function(to) {
   if(!this.state.concrete)
     // TODO do I throw an error or silently fail? (return DISTANCE_ERROR)

@@ -72,6 +72,28 @@ describe('astar', function() {
       ]);
     });
 
+    it('[goal]', function() {
+      // this search is setup backwards
+      // other tests want to have multiple starting points to converge on one goal
+      // this one wants to see how one starting point fairs against multiple destinations
+
+      var goalA = new NumberSlide.State([[0, 2], [1, 3]]);
+      var goalB = new NumberSlide.State([[3, 1], [0, 2]]);
+
+      var start = new NumberSlide.State([[1, 2], [3, 0]]);
+
+      // prove path A
+      var path = astar.search(start, [goalA]);
+      expect(_.pluck(path.actions, 'dir')).to.deep.equal(['left', 'up']);
+      //  prove path B
+      path = astar.search(start, [goalB]);
+      expect(_.pluck(path.actions, 'dir')).to.deep.equal(['up', 'left', 'down']);
+
+      // now prove that it picks the shortest one
+      path = astar.search(start, [goalA, goalB]);
+      expect(_.pluck(path.actions, 'dir')).to.deep.equal(['left', 'up']);
+    });
+
     it.skip('stub solveAt IMMEDIATE', function() {
       // for now, this was tested using lm-wumpus
       // but we really need one here in this source
