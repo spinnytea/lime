@@ -83,11 +83,11 @@ exports.search = function(start, goal) {
     var path = frontier.deq();
 
     // do we win?
-    // TODO is distFromGoal === 0 enough?
-    // - are they the same thing?
-    if(path.last.matches(goal))
-      // console.log('Found solution (paths expanded: ' + numPathsExpanded + ', frontier: ' + frontier.size() + ').');
-      return path;
+    if(path.distFromGoal === 0) {
+      if(path.last.matches(goal))
+        // console.log('Found solution (paths expanded: ' + numPathsExpanded + ', frontier: ' + frontier.size() + ').');
+        return path;
+    }
 
     // exit early?
     numPathsExpanded++;
