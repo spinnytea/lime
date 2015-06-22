@@ -7,6 +7,7 @@ var stub = require('./stub');
 // create a plan
 // @param start: blueprint.State
 // @param goal: blueprint.State, or an array of States
+//              if this is an array of goals, then it will create a serial plan that passes through each one in order
 exports.create = function(start, goal) {
   if(start === undefined || goal === undefined)
     return undefined;

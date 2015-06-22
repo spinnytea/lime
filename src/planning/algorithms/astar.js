@@ -67,6 +67,7 @@ units.step = function(path, frontier) {
 
 // @param start: a Path.State, initial
 // @param goal: a Path.State, final
+//              if this is an array of goals, then it will stop at the closest goal
 // @return: a path.Path if we find one, undefined if not
 // XXX is exiting early different from being unable to find a solution? should we exit differently?
 exports.search = function(start, goal) {
