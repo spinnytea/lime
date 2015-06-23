@@ -85,13 +85,16 @@ describe('astar', function() {
       // prove path A
       var path = astar.search(start, [goalA]);
       expect(_.pluck(path.actions, 'dir')).to.deep.equal(['left', 'up']);
+      expect(path.goal).to.equal(goalA);
       //  prove path B
       path = astar.search(start, [goalB]);
       expect(_.pluck(path.actions, 'dir')).to.deep.equal(['up', 'left', 'down']);
+      expect(path.goal).to.equal(goalB);
 
       // now prove that it picks the shortest one
       path = astar.search(start, [goalA, goalB]);
       expect(_.pluck(path.actions, 'dir')).to.deep.equal(['left', 'up']);
+      expect(path.goal).to.equal(goalA);
     });
 
     it.skip('stub solveAt IMMEDIATE', function() {

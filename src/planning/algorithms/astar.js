@@ -74,6 +74,11 @@ exports.search = function(start, goal) {
   // the current set of paths
   var frontier = units.frontier();
   frontier.enq(new Path.Path([start], [], [], goal));
+  // TODO can we save the goal->start vertex maps; this will improve Path.constructor last.distance(goal)
+  // - I mean, this is a value-less set of matches, so it should match all possible configurations
+  // - that's the point of the distance; it finds the closest vertexMap possibility
+  // - so if we don't need to generate the map every time for something that doesn't change, that'd be great
+  // -- print out the vertex map from lm-wumpus to confirm (but it should be a hard proof, not just counterexample-less)
 
   // how many paths have we compared to the goal
   // (used to end early if we don't find anything)
@@ -87,8 +92,12 @@ exports.search = function(start, goal) {
     // do we win?
     if(path.distFromGoal === 0) {
       if(_.isArray(goal)) {
-        if(goal.some(function(g) { return path.last.matches(g); }))
+        // TODO Array.prototype.fine - this is part of the ES6 spec, but not node v0.12.2
+        var reached = goal.filter(function(g) { return path.last.matches(g); });
+        if(reached.length) {
+          path.goal = reached[0];
           return path;
+        }
       } else {
         if(path.last.matches(goal))
           // console.log('Found solution (paths expanded: ' + numPathsExpanded + ', frontier: ' + frontier.size() + ').');
