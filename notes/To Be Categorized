@@ -64,5 +64,17 @@ Planning Backwards
   --
   can we automatically calculate the expected goal? (do a rewrite on the requirements)
   can we automatically reverse the rewrite? (we need a different reversal for each type of rewrite)
+Make it atomic
+  when we create a plan (SerialAction composed of ActuatorActions)
+  this means, "ignore the scheduler/conditions, and just do it all at once"
+  in this case, ignore the condition/senses and just do the whole thing
+  if, after the proper waiting, the goal is met, then we count it as a success
+  whenever the goal is not met, then we need to record it, and that action cannot be atomic
+  --
+  we can do science and figure out which parts can be atomic
+  like, maybe the serial plan has serial plans; maybe the inner ones can be atomic
+  actually this is probably a bad idea
+  but when would we call this "make it atomic" function ... if a plan NEVER has a problem completing?
+  like, if we've run it 10 times and it just works, then we can elevate it?
 
 http://www.tinkerpop.com/
