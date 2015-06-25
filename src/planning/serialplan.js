@@ -5,6 +5,7 @@
 // you shouldn't need to use "new serialplan.Action" (SerialAction)
 // instead, you can use "planner.create"
 var _ = require('lodash');
+var Promise = require('bluebird');
 var blueprint = require('./primitives/blueprint');
 var ideas = require('../database/ideas');
 var links = require('../database/links');
@@ -99,6 +100,25 @@ SerialAction.prototype.tryTransition = function(state) {
 SerialAction.prototype.runBlueprint = function(state, glue) {
   this.plans.forEach(function(plan, idx) {
     plan.runBlueprint(state, glue[idx]);
+  });
+};
+
+// blueprint.scheduleBlueprint
+SerialAction.prototype.scheduleBlueprint = function(state, glue) {
+  var plans = this.plans;
+  return new Promise(function(resolve, reject) {
+    var idx = -1;
+
+    function step() {
+      idx++;
+      if(idx === plans.length)
+        resolve();
+      else
+        plans[idx].scheduleBlueprint(state, glue[idx])
+          .then(step, reject);
+    }
+
+    step();
   });
 };
 

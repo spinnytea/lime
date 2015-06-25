@@ -7,6 +7,7 @@ var blueprint = require('../../src/planning/primitives/blueprint');
 var ideas = require('../../src/database/ideas');
 var links = require('../../src/database/links');
 var number = require('../../src/planning/primitives/number');
+var scheduler = require('../../src/planning/scheduler');
 var serialplan = require('../../src/planning/serialplan');
 var subgraph = require('../../src/database/subgraph');
 var tools = require('../testingTools');
@@ -85,6 +86,17 @@ describe('serialplan', function() {
     actionImplCount = 0;
     start.state.deleteData();
     goal.state.setData(state_count, { value: number.value(5), unit: count_unit.id });
+
+    // undo the effects of the copy
+    // this is for 'save & load' since saving will flatten and we don't have a smarter comparison
+    if(a.requirements._matchParent) {
+      a.requirements._match = a.requirements._matchParent.obj;
+      a.requirements._matchParent = undefined;
+    }
+    if(a.requirements._dataParent) {
+      a.requirements._data = a.requirements._dataParent.obj;
+      a.requirements._dataParent = undefined;
+    }
   });
 
   it('init', function() {
@@ -145,7 +157,38 @@ describe('serialplan', function() {
       expect(actionImplCount).to.equal(5);
     });
 
-    it.skip('scheduleBlueprint');
+    it('scheduleBlueprint', function(done) {
+      var sp = new serialplan.Action([a, a, a, a, a]);
+      var glues = sp.tryTransition(start);
+      expect(glues.length).to.equal(1);
+      expect(actionImplCount).to.equal(0);
+
+      sp.scheduleBlueprint(start, glues[0]).then(function() {
+
+        // the state and the ideas have been updated
+        expect(start.state.getData(state_count).value).to.deep.equal(number.value(5));
+        expect(count.data().value).to.deep.equal(number.value(5));
+        expect(actionImplCount).to.equal(5);
+
+      }, function() {
+        throw new Error('this should not fail');
+      }).finally(done).catch(done);
+
+      expect(actionImplCount).to.equal(1); // it runs immediately
+      scheduler.check().then(function() {
+        expect(actionImplCount).to.equal(2);
+        return scheduler.check();
+      }).then(function() {
+        expect(actionImplCount).to.equal(3);
+        return scheduler.check();
+      }).then(function() {
+        expect(actionImplCount).to.equal(4);
+        return scheduler.check();
+      }).then(function() {
+        expect(actionImplCount).to.equal(5);
+        return scheduler.check();
+      });
+    });
 
     it('cost', function() {
       var sp = new serialplan.Action([a, a, a, a, a]);

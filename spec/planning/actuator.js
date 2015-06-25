@@ -69,6 +69,7 @@ describe('actuator', function() {
     a.requirements.getMatch(a_p).data.value = number.value(0, Infinity);
 
     // undo the effects of the copy
+    // this is for 'save & load' since saving will flatten and we don't have a smarter comparison
     if(a.requirements._matchParent) {
       a.requirements._match = a.requirements._matchParent.obj;
       a.requirements._matchParent = undefined;
