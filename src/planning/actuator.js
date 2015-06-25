@@ -84,11 +84,21 @@ ActuatorAction.prototype.scheduleBlueprint = function(state, glue) {
   // since the first action runs immediately, there isn't any reason for us to delay
   this.runBlueprint(state, glue);
 
-  // now, wait for our goal, then call done
-  var goal = new blueprint.State(subgraph.createGoal(state.state, this.requirements, glue), []);
-  this.apply(goal, glue);
+  // create a goal based on our requirements
+  var goal = subgraph.createGoal(state.state, this.requirements, glue);
 
-  return scheduler.defer(state.state, goal.state);
+  // update our goal to reflect the value we expect
+  subgraph.rewrite(goal, this.transitions, false);
+  // subgraph.match is complicated; our matchers need to demonstrate the value we expect
+  this.transitions.forEach(function(t) {
+    // TODO test all the different matchers
+    // - this should work for !matcher.idea when !options.matchRef, what about the others
+    goal._match[t.vertex_id] = _.clone(goal.getMatch(t.vertex_id));
+    goal._match[t.vertex_id].data = goal.getData(t.vertex_id);
+  });
+
+  // wait for our goal
+  return scheduler.defer(state.state, goal);
 };
 
 // path.apply
