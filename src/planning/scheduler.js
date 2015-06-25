@@ -15,7 +15,7 @@ var schedules = [];
 // @param goal: the condition we are waiting to meet
 // @return a promise that will be resolved when the goal is met, or rejected if we timeout
 // XXX add options to configure when goals expire
-exports.startBeta = function(context, goal) {
+exports.defer = function(context, goal) {
   return new Promise(function(resolve, reject) {
     // TODO subgraph.match unitOnly = false
     // - save vertexMap
@@ -39,4 +39,6 @@ exports.check = function() {
       s.reject();
   });
   schedules.splice(0);
+
+  return Promise.resolve();
 };
