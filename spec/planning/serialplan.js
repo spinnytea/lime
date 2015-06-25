@@ -90,7 +90,7 @@ describe('serialplan', function() {
   it('init', function() {
     // this is to ensure we test everything
     expect(Object.keys(serialplan)).to.deep.equal(['Action']);
-    expect(Object.keys(serialplan.Action.prototype)).to.deep.equal(['runCost', 'tryTransition', 'runBlueprint', 'cost', 'apply', 'save']);
+    expect(Object.keys(serialplan.Action.prototype)).to.deep.equal(['runCost', 'tryTransition', 'runBlueprint', 'scheduleBlueprint', 'cost', 'apply', 'save']);
   });
 
   describe('SerialPlan', function() {
@@ -144,6 +144,8 @@ describe('serialplan', function() {
       expect(count.data().value).to.deep.equal(number.value(5));
       expect(actionImplCount).to.equal(5);
     });
+
+    it.skip('scheduleBlueprint');
 
     it('cost', function() {
       var sp = new serialplan.Action([a, a, a, a, a]);

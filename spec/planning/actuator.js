@@ -16,7 +16,7 @@ describe('actuator', function() {
   it('init', function() {
     // this is to ensure we test everything
     expect(Object.keys(actuator)).to.deep.equal(['Action', 'actions']);
-    expect(Object.keys(actuator.Action.prototype)).to.deep.equal(['runCost', 'tryTransition', 'runBlueprint', 'cost', 'apply', 'save']);
+    expect(Object.keys(actuator.Action.prototype)).to.deep.equal(['runCost', 'tryTransition', 'runBlueprint', 'scheduleBlueprint', 'cost', 'apply', 'save']);
   });
 
   var apple, money, price; // our idea graph is about .. money
@@ -99,6 +99,8 @@ describe('actuator', function() {
     expect(actionImplCount).to.equal(1); // action has been called
   });
   it.skip('replace_id translation across actuator glue');
+
+  it.skip('scheduleBlueprint');
 
   it('cost', function() {
     expect(actionImplCount).to.equal(0);

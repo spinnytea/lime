@@ -18,7 +18,7 @@ describe('blueprint_chain', function() {
     expect(blueprint.Action).to.be.a('function');
     expect(serialplan.Action).to.be.a('function');
     expect(actuator.Action).to.be.a('function');
-    var proto = ['runCost', 'tryTransition', 'runBlueprint', 'cost', 'apply', 'save'];
+    var proto = ['runCost', 'tryTransition', 'runBlueprint', 'scheduleBlueprint', 'cost', 'apply', 'save'];
     expect(Object.keys(blueprint.Action.prototype)).to.deep.equal(proto);
     expect(Object.keys(serialplan.Action.prototype)).to.deep.equal(proto);
     expect(_.intersection(Object.keys(actuator.Action.prototype), proto)).to.deep.equal(proto);

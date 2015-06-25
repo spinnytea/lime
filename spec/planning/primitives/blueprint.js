@@ -20,7 +20,7 @@ describe('blueprint', function() {
     // we can't test list without anything to retrieve; this will be tested in the prototypes that need it
     expect(blueprint.context).to.not.equal(undefined);
 
-    expect(Object.keys(blueprint.Action.prototype)).to.deep.equal(['runCost', 'tryTransition', 'runBlueprint', 'cost', 'apply', 'save']);
+    expect(Object.keys(blueprint.Action.prototype)).to.deep.equal(['runCost', 'tryTransition', 'runBlueprint', 'scheduleBlueprint', 'cost', 'apply', 'save']);
     expect(_.intersection(Object.keys(blueprint.Action.prototype), Object.keys(path.Action.prototype))).to.deep.equal(Object.keys(path.Action.prototype));
     // there isn't anything to test here
     // cost is the only function that lives in blueprint.Action

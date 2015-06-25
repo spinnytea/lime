@@ -59,7 +59,7 @@ BlueprintAction.prototype.runCost = function() {
 // (e.g. actuator.runBlueprint will consume results from actuator.tryTransition)
 //
 // @param state: a BlueprintState
-// @return an array of glue objects (an array of inputs meant for runBlueprint)
+// @return an array of glue objects (an array of inputs meant for runBlueprint, scheduleBlueprint)
 BlueprintAction.prototype.tryTransition = function(state) {
   // I can't get jshint it ignore the unused param
   // but I want the param as documentation
@@ -72,6 +72,8 @@ BlueprintAction.prototype.tryTransition = function(state) {
 // this isn't planning; actually follow the plan
 // (this is not a drill)
 //
+// this will run the whole blueprint at once start to finish without stopping
+//
 // @param state: a BlueprintState (will be modified)
 // @param glue: a result of tryTransition
 BlueprintAction.prototype.runBlueprint = function(state, glue) {
@@ -81,6 +83,23 @@ BlueprintAction.prototype.runBlueprint = function(state, glue) {
   void(glue);
 
   throw new Error(this.constructor.name + ' does not implement runBlueprint');
+};
+
+// run the Blueprint
+// this isn't planning; actually follow the plan
+// (this is not a drill)
+//
+// this will use the scheduler to run the blueprint
+//
+// @param state: a BlueprintState (will be modified)
+// @param glue: a result of tryTransition
+BlueprintAction.prototype.scheduleBlueprint = function(state, glue) {
+  // I can't get jshint it ignore the unused param
+  // but I want the param as documentation
+  void(state);
+  void(glue);
+
+  throw new Error(this.constructor.name + ' does not implement scheduleBlueprint');
 };
 
 // path.Actions.cost

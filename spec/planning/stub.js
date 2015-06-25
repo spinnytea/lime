@@ -16,7 +16,7 @@ describe('stub', function() {
   it('init', function() {
     // this is to ensure we test everything
     expect(Object.keys(stub)).to.deep.equal(['Action', 'solveAt', 'createStates']);
-    expect(Object.keys(stub.Action.prototype)).to.deep.equal(['runCost', 'tryTransition', 'runBlueprint', 'cost', 'apply', 'save']);
+    expect(Object.keys(stub.Action.prototype)).to.deep.equal(['runCost', 'tryTransition', 'runBlueprint', 'scheduleBlueprint', 'cost', 'apply', 'save']);
   });
 
   it('invalid solveAt', function() {
@@ -78,6 +78,13 @@ describe('stub', function() {
       expect(function() {
         s.runBlueprint();
       }).to.throw('StubAction does not implement runBlueprint');
+    });
+
+    it('scheduleBlueprint', function() {
+      // same reason as runBlueprint
+      expect(function() {
+        s.scheduleBlueprint();
+      }).to.throw('StubAction does not implement scheduleBlueprint');
     });
 
     it('cost', function() {
