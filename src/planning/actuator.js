@@ -11,6 +11,7 @@ var _ = require('lodash');
 var blueprint = require('./primitives/blueprint');
 var ideas = require('../database/ideas');
 var links = require('../database/links');
+var scheduler = require('./scheduler');
 var subgraph = require('../database/subgraph');
 
 function ActuatorAction() {
@@ -76,6 +77,18 @@ ActuatorAction.prototype.runBlueprint = function(state, glue) {
   // apply the action through to the thought graph
   if(subgraph.rewrite(state.state, ts, true) === undefined)
     throw new Error('rewrite failed');
+};
+
+// blueprint.scheduleBlueprint
+ActuatorAction.prototype.scheduleBlueprint = function(state, glue) {
+  // since the first action runs immediately, there isn't any reason for us to delay
+  this.runBlueprint(state, glue);
+
+  // now, wait for our goal, then call done
+  var goal = new blueprint.State(subgraph.createGoal(state.state, this.requirements, glue), []);
+  this.apply(goal, glue);
+
+  return scheduler.defer(state.state, goal.state);
 };
 
 // path.apply

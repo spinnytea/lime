@@ -8,6 +8,7 @@ var blueprint = require('../../src/planning/primitives/blueprint');
 var ideas = require('../../src/database/ideas');
 var links = require('../../src/database/links');
 var number = require('../../src/planning/primitives/number');
+var scheduler = require('../../src/planning/scheduler');
 var subgraph = require('../../src/database/subgraph');
 
 var tools = require('../testingTools');
@@ -66,6 +67,16 @@ describe('actuator', function() {
     price.update({ value: number.value(10), unit: money.id });
     bs.state.deleteData();
     a.requirements.getMatch(a_p).data.value = number.value(0, Infinity);
+
+    // undo the effects of the copy
+    if(a.requirements._matchParent) {
+      a.requirements._match = a.requirements._matchParent.obj;
+      a.requirements._matchParent = undefined;
+    }
+    if(a.requirements._dataParent) {
+      a.requirements._data = a.requirements._dataParent.obj;
+      a.requirements._dataParent = undefined;
+    }
   });
 
   it('runCost', function() {
@@ -100,7 +111,25 @@ describe('actuator', function() {
   });
   it.skip('replace_id translation across actuator glue');
 
-  it.skip('scheduleBlueprint');
+  it('scheduleBlueprint', function(done) {
+    expect(actionImplCount).to.equal(0);
+    expect(price.data().value).to.deep.equal(number.value(10));
+    var expectedData = { type: 'lime_number', value: number.value(30), unit: money.id };
+    var result = a.tryTransition(bs);
+    expect(result.length).to.equal(1);
+
+    a.scheduleBlueprint(bs, result[0]).then(function() {
+
+      expect(bs.state.getData(bs_p)).to.deep.equal(expectedData); // vertex data is updated
+      expect(price.data()).to.deep.equal(expectedData); // idea data has not
+      expect(actionImplCount).to.equal(1); // action has been called
+
+    }, function() {
+      throw new Error('this should not fail');
+    }).finally(done).catch(done);
+
+    scheduler.check();
+  });
 
   it('cost', function() {
     expect(actionImplCount).to.equal(0);

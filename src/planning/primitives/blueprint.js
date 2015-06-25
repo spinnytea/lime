@@ -73,6 +73,7 @@ BlueprintAction.prototype.tryTransition = function(state) {
 // (this is not a drill)
 //
 // this will run the whole blueprint at once start to finish without stopping
+// (synchronously run the blueprint)
 //
 // @param state: a BlueprintState (will be modified)
 // @param glue: a result of tryTransition
@@ -90,9 +91,12 @@ BlueprintAction.prototype.runBlueprint = function(state, glue) {
 // (this is not a drill)
 //
 // this will use the scheduler to run the blueprint
+// (asynchronously run the blueprint)
+// the first action will run immediately; subsequent actions will run when it's time
 //
 // @param state: a BlueprintState (will be modified)
 // @param glue: a result of tryTransition
+// @return a promise that will be rejected if the plan ultimately fails, or will be resolved when the goal has been met
 BlueprintAction.prototype.scheduleBlueprint = function(state, glue) {
   // I can't get jshint it ignore the unused param
   // but I want the param as documentation

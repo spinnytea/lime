@@ -47,6 +47,8 @@ describe('scheduler', function() {
       // we will check the WHOLE graph only once this condition is met
       // ...
       // or will the goals be small enough that this doesn't matter
+      //
+      // if we save the vertexMap list up front, then these will be the transitions
     });
 
     it('resolve', function(done) {
