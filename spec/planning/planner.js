@@ -166,15 +166,15 @@ describe('planner', function() {
       it('same goals', function() {
         var plan = planner.create(start, [goal, goal]);
         expect(plan).to.be.an.instanceOf(serialplan.Action);
-        expect(plan.plans.length).to.equal(2);
+        expect(plan.plans.length).to.equal(1); // strip out the empty plan
         expect(plan.runCost()).to.equal(6);
         expect(plan.cost(start, goal)).to.equal(11);
 
         var result = plan.tryTransition(start);
         expect(result.length).to.equal(1); // one plan that we can perform
-        expect(result[0].length).to.equal(2);
+        expect(result[0].length).to.equal(1);
         expect(result[0][0].length).to.equal(5);
-        expect(result[0][1].length).to.equal(0);
+        //expect(result[0][1].length).to.equal(0);
 
         expect(count.data().value).to.deep.equal(number.value(0));
         plan.runBlueprint(start, result[0]);
@@ -184,16 +184,16 @@ describe('planner', function() {
       it('[goal, goal, goal2]', function() {
         var plan = planner.create(start, [goal, goal, goal2]);
         expect(plan).to.be.an.instanceOf(serialplan.Action);
-        expect(plan.plans.length).to.equal(3);
+        expect(plan.plans.length).to.equal(2); // strip out the empty plan
         expect(plan.runCost()).to.equal(11);
         expect(plan.cost(start, goal)).to.equal(16);
 
         var result = plan.tryTransition(start);
         expect(result.length).to.equal(1);
-        expect(result[0].length).to.equal(3);
+        expect(result[0].length).to.equal(2);
         expect(result[0][0].length).to.equal(5);
-        expect(result[0][1].length).to.equal(0);
-        expect(result[0][2].length).to.equal(5);
+        //expect(result[0][1].length).to.equal(0);
+        expect(result[0][1].length).to.equal(5);
 
         expect(count.data().value).to.deep.equal(number.value(0));
         plan.runBlueprint(start, result[0]);

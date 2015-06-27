@@ -15,7 +15,13 @@ var links = require('../database/links');
 function SerialAction(plans) {
   blueprint.Action.call(this);
 
-  this.plans = plans;
+  this.plans = plans.filter(function(p) {
+    if(p instanceof SerialAction) {
+      if(p.plans.length === 0)
+        return false;
+    }
+    return true;
+  });
   if(plans.length > 0)
     this.requirements = plans[0].requirements;
 
@@ -115,7 +121,11 @@ SerialAction.prototype.scheduleBlueprint = function(state, glue) {
         resolve();
       else
         plans[idx].scheduleBlueprint(state, glue[idx])
-          .then(step, reject);
+          .then(step, function() {
+            // TODO if it fails, instead of rejecting, we should replan towards the goal(s)
+            // TODO default wumpus to stochastic
+            reject();
+          });
     }
 
     step();
