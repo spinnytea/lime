@@ -76,5 +76,17 @@ Make it atomic
   actually this is probably a bad idea
   but when would we call this "make it atomic" function ... if a plan NEVER has a problem completing?
   like, if we've run it 10 times and it just works, then we can elevate it?
+Planning direction
+  which is better? planning from goal to start, or planning from start to goal?
+  they are probably both the same cost
+  people say that "typically, going from goal to start has a smaller branching factor"
+  what about a random maze? are actuators more confined than that?
+  --
+  going from goal to start requires defining transitions twice (unless we can figure out a standard way to create an inverse transition)
+  recovering from a plan will be different, which is more efficient?
+    planning forward with arbitrary goals? arbitrary plans from various goals to one starting point
+    i think the key is that we can't keep the arbitary goals when planning forward
+    does this mean that planning backwards is easily invalidated?
+
 
 http://www.tinkerpop.com/

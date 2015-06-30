@@ -585,6 +585,8 @@ exports.match = function(subgraphOuter, subgraphInner, unitOnly) {
         subgraphInner.getMatch(vi_key).options.transitionable,
         subgraphInner.getData(vi_key),
         unitOnly);
+
+      // TODO update this section with the stuff below vertexTransitionableAcceptable in subgraphMatch
     }
     return possible;
   });
