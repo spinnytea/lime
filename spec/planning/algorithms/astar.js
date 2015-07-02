@@ -100,8 +100,6 @@ describe('astar', function() {
     it.skip('stub solveAt IMMEDIATE', function() {
       // for now, this was tested using lm-wumpus
       // but we really need one here in this source
-
-      // TODO why does this take SSOOOO LONG
     });
 
     it.skip('stub solveAt IMMEDIATE with subactions');

@@ -278,6 +278,9 @@ describe('planner', function() {
       expect(plan.plans[1]).to.be.an.instanceOf(serialplan.Action);
       expect(plan.plans[1].plans.length).to.equal(5);
       expect(plan.plans[1].plans[1]).to.be.an.instanceOf(actuator.Action);
+      expect(plan.transitions).to.deep.equal([]);
+      expect(plan.plans[0].transitions).to.deep.equal(s.transitions);
+      expect(plan.plans[1].transitions).to.deep.equal(s.transitions);
     });
 
     it.skip('with stubs at CREATE and defined sub actions');

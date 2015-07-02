@@ -44,6 +44,8 @@ units.step = function(path, frontier) {
 
       var action = planner.create(curr.start, curr.goal);
       if(action) {
+        // save our transitions
+        Array.prototype.push.apply(action.transitions, next.action.transitions);
         // populate the list of nextActions from this action instead of the stub
         Array.prototype.push.apply(immediateStubs,
           new blueprint.State(path.last.state, [action]).actions());
