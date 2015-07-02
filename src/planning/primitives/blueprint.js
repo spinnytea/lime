@@ -26,6 +26,15 @@ function BlueprintAction() {
   // (these statements are intentionally redundant)
   this.requirements = new subgraph.Subgraph();
 
+  // subgraph.rewrite.transitions
+  // how does this action affect the world
+  // this is used against our thoughts
+  // -
+  // this list is optional during construction
+  // it's likely that all plans will use it in some capacity
+  // XXX eventually, we will learn these transitions for some unknown/complex/high-level tasks
+  this.transitions = [];
+
   // is this a cause-and-effect action?
   // does this happen automatically within the world?
   this.causeAndEffect = false;

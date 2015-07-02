@@ -12,7 +12,7 @@ function MockAction() {
 _.extend(MockAction.prototype, blueprint.Action.prototype);
 
 
-describe('blueprint_chain', function() {
+describe('blueprintDummyTest', function() {
   it('inheritance', function() {
     // constructor
     expect(blueprint.Action).to.be.a('function');
@@ -27,7 +27,7 @@ describe('blueprint_chain', function() {
     var ba = new blueprint.Action();
     var sa = new serialplan.Action([]);
     var aa = new actuator.Action();
-    var params = ['requirements', 'causeAndEffect'];
+    var params = ['requirements', 'transitions', 'causeAndEffect'];
     expect(Object.keys(ba)).to.deep.equal(params);
     expect(_.intersection(Object.keys(sa), params)).to.deep.equal(params);
     expect(_.intersection(Object.keys(aa), params)).to.deep.equal(params);

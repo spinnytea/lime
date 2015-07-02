@@ -17,10 +17,6 @@ var subgraph = require('../database/subgraph');
 function ActuatorAction() {
   blueprint.Action.call(this);
 
-  // subgraph.rewrite.transitions
-  // how does this actuator affect the world
-  this.transitions = [];
-
   // the name of the action to use
   this.action = null;
 }
@@ -131,8 +127,8 @@ ActuatorAction.prototype.save = function() {
     blueprint: {
       idea: this.idea,
       requirements: subgraph.stringify(this.requirements),
-      causeAndEffect: this.causeAndEffect,
       transitions: this.transitions,
+      causeAndEffect: this.causeAndEffect,
       action: this.action
     }
   });
@@ -145,8 +141,8 @@ blueprint.loaders.ActuatorAction = function(blueprint) {
   var a = new ActuatorAction();
   a.idea = blueprint.idea;
   a.requirements = subgraph.parse(blueprint.requirements);
-  a.causeAndEffect = blueprint.causeAndEffect;
   a.transitions = blueprint.transitions;
+  a.causeAndEffect = blueprint.causeAndEffect;
   a.action = blueprint.action;
   return a;
 };

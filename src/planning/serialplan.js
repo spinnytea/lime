@@ -112,6 +112,9 @@ SerialAction.prototype.runBlueprint = function(state, glue) {
 // blueprint.scheduleBlueprint
 SerialAction.prototype.scheduleBlueprint = function(state, glue) {
   var plans = this.plans;
+  // in case we fail, we need to have a goal based on the original state
+  // XXX can we lazy eval this during the plans.scheduleBlueprint.then
+  //var goalState = this.apply(state, glue);
   return new Promise(function(resolve, reject) {
     var idx = -1;
 
@@ -123,7 +126,24 @@ SerialAction.prototype.scheduleBlueprint = function(state, glue) {
         plans[idx].scheduleBlueprint(state, glue[idx])
           .then(step, function() {
             // TODO if it fails, instead of rejecting, we should replan towards the goal(s)
-            // TODO default wumpus to stochastic
+
+            // we don't need the WHOLE goal state
+            // we only need the parts of the goal that are affected by the transitions
+            // so let's create a new goal that only contains the transitioned
+            // (all other nodes are purely structural; so if we can match the transition vertex to the state, we can grab the represented id)
+            //
+            // if we set all the identified thoughts, then the only thing that will run is the matchers
+            //
+            // the transitions are key
+            // if a blueprint defines transitions, then that's as far as we need to go
+            // and deeper transitions are probably just a means to this, but we don't need them for goals
+            // so... we should only replan stubs?
+            // if this is a stub, do we replan it? that makes things easier
+            // if not, then bubble up to a parent serial plan
+            // what about deeper? if this CONTAINS stubs, do we still want to go down ... let's say no for now
+
+            //void(goalState);
+
             reject();
           });
     }
@@ -154,6 +174,7 @@ SerialAction.prototype.save = function() {
     subtype: 'SerialAction',
     blueprint: {
       idea: this.idea,
+      transitions: this.transitions,
       causeAndEffect: this.causeAndEffect,
       plans: this.plans.map(function(p) { return p.save(); })
       // we can derive the requirements from the first plan
@@ -171,6 +192,7 @@ blueprint.loaders.SerialAction = function(bp) {
   var plans = bp.plans.map(function(id) { return blueprint.load(id); });
   var sa = new SerialAction(plans);
   sa.idea = bp.idea;
+  sa.transitions = bp.transitions;
   sa.causeAndEffect = bp.causeAndEffect;
   return sa;
 };

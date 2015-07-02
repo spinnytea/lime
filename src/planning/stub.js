@@ -16,10 +16,6 @@ function StubAction(solveAt) {
     throw new Error('solveAt must be defined and well known');
 
   this.solveAt = solveAt;
-
-  // subgraph.rewrite.transitions
-  // what the stub will solve for later
-  this.transitions = [];
 }
 _.extend(StubAction.prototype, blueprint.Action.prototype);
 
@@ -45,8 +41,8 @@ StubAction.prototype.save = function() {
     blueprint: {
       idea: this.idea,
       requirements: subgraph.stringify(this.requirements),
-      causeAndEffect: this.causeAndEffect,
       transitions: this.transitions,
+      causeAndEffect: this.causeAndEffect,
       solveAt: this.solveAt
     }
   });
@@ -59,8 +55,8 @@ blueprint.loaders.StubAction = function(blueprint) {
   var a = new StubAction(blueprint.solveAt);
   a.idea = blueprint.idea;
   a.requirements = subgraph.parse(blueprint.requirements);
-  a.causeAndEffect = blueprint.causeAndEffect;
   a.transitions = blueprint.transitions;
+  a.causeAndEffect = blueprint.causeAndEffect;
   return a;
 };
 

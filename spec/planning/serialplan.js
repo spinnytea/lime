@@ -157,38 +157,44 @@ describe('serialplan', function() {
       expect(actionImplCount).to.equal(5);
     });
 
-    it('scheduleBlueprint', function(done) {
-      var sp = new serialplan.Action([a, a, a, a, a]);
-      var glues = sp.tryTransition(start);
-      expect(glues.length).to.equal(1);
-      expect(actionImplCount).to.equal(0);
+    describe('scheduleBlueprint', function() {
+      it('basic', function(done) {
+        var sp = new serialplan.Action([a, a, a, a, a]);
+        var glues = sp.tryTransition(start);
+        expect(glues.length).to.equal(1);
+        expect(actionImplCount).to.equal(0);
 
-      sp.scheduleBlueprint(start, glues[0]).then(function() {
+        sp.scheduleBlueprint(start, glues[0], []).then(function() {
 
-        // the state and the ideas have been updated
-        expect(start.state.getData(state_count).value).to.deep.equal(number.value(5));
-        expect(count.data().value).to.deep.equal(number.value(5));
-        expect(actionImplCount).to.equal(5);
+          // the state and the ideas have been updated
+          expect(start.state.getData(state_count).value).to.deep.equal(number.value(5));
+          expect(count.data().value).to.deep.equal(number.value(5));
+          expect(actionImplCount).to.equal(5);
 
-      }, function() {
-        throw new Error('this should not fail');
-      }).finally(done).catch(done);
+        }, function() {
+          throw new Error('this should not fail');
+        }).finally(done).catch(done);
 
-      expect(actionImplCount).to.equal(1); // it runs immediately
-      scheduler.check().then(function() {
-        expect(actionImplCount).to.equal(2);
-        return scheduler.check();
-      }).then(function() {
-        expect(actionImplCount).to.equal(3);
-        return scheduler.check();
-      }).then(function() {
-        expect(actionImplCount).to.equal(4);
-        return scheduler.check();
-      }).then(function() {
-        expect(actionImplCount).to.equal(5);
-        return scheduler.check();
+        expect(actionImplCount).to.equal(1); // it runs immediately
+        scheduler.check().then(function() {
+          expect(actionImplCount).to.equal(2);
+          return scheduler.check();
+        }).then(function() {
+          expect(actionImplCount).to.equal(3);
+          return scheduler.check();
+        }).then(function() {
+          expect(actionImplCount).to.equal(4);
+          return scheduler.check();
+        }).then(function() {
+          expect(actionImplCount).to.equal(5);
+          return scheduler.check();
+        });
       });
-    });
+
+      it.skip('plan recovery', function() {
+        // replan when something goes wrong
+      });
+    }); // end scheduleBlueprint
 
     it('cost', function() {
       var sp = new serialplan.Action([a, a, a, a, a]);
