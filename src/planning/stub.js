@@ -13,6 +13,8 @@ function StubAction(solveAt) {
   blueprint.Action.call(this);
 
   if(exports.solveAt.indexOf(solveAt) === -1)
+    // this is because the stubs aren't used directly
+    // each well known solveAt has an implementation somewhere in the source
     throw new Error('solveAt must be defined and well known');
 
   this.solveAt = solveAt;
@@ -61,7 +63,7 @@ blueprint.loaders.StubAction = function(blueprint) {
 };
 
 exports.solveAt = [
-  // this occurs durring astar.units.step
+  // this occurs during astar.units.step
   // it's sort of like a greedy depth-first search
   'immediate',
 
