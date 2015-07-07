@@ -77,8 +77,7 @@ SerialAction.prototype.tryTransition = function(state) {
         curr.glues.push([]);
         nextList.push(curr);
       } else {
-        var transitions = that.plans[i].tryTransition(curr.state);
-        transitions.forEach(function(glue) {
+        that.plans[i].tryTransition(curr.state).forEach(function(glue) {
           var glues = [];
           Array.prototype.push.apply(glues, curr.glues);
           glues.push(glue);

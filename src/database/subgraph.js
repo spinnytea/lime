@@ -850,6 +850,7 @@ exports.rewrite = function(subgraph, transitions, actual) {
     return undefined;
   // if there are no transitions, then this action doesn't make sense
   // we could just return subgraph, but that may be confusing
+  // XXX why would it be confusing? why would this not be allowed?
   if(transitions.length === 0)
     return undefined;
 
