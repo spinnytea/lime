@@ -4,6 +4,7 @@
 
 var _ = require('lodash');
 var fs = require('fs');
+var mkdirp = require('mkdirp');
 var config = require('../../config');
 var ids = require('../ids');
 
@@ -23,8 +24,17 @@ var NEXT_ID = 'ideas';
 var memory = {};
 
 // create a path/filename for an idea
-function filepath(id, which) {
-  return config.settings.location + '/' + id + '_' + which + '.json';
+function filepath(id) {
+  var suffix = '';
+  if(id.length > 2)
+    suffix = '/' + id
+      .substr(0, (id.length-2+(id.length%2)))
+      .match(/../g)
+      .join('/');
+  return config.settings.location + suffix;
+}
+function filename(id, which) {
+  return filepath(id) + '/' + id + '_' + which + '.json';
 }
 
 /* this is the singleton that we will keep an internal reference to */
@@ -112,12 +122,22 @@ exports.save = function(idea) {
 
   var core = memory[id];
   if(core) {
+    var path = filepath(id);
+    if(!fs.existsSync(path)) {
+      // we don't want to recreate the whole directory root
+      // i.e. this is a check to make sure our drive is mounted
+      if(fs.existsSync(config.settings.location)) {
+        mkdirp.sync(path);
+      }
+    }
+
     if(!_.isEmpty(core.data))
-      fs.writeFileSync(filepath(id, 'data'), JSON.stringify(core.data), {encoding:'utf8'});
+      fs.writeFileSync(filename(id, 'data'), JSON.stringify(core.data), {encoding:'utf8'});
+
     if(!_.isEmpty(core.links))
-      fs.writeFileSync(filepath(id, 'links'), JSON.stringify(core.links), {encoding:'utf8'});
-    else if(fs.existsSync(filepath(id, 'links')))
-      fs.unlink(filepath(id, 'links'));
+      fs.writeFileSync(filename(id, 'links'), JSON.stringify(core.links), {encoding:'utf8'});
+    else if(fs.existsSync(filename(id, 'links')))
+      fs.unlink(filename(id, 'links'));
   }
 };
 exports.load = function(idea) {
@@ -127,12 +147,12 @@ exports.load = function(idea) {
 
   if(!(id in memory)) {
     var data;
-    var dataPath = filepath(id, 'data');
+    var dataPath = filename(id, 'data');
     if(fs.existsSync(dataPath))
       data = JSON.parse(fs.readFileSync(dataPath, {encoding:'utf8'}));
 
     var links;
-    var linksPath = filepath(id, 'links');
+    var linksPath = filename(id, 'links');
     if(fs.existsSync(linksPath))
       links = JSON.parse(fs.readFileSync(linksPath, {encoding:'utf8'}));
 

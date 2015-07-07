@@ -20,6 +20,7 @@
   },
   "dependencies": {
     "lodash": "^3.6.0",
+    "mkdirp": "^0.5.1",
     "priorityqueuejs": "^1.0.0"
   }
 }

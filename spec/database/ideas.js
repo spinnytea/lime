@@ -246,4 +246,25 @@ describe('ideas', function() {
     delete config.data.ideas.context.test;
     config.save();
   });
+
+  it('idea folders', function() {
+    function splitFn(id) {
+      var ret = '';
+      if(id.length > 2)
+        ret = id
+          .substr(0, (id.length-2+(id.length%2)))
+          .match(/../g)
+          .join('/');
+      return ret;
+    }
+
+    expect(splitFn('')).to.equal('');
+    expect(splitFn('1')).to.equal('');
+    expect(splitFn('12')).to.equal('');
+    expect(splitFn('123')).to.equal('12');
+    expect(splitFn('1234')).to.equal('12');
+    expect(splitFn('12345')).to.equal('12/34');
+    expect(splitFn('123456')).to.equal('12/34');
+    expect(splitFn('1234567')).to.equal('12/34/56');
+  });
 }); // end ideas
