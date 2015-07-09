@@ -10,10 +10,10 @@ var Promise = require('bluebird');
 describe('nodejs', function() {
   describe('javascript', function() {
     it('[].find', function() {
-      // I want arrays to have the 'find' function
-      // nodejs doesn't support it (it's a firefox only thing, it seems)
-      expect(Array.prototype.find).to.equal(undefined);
-      expect([].find).to.equal(undefined);
+      // find is part of ES6, and supported by node --harmony
+      // (e.g. gulp --harmony mocha)
+      expect(Array.prototype.find).to.be.a('function');
+      expect([].find).to.be.a('function');
     });
   }); // end javascript
 

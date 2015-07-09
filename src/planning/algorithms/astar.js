@@ -16,7 +16,7 @@ Object.defineProperty(exports, 'units', { value: {} });
 exports.units.frontier = function() {
   return new PriorityQueue(function(a, b) {
     //return (b.cost + b.distFromGoal + b.actions.length) - (a.cost + a.distFromGoal + a.actions.length);
-    // XXX I'm still not convinced it's the right move to factor in actions.length
+    // I'm still not convinced it's the right move to factor in actions.length
     // - afterall, the path cost is a sum of all steps, so more steps will inherently be have a larger cost
     // TODO add some "emotion config" to astar frontier expansion
     // - if distFromGoal is more important, then we will charge straight for the goal (depth first)
@@ -96,10 +96,9 @@ exports.search = function(start, goal) {
     // do we win?
     if(path.distFromGoal === 0) {
       if(_.isArray(goal)) {
-        // TODO Array.prototype.fine - this is part of the ES6 spec, but not node v0.12.2
-        var reached = goal.filter(function(g) { return path.last.matches(g); });
-        if(reached.length) {
-          path.goal = reached[0];
+        var reached = goal.find(function(g) { return path.last.matches(g); });
+        if(reached) {
+          path.goal = reached;
           return path;
         }
       } else {
