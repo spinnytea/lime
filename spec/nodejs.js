@@ -13,6 +13,8 @@ describe('nodejs', function() {
       // (e.g. gulp --harmony mocha)
       expect(Array.prototype.find).to.be.a('function');
       expect([].find).to.be.a('function');
+      // finds the first object (state test? not a contract test?)
+      expect([{a: 1, b: 1}, {a: 1, b: 2}].find(function(o) { return o.a===1; })).to.deep.equal({a: 1, b: 1});
     });
   }); // end javascript
 

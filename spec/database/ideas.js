@@ -215,6 +215,10 @@ describe('ideas', function() {
         expect(function() { ideas.load(); }).to.throw();
         expect(function() { ideas.load(1); }).to.throw();
       });
+
+      it.skip('path doesn\'t exist, w/ location');
+
+      it.skip('path doesn\'t exist, w/o location');
     }); // end save / load
 
     it('close', function() {
