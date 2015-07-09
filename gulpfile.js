@@ -1,4 +1,5 @@
 'use strict';
+// node_modules/.bin/gulp --harmony mocha
 var gulp = require('gulp');
 var mocha = require('gulp-mocha');
 var jshint = require('gulp-jshint');
