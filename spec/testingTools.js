@@ -1,5 +1,4 @@
 'use strict';
-/* global beforeEach, afterEach */
 var _ = require('lodash');
 var fs = require('fs');
 var Promise = require('bluebird'); // jshint ignore:line

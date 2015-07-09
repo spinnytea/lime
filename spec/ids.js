@@ -1,5 +1,4 @@
 'use strict';
-/* global describe, it */
 var expect = require('chai').expect;
 var config = require('../config');
 var ids = require('../src/ids');

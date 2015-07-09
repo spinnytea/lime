@@ -1,5 +1,4 @@
 'use strict';
-/* global describe, it */
 var expect = require('chai').expect;
 var discrete = require('../../../src/planning/primitives/discrete');
 var tools = require('../../testingTools');

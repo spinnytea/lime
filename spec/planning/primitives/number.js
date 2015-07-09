@@ -1,5 +1,4 @@
 'use strict';
-/* global describe, it */
 var _ = require('lodash');
 var expect = require('chai').expect;
 var number = require('../../../src/planning/primitives/number');

@@ -1,5 +1,4 @@
 'use strict';
-/* global describe, it, before, beforeEach */
 var expect = require('chai').expect;
 var astar = require('../../src/planning/algorithms/astar');
 var actuator = require('../../src/planning/actuator');

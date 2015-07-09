@@ -1,5 +1,4 @@
 'use strict';
-/* global describe, it */
 var _ = require('lodash');
 var Promise = require('bluebird'); // jshint ignore:line
 var expect = require('chai').expect;

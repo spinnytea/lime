@@ -1,5 +1,4 @@
 'use strict';
-/* global describe, it, beforeEach, afterEach */
 var _ = require('lodash');
 var expect = require('chai').expect;
 var discrete = require('../../src/planning/primitives/discrete');
