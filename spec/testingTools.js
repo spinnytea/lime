@@ -3,7 +3,6 @@
 var _ = require('lodash');
 var fs = require('fs');
 var Promise = require('bluebird'); // jshint ignore:line
-var config = require('../config');
 var ideas = require('../src/database/ideas');
 var links = require('../src/database/links');
 
@@ -42,21 +41,17 @@ exports.ideas.create = function(data) {
 exports.ideas.clean = function(idea) {
   created.push(idea.id || idea);
 };
-// Copied from the src ideas / I need this to test but it shouldn't be global on ideas
-exports.ideas.filepath = function(id, which) {
-  return config.settings.location + '/' + id + '_' + which + '.json';
-};
 // address a race condition
 // - if the file existance doesn't match what we expect
 // - then try again in a little bit and just return that
 exports.ideas.exists = function(id, which, expected) {
   return new Promise(function(resolve) {
-    var filepath = exports.ideas.filepath(id, which);
-    if(expected === fs.existsSync(filepath)) {
+    var filename = ideas.units.filename(id, which);
+    if(expected === fs.existsSync(filename)) {
       resolve(expected);
     } else {
       setTimeout(function() {
-        resolve(fs.existsSync(filepath));
+        resolve(fs.existsSync(filename));
       }, 500);
     }
   });
@@ -65,9 +60,9 @@ exports.ideas.exists = function(id, which, expected) {
 
 function deleteFile(id, which) {
   // Copied from the src / I need this to test but it shouldn't be global
-  var path = exports.ideas.filepath(id, which);
-  if(fs.existsSync(path))
-    fs.unlink(path);
+  var filename = ideas.units.filename(id, which);
+  if(fs.existsSync(filename))
+    fs.unlink(filename);
 }
 
 beforeEach(function() {
