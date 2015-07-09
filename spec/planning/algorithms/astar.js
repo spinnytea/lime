@@ -12,7 +12,7 @@ describe('astar', function() {
   it('init', function() {
     expect(config.settings.astar_max_paths).to.be.a('number');
 
-    expect(Object.keys(astar)).to.deep.equal(['units', 'search']);
+    expect(Object.keys(astar)).to.deep.equal(['search']);
     expect(Object.keys(Path)).to.deep.equal(['Path', 'Action', 'State']);
 
     expect(NumberSlide.Action).to.be.a('function');
@@ -22,12 +22,16 @@ describe('astar', function() {
   });
 
   describe('units', function() {
+    it('init', function() {
+      expect(Object.keys(astar.units)).to.deep.equal(['frontier', 'step']);
+    });
+
     it.skip('frontier');
 
-    // I'm not sure how to test this, really
-    // It probably works from the fact that we can solve the astar problems
-    // Testing this would be testing the library (but I do need to make sure that I can use it)
-    //it.skip('frontier order');
+    // this is basically testing that our sort function works
+    // which is a pretty big deal
+    // look to lm-wumpus for examples
+    it.skip('frontier order');
 
     it.skip('step');
     it.skip('step when at goal');

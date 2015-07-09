@@ -8,13 +8,12 @@ var Path = require('../primitives/path');
 var planner = require('../planner');
 var stub = require('../stub');
 
-// pull out some of the functions within search so we can unit test it easier
+// we need some way of accessing function so we can unit test them
 // nothing inside exports.unit should need to be called or substituted
-// but I need SOME way of inspecting the search function with a fine toothed comb
-var units = exports.units = {};
+Object.defineProperty(exports, 'units', { value: {} });
 
 // create a priority queue to store the current plans
-units.frontier = function() {
+exports.units.frontier = function() {
   return new PriorityQueue(function(a, b) {
     //return (b.cost + b.distFromGoal + b.actions.length) - (a.cost + a.distFromGoal + a.actions.length);
     // XXX I'm still not convinced it's the right move to factor in actions.length
@@ -33,7 +32,7 @@ units.frontier = function() {
 };
 
 // apply all of the available actions to the selected path
-units.step = function(path, frontier) {
+exports.units.step = function(path, frontier) {
   var nextActions = path.last.actions();
 
   var immediateStubs = [];
@@ -77,7 +76,7 @@ units.step = function(path, frontier) {
 // XXX is exiting early different from being unable to find a solution? should we exit differently?
 exports.search = function(start, goal) {
   // the current set of paths
-  var frontier = units.frontier();
+  var frontier = exports.units.frontier();
   frontier.enq(new Path.Path([start], [], [], goal));
   // TODO can we save the goal->start vertex maps; this will improve Path.constructor last.distance(goal)
   // - I mean, this is a value-less set of matches, so it should match all possible configurations
@@ -116,7 +115,7 @@ exports.search = function(start, goal) {
       // console.log('Did not find solution (paths expanded: ' + numPathsExpanded + ', frontier: ' + frontier.size() + ').');
       return undefined;
 
-    units.step(path, frontier);
+    exports.units.step(path, frontier);
   }
 
   // console.log('Did not find solution (paths expanded: ' + numPathsExpanded + ', frontier: ' + frontier.size() + ').');

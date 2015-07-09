@@ -8,6 +8,10 @@ var mkdirp = require('mkdirp');
 var config = require('../../config');
 var ids = require('../ids');
 
+// we need some way of accessing function so we can unit test them
+// nothing inside exports.unit should need to be called or substituted
+Object.defineProperty(exports, 'units', { value: {} });
+
 //
 // internal functionality
 //
@@ -24,7 +28,7 @@ var NEXT_ID = 'ideas';
 var memory = {};
 
 // create a path/filename for an idea
-function filepath(id) {
+exports.units.filepath = function(id) {
   var suffix = '';
   if(id.length > 2)
     suffix = '/' + id
@@ -32,10 +36,10 @@ function filepath(id) {
       .match(/../g)
       .join('/');
   return config.settings.location + suffix;
-}
-function filename(id, which) {
-  return filepath(id) + '/' + id + '_' + which + '.json';
-}
+};
+exports.units.filename = function(id, which) {
+  return exports.units.filepath(id) + '/' + id + '_' + which + '.json';
+};
 
 /* this is the singleton that we will keep an internal reference to */
 function CoreIdea(id, data, links) {
@@ -122,7 +126,7 @@ exports.save = function(idea) {
 
   var core = memory[id];
   if(core) {
-    var path = filepath(id);
+    var path = exports.units.filepath(id);
     if(!fs.existsSync(path)) {
       // we don't want to recreate the whole directory root
       // i.e. this is a check to make sure our drive is mounted
@@ -132,12 +136,12 @@ exports.save = function(idea) {
     }
 
     if(!_.isEmpty(core.data))
-      fs.writeFileSync(filename(id, 'data'), JSON.stringify(core.data), {encoding:'utf8'});
+      fs.writeFileSync(exports.units.filename(id, 'data'), JSON.stringify(core.data), {encoding:'utf8'});
 
     if(!_.isEmpty(core.links))
-      fs.writeFileSync(filename(id, 'links'), JSON.stringify(core.links), {encoding:'utf8'});
-    else if(fs.existsSync(filename(id, 'links')))
-      fs.unlink(filename(id, 'links'));
+      fs.writeFileSync(exports.units.filename(id, 'links'), JSON.stringify(core.links), {encoding:'utf8'});
+    else if(fs.existsSync(exports.units.filename(id, 'links')))
+      fs.unlink(exports.units.filename(id, 'links'));
   }
 };
 exports.load = function(idea) {
@@ -147,12 +151,12 @@ exports.load = function(idea) {
 
   if(!(id in memory)) {
     var data;
-    var dataPath = filename(id, 'data');
+    var dataPath = exports.units.filename(id, 'data');
     if(fs.existsSync(dataPath))
       data = JSON.parse(fs.readFileSync(dataPath, {encoding:'utf8'}));
 
     var links;
-    var linksPath = filename(id, 'links');
+    var linksPath = exports.units.filename(id, 'links');
     if(fs.existsSync(linksPath))
       links = JSON.parse(fs.readFileSync(linksPath, {encoding:'utf8'}));
 
