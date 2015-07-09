@@ -159,7 +159,7 @@ describe('serialplan', function() {
 
     describe('scheduleBlueprint', function() {
       it('basic', function(done) {
-        var sp = new serialplan.Action([new serialplan.Action([a, a, a]), a, a]);
+        var sp = new serialplan.Action([new serialplan.Action([a, a, a, a]), a]);
         var glues = sp.tryTransition(start);
         expect(glues.length).to.equal(1);
         expect(actionImplCount).to.equal(0);
@@ -183,17 +183,60 @@ describe('serialplan', function() {
           expect(actionImplCount).to.equal(3);
           return scheduler.check();
         }).then(function() {
-          // this is basically a noop in the test while the promise chain resolves
-          // the serial plan promise chain and the test promise chain are trading time in the js execution schedule
-          // at this step, the nested serial plan is unwinding
-          expect(actionImplCount).to.equal(3);
-          return Promise.resolve();
-        }).then(function() {
           expect(actionImplCount).to.equal(4);
           return scheduler.check();
         }).then(function() {
+          // this is basically a noop in the test while the promise chain resolves
+          // the serial plan promise chain and the test promise chain are trading time in the js execution schedule
+          // at this step, the nested serial plan is unwinding
+          expect(actionImplCount).to.equal(4);
+          return Promise.resolve();
+        }).then(function() {
           expect(actionImplCount).to.equal(5);
           return scheduler.check();
+        }).catch(done);
+      });
+
+      it('failure', function(done) {
+        // sub plan doesn't have any transitions defined
+        // so this should just fail
+        var sp = new serialplan.Action([new serialplan.Action([a, a, a, a]), a]);
+        var glues = sp.tryTransition(start);
+        expect(glues.length).to.equal(1);
+        expect(actionImplCount).to.equal(0);
+
+        sp.scheduleBlueprint(start, glues[0], []).then(function() {
+          throw new Error('this should not pass');
+        }, function() {
+          expect(actionImplCount).to.equal(3); // this is when we trigger the failure
+          expect(count.data().value).to.deep.equal(number.value(1)); // this is how the data is set below
+          expect(start.state.getData(state_count).value).to.deep.equal(number.value(1)); // this is how the data is set below
+        }).finally(done).catch(done);
+
+        expect(actionImplCount).to.equal(1); // the first step runs immediately
+        expect(count.data().value).to.deep.equal(number.value(1));
+        expect(start.state.getData(state_count).value).to.deep.equal(number.value(1));
+        scheduler.check().then(function() {
+          expect(actionImplCount).to.equal(2);
+          expect(count.data().value).to.deep.equal(number.value(2));
+          expect(start.state.getData(state_count).value).to.deep.equal(number.value(2));
+          return scheduler.check();
+        }).then(function() {
+          expect(actionImplCount).to.equal(3);
+          expect(count.data().value).to.deep.equal(number.value(3));
+          expect(start.state.getData(state_count).value).to.deep.equal(number.value(3));
+
+          var data = count.data();
+          data.value.l = 1;
+          data.value.r = 1;
+
+          count.update(data);
+          start.state.setData(state_count, data);
+
+          return scheduler.check();
+        }).then(function() {
+          expect(actionImplCount).to.equal(3);
+          return Promise.resolve();
         }).catch(done);
       });
 
