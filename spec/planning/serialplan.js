@@ -240,9 +240,83 @@ describe('serialplan', function() {
         }).catch(done);
       });
 
-      it.skip('plan recovery', function() {
+      it('plan recovery', function(done) {
         // replan when something goes wrong
+        var sub_sp = new serialplan.Action([a, a, a, a]);
+        sub_sp.transitions.push({ vertex_id: a_c, combine: { value: number.value(4), unit: count_unit.id } });
+        var sp = new serialplan.Action([sub_sp, a]);
+        var glues = sp.tryTransition(start);
+        expect(glues.length).to.equal(1);
+        expect(actionImplCount).to.equal(0);
+
+        sp.scheduleBlueprint(start, glues[0], []).then(function() {
+
+          // the state and the ideas have been updated
+          expect(start.state.getData(state_count).value).to.deep.equal(number.value(5));
+          expect(count.data().value).to.deep.equal(number.value(5));
+          expect(actionImplCount).to.equal(7);
+
+        }, function() {
+          throw new Error('this should not fail');
+        }).finally(done);
+
+        expect(actionImplCount).to.equal(1); // the first step runs immediately
+        expect(count.data().value).to.deep.equal(number.value(1));
+        expect(start.state.getData(state_count).value).to.deep.equal(number.value(1));
+        scheduler.check().then(function() {
+          expect(actionImplCount).to.equal(2);
+          expect(count.data().value).to.deep.equal(number.value(2));
+          expect(start.state.getData(state_count).value).to.deep.equal(number.value(2));
+          return scheduler.check();
+        }).then(function() {
+          expect(actionImplCount).to.equal(3);
+          expect(count.data().value).to.deep.equal(number.value(3));
+          expect(start.state.getData(state_count).value).to.deep.equal(number.value(3));
+
+          var data = count.data();
+          data.value.l = 1;
+          data.value.r = 1;
+
+          count.update(data);
+          start.state.setData(state_count, data);
+
+          return scheduler.check();
+        }).then(function() {
+          expect(actionImplCount).to.equal(4);
+          expect(count.data().value).to.deep.equal(number.value(2));
+          expect(start.state.getData(state_count).value).to.deep.equal(number.value(2));
+          return scheduler.check();
+        }).then(function() {
+          expect(actionImplCount).to.equal(5);
+          expect(count.data().value).to.deep.equal(number.value(3));
+          expect(start.state.getData(state_count).value).to.deep.equal(number.value(3));
+          return scheduler.check();
+        }).then(function() {
+          expect(actionImplCount).to.equal(6);
+          expect(count.data().value).to.deep.equal(number.value(4));
+          expect(start.state.getData(state_count).value).to.deep.equal(number.value(4));
+          return scheduler.check();
+        }).then(function() {
+          // this is basically a noop in the test while the promise chain resolves
+          // the serial plan promise chain and the test promise chain are trading time in the js execution schedule
+          // at this step, the nested serial plan is unwinding
+          expect(actionImplCount).to.equal(6);
+          return Promise.resolve();
+        }).then(function() {
+          // this is basically a noop in the test while the promise chain resolves
+          // the serial plan promise chain and the test promise chain are trading time in the js execution schedule
+          // at this step, the nested serial plan is unwinding
+          expect(actionImplCount).to.equal(6);
+          return Promise.resolve();
+        }).then(function() {
+          expect(actionImplCount).to.equal(7);
+          expect(count.data().value).to.deep.equal(number.value(5));
+          expect(start.state.getData(state_count).value).to.deep.equal(number.value(5));
+          return scheduler.check();
+        }).catch(done);
       });
+
+      it.skip('plan failed recovery'); // set the data.value.l to -1
     }); // end scheduleBlueprint
 
     it('cost', function() {

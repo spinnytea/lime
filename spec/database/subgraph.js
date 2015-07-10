@@ -28,7 +28,7 @@ function checkSubgraphMatch(match, outer, inner) {
 describe('subgraph', function() {
   it('init', function() {
     // this is to ensure we test everything
-    expect(Object.keys(subgraph)).to.deep.equal(['Subgraph', 'matcher', 'stringify', 'parse', 'search', 'match', 'rewrite', 'createGoal']);
+    expect(Object.keys(subgraph)).to.deep.equal(['Subgraph', 'matcher', 'stringify', 'parse', 'search', 'match', 'rewrite', 'createGoal', 'createGoal2']);
     expect(Object.keys(subgraph.Subgraph.prototype)).to.deep.equal(['copy', 'addVertex', 'addEdge', 'getMatch', 'getIdea', 'allIdeas', 'deleteIdea', 'getData', 'setData', 'deleteData']);
     expect(Object.keys(subgraph.matcher)).to.deep.equal(['id', 'filler', 'exact', 'similar', 'number', 'discrete']);
   });
@@ -2111,4 +2111,6 @@ describe('subgraph', function() {
     expect(goal.getIdea(ib).id).to.equal(b.id);
     expect(goal.getIdea(ic).id).to.equal(c.id);
   });
+
+  it.skip('createGoal');
 }); // end subgraph

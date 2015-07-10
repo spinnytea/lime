@@ -936,5 +936,24 @@ exports.createGoal = function(outer, inner, vertexMap) {
     goal._idea[i_id] = outer.getIdea(o_id);
     goal.setData(i_id, outer.getData(o_id));
   });
+  goal.concrete = true;
   return goal;
+};
+
+// outer has already been subgraph.match and vertexMap is the mapping; the transitions are the values we care about
+exports.createGoal2 = function(outer, transitions, vertexMap) {
+  var goal = new Subgraph();
+  var new_transitions = [];
+
+  transitions.forEach(function(t) {
+    var o_id = vertexMap[t.vertex_id];
+    var g_id = goal.addVertex(exports.matcher.id, outer.getIdea(o_id), {transitionable: true});
+    goal.setData(g_id, outer.getData(o_id));
+
+    t = _.clone(t);
+    t.vertex_id = g_id;
+    new_transitions.push(t);
+  });
+
+  return { goal: goal, transitions: new_transitions };
 };
