@@ -1,5 +1,6 @@
 'use strict';
 var expect = require('chai').expect;
+var Promise = require('bluebird');
 var astar = require('../../src/planning/algorithms/astar');
 var actuator = require('../../src/planning/actuator');
 var blueprint = require('../../src/planning/primitives/blueprint');
@@ -7,6 +8,7 @@ var config = require('../../config');
 var links = require('../../src/database/links');
 var number = require('../../src/planning/primitives/number');
 var planner = require('../../src/planning/planner');
+var scheduler = require('../../src/planning/scheduler');
 var serialplan = require('../../src/planning/serialplan');
 var stub = require('../../src/planning/stub');
 var subgraph = require('../../src/database/subgraph');
@@ -255,7 +257,7 @@ describe('planner', function() {
 
     it.skip('with stubs at not CREATE');
 
-    it('with stubs at CREATE', function() {
+    it('with stubs at CREATE', function(done) {
       start.availableActions.push(s);
       goal.state.setData(state_count, { value: number.value(10), unit: count_unit.id });
 
@@ -280,6 +282,50 @@ describe('planner', function() {
       expect(plan.transitions).to.deep.equal([]);
       expect(plan.plans[0].transitions).to.deep.equal(s.transitions);
       expect(plan.plans[1].transitions).to.deep.equal(s.transitions);
+
+      // get the glue so we can schedule the blueprint
+      var glues = plan.tryTransition(start);
+      expect(glues.length).to.equal(1); // all possible results
+      var glue = glues[0]; // the specific glue
+      expect(glue.length).to.equal(2);
+      expect(glue[0]).to.be.an.instanceOf(Array);
+      expect(glue[0].length).to.equal(5);
+      expect(glue[1]).to.be.an.instanceOf(Array);
+      expect(glue[1].length).to.equal(5);
+
+      //
+      //
+      //
+
+      expect(start.state.getData(state_count).value).to.deep.equal(number.value(0));
+
+      plan.scheduleBlueprint(start, glue).then(function() {
+        expect(start.state.getData(state_count).value).to.deep.equal(number.value(10));
+        expect(actionImplCount).to.equal(10);
+      }).finally(done).catch(done);
+
+      expect(start.state.getData(state_count).value).to.deep.equal(number.value(1));
+
+      scheduler.check().then(function() {
+        expect(start.state.getData(state_count).value).to.deep.equal(number.value(2));
+        return scheduler.check()
+          .then(scheduler.check)
+          .then(scheduler.check);
+      }).then(function() {
+        expect(start.state.getData(state_count).value).to.deep.equal(number.value(5));
+        return scheduler.check();
+      }).then(function() {
+        return Promise.resolve(); // switch to the new serial plan
+      }).then(function() {
+        expect(start.state.getData(state_count).value).to.deep.equal(number.value(6));
+        return scheduler.check()
+          .then(scheduler.check)
+          .then(scheduler.check)
+          .then(scheduler.check);
+      }).then(function() {
+        expect(start.state.getData(state_count).value).to.deep.equal(number.value(10));
+        return scheduler.check();
+      }).catch(done);
     });
 
     it.skip('with stubs at CREATE and defined sub actions');
