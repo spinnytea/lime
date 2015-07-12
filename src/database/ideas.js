@@ -41,18 +41,27 @@ exports.units.filename = function(id, which) {
   return exports.units.filepath(id) + '/' + id + '_' + which + '.json';
 };
 
-/* this is the singleton that we will keep an internal reference to */
+/*
+ * this is the singleton that we will keep an internal reference to
+ * it's basically just a named structure
+ */
 function CoreIdea(id, data, links) {
   this.id = id;
   this.data = data || {};
   this.links = links || {};
 }
 
-/* this just has pass through functions to access the singleton */
+/*
+ * ProxyIdea is an object that only stores the ID
+ * this makes it easy to pass around as a data object, to serialize, to load
+ * essentially, its just an object { id: 'x' }
+ * we can JSON.stringify; we can exports.proxy
+ * The functions that are on ProxyIdea reference a singleton that stores the data
+ */
 function ProxyIdea(id) { this.id = id; }
 ProxyIdea.prototype.update = function(data) {
   exports.load(this.id);
-  memory[this.id].data = data;
+  memory[this.id].data = _.cloneDeep(data);
 };
 ProxyIdea.prototype.data = function() {
   exports.load(this.id);
@@ -168,7 +177,7 @@ exports.load = function(idea) {
 exports.proxy = function(idea) {
   var id = idea.id || idea;
   if(!_.isString(id))
-    throw new TypeError('can only save ideas');
+    throw new TypeError('can only proxy ideas');
   return new ProxyIdea(id);
 };
 exports.close = function(idea) {
