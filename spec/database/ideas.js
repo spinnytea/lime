@@ -8,6 +8,8 @@ var links = require('../../src/database/links');
 var tools = require('../testingTools');
 
 describe('ideas', function() {
+  it.skip('use ideas.units.memory in tests');
+
   it('init', function() {
     // this is assumed by ideas; we can't really do anything but ensure it's existence
     expect(config.settings.location).to.be.a('string');
@@ -159,8 +161,6 @@ describe('ideas', function() {
     });
 
     describe('save / load', function() {
-      it.skip('use ideas.units.memory in tests');
-
       it('no data', function(done) {
         var idea = tools.ideas.create();
 

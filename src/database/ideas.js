@@ -73,21 +73,19 @@ ProxyIdea.prototype.link = function(link, idea) {
   if(typeof link !== 'object' || !link.name || !link.opposite.name)
     throw new TypeError('link must be a link');
 
-  exports.load(this.id);
-
   if(idea) {
     var id = idea.id || idea;
     exports.load(id);
+    exports.load(this.id);
 
     // ensure the links for this type has been created
     // add the id to the list
     (memory[this.id].links[link.name] = memory[this.id].links[link.name] || []).push(id);
     (memory[id].links[link.opposite.name] = memory[id].links[link.opposite.name] || []).push(this.id);
   } else {
-    var ret = memory[this.id].links[link.name];
-    if(ret)
-      return ret.map(function(id) { return new ProxyIdea(id); });
-    return [];
+    exports.load(this.id);
+    return (memory[this.id].links[link.name] || [])
+      .map(function(id) { return new ProxyIdea(id); });
   }
 };
 // @param link: links.list.thought_description
@@ -95,25 +93,21 @@ ProxyIdea.prototype.link = function(link, idea) {
 ProxyIdea.prototype.unlink = function(link, idea) {
   if(typeof link !== 'object' || !link.name || !link.opposite.name)
     throw new TypeError('link must be a link');
-  idea = exports.load(idea); // if idea is a string, it will return as an idea
+  idea = exports.load(idea);
   exports.load(this.id);
 
   // remove the idea from this
   var list = memory[this.id].links[link.name];
   list.splice(list.indexOf(idea.id), 1);
   if(list.length === 0) {
-    // overloading list for the delete
-    list = memory[this.id].links;
-    delete list[link.name];
+    delete memory[this.id].links[link.name];
   }
 
   // remove this from the idea
   list = memory[idea.id].links[link.opposite.name];
   list.splice(list.indexOf(this.id), 1);
   if(list.length === 0) {
-    // overloading list for the delete
-    list = memory[idea.id].links;
-    delete list[link.opposite.name];
+    delete memory[idea.id].links[link.opposite.name];
   }
 };
 
@@ -178,6 +172,7 @@ exports.proxy = function(idea) {
   var id = idea.id || idea;
   if(!_.isString(id))
     throw new TypeError('can only proxy ideas');
+
   return new ProxyIdea(id);
 };
 exports.close = function(idea) {
