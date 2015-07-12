@@ -1,9 +1,16 @@
 'use strict';
 // node_modules/.bin/gulp --harmony mocha
+var config = require('./config');
 var gulp = require('gulp');
-var mocha = require('gulp-mocha');
-var jshint = require('gulp-jshint');
 var istanbul = require('gulp-istanbul');
+var jshint = require('gulp-jshint');
+var mocha = require('gulp-mocha');
+var rm = require('gulp-rm');
+
+gulp.task( 'clean:db', function() {
+  return gulp.src(config.settings.location + '/**/*', { read: false })
+    .pipe( rm() );
+});
 
 // define which report we will use for the test
 // 'nyan' is the best, so that is the default
