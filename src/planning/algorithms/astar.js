@@ -47,7 +47,7 @@ exports.units.step = function(path, frontier) {
         // save our transitions
         //if(action instanceof serialplan.Action)
         //  Array.prototype.push.apply(action.transitions, next.action.transitions);
-        // XXX lm-wumpus goes into an infinite loop when we do (actually, WHY? WHAT?)
+        // XXX lm-wumpus goes into an infinite loop when we do (actually, WHY? WHAT?) ~ loc/dir are never updated
         void(serialplan);
 
         // populate the list of nextActions from this action instead of the stub

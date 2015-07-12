@@ -56,8 +56,9 @@ function createSingle(start, goal) {
       var result = createSingle(curr.start, curr.goal);
       if(result.action === undefined)
         return result.action;
-      if(result.action instanceof serialplan.Action)
-        Array.prototype.push.apply(result.action.transitions, a.transitions);
+      //if(result.action instanceof serialplan.Action)
+      //  Array.prototype.push.apply(result.action.transitions, a.transitions);
+      // XXX lm-wumpus goes into an infinite loop when we do (actually, WHY? WHAT?) ~ loc/dir are never updated
       path.states[idx+1].state = result.state.state;
       return result.action;
     }

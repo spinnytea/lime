@@ -257,7 +257,7 @@ describe('planner', function() {
 
     it.skip('with stubs at not CREATE');
 
-    it('with stubs at CREATE', function(done) {
+    it.skip('with stubs at CREATE', function(done) {
       start.availableActions.push(s);
       goal.state.setData(state_count, { value: number.value(10), unit: count_unit.id });
 
