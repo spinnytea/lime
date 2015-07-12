@@ -5,7 +5,7 @@
 // what is a color? a collection of numbers? sensor data?
 // but that's the point; we want to categorize it so it's "easier" to work with, or more human to work with at least
 
-var config = require('../../../config');
+var config = require('../../config');
 var ideas = require('../../database/ideas');
 
 //

@@ -5,7 +5,7 @@
 var _ = require('lodash');
 var fs = require('fs');
 var mkdirp = require('mkdirp');
-var config = require('../../config');
+var config = require('../config');
 var ids = require('../ids');
 
 // we need some way of accessing function so we can unit test them
@@ -25,7 +25,7 @@ if(!config.data.ideas) {
 }
 
 var NEXT_ID = 'ideas';
-var memory = {};
+var memory = exports.units.memory = {};
 
 // create a path/filename for an idea
 exports.units.filepath = function(id) {

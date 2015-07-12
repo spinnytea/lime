@@ -1,6 +1,6 @@
 'use strict';
 var expect = require('chai').expect;
-var config = require('../config');
+var config = require('../src/config');
 var ids = require('../src/ids');
 
 // copied from the src

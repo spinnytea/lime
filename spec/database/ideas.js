@@ -2,7 +2,7 @@
 var _ = require('lodash');
 var Promise = require('bluebird'); // jshint ignore:line
 var expect = require('chai').expect;
-var config = require('../../config');
+var config = require('../../src/config');
 var ideas = require('../../src/database/ideas');
 var links = require('../../src/database/links');
 var tools = require('../testingTools');
@@ -159,6 +159,8 @@ describe('ideas', function() {
     });
 
     describe('save / load', function() {
+      it.skip('use ideas.units.memory in tests');
+
       it('no data', function(done) {
         var idea = tools.ideas.create();
 
@@ -253,7 +255,8 @@ describe('ideas', function() {
   describe('units', function() {
     it('init', function() {
       // this is to ensure we test everything
-      expect(Object.keys(ideas.units)).to.deep.equal(['filepath', 'filename']);
+      expect(Object.keys(ideas.units)).to.deep.equal(['memory', 'filepath', 'filename']);
+      // memory is a data structure, so it doesn't need to be tested directly
     });
 
     it('filepath', function() {

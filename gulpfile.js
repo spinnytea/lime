@@ -1,15 +1,15 @@
 'use strict';
 // node_modules/.bin/gulp --harmony mocha
-var config = require('./config');
+var config = require('./src/config');
 var gulp = require('gulp');
 var istanbul = require('gulp-istanbul');
 var jshint = require('gulp-jshint');
 var mocha = require('gulp-mocha');
 var rm = require('gulp-rm');
 
-gulp.task( 'clean:db', function() {
+gulp.task('clean:db', function() {
   return gulp.src(config.settings.location + '/**/*', { read: false })
-    .pipe( rm() );
+    .pipe(rm());
 });
 
 // define which report we will use for the test

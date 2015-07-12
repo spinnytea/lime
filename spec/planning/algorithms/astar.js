@@ -1,7 +1,7 @@
 'use strict';
 var _ = require('lodash');
 var expect = require('chai').expect;
-var config = require('../../../config');
+var config = require('../../../src/config');
 var astar = require('../../../src/planning/algorithms/astar');
 var Path = require('../../../src/planning/primitives/path');
 var NumberSlide = require('../NumberSlide');

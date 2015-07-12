@@ -3,7 +3,7 @@ var _ = require('lodash');
 var PriorityQueue = require('priorityqueuejs');
 
 var blueprint = require('../primitives/blueprint');
-var config = require('../../../config');
+var config = require('../../config');
 var Path = require('../primitives/path');
 var planner = require('../planner');
 var serialplan = require('../serialplan');

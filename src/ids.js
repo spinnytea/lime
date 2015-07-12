@@ -1,5 +1,5 @@
 'use strict';
-var config = require('../config');
+var config = require('./config');
 
 // ensure settings has a place for ids
 /* istanbul ignore if */
