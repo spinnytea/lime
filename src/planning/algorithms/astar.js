@@ -6,6 +6,7 @@ var blueprint = require('../primitives/blueprint');
 var config = require('../../../config');
 var Path = require('../primitives/path');
 var planner = require('../planner');
+var serialplan = require('../serialplan');
 var stub = require('../stub');
 
 // we need some way of accessing function so we can unit test them
@@ -44,9 +45,10 @@ exports.units.step = function(path, frontier) {
       var action = planner.create(curr.start, curr.goal);
       if(action) {
         // save our transitions
-        // XXX does it make sense to save the transitions here?
-        // - lm-wumpus breaks when we do (actaully, WHY? WHAT?)
-        //Array.prototype.push.apply(action.transitions, next.action.transitions);
+        //if(action instanceof serialplan.Action)
+        //  Array.prototype.push.apply(action.transitions, next.action.transitions);
+        // XXX lm-wumpus goes into an infinite loop when we do (actually, WHY? WHAT?)
+        void(serialplan);
 
         // populate the list of nextActions from this action instead of the stub
         Array.prototype.push.apply(immediateStubs,
