@@ -45,10 +45,10 @@ exports.units.step = function(path, frontier) {
       var action = planner.create(curr.start, curr.goal);
       if(action) {
         // save our transitions
-        //if(action instanceof serialplan.Action)
-        //  Array.prototype.push.apply(action.transitions, next.action.transitions);
-        // XXX lm-wumpus goes into an infinite loop when we do (actually, WHY? WHAT?) ~ loc/dir are never updated
-        void(serialplan);
+        if(action instanceof serialplan.Action) {
+          Array.prototype.push.apply(action.transitions, next.action.transitions);
+          action.requirements = next.action.requirements;
+        }
 
         // populate the list of nextActions from this action instead of the stub
         Array.prototype.push.apply(immediateStubs,

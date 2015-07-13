@@ -116,8 +116,11 @@ SerialAction.prototype.scheduleBlueprint = function(state, glue) {
 
   // in case we fail, we need to have a goal based on the original state
   var goal_and_transition;
-  if(this.transitions.length)
-    goal_and_transition = subgraph.createGoal2(state.state, this.transitions, glue[0]);
+  if(this.transitions.length) {
+    var goal_glue = subgraph.match(state.state, this.requirements);
+    // FIXME what if we have more than one match?
+    goal_and_transition = subgraph.createGoal2(state.state, this.transitions, goal_glue[0]);
+  }
 
   return new Promise(function(resolve, reject) {
     var idx = -1;
