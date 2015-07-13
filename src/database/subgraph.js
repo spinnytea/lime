@@ -595,7 +595,10 @@ exports.match = function(subgraphOuter, subgraphInner, unitOnly) {
     return [];
 
   // if there are no edges, return the map
-  if(subgraphInner._edges.length === 0) {
+  // XXX if the inner is concrete, and all the vertices match, then we will ignore the edges
+  // - should we make sure all the inner edges have an outer edge?
+  // - this is needed for when we actuator.scheduleBlueprint, and rewrite the goal
+  if(subgraphInner._edges.length === 0 || subgraphInner.concrete) {
     // if there are edges, and all vertices have been mapped, we still need to check the edges to make sure they match
     // or we can just make the call to subgraphMatch
     // TODO do we need to run the matchers? we probably need to run the matchers
