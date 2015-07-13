@@ -115,11 +115,11 @@ SerialAction.prototype.scheduleBlueprint = function(state, glue) {
   var plans = this.plans;
 
   // in case we fail, we need to have a goal based on the original state
-  var goal_and_transition;
+  var target_goal;
   if(this.transitions.length) {
     var goal_glue = subgraph.match(state.state, this.requirements);
     // FIXME what if we have more than one match?
-    goal_and_transition = subgraph.createGoal2(state.state, this.transitions, goal_glue[0]);
+    target_goal = subgraph.createGoal2(state.state, this.transitions, goal_glue[0]);
   }
 
   return new Promise(function(resolve, reject) {
@@ -132,13 +132,10 @@ SerialAction.prototype.scheduleBlueprint = function(state, glue) {
       else
         plans[idx].scheduleBlueprint(state, glue[idx])
           .then(step, function() {
-            if(goal_and_transition) {
+            if(target_goal) {
               // if it fails, instead of rejecting immediately, we should replan towards the goal(s)
 
-              // update our goal to reflect the value we expect (regardless of actual state
-              goal_and_transition.goal = subgraph.rewrite(goal_and_transition.goal, goal_and_transition.transitions, false);
-
-              var plan = planner.create(state, new blueprint.State(goal_and_transition.goal, []));
+              var plan = planner.create(state, new blueprint.State(target_goal, []));
               if(plan) {
                 var glue2 = plan.tryTransition(state);
                 if(glue2.length) {

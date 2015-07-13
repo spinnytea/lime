@@ -955,8 +955,13 @@ exports.createGoal2 = function(outer, transitions, vertexMap) {
 
     t = _.clone(t);
     t.vertex_id = g_id;
+    if('replace_id' in t) {
+      t.replace = outer.getData(vertexMap[t.replace_id]);
+      delete t.replace_id;
+    }
+
     new_transitions.push(t);
   });
 
-  return { goal: goal, transitions: new_transitions };
+  return exports.rewrite(goal, new_transitions, false);
 };
