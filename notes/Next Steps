@@ -2,10 +2,21 @@
 | When you run out of direction, look here for things you already thought of doing next. |
 +----------------------------------------------------------------------------------------+
 
+testing
+  explode subgraph into parts
+  each of the functions (search, match, rewrite) should be it's own file (explode the specs, too)
+  --
+  focus on proper isolation testing
+
 I keep trying to make "the perfect LM"
 I need to take a step back, and do something practical so I feel a sense of accomplishment
 Instead of "doing it all" I will "do this one thing, while assuming some conditions"
 and then I will build up from there, or expand other parts when I feel like it.
+
+
+planner: save the current goal in an execution context
+  see if you can't "toss in" the goal saver, even if it isn't properly designed....
+  this is particularly required in recovering during scheduleBlueprint
 
 
 Wumpus

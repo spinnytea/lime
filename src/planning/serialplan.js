@@ -118,7 +118,16 @@ SerialAction.prototype.scheduleBlueprint = function(state, glue) {
   var target_goal;
   if(this.transitions.length) {
     var goal_glue = subgraph.match(state.state, this.requirements);
+
     // FIXME what if we have more than one match?
+    // - check the transition vertices
+    // - if they are all the same, then it's really just one goal
+    // - if there are multiple, then any of the goals is acceptable (? make this assumption for now)
+    // TODO these goals aren't reliable
+    // - this is basically what happens at the planning step
+    // - if the stub says "go to another room" we can't just match it up with anything
+    // - we need to recover our original goal for this run
+
     target_goal = subgraph.createGoal2(state.state, this.transitions, goal_glue[0]);
   }
 
