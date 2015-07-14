@@ -54,6 +54,12 @@ exports.units.boundaries.saveObj = function(id, which, obj) {
   else if(fs.existsSync(filename))
     fs.unlink(filename);
 };
+exports.units.boundaries.loadObj = function(id, which) {
+  var filename = exports.units.filename(id, which);
+  if(fs.existsSync(filename))
+    return JSON.parse(fs.readFileSync(filename, {encoding:'utf8'}));
+  return undefined;
+};
 
 /*
  * this is the singleton that we will keep an internal reference to
@@ -153,16 +159,8 @@ exports.load = function(idea) {
     throw new TypeError('can only load ideas');
 
   if(!(id in memory)) {
-    var data;
-    var dataPath = exports.units.filename(id, 'data');
-    if(fs.existsSync(dataPath))
-      data = JSON.parse(fs.readFileSync(dataPath, {encoding:'utf8'}));
-
-    var links;
-    var linksPath = exports.units.filename(id, 'links');
-    if(fs.existsSync(linksPath))
-      links = JSON.parse(fs.readFileSync(linksPath, {encoding:'utf8'}));
-
+    var data = exports.units.boundaries.loadObj(id, 'data');
+    var links = exports.units.boundaries.loadObj(id, 'links');
     memory[id] = new CoreIdea(id, data, links);
   }
 

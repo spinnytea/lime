@@ -128,6 +128,11 @@ describe.only('ideas', function() {
         expect(function() { ideaA.unlink(); }).to.throw(TypeError);
         expect(function() { ideaA.unlink('thing', ideaA); }).to.throw(TypeError);
       });
+
+      it('stringify', function() {
+        var idea = ideas.proxy('1');
+        expect(JSON.parse(JSON.stringify(idea))).to.deep.equal({id:'1'});
+      });
     }); // end links
   }); // end ProxyIdea
 
