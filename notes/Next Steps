@@ -7,6 +7,8 @@ testing
   each of the functions (search, match, rewrite) should be it's own file (explode the specs, too)
   --
   focus on proper isolation testing
+  use ideas.units.memory in idea testing
+  stub out ideas.units.saveObj, ideas.units.loadObj
 
 I keep trying to make "the perfect LM"
 I need to take a step back, and do something practical so I feel a sense of accomplishment

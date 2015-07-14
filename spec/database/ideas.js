@@ -8,8 +8,6 @@ var links = require('../../src/database/links');
 var tools = require('../testingTools');
 
 describe.only('ideas', function() {
-  it.skip('use ideas.units.memory in tests');
-
   it('init', function() {
     // this is assumed by ideas; we can't really do anything but ensure it's existence
     expect(config.settings.location).to.be.a('string');
@@ -20,34 +18,50 @@ describe.only('ideas', function() {
 
   describe('ProxyIdea', function() {
     it('new', function() {
-      var idea = tools.ideas.create();
+      var idea = ideas.proxy('_test_');
 
+      expect(idea.constructor.name).to.equal('ProxyIdea');
       expect(Object.keys(idea)).to.deep.equal(['id']);
       expect(idea.update).to.be.a('function');
       expect(idea.data).to.be.a('function');
+      expect(JSON.parse(JSON.stringify(idea))).to.deep.equal({id:'_test_'});
     });
 
     it('update', function() {
       var data = { 'things': 3.14 };
       var idea = tools.ideas.create();
+
       expect(idea.data()).to.deep.equal({});
+      expect(ideas.units.memory[idea.id].data).to.deep.equal({});
 
       idea.update(data);
 
-      expect(idea.data()).to.deep.equal(data); // deep equal
-      expect(idea.data()).to.not.equal(data); // not shallow equal (it's a different object)
+      // deep equal
+      expect(idea.data()).to.deep.equal(data);
+      expect(ideas.units.memory[idea.id].data).to.deep.equal(data);
+      // not shallow equal (it's a different object)
+      expect(idea.data()).to.not.equal(data);
+      expect(ideas.units.memory[idea.id].data).to.not.equal(data);
     });
 
     it('update closed', function() {
       var idea = tools.ideas.create();
+      expect(ideas.units.memory).to.have.property(idea.id);
       expect(idea.data()).to.deep.equal({});
 
       ideas.close(idea);
+      expect(ideas.units.memory).to.not.have.property(idea.id);
+
       idea.update({ 'things': 3.14 });
+      expect(ideas.units.memory).to.have.property(idea.id);
       expect(idea.data()).to.deep.equal({ 'things': 3.14 });
 
+      // again!
       ideas.close(idea);
+      expect(ideas.units.memory).to.not.have.property(idea.id);
+
       idea.update({ 'objects': 2.7 });
+      expect(ideas.units.memory).to.have.property(idea.id);
       expect(idea.data()).to.deep.equal({ 'objects': 2.7 });
     });
 
@@ -55,10 +69,13 @@ describe.only('ideas', function() {
       var data = { 'things': 3.14 };
       var idea = tools.ideas.create(data);
       expect(idea.data()).to.deep.equal(data);
+      expect(ideas.units.memory).to.have.property(idea.id);
 
       ideas.close(idea);
+      expect(ideas.units.memory).to.not.have.property(idea.id);
 
       expect(idea.data()).to.deep.equal(data);
+      expect(ideas.units.memory).to.have.property(idea.id);
     });
 
     describe('link', function() {
@@ -127,11 +144,6 @@ describe.only('ideas', function() {
 
         expect(function() { ideaA.unlink(); }).to.throw(TypeError);
         expect(function() { ideaA.unlink('thing', ideaA); }).to.throw(TypeError);
-      });
-
-      it('stringify', function() {
-        var idea = ideas.proxy('1');
-        expect(JSON.parse(JSON.stringify(idea))).to.deep.equal({id:'1'});
       });
     }); // end links
   }); // end ProxyIdea
@@ -238,6 +250,15 @@ describe.only('ideas', function() {
       expect(function() { ideas.close('a'); }).to.not.throw();
     });
   }); // end crud
+
+  describe('proxy', function() {
+    it('shouldn\'t load memory', function() {
+      var id = '_test_';
+      expect(ideas.units.memory[id]).to.equal(undefined);
+      ideas.proxy(id);
+      expect(ideas.units.memory[id]).to.equal(undefined);
+    });
+  }); // end proxy
 
   it('context', function() {
     // first, ensure the context has be
