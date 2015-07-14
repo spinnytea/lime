@@ -1,7 +1,8 @@
 'use strict';
 var _ = require('lodash');
 var Promise = require('bluebird'); // jshint ignore:line
-var expect = require('chai').expect;
+var expect = require('chai').use(require('sinon-chai')).expect;
+var sinon = require('sinon');
 var config = require('../../src/config');
 var ideas = require('../../src/database/ideas');
 var links = require('../../src/database/links');
@@ -17,6 +18,19 @@ describe.only('ideas', function() {
   });
 
   describe('ProxyIdea', function() {
+    var bak = {};
+    beforeEach(function() {
+      bak.saveObj = ideas.units.boundaries.saveObj;
+      bak.loadObj = ideas.units.boundaries.loadObj;
+
+      ideas.units.boundaries.saveObj = sinon.spy();
+      ideas.units.boundaries.loadObj = sinon.spy();
+    });
+    afterEach(function() {
+      ideas.units.boundaries.saveObj = bak.saveObj;
+      ideas.units.boundaries.loadObj = bak.loadObj;
+    });
+
     it('new', function() {
       var idea = ideas.proxy('_test_');
 
@@ -25,6 +39,9 @@ describe.only('ideas', function() {
       expect(idea.update).to.be.a('function');
       expect(idea.data).to.be.a('function');
       expect(JSON.parse(JSON.stringify(idea))).to.deep.equal({id:'_test_'});
+
+      expect(ideas.units.boundaries.saveObj).to.have.callCount(0);
+      expect(ideas.units.boundaries.loadObj).to.have.callCount(0);
     });
 
     it('update', function() {
@@ -42,6 +59,9 @@ describe.only('ideas', function() {
       // not shallow equal (it's a different object)
       expect(idea.data()).to.not.equal(data);
       expect(ideas.units.memory[idea.id].data).to.not.equal(data);
+
+      expect(ideas.units.boundaries.saveObj).to.have.callCount(0);
+      expect(ideas.units.boundaries.loadObj).to.have.callCount(0);
     });
 
     it('update closed', function() {
@@ -63,6 +83,9 @@ describe.only('ideas', function() {
       idea.update({ 'objects': 2.7 });
       expect(ideas.units.memory).to.have.property(idea.id);
       expect(idea.data()).to.deep.equal({ 'objects': 2.7 });
+
+      expect(ideas.units.boundaries.saveObj).to.have.callCount(4);
+      expect(ideas.units.boundaries.loadObj).to.have.callCount(4);
     });
 
     it('data closed', function() {
@@ -74,62 +97,69 @@ describe.only('ideas', function() {
       ideas.close(idea);
       expect(ideas.units.memory).to.not.have.property(idea.id);
 
+      expect(ideas.units.boundaries.loadObj).to.have.callCount(0);
+      ideas.units.boundaries.loadObj = sinon.stub().returns(data);
+
       expect(idea.data()).to.deep.equal(data);
       expect(ideas.units.memory).to.have.property(idea.id);
+
+      expect(ideas.units.boundaries.saveObj).to.have.callCount(4);
+      expect(ideas.units.boundaries.loadObj).to.have.callCount(2);
     });
 
     describe('link', function() {
       var ideaA, ideaB;
 
-      it('add', function(done) {
+      it('add', function() {
         ideaA = tools.ideas.create();
         ideaB = tools.ideas.create();
         ideas.close(ideaA);
         ideas.close(ideaB);
+
+        expect(ideas.units.boundaries.saveObj).to.have.callCount(4);
+        expect(ideas.units.boundaries.loadObj).to.have.callCount(0);
 
         // links are closed; this link still work
         ideaA.link(links.list.thought_description, ideaB); // link be idea
-        ideas.close(ideaA);
-        ideas.close(ideaB);
 
-        Promise.all([
-          tools.ideas.exists(ideaA.id, 'links', true),
-          tools.ideas.exists(ideaB.id, 'links', true),
-          tools.ideas.exists(ideaA.id, 'data', false),
-          tools.ideas.exists(ideaB.id, 'data', false)
-        ]).then(function(results) {
-          expect(results).to.deep.equal([true, true, false, false]);
+        expect(ideas.units.boundaries.saveObj).to.have.callCount(4);
+        expect(ideas.units.boundaries.loadObj).to.have.callCount(4);
 
-          // links are closed; get should still work
-          expect(_.pluck(ideaA.link(links.list.thought_description), 'id')).to.deep.equal([ideaB.id]);
-          expect(_.pluck(ideaB.link(links.list.thought_description.opposite), 'id')).to.deep.equal([ideaA.id]);
-        }).done(done, done);
+        expect(_.pluck(ideaA.link(links.list.thought_description), 'id')).to.deep.equal([ideaB.id]);
+        expect(_.pluck(ideaB.link(links.list.thought_description.opposite), 'id')).to.deep.equal([ideaA.id]);
       });
 
-      it('remove', function(done) {
+      it('remove', function() {
         ideaA = tools.ideas.create();
         ideaB = tools.ideas.create();
+
+
+        // verify add
         ideaA.link(links.list.thought_description, ideaB.id); // link by id
-        ideas.close(ideaA);
-        ideas.close(ideaB);
+        expect(_.pluck(ideaA.link(links.list.thought_description), 'id')).to.deep.equal([ideaB.id]);
+        expect(_.pluck(ideaB.link(links.list.thought_description.opposite), 'id')).to.deep.equal([ideaA.id]);
 
-        Promise.all([
-          tools.ideas.exists(ideaA.id, 'links', true),
-          tools.ideas.exists(ideaB.id, 'links', true)
-        ]).then(function(results) {
-          expect(results).to.deep.equal([true, true]);
+        // verify remove
+        ideaA.unlink(links.list.thought_description, ideaB.id); // link by id
+        expect(_.pluck(ideaA.link(links.list.thought_description), 'id')).to.deep.equal([]);
+        expect(_.pluck(ideaB.link(links.list.thought_description.opposite), 'id')).to.deep.equal([]);
 
-          ideaA.unlink(links.list.thought_description, ideaB);
-          ideas.save(ideaA);
-          ideas.save(ideaB);
 
-          return Promise.all([
-            tools.ideas.exists(ideaA.id, 'links', false),
-            tools.ideas.exists(ideaB.id, 'links', false)
-          ]);
-        }).then(function(results) {
-          expect(results).to.deep.equal([false, false]);
-        }).done(done, done);
+        // now with opposite
+
+        // verify add
+        ideaA.link(links.list.thought_description, ideaB.id); // link by id
+        expect(_.pluck(ideaA.link(links.list.thought_description), 'id')).to.deep.equal([ideaB.id]);
+        expect(_.pluck(ideaB.link(links.list.thought_description.opposite), 'id')).to.deep.equal([ideaA.id]);
+
+        // verify remove
+        ideaB.unlink(links.list.thought_description.opposite, ideaA.id); // link by id
+        expect(_.pluck(ideaA.link(links.list.thought_description), 'id')).to.deep.equal([]);
+        expect(_.pluck(ideaB.link(links.list.thought_description.opposite), 'id')).to.deep.equal([]);
+
+
+        expect(ideas.units.boundaries.saveObj).to.have.callCount(0);
+        expect(ideas.units.boundaries.loadObj).to.have.callCount(0);
       });
 
       it('add: invalid arg', function() {
@@ -302,6 +332,10 @@ describe.only('ideas', function() {
     });
 
     // integration test
-    it.skip('boundaries');
+    describe('boundaries', function() {
+      it.skip('saveObj');
+
+      it.skip('loadObj');
+    }); // boundaries
   });
 }); // end ideas
