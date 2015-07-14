@@ -12,10 +12,6 @@ var ids = require('../ids');
 // nothing inside exports.unit should need to be called or substituted
 Object.defineProperty(exports, 'units', { value: {} });
 
-//
-// internal functionality
-//
-
 /* istanbul ignore if */
 if(!config.data.ideas) {
   config.data.ideas = {
@@ -39,6 +35,24 @@ exports.units.filepath = function(id) {
 };
 exports.units.filename = function(id, which) {
   return exports.units.filepath(id) + '/' + id + '_' + which + '.json';
+};
+
+exports.units.boundaries = {};
+exports.units.boundaries.saveObj = function(id, which, obj) {
+  var path = exports.units.filepath(id);
+  if(!fs.existsSync(path)) {
+    // we don't want to recreate the whole directory root
+    // i.e. this is a check to make sure our drive is mounted
+    if(fs.existsSync(config.settings.location)) {
+      mkdirp.sync(path);
+    }
+  }
+
+  var filename = exports.units.filename(id, which);
+  if(!_.isEmpty(obj))
+    fs.writeFileSync(filename, JSON.stringify(obj), {encoding:'utf8'});
+  else if(fs.existsSync(filename))
+    fs.unlink(filename);
 };
 
 /*
@@ -129,22 +143,8 @@ exports.save = function(idea) {
 
   var core = memory[id];
   if(core) {
-    var path = exports.units.filepath(id);
-    if(!fs.existsSync(path)) {
-      // we don't want to recreate the whole directory root
-      // i.e. this is a check to make sure our drive is mounted
-      if(fs.existsSync(config.settings.location)) {
-        mkdirp.sync(path);
-      }
-    }
-
-    if(!_.isEmpty(core.data))
-      fs.writeFileSync(exports.units.filename(id, 'data'), JSON.stringify(core.data), {encoding:'utf8'});
-
-    if(!_.isEmpty(core.links))
-      fs.writeFileSync(exports.units.filename(id, 'links'), JSON.stringify(core.links), {encoding:'utf8'});
-    else if(fs.existsSync(exports.units.filename(id, 'links')))
-      fs.unlink(exports.units.filename(id, 'links'));
+    exports.units.boundaries.saveObj(id, 'data', core.data);
+    exports.units.boundaries.saveObj(id, 'links', core.links);
   }
 };
 exports.load = function(idea) {

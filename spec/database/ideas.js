@@ -7,7 +7,7 @@ var ideas = require('../../src/database/ideas');
 var links = require('../../src/database/links');
 var tools = require('../testingTools');
 
-describe('ideas', function() {
+describe.only('ideas', function() {
   it.skip('use ideas.units.memory in tests');
 
   it('init', function() {
@@ -255,7 +255,7 @@ describe('ideas', function() {
   describe('units', function() {
     it('init', function() {
       // this is to ensure we test everything
-      expect(Object.keys(ideas.units)).to.deep.equal(['memory', 'filepath', 'filename']);
+      expect(Object.keys(ideas.units)).to.deep.equal(['memory', 'filepath', 'filename', 'boundaries']);
       // memory is a data structure, so it doesn't need to be tested directly
     });
 
@@ -274,5 +274,8 @@ describe('ideas', function() {
       expect(ideas.units.filename('1', 'data')).to.equal(config.settings.location + '/1_data.json');
       expect(ideas.units.filename('123', 'links')).to.equal(config.settings.location + '/12/123_links.json');
     });
+
+    // integration test
+    it.skip('boundaries');
   });
 }); // end ideas
