@@ -18,7 +18,7 @@ var numnum = require('../../planning/primitives/number');
 //  - if actual, return this
 //  - if !actual, return the new subgraph
 //  - if unable to perform rewrite, return undefined
-module.exports = function(subgraph, transitions, actual) {
+module.exports = function rewrite(subgraph, transitions, actual) {
   if(!subgraph.concrete)
     return undefined;
   // if there are no transitions, then this action doesn't make sense
