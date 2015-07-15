@@ -1,4 +1,5 @@
 'use strict';
+// this is a function to support subgraphs
 
 var SG = require('../subgraph');
 

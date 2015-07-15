@@ -1,8 +1,10 @@
 'use strict';
+// this is a function to support subgraphs
+
 var _ = require('lodash');
 var ideas = require('../ideas');
-var crtcrt = require('../../planning/primitives/discrete');
-var numnum = require('../../planning/primitives/number');
+var discrete = require('../../planning/primitives/discrete');
+var number = require('../../planning/primitives/number');
 
 // @param transitions: an array of transitions
 //  - { vertex_id: id, replace: number }
@@ -64,10 +66,10 @@ module.exports = function rewrite(subgraph, transitions, actual) {
           return false;
       } else if(t.cycle) {
         // TODO does the discrete unit need to be defined as 'cyclical' before we can use 'cycle'
-        if(data.unit !== t.cycle.unit || !crtcrt.isDiscrete(data))
+        if(data.unit !== t.cycle.unit || !discrete.isDiscrete(data))
           return false;
       } else { // if(t.combine) {
-        if(data.unit !== t.combine.unit || !numnum.isNumber(data) || !numnum.isNumber(t.combine))
+        if(data.unit !== t.combine.unit || !number.isNumber(data) || !number.isNumber(t.combine))
           return false;
       }
 
@@ -88,7 +90,7 @@ module.exports = function rewrite(subgraph, transitions, actual) {
       data.value = states[idx];
       subgraph.setData(t.vertex_id, data);
     } else { // if(t.combine) {
-      subgraph.setData(t.vertex_id, numnum.combine(subgraph.getData(t.vertex_id), t.combine));
+      subgraph.setData(t.vertex_id, number.combine(subgraph.getData(t.vertex_id), t.combine));
     }
 
     if(actual)

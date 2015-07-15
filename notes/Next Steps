@@ -3,9 +3,6 @@
 +----------------------------------------------------------------------------------------+
 
 testing
-  explode subgraph into parts
-  each of the functions (search, match, rewrite) should be it's own file (explode the specs, too)
-  --
   focus on proper isolation testing
   use ideas.units.memory in idea testing
   stub out ideas.units.saveObj, ideas.units.loadObj

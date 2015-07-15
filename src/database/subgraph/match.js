@@ -1,9 +1,9 @@
 'use strict';
+// this is a function to support subgraphs
+
 var _ = require('lodash');
-// these imports need to be a different name because we have exports.matcher.discrete and exports.matcher.number
-// we want to keep the API standard, so we can change the import in this file
-var crtcrt = require('../../planning/primitives/discrete');
-var numnum = require('../../planning/primitives/number');
+var discrete = require('../../planning/primitives/discrete');
+var number = require('../../planning/primitives/number');
 var SG = require('../subgraph');
 
 // use subgraphOuter as a base
@@ -296,7 +296,7 @@ function vertexTransitionableAcceptable(vo_transitionable, vo_data, vi_transitio
       if(unitOnly && vo_data.unit !== vi_data.unit)
         return false;
 
-      if(!unitOnly && numnum.difference(vo_data, vi_data) !== 0 && crtcrt.difference(vo_data, vi_data) !== 0)
+      if(!unitOnly && number.difference(vo_data, vi_data) !== 0 && discrete.difference(vo_data, vi_data) !== 0)
         return false;
     }
   }
