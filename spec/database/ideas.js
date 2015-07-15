@@ -8,7 +8,7 @@ var ideas = require('../../src/database/ideas');
 var links = require('../../src/database/links');
 var tools = require('../testingTools');
 
-describe.only('ideas', function() {
+describe('ideas', function() {
   it('init', function() {
     // this is assumed by ideas; we can't really do anything but ensure it's existence
     expect(config.settings.location).to.be.a('string');
@@ -336,6 +336,6 @@ describe.only('ideas', function() {
       it.skip('saveObj');
 
       it.skip('loadObj');
-    }); // boundaries
+    }); // end boundaries
   });
 }); // end ideas
