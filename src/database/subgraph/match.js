@@ -87,6 +87,10 @@ module.exports = function match(subgraphOuter, subgraphInner, unitOnly) {
     });
 }; // end exports.match
 
+Object.defineProperty(module.exports, 'units', { value: {} });
+module.exports.units.subgraphMatch = subgraphMatch;
+module.exports.units.vertexTransitionableAcceptable = vertexTransitionableAcceptable;
+
 // okay, so this is actually the function that does the matching
 // (subgraphMatch is the recursive case, exports.match is the seed case)
 //
@@ -294,6 +298,12 @@ function vertexTransitionableAcceptable(vo_transitionable, vo_data, vi_transitio
     // - (if it doesn't have a unit, what what's the point of unitOnly?)
     if(vo_data && vo_data.unit && vi_data && vi_data.unit) {
       if(unitOnly && vo_data.unit !== vi_data.unit)
+        return false;
+
+      if(unitOnly && vo_data  && !number.isNumber(vo_data) && !discrete.isDiscrete(vo_data))
+        return false;
+
+      if(unitOnly && vi_data  && !number.isNumber(vi_data) && !discrete.isDiscrete(vi_data))
         return false;
 
       if(!unitOnly && number.difference(vo_data, vi_data) !== 0 && discrete.difference(vo_data, vi_data) !== 0)

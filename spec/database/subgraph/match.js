@@ -25,6 +25,10 @@ function checkSubgraphMatch(match, outer, inner) {
 }
 
 describe('subgraph', function() {
+  it('init', function() {
+    expect(Object.keys(subgraph.match.units)).to.deep.equal(['subgraphMatch', 'vertexTransitionableAcceptable']);
+  });
+
   describe('match', function() {
     var context, mark, apple, price;
     var outer, c, m, a, p;
@@ -523,4 +527,81 @@ describe('subgraph', function() {
       });
     }); // end matchRef
   }); // end match (part 2)
+
+  it.skip('subgraphMatch');
+
+  describe('vertexTransitionableAcceptable', function() {
+    // alias just to make this name call shorter
+    var acceptable = subgraph.match.units.vertexTransitionableAcceptable;
+    var bool = discrete.definitions.list.boolean;
+
+    it('inner not transitionable', function() {
+      // if the inner is not transitionable, then nothing else matters
+      // the result will always be true
+      var answer = true;
+
+      expect(acceptable(true, {}, false, {})).to.equal(answer);
+      expect(acceptable(false, {}, false, {})).to.equal(answer);
+      expect(acceptable(undefined, undefined, false, undefined)).to.equal(answer);
+      expect(acceptable(null, null, false, null)).to.equal(answer);
+    });
+
+    it('outer not transitionable', function() {
+      // assumption: inner is transitionable
+      // if the outer is not transitionable, then nothing else matters
+      // the result will always be false
+      var answer = false;
+
+      expect(acceptable(false, {}, true, {})).to.equal(answer);
+      expect(acceptable(false, undefined, true, undefined)).to.equal(answer);
+      expect(acceptable(false, null, true, null)).to.equal(answer);
+    });
+
+    it('no units', function() {
+      // assumption: inner is transitionable
+      // assumption: outer is transitionable
+      // if either of the data objects doesn't have units, then we will assume our transition is allowed
+      var answer = true;
+
+      expect(acceptable(true, undefined, true, undefined)).to.equal(answer);
+      expect(acceptable(true, {}, true, {})).to.equal(answer);
+      expect(acceptable(true, {unit: 'a'}, true, {})).to.equal(answer);
+      expect(acceptable(true, {}, true, {unit: 'b'})).to.equal(answer);
+    });
+    it.skip('factor transition type into this decision');
+
+    it('unit mismatch', function() {
+      // assumption: inner is transitionable
+      // assumption: outer is transitionable
+      // if both have units, and the units don't match, then it's not transitionable
+      expect(acceptable(true, {unit: 'a'}, true, {unit: 'b'}, true)).to.equal(false);
+      expect(acceptable(true, {unit: 'a'}, true, {unit: 'b'}, false)).to.equal(false);
+      expect(acceptable(true, {value:number.value(0),unit:'a'}, true, {value:number.value(0),unit:'b'}, true)).to.equal(false);
+      expect(acceptable(true, {value:number.value(0),unit:'a'}, true, {value:number.value(0),unit:'b'}, false)).to.equal(false);
+    });
+
+    it('unitOnly / must be transitionable values', function() {
+      // assumption: inner is transitionable
+      // assumption: outer is transitionable
+
+      // if the units match, then the data must still be a number or discrete
+      expect(acceptable(true, {unit: 'a'}, true, {unit: 'a'}, true)).to.equal(false);
+
+      expect(acceptable(true, {value:number.value(0),unit:'a'}, true, {value:number.value(1),unit:'a'}, true)).to.equal(true);
+      expect(acceptable(true, {value:false,unit:bool}, true, {value:true,unit:bool}, true)).to.equal(true);
+    });
+
+    it('!unitOnly', function() {
+      // assumption: inner is transitionable
+      // assumption: outer is transitionable
+      // right now, the only things that can perform transitions are numbers and discrete
+
+      // if the data isn't one of those, then it won't transition
+      expect(acceptable(true, {unit: 'a'}, true, {unit: 'a'})).to.equal(false);
+
+      expect(acceptable(true, {value:true,unit:bool}, true, {value:true,unit:bool})).to.equal(true);
+      expect(acceptable(true, {value:number.value(0),unit:'a'}, true, {value:number.value(0),unit:'a'})).to.equal(true);
+      expect(acceptable(true, {value:number.value(0, 2),unit:'a'}, true, {value:number.value(1, 3),unit:'a'})).to.equal(true);
+    });
+  }); // end vertexTransitionableAcceptable
 }); // end subgraph
