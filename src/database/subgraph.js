@@ -121,7 +121,7 @@ Subgraph.prototype.copy = function() {
 Subgraph.prototype.addVertex = function(matcher, data, options) {
   options = _.merge({
     transitionable: false,
-    matchRef: false
+    matchRef: false // TODO look for uses of matchRef; ensure it doesn't use the local data (it should only use the matchRef's data)
   }, options);
 
   if(!matcher || matcher !== exports.matcher[matcher.name])

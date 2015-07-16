@@ -261,17 +261,15 @@ function resolveMatchData(inner, innerVertexId, innerMatch, vertexMap, outer) {
   if(inner.getIdea(innerVertexId) || !innerMatch.options.matchRef)
     return inner.getData(innerVertexId);
 
-  if(innerMatch.options.matchRef) {
-    // if our inner graph has a value cached, use that
-    if(inner.getData(innerMatch.data))
-      return inner.getData(innerMatch.data);
+  // if our inner graph has a value cached, use that
+  if(inner.getData(innerMatch.data))
+    return inner.getData(innerMatch.data);
 
-    // if we have already mapped the vertex in question (the matchRef target; match.data), then use the outer data
-    // (mapped, but the inner hasn't been updated with the idea)
-    // (note: we may not have mapped the matchRef target by this point, and that's okay)
-    if(innerMatch.data in vertexMap)
-      return outer.getData(vertexMap[innerMatch.data]);
-  }
+  // if we have already mapped the vertex in question (the matchRef target; match.data), then use the outer data
+  // (mapped, but the inner hasn't been updated with the idea)
+  // (note: we may not have mapped the matchRef target by this point, and that's okay)
+  if(innerMatch.data in vertexMap)
+    return outer.getData(vertexMap[innerMatch.data]);
 
   // we can't find data to use
   return null;

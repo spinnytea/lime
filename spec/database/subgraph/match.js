@@ -531,24 +531,102 @@ describe('subgraph', function() {
   it.skip('subgraphMatch');
 
   describe('resolveMatchData', function() {
-    // TODO do I test with a subgraph, or do I stub each of the arguments?
-    // - this expects subgraph to behave in a particular way
-    // - is using subgraph an integration test?
-    it.skip('use inner data', function() {
-      // XXX idea associated
-      // XXX !matchRef
-      // XXX with cached data
-      // XXX without cached data
+    // this function expects subgraph to behave in a particular way
+    // so we can't simply pass in values for inner and outer
+    var idea;
+    var inner, i, im;
+    var outer, o;
+    beforeEach(function() {
+      idea = tools.ideas.create();
+      inner = new subgraph.Subgraph();
+      i = inner.addVertex(subgraph.matcher.filler);
+      im = inner.addVertex(subgraph.matcher.filler, i, {matchRef:true});
+      outer = new subgraph.Subgraph();
+      o = outer.addVertex(subgraph.matcher.filler);
     });
 
-    it.skip('matchRef, use inner data', function() {
-      // XXX data cached in referenced vertex
-      // XXX data in referenced idea
+    it('use inner data', function() {
+      idea.update({loc:'data'});
+      inner.setData(i, {loc:'cache'});
+      var resolve = function() {
+        return subgraph.match.units.resolveMatchData(inner, i, inner.getMatch(i), {}, outer);
+      };
+
+      // !matchRef
+      expect(resolve()).to.deep.equal({loc:'cache'});
+
+      // idea associated
+      inner._idea[i] = idea;
+      inner.deleteData(i);
+      expect(resolve()).to.deep.equal({loc:'data'});
     });
 
-    it.skip('matchRef, use outer data');
+    it('matchRef, use inner data', function() {
+      idea.update({loc:'data'});
+      inner.setData(i, {loc:'cache'});
+      inner.setData(im, {loc:'ref cache'});
+      var resolve = function() {
+        return subgraph.match.units.resolveMatchData(inner, im, inner.getMatch(im), {}, outer);
+      };
 
-    it.skip('no match');
+      // the local cache doesn't mean anything
+      // defer to the referenced value
+      expect(resolve()).to.deep.equal({loc:'cache'});
+
+      // use the local idea
+      inner.deleteData(im);
+      inner._idea[im] = idea;
+      expect(resolve()).to.deep.equal({loc:'data'});
+
+      // use ref cache
+      inner.deleteData(im);
+      inner.deleteIdea(im);
+      expect(resolve()).to.deep.equal({loc:'cache'});
+
+      // use ref idea
+      inner.deleteData(i);
+      inner._idea[i] = idea;
+      expect(resolve()).to.deep.equal({loc:'data'});
+    });
+
+    // this can't happen in our algorithm; does it need to be supported?
+    //it('!matchRef, use outer data', function() {
+    //  outer.setData(o, {loc:'cache'});
+    //  var resolve = function() {
+    //    var vertexMap = {};
+    //    vertexMap[i] = o;
+    //    return subgraph.match.units.resolveMatchData(inner, i, inner.getMatch(i), vertexMap, outer);
+    //  };
+    //
+    //  expect(resolve()).to.deep.equal({loc:'cache'});
+    //});
+
+    it('matchRef, use outer data', function() {
+      // im -> i -> o
+      idea.update({loc:'data'});
+      outer.setData(o, {loc:'cache'});
+      outer._idea[o] = idea;
+      var resolve = function() {
+        var vertexMap = {};
+        vertexMap[i] = o;
+        return subgraph.match.units.resolveMatchData(inner, im, inner.getMatch(im), vertexMap, outer);
+      };
+
+      // use the cached data
+      expect(resolve()).to.deep.equal({loc:'cache'});
+
+      // use the idea data
+      outer.deleteData(o);
+      expect(resolve()).to.deep.equal({loc:'data'});
+    });
+
+    it('no match', function() {
+      var resolve = function() {
+        return subgraph.match.units.resolveMatchData(inner, im, inner.getMatch(im), {}, outer);
+      };
+
+      expect(resolve()).to.deep.equal(null);
+    });
   }); // end resolveMatchData
 
   describe('vertexTransitionableAcceptable', function() {
