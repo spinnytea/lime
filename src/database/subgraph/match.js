@@ -56,7 +56,8 @@ module.exports = function match(subgraphOuter, subgraphInner, unitOnly) {
         subgraphInner.getData(vi_key),
         unitOnly);
 
-      // TODO update this section with the stuff below vertexTransitionableAcceptable in subgraphMatch
+      if(possible)
+        possible = vertexFixedMatch(subgraphInner.getData(vi_key), subgraphInner.getMatch(vi_key), subgraphOuter, vo_key, unitOnly);
     }
     return possible;
   });
