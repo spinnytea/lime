@@ -289,6 +289,13 @@ describe('subgraph', function() {
           expect(two.getIdea(m).id).to.deep.equal(mark.id);
           expect(two.getIdea(f).id).to.deep.equal(banana.id);
         });
+
+        it.skip('not sure what to call this', function() {
+          // idea graph: root -> a
+          // subgraph: i <- root -> j
+          // subgraph should fail
+          // it should not i=a, j=a
+        });
       }); // end expand branches
 
       describe('nextSteps', function() {

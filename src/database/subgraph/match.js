@@ -69,6 +69,8 @@ module.exports = function match(subgraphOuter, subgraphInner, unitOnly) {
   // XXX if the inner is concrete, and all the vertices match, then we will ignore the edges
   // - should we make sure all the inner edges have an outer edge?
   // - this is needed for when we actuator.scheduleBlueprint, and rewrite the goal
+  // - TODO if we don't want to address the edges, then they shouldn't be specified
+  // - does the issue have more to do with the matchers? (test that again now that we added the extra clause above)
   if(subgraphInner._edges.length === 0 || subgraphInner.concrete) {
     // if there are edges, and all vertices have been mapped, we still need to check the edges to make sure they match
     // or we can just make the call to subgraphMatch
