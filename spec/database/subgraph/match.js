@@ -26,7 +26,7 @@ function checkSubgraphMatch(match, outer, inner) {
 
 describe('subgraph', function() {
   it('init', function() {
-    expect(Object.keys(subgraph.match.units)).to.deep.equal(['subgraphMatch', 'vertexTransitionableAcceptable']);
+    expect(Object.keys(subgraph.match.units)).to.deep.equal(['subgraphMatch', 'resolveMatchData', 'vertexTransitionableAcceptable']);
   });
 
   describe('match', function() {
@@ -529,6 +529,27 @@ describe('subgraph', function() {
   }); // end match (part 2)
 
   it.skip('subgraphMatch');
+
+  describe('resolveMatchData', function() {
+    // TODO do I test with a subgraph, or do I stub each of the arguments?
+    // - this expects subgraph to behave in a particular way
+    // - is using subgraph an integration test?
+    it.skip('use inner data', function() {
+      // XXX idea associated
+      // XXX !matchRef
+      // XXX with cached data
+      // XXX without cached data
+    });
+
+    it.skip('matchRef, use inner data', function() {
+      // XXX data cached in referenced vertex
+      // XXX data in referenced idea
+    });
+
+    it.skip('matchRef, use outer data');
+
+    it.skip('no match');
+  }); // end resolveMatchData
 
   describe('vertexTransitionableAcceptable', function() {
     // alias just to make this name call shorter

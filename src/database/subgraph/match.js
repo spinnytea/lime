@@ -89,6 +89,7 @@ module.exports = function match(subgraphOuter, subgraphInner, unitOnly) {
 
 Object.defineProperty(module.exports, 'units', { value: {} });
 module.exports.units.subgraphMatch = subgraphMatch;
+module.exports.units.resolveMatchData = resolveMatchData;
 module.exports.units.vertexTransitionableAcceptable = vertexTransitionableAcceptable;
 
 // okay, so this is actually the function that does the matching
@@ -145,48 +146,12 @@ function subgraphMatch(subgraphOuter, subgraphInner, outerEdges, innerEdges, ver
     }
 
     // find the target data we are interested
-    var srcData;
-    if(subgraphInner.getIdea(innerEdge.src) || !innerSrcMatch.options.matchRef) {
-      // this is pretty simple for for !matchRef
-      // or if the target is already associated with an idea
-      srcData = subgraphInner.getData(innerEdge.src);
-    } else {
-      // if our inner graph has a value cached, use that
-      srcData = subgraphInner.getData(innerSrcMatch.data);
-
-      if(!srcData) {
-        // if we have already mapped the vertex in question (the matchRef target; match.data), then use the outer data
-        // (mapped, but the inner hasn't been updated with the idea)
-        // (note: we may not have mapped the matchRef target by this point, and that's okay)
-        if(innerSrcMatch.data in vertexMap) {
-          srcData = subgraphOuter.getData(vertexMap[innerSrcMatch.data]);
-        } else {
-          // if we can't find srcData to use, then we can't check this edge yet
-          return false;
-        }
-      }
-    }
-    var dstData;
-    if(subgraphInner.getIdea(innerEdge.dst) || !innerDstMatch.options.matchRef) {
-      // this is pretty simple for for !matchRef
-      // or if the target is already associated with an idea
-      dstData = subgraphInner.getData(innerEdge.dst);
-    } else {
-      // if our inner graph has a value cached, use that
-      dstData = subgraphInner.getData(innerDstMatch.data);
-
-      if(!dstData) {
-        // if we have already mapped the vertex in question (the matchRef target; match.data), then use the outer data
-        // (mapped, but the inner hasn't been updated with the idea)
-        // (note: we may not have mapped the matchRef target by this point, and that's okay)
-        if(innerDstMatch.data in vertexMap) {
-          dstData = subgraphOuter.getData(vertexMap[innerDstMatch.data]);
-        } else {
-          // if we can't find dstData to use, then we can't check this edge yet
-          return false;
-        }
-      }
-    }
+    var srcData = resolveMatchData(subgraphInner, innerEdge.src, innerSrcMatch, vertexMap, subgraphOuter);
+    if(srcData === null)
+      return false;
+    var dstData = resolveMatchData(subgraphInner, innerEdge.dst, innerDstMatch, vertexMap, subgraphOuter);
+    if(dstData === null)
+      return false;
 
     // check the transitionability of both src and dst
     if(!vertexTransitionableAcceptable(
@@ -281,6 +246,36 @@ function subgraphMatch(subgraphOuter, subgraphInner, outerEdges, innerEdges, ver
     return list;
   }, []);
 } // end subgraphMatch
+
+// subgraphs are non-trivial
+// the data could be in a few different places
+// @param inner: inner subgraph
+// @param innerVertexId: the id of the vertex in inner that we are interested in
+// @param innerMatch: `inner.getMatch(innerVertexId)` (so we can use a cached result)
+// @param vertexMap: vertices that are already mapped
+// @param outer: outer subgraph
+// @return undefined, object are valid results; null is in invalid result (there should be no other types)
+function resolveMatchData(inner, innerVertexId, innerMatch, vertexMap, outer) {
+  // this is pretty simple if the target is already associated with an idea
+  // or if the vertex is !matchRef
+  if(inner.getIdea(innerVertexId) || !innerMatch.options.matchRef)
+    return inner.getData(innerVertexId);
+
+  if(innerMatch.options.matchRef) {
+    // if our inner graph has a value cached, use that
+    if(inner.getData(innerMatch.data))
+      return inner.getData(innerMatch.data);
+
+    // if we have already mapped the vertex in question (the matchRef target; match.data), then use the outer data
+    // (mapped, but the inner hasn't been updated with the idea)
+    // (note: we may not have mapped the matchRef target by this point, and that's okay)
+    if(innerMatch.data in vertexMap)
+      return outer.getData(vertexMap[innerMatch.data]);
+  }
+
+  // we can't find data to use
+  return null;
+}
 
 // AC: if vi.options.transitionable === false, we don't care what vo.options.transitionable is
 // - we only need to care about transitions if vi wants it
