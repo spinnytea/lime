@@ -91,6 +91,7 @@ Object.defineProperty(module.exports, 'units', { value: {} });
 module.exports.units.subgraphMatch = subgraphMatch;
 module.exports.units.resolveMatchData = resolveMatchData;
 module.exports.units.vertexTransitionableAcceptable = vertexTransitionableAcceptable;
+module.exports.units.vertexFixedMatch = vertexFixedMatch;
 
 // okay, so this is actually the function that does the matching
 // (subgraphMatch is the recursive case, exports.match is the seed case)
@@ -169,34 +170,10 @@ function subgraphMatch(subgraphOuter, subgraphInner, outerEdges, innerEdges, ver
         unitOnly))
       return false;
 
-    // if matchRef, then we want to use the data we found as the matcher data
-    // if !matchRef, then we need to use the matchData on the object
-    if(!unitOnly || !innerSrcMatch.options.transitionable) {
-      if(!innerSrcMatch.options.matchRef)
-        srcData = innerSrcMatch.data;
-
-      var outerSrcData;
-      if(innerSrcMatch.matcher === SG.matcher.id)
-        outerSrcData = subgraphOuter.getIdea(currEdge.src);
-      else
-        outerSrcData = subgraphOuter.getData(currEdge.src);
-
-      if(!innerSrcMatch.matcher(outerSrcData, srcData))
-        return false;
-    }
-    if(!unitOnly || !innerDstMatch.options.transitionable) {
-      if (!innerDstMatch.options.matchRef)
-        dstData = innerDstMatch.data;
-
-      var outerDstData;
-      if(innerDstMatch.matcher === SG.matcher.id)
-        outerDstData = subgraphOuter.getIdea(currEdge.dst);
-      else
-        outerDstData = subgraphOuter.getData(currEdge.dst);
-
-      if(!innerDstMatch.matcher(outerDstData, dstData))
-        return false;
-    }
+    if(!vertexFixedMatch(srcData, innerSrcMatch, subgraphOuter, currEdge.src, unitOnly))
+      return false;
+    if(!vertexFixedMatch(dstData, innerDstMatch, subgraphOuter, currEdge.dst, unitOnly))
+      return false;
 
     return true;
   });
@@ -302,6 +279,35 @@ function vertexTransitionableAcceptable(vo_transitionable, vo_data, vi_transitio
       if(!unitOnly && number.difference(vo_data, vi_data) !== 0 && discrete.difference(vo_data, vi_data) !== 0)
         return false;
     }
+  }
+  return true;
+}
+
+// if a vertex is not marked as transitionable
+// or if we are not checking unit only
+// then we need a harder check on the value
+// @param innerData: the result of resolveMatchData
+// @param innerMatch
+// @param outer
+// @param outerVertexId
+// @param unitOnly
+function vertexFixedMatch(innerData, innerMatch, outer, outerVertexId, unitOnly) {
+  if(!unitOnly || !innerMatch.options.transitionable) {
+    // if matchRef, then we want to use the data we found as the matcher data
+    // if !matchRef, then we need to use the matchData on the object
+    // this will also correct for SG.matcher.id
+    if(!innerMatch.options.matchRef)
+      innerData = innerMatch.data;
+
+    // outer data is simple since it's concerete
+    var outerData;
+    if(innerMatch.matcher === SG.matcher.id)
+      outerData = outer.getIdea(outerVertexId);
+    else
+      outerData = outer.getData(outerVertexId);
+
+    if(!innerMatch.matcher(outerData, innerData))
+      return false;
   }
   return true;
 }

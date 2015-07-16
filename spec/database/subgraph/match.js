@@ -26,7 +26,7 @@ function checkSubgraphMatch(match, outer, inner) {
 
 describe('subgraph', function() {
   it('init', function() {
-    expect(Object.keys(subgraph.match.units)).to.deep.equal(['subgraphMatch', 'resolveMatchData', 'vertexTransitionableAcceptable']);
+    expect(Object.keys(subgraph.match.units)).to.deep.equal(['subgraphMatch', 'resolveMatchData', 'vertexTransitionableAcceptable', 'vertexFixedMatch']);
   });
 
   describe('match', function() {
@@ -703,4 +703,16 @@ describe('subgraph', function() {
       expect(acceptable(true, {value:number.value(0, 2),unit:'a'}, true, {value:number.value(1, 3),unit:'a'})).to.equal(true);
     });
   }); // end vertexTransitionableAcceptable
+
+  describe('vertexFixedMatch', function() {
+    // we don't need to test all the matchers
+    // but there are distinctly two categories we want to ensure work
+    it.skip('against matcher.id');
+
+    it.skip('against data');
+
+    it.skip('pass-through', function() {
+      // unitOnly && transitionable
+    });
+  }); // end vertexNonTransitionableMatch
 }); // end subgraph
