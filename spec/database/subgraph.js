@@ -28,7 +28,7 @@ function checkSubgraphMatch(match, outer, inner) {
 describe('subgraph', function() {
   it('init', function() {
     // this is to ensure we test everything
-    expect(Object.keys(subgraph)).to.deep.equal(['Subgraph', 'matcher', 'stringify', 'parse', 'search', 'match', 'rewrite', 'createGoal', 'createGoal2']);
+    expect(Object.keys(subgraph)).to.deep.equal(['Subgraph', 'matcher', 'stringify', 'parse', 'search', 'match', 'rewrite', 'createGoal', 'createGoal2', 'solidifyGoal']);
     expect(Object.keys(subgraph.Subgraph.prototype)).to.deep.equal(['copy', 'addVertex', 'addEdge', 'getMatch', 'getIdea', 'allIdeas', 'deleteIdea', 'getData', 'setData', 'deleteData']);
     expect(Object.keys(subgraph.matcher)).to.deep.equal(['id', 'filler', 'exact', 'similar', 'number', 'discrete']);
   });
@@ -941,4 +941,56 @@ describe('subgraph', function() {
   });
 
   it.skip('createGoal');
+
+  it.skip('createGoal2');
+
+  it('solidifyGoal', function() {
+    // root points to a,b,c
+    var r = tools.ideas.create('r');
+    var a = tools.ideas.create('a');
+    var b = tools.ideas.create('b');
+    var c = tools.ideas.create();
+    r.link(links.list.thought_description, a);
+    r.link(links.list.thought_description, b);
+    r.link(links.list.thought_description, c);
+
+    var state = new subgraph.Subgraph();
+    var sr = state.addVertex(subgraph.matcher.id, r);
+    var sa = state.addVertex(subgraph.matcher.id, a);
+    var sb = state.addVertex(subgraph.matcher.id, b);
+    var sc = state.addVertex(subgraph.matcher.id, c);
+    state.addEdge(sr, links.list.thought_description, sa);
+    state.addEdge(sr, links.list.thought_description, sb);
+    state.addEdge(sr, links.list.thought_description, sc);
+    state.setData(sa, 'cache a');
+
+    expect(subgraph.search(state)).to.deep.equal([state]);
+    expect(state.concrete).to.equal(true);
+
+    var goal = new subgraph.Subgraph();
+    var gr = goal.addVertex(subgraph.matcher.id, r);
+    var gs = goal.addVertex(subgraph.matcher.filler);
+    goal.addEdge(gr, links.list.thought_description, gs);
+
+    var result = subgraph.solidifyGoal(state, goal);
+
+    expect(result.length).to.equal(3);
+    expect(result.map(function(r) { return r.constructor.name; })).to.deep.equal(['Subgraph', 'Subgraph', 'Subgraph']);
+    expect(result.map(function(r) { return r.concrete; })).to.deep.equal([true, true, true]);
+
+
+    // I think the only guarantee to this match order is the fact that the algorithm loops through the outer links in order
+
+    var zer = result[0];
+    expect(zer.getIdea(gs).id).to.equal(a.id);
+    expect(zer.getData(gs)).to.equal('cache a');
+
+    var one = result[1];
+    expect(one.getIdea(gs).id).to.equal(b.id);
+    expect(one.getData(gs)).to.equal('b');
+
+    var two = result[2];
+    expect(two.getIdea(gs).id).to.equal(c.id);
+    expect(two.getData(gs)).to.equal(undefined);
+  });
 }); // end subgraph
