@@ -3,11 +3,9 @@ var Promise = require('bluebird');
 
 var subgraph = require('../database/subgraph');
 
-// this is the central service that runs the LM
-// it sits in the background and kicks off tasks
+// this could be the central service that runs the LM
 //
-// when we have a plan, we say, "do the next step when this condition is met"
-// and "do this step if the condition has not been met "in time""
+// for now, you can submit plans to it, and it will wait until the goal has been met to start the next stage of the plan
 
 var schedules = [];
 
