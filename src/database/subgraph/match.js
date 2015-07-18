@@ -56,8 +56,16 @@ module.exports = function match(subgraphOuter, subgraphInner, unitOnly) {
         subgraphInner.getData(vi_key),
         unitOnly);
 
-      if(possible)
-        possible = vertexFixedMatch(subgraphInner.getData(vi_key), subgraphInner.getMatch(vi_key), subgraphOuter, vo_key, unitOnly);
+      // Integration test with lm-wumpus
+      // - testing match data against raw vertices causes this match to fail
+      // - I'm guess because... the goal state doesn't match itself (needs testing)
+      // - the goal is often generated from the requirements data (not necessarily solidified)
+      // - would could require that a goal pass through subgraph.solidify and then enforce this, but is that a value add?
+      // - is it necessary to pass the matcher once the idea has been identified?
+      // - isn't the point of identifying the idea so that we can skip all this matcher stuff?
+      // TODO test: run a single actuator through scheduleBlueprint
+      //if(possible)
+      //  possible = vertexFixedMatch(subgraphInner.getData(vi_key), subgraphInner.getMatch(vi_key), subgraphOuter, vo_key, unitOnly);
     }
     return possible;
   });
