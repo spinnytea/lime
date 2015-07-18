@@ -2,26 +2,6 @@
 | When you run out of direction, look here for things you already thought of doing next. |
 +----------------------------------------------------------------------------------------+
 
-actions
-  product and inventory
-  a product is a thing (Samsung Galaxy S3)
-  an inventory item is a instance of that (my samsung galaxy s4ever)
-  or class / instance
-  a serial plan is a blueprint, a class
-  when I use it to find a particular goal, when I try it, I have an instance
-  right now all I store is the glue (not even that, I don't really store anything; that's just transient)
-  and without one, how will I LEARN anything if I don't save the state? Not just world state, but actual action
-  --
-  we can save the vertex mapping to the goal by making the goal concrete (define all vertices)
-  then we don't need to worry about the vertexMap
-
-subgraph search
-  look at the flow again, test it as you go
-  --
-  match all the vertices
-  verify all the edges in inner match to an outer
-  this should go for ALL edges, including ones that have defined vertices on each side
-
 testing
   focus on proper isolation testing
   use ideas.units.memory in idea testing
