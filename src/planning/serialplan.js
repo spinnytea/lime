@@ -44,6 +44,7 @@ SerialAction.prototype.runCost = function() {
 // SerialAction needs a list of mappings
 SerialAction.prototype.tryTransition = function(state) {
   var that = this;
+  var originalState = state;
 
   // because each action needs it's own mappings
   // and each action could come after any mapping
@@ -85,9 +86,10 @@ SerialAction.prototype.tryTransition = function(state) {
           glues.push(glue);
 
           // no need to apply the action on the last step
+          // - unless we are going to use it later
           // reuse the state argument
           state = undefined;
-          if(i < that.plans.length - 1)
+          if(i < that.plans.length - 1 || that.transitions.length > 0)
             state = that.plans[i].apply(curr.state, glue);
 
           nextList.push({ glues: glues, state: state });
@@ -100,7 +102,35 @@ SerialAction.prototype.tryTransition = function(state) {
   }
 
   // now just pull out the glue lists
-  return currList.map(function(curr) { return curr.glues; });
+  return currList.map(function(curr) {
+    if(that.transitions.length > 0) {
+      // turn our last state into a goal
+      //
+      // all of the changes that got us to the final state (curr.state) where done with other requirements/transitions
+      // so we need to figure out how that relates to this set of requirements/transitions (what was the goal of all these changes)
+      // because it's very likely that there were other things that changed, too
+      // only THESE transitions should define the end goal
+
+      // these are all the possibilities matches
+      var result = subgraph.match(originalState.state, that.requirements);
+      // here are all the goals from all those results
+      var goals = result.map(function(vertexMap) { return subgraph.createGoal2(originalState.state, that.transitions, vertexMap); });
+      // these are all the goals that are the same as our result
+      var matchingGoals = goals.filter(function(g) { return subgraph.match(curr.state.state, g).length; });
+
+      // I don't know how either of these cases could happen...
+      if(matchingGoals.length === 0) {
+        console.log('serialplan.tryTransition with this.transitions:no matches');
+      } else if(matchingGoals.length > 1) {
+        console.log('serialplan.tryTransition with this.transitions:too many matches:', matchingGoals.length);
+      }
+
+      // if there are no matches (for some reason) then it will just be undefined, and we just won't be able to replan this step
+      curr.glues.goal = matchingGoals[0];
+    }
+
+    return curr.glues;
+  });
 };
 
 // blueprint.runBlueprint
@@ -114,23 +144,6 @@ SerialAction.prototype.runBlueprint = function(state, glue) {
 SerialAction.prototype.scheduleBlueprint = function(state, glue) {
   var plans = this.plans;
 
-  // in case we fail, we need to have a goal based on the original state
-  var target_goal;
-  if(this.transitions.length) {
-    var goal_glue = subgraph.match(state.state, this.requirements);
-
-    // FIXME what if we have more than one match?
-    // - check the transition vertices
-    // - if they are all the same, then it's really just one goal
-    // - if there are multiple, then any of the goals is acceptable (? make this assumption for now)
-    // TODO these goals aren't reliable
-    // - this is basically what happens at the planning step
-    // - if the stub says "go to another room" we can't just match it up with anything
-    // - we need to recover our original goal for this run
-
-    target_goal = subgraph.createGoal2(state.state, this.transitions, goal_glue[0]);
-  }
-
   return new Promise(function(resolve, reject) {
     var idx = -1;
 
@@ -141,10 +154,10 @@ SerialAction.prototype.scheduleBlueprint = function(state, glue) {
       else
         plans[idx].scheduleBlueprint(state, glue[idx])
           .then(step, function() {
-            if(target_goal) {
+            if(glue.goal) {
               // if it fails, instead of rejecting immediately, we should replan towards the goal(s)
 
-              var plan = planner.create(state, new blueprint.State(target_goal, []));
+              var plan = planner.create(state, new blueprint.State(glue.goal, []));
               if(plan) {
                 var glue2 = plan.tryTransition(state);
                 if(glue2.length) {
