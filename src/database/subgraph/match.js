@@ -36,17 +36,10 @@ module.exports = function match(subgraphOuter, subgraphInner, unitOnly) {
     return [];
 
   // if there are no edges, return the map
-  // XXX if the inner is concrete, and all the vertices match, then we will ignore the edges
-  // - should we make sure all the inner edges have an outer edge?
-  // - this is needed for when we actuator.scheduleBlueprint, and rewrite the goal
-  // - TODO if we don't want to address the edges, then they shouldn't be specified
-  // - does the issue have more to do with the matchers? (test that again now that we added the extra clause above)
-  if(subgraphInner._edges.length === 0 || subgraphInner.concrete) {
+  if(subgraphInner._edges.length === 0) {
     // if there are edges, and all vertices have been mapped, we still need to check the edges to make sure they match
-    // or we can just make the call to subgraphMatch
-    // TODO do we need to run the matchers? we probably need to run the matchers
-    // TODO what does it mean to call subgraph.match with inner.concrete? is this really targeted for !inner.concrete?
-    // - they probably both make sense, but they are distinctly different operations
+    // this is a special case for when there are no edges
+    // it keeps us from needing to bake it into the top of subgraphMatch
     if(Object.keys(vertexMap).length === subgraphInner._vertexCount)
       return [vertexMap];
     return [];
@@ -193,10 +186,14 @@ function subgraphMatch(subgraphOuter, subgraphInner, outerEdges, innerEdges, ver
         unitOnly))
       return false;
 
-    if(!vertexFixedMatch(srcData, innerSrcMatch, subgraphOuter, currEdge.src, unitOnly))
-      return false;
-    if(!vertexFixedMatch(dstData, innerDstMatch, subgraphOuter, currEdge.dst, unitOnly))
-      return false;
+    if(!subgraphInner.getIdea(innerEdge.src)) {
+      if (!vertexFixedMatch(srcData, innerSrcMatch, subgraphOuter, currEdge.src, unitOnly))
+        return false;
+    }
+    if(!subgraphInner.getIdea(innerEdge.dst)) {
+      if(!vertexFixedMatch(dstData, innerDstMatch, subgraphOuter, currEdge.dst, unitOnly))
+        return false;
+    }
 
     return true;
   });
@@ -232,14 +229,15 @@ function subgraphMatch(subgraphOuter, subgraphInner, outerEdges, innerEdges, ver
     var newOuter = outerEdges.filter(function(e) { return e !== outerEdge; });
     var newInner = innerEdges.filter(function(e) { return e !== innerEdge; });
 
-    if(newInner.length === 0)
-    // base case
-    // if there are no more inner edges to match, then our vertex map is complete
+    if(newInner.length === 0) {
+      // base case
+      // if there are no more inner edges to match, then our vertex map is complete
       return [newMap];
-    else
-    // recursive case
-    // get a list of all matches from this branch
+    } else {
+      // recursive case
+      // get a list of all matches from this branch
       return subgraphMatch(subgraphOuter, subgraphInner, newOuter, newInner, newMap, unitOnly, []);
+    }
   }).reduce(function(list, match) {
     // reduce all match lists into a single list
     Array.prototype.push.apply(list, match);
@@ -306,9 +304,13 @@ function vertexTransitionableAcceptable(vo_transitionable, vo_data, vi_transitio
   return true;
 }
 
+// check the matcher function against the outer data
+// this should only be called if the inner idea has not been identified
+//
 // if a vertex is not marked as transitionable
 // or if we are not checking unit only
 // then we need a harder check on the value
+//
 // @param innerData: the result of resolveMatchData
 // @param innerMatch
 // @param outer

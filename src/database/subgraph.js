@@ -102,10 +102,8 @@ Subgraph.prototype.copy = function() {
   // - can we make the assumption that you shouldn't add edges after a copy?
   // - can we assume that if you add an edge, then it applies to all versions?
   //sg._edges = this._edges
-  // since edges are immutable, we can copy the array
-  sg._edges = this._edges.filter(function() { return true; });
-  // a deep clone is overkill
-  //sg._edges = _.clone(this._edges);
+  // since edges are immutable, we can do a shallow copy of the array (note clone vs cloneDeep)
+  sg._edges = _.clone(this._edges);
 
   sg._vertexCount = this._vertexCount;
   sg.concrete = this.concrete;
