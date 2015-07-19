@@ -12,58 +12,99 @@ module.exports = function search(subgraph) {
   if(subgraph.concrete)
     return [subgraph];
 
-  var selectedEdge;
-  var selectedBranches;
-  var nextSteps = [];
-
   // find an edge to expand
-  if(!subgraph._edges.every(function(currEdge) {
-      var srcIdea = subgraph.getIdea(currEdge.src);
-      var dstIdea = subgraph.getIdea(currEdge.dst);
-      var isSrc = (srcIdea !== undefined);
-      var isDst = (dstIdea !== undefined);
-
-      if(isSrc ^ isDst) {
-        var srcMatch = subgraph.getMatch(currEdge.src);
-        var dstMatch = subgraph.getMatch(currEdge.dst);
-
-        // we can't consider this edge if the target object hasn't be identified
-        // return true because this doesn't make the match invalid
-        if(isSrc && dstMatch.options.matchRef && subgraph.getIdea(dstMatch.data) === undefined)
-          return true;
-        if(isDst && srcMatch.options.matchRef && subgraph.getIdea(srcMatch.data) === undefined)
-          return true;
-
-        var currBranches = (isSrc ? (srcIdea.link(currEdge.link)) : (dstIdea.link(currEdge.link.opposite)) );
-
-        if(!selectedEdge) {
-          selectedEdge = currEdge;
-          selectedBranches = currBranches;
-        } else if(currEdge.pref === selectedEdge.pref) {
-          if(currBranches.length < selectedBranches.length) {
-            selectedEdge = currEdge;
-            selectedBranches = currBranches;
-          }
-        } else if(currEdge.pref > selectedEdge.pref) {
-          selectedEdge = currEdge;
-          selectedBranches = currBranches;
-        }
-
-      } else if(isSrc && isDst) {
-        // verify that all this edge is present
-        // TODO cache the result so we don't need to check this for every subgraph
-        if(!srcIdea.link(currEdge.link).some(function(idea) { return idea.id === dstIdea.id; }))
-        // if we can't resolve this edge, then this graph is invalid
-          return false;
-      }
-
-      return true;
-    })) return []; // end if !edges.every
+  var selected = findEdgeToExpand(subgraph);
+  if(selected === undefined) return [];
 
   // expand the edge
-  if(selectedEdge && selectedBranches) {
+  var nextSteps = expandEdge(subgraph, selected);
+
+  // recurse
+  // there are no edges that can be expanded
+  if(nextSteps.length === 0) {
+    // check all vertices to ensure they all have ideas defined
+    if(subgraph._vertexCount !== Object.keys(subgraph._idea).length)
+      return [];
+
+//    if(!subgraph.edges.every(function(edge) { return edge.src.idea && edge.dst.idea; }))
+//      return [];
+
+    subgraph.concrete = true;
+    return [ subgraph ];
+  } else {
+    // do the next iteration of searches
+    return nextSteps.reduce(function(ret, sg) {
+      Array.prototype.push.apply(ret, search(sg));
+      return ret;
+    }, []);
+  }
+
+};
+
+Object.defineProperty(module.exports, 'units', { value: {} });
+module.exports.units.findEdgeToExpand = findEdgeToExpand;
+module.exports.units.expandEdge = expandEdge;
+
+// @return the matched edge/branches
+function findEdgeToExpand(subgraph) {
+  var selected = { edge: undefined, branches: undefined };
+
+  var valid = subgraph._edges.every(function(currEdge) {
+    var srcIdea = subgraph.getIdea(currEdge.src);
+    var dstIdea = subgraph.getIdea(currEdge.dst);
+    var isSrc = (srcIdea !== undefined);
+    var isDst = (dstIdea !== undefined);
+
+    if(isSrc ^ isDst) {
+      var srcMatch = subgraph.getMatch(currEdge.src);
+      var dstMatch = subgraph.getMatch(currEdge.dst);
+
+      // we can't consider this edge if the target object hasn't be identified
+      // return true because this doesn't make the match invalid
+      if(isSrc && dstMatch.options.matchRef && subgraph.getIdea(dstMatch.data) === undefined)
+        return true;
+      if(isDst && srcMatch.options.matchRef && subgraph.getIdea(srcMatch.data) === undefined)
+        return true;
+
+      var currBranches = (isSrc ? (srcIdea.link(currEdge.link)) : (dstIdea.link(currEdge.link.opposite)) );
+
+      if(!selected.edge) {
+        selected.edge = currEdge;
+        selected.branches = currBranches;
+      } else if(currEdge.pref === selected.edge.pref) {
+        if(currBranches.length < selected.branches.length) {
+          selected.edge = currEdge;
+          selected.branches = currBranches;
+        }
+      } else if(currEdge.pref > selected.edge.pref) {
+        selected.edge = currEdge;
+        selected.branches = currBranches;
+      }
+
+    } else if(isSrc && isDst) {
+      // verify that all this edge is present
+      // TODO cache the result so we don't need to check this for every subgraph
+      if(!srcIdea.link(currEdge.link).some(function(idea) { return idea.id === dstIdea.id; }))
+      // if we can't resolve this edge, then this graph is invalid
+        return false;
+    }
+
+    return true;
+  });
+
+  if(!valid)
+    return undefined;
+
+  return selected;
+}
+
+// @return the subgraph(s) with the expansion applied
+function expandEdge(subgraph, selected) {
+  var nextSteps = [];
+
+  if(selected.edge && selected.branches) {
     // pick the vertex to expand
-    var vertex_id = (subgraph.getIdea(selectedEdge.src) === undefined) ? selectedEdge.src : selectedEdge.dst;
+    var vertex_id = (subgraph.getIdea(selected.edge.src) === undefined) ? selected.edge.src : selected.edge.dst;
     var match = subgraph.getMatch(vertex_id);
     var matchData = match.options.matchRef?subgraph.getData(match.data):match.data;
 
@@ -76,7 +117,7 @@ module.exports = function search(subgraph) {
 //      matchData = tv.data;
 //    }
 
-    var matchedBranches = selectedBranches.filter(function(idea) {
+    var matchedBranches = selected.branches.filter(function(idea) {
       if(match.matcher === SG.matcher.id)
       // XXX this should never happen here
         return match.matcher(idea, matchData);
@@ -100,24 +141,5 @@ module.exports = function search(subgraph) {
     }
   }
 
-  // recurse
-  // there are no edges that can be expanded
-  if(nextSteps.length === 0) {
-    // check all vertices to ensure they all have ideas defined
-    if(subgraph._vertexCount !== Object.keys(subgraph._idea).length)
-      return [];
-
-//    if(!subgraph.edges.every(function(edge) { return edge.src.idea && edge.dst.idea; }))
-//      return [];
-
-    subgraph.concrete = true;
-    return [ subgraph ];
-  } else {
-    // do the next iteration of searches
-    return nextSteps.reduce(function(ret, sg) {
-      Array.prototype.push.apply(ret, search(sg));
-      return ret;
-    }, []);
-  }
-
-};
+  return nextSteps;
+}

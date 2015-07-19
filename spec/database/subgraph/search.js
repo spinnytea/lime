@@ -6,6 +6,10 @@ var tools = require('../../testingTools');
 
 describe('subgraph', function() {
   describe('search', function() {
+    it('init', function() {
+      expect(Object.keys(subgraph.search.units)).to.deep.equal(['findEdgeToExpand', 'expandEdge']);
+    });
+
     it('nothing to do', function() {
       // invalid subgraph
       expect(function() { subgraph.search(); }).to.throw(TypeError);
@@ -352,5 +356,9 @@ describe('subgraph', function() {
       expect(subgraph.search(sg)).to.deep.equal([sg]);
       expect(sg.concrete).to.equal(true);
     });
+
+    it.skip('findEdgeToExpand');
+
+    it.skip('expandEdge');
   }); // end search
 }); // end subgraph

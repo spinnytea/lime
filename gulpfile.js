@@ -7,6 +7,10 @@ var jshint = require('gulp-jshint');
 var mocha = require('gulp-mocha');
 var rm = require('gulp-rm');
 
+// some aliases
+gulp.task('c', ['clean:db']);
+gulp.task('m', ['mocha']);
+
 gulp.task('clean:db', function() {
   return gulp.src(config.settings.location + '/**/*', { read: false })
     .pipe(rm());

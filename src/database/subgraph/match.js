@@ -15,12 +15,14 @@ var SG = require('../subgraph');
 // AC: subgraph.match: i.options.transitionable === o.options.transitionable
 //
 // TODO problem with combinatorics
-// - is it okay just know there is an answer, or to think there may be one?
-// - 1 known root with 10 fillers. that's 10! options
+// - is it okay to think there may be an answer, or do we need to know there is one?
+// - e.g.
+// - 1 known root with 10 unknown fillers: this fn will find 10! vertexMaps
 // - we don't need to list every option
 // - but what can we do about it? what would this even look like?
 // - can we try one solution, and start to nail down likely version
 //   (pin down, say, 6, and then try all 4! remaining options)
+// - how does the consume of this result decide which path to take since we don't explicitly list the options
 module.exports = function match(subgraphOuter, subgraphInner, unitOnly) {
   if(!subgraphOuter.concrete)
     throw new RangeError('the outer subgraph must be concrete before you can match against it');
