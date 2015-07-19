@@ -31,8 +31,46 @@ module.exports = function match(subgraphOuter, subgraphInner, unitOnly) {
 
   unitOnly = (unitOnly === true);
 
-  // pre-fill a vertex map with identified thoughts
+  var vertexMap = initializeVertexMap(subgraphOuter, subgraphInner, unitOnly);
+  if(vertexMap === undefined)
+    return [];
+
+  // if there are no edges, return the map
+  // XXX if the inner is concrete, and all the vertices match, then we will ignore the edges
+  // - should we make sure all the inner edges have an outer edge?
+  // - this is needed for when we actuator.scheduleBlueprint, and rewrite the goal
+  // - TODO if we don't want to address the edges, then they shouldn't be specified
+  // - does the issue have more to do with the matchers? (test that again now that we added the extra clause above)
+  if(subgraphInner._edges.length === 0 || subgraphInner.concrete) {
+    // if there are edges, and all vertices have been mapped, we still need to check the edges to make sure they match
+    // or we can just make the call to subgraphMatch
+    // TODO do we need to run the matchers? we probably need to run the matchers
+    // TODO what does it mean to call subgraph.match with inner.concrete? is this really targeted for !inner.concrete?
+    // - they probably both make sense, but they are distinctly different operations
+    if(Object.keys(vertexMap).length === subgraphInner._vertexCount)
+      return [vertexMap];
+    return [];
+  }
+
+  // with this information, fill out the map using the edges
+  // (note: there may not yet be any edges specified)
+  return subgraphMatch(subgraphOuter, subgraphInner, _.clone(subgraphOuter._edges), _.clone(subgraphInner._edges), vertexMap, unitOnly, [])
+    .filter(function(map) {
+      return Object.keys(map).length === subgraphInner._vertexCount;
+    });
+}; // end exports.match
+
+Object.defineProperty(module.exports, 'units', { value: {} });
+module.exports.units.initializeVertexMap = initializeVertexMap;
+module.exports.units.subgraphMatch = subgraphMatch;
+module.exports.units.resolveMatchData = resolveMatchData;
+module.exports.units.vertexTransitionableAcceptable = vertexTransitionableAcceptable;
+module.exports.units.vertexFixedMatch = vertexFixedMatch;
+
+// pre-fill a vertex map with identified thoughts
+function initializeVertexMap(subgraphOuter, subgraphInner, unitOnly) {
   var vertexMap = {};
+
   // build a reverse map (outer.idea.id -> outer.vertex_id)
   // this way we only need to loop over the outer ideas once (it can get large)
   // this makes it O(ni*log(no)), instead of O(ni*no)
@@ -71,38 +109,10 @@ module.exports = function match(subgraphOuter, subgraphInner, unitOnly) {
   });
 
   if(!possible)
-    return [];
+    return undefined;
 
-  // if there are no edges, return the map
-  // XXX if the inner is concrete, and all the vertices match, then we will ignore the edges
-  // - should we make sure all the inner edges have an outer edge?
-  // - this is needed for when we actuator.scheduleBlueprint, and rewrite the goal
-  // - TODO if we don't want to address the edges, then they shouldn't be specified
-  // - does the issue have more to do with the matchers? (test that again now that we added the extra clause above)
-  if(subgraphInner._edges.length === 0 || subgraphInner.concrete) {
-    // if there are edges, and all vertices have been mapped, we still need to check the edges to make sure they match
-    // or we can just make the call to subgraphMatch
-    // TODO do we need to run the matchers? we probably need to run the matchers
-    // TODO what does it mean to call subgraph.match with inner.concrete? is this really targeted for !inner.concrete?
-    // - they probably both make sense, but they are distinctly different operations
-    if(Object.keys(vertexMap).length === subgraphInner._vertexCount)
-      return [vertexMap];
-    return [];
-  }
-
-  // with this information, fill out the map using the edges
-  // (note: there may not yet be any edges specified)
-  return subgraphMatch(subgraphOuter, subgraphInner, _.clone(subgraphOuter._edges), _.clone(subgraphInner._edges), vertexMap, unitOnly, [])
-    .filter(function(map) {
-      return Object.keys(map).length === subgraphInner._vertexCount;
-    });
-}; // end exports.match
-
-Object.defineProperty(module.exports, 'units', { value: {} });
-module.exports.units.subgraphMatch = subgraphMatch;
-module.exports.units.resolveMatchData = resolveMatchData;
-module.exports.units.vertexTransitionableAcceptable = vertexTransitionableAcceptable;
-module.exports.units.vertexFixedMatch = vertexFixedMatch;
+  return vertexMap;
+}
 
 // this is the function that does the matching
 // (subgraphMatch is the recursive case, exports.match is the seed case)

@@ -25,11 +25,11 @@ function checkSubgraphMatch(match, outer, inner) {
 }
 
 describe('subgraph', function() {
-  it('init', function() {
-    expect(Object.keys(subgraph.match.units)).to.deep.equal(['subgraphMatch', 'resolveMatchData', 'vertexTransitionableAcceptable', 'vertexFixedMatch']);
-  });
-
   describe('match', function() {
+    it('init', function() {
+      expect(Object.keys(subgraph.match.units)).to.deep.equal(['initializeVertexMap', 'subgraphMatch', 'resolveMatchData', 'vertexTransitionableAcceptable', 'vertexFixedMatch']);
+    });
+
     var context, mark, apple, price;
     var outer, c, m, a, p;
     beforeEach(function() {
@@ -526,6 +526,8 @@ describe('subgraph', function() {
       });
     }); // end matchRef
   }); // end match (part 2)
+
+  it.skip('initializeVertexMap');
 
   it.skip('subgraphMatch');
 
