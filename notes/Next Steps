@@ -6,6 +6,10 @@ testing
   focus on proper isolation testing
   use ideas.units.memory in idea testing
   stub out ideas.units.saveObj, ideas.units.loadObj
+  --
+  keep breaking down large functions into units
+  actually test the units specifically (which I've been mostly skipping)
+  prune the larger tests once the specific functions are done (important!)
 
 I keep trying to make "the perfect LM"
 I need to take a step back, and do something practical so I feel a sense of accomplishment
