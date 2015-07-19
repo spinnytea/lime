@@ -453,7 +453,7 @@ exports.createGoal2 = function(outer, transitions, vertexMap) {
 
     t = _.clone(t);
     t.vertex_id = g_id;
-    if('replace_id' in t) {
+    if(t.hasOwnProperty('replace_id')) {
       t.replace = outer.getData(vertexMap[t.replace_id]);
       delete t.replace_id;
     }
