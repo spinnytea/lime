@@ -60,7 +60,7 @@ module.exports = function match(subgraphOuter, subgraphInner, unitOnly) {
       // - testing match data against raw vertices causes this match to fail
       // - I'm guess because... the goal state doesn't match itself (needs testing)
       // - the goal is often generated from the requirements data (not necessarily solidified)
-      // - would could require that a goal pass through subgraph.solidify and then enforce this, but is that a value add?
+      // - we could require that a goal pass through subgraph.solidify and then enforce this, but is that a value add?
       // - is it necessary to pass the matcher once the idea has been identified?
       // - isn't the point of identifying the idea so that we can skip all this matcher stuff?
       // TODO test: run a single actuator through scheduleBlueprint
@@ -104,8 +104,9 @@ module.exports.units.resolveMatchData = resolveMatchData;
 module.exports.units.vertexTransitionableAcceptable = vertexTransitionableAcceptable;
 module.exports.units.vertexFixedMatch = vertexFixedMatch;
 
-// okay, so this is actually the function that does the matching
+// this is the function that does the matching
 // (subgraphMatch is the recursive case, exports.match is the seed case)
+// more specifically, it will use the edges/matchers to expand a list of possible vertexMaps
 //
 // map[inner.vertex_id] = outer.vertex_id;
 // we will typically use the inner subgraph to find the indices of the outer map
@@ -122,6 +123,7 @@ function subgraphMatch(subgraphOuter, subgraphInner, outerEdges, innerEdges, ver
 
   var srcMapped = (innerEdge.src in vertexMap);
   var dstMapped = (innerEdge.dst in vertexMap);
+  // TODO instead of rebuilding the inverse on every [recursive] iteration, build it alongside vertexMap
   var inverseMap = _.invert(vertexMap);
   var innerSrcMatch = subgraphInner.getMatch(innerEdge.src);
   var innerDstMatch = subgraphInner.getMatch(innerEdge.dst);

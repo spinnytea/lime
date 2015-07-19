@@ -4,8 +4,6 @@
 var SG = require('../subgraph');
 
 // find a list of subgraphs in the database that matches the supplied subgraph
-// TODO don't modify the original
-// - this may break some tests/use cases, so check for every call to search
 //
 // use Prim's algorithm to expand the known subgraph
 // we are trying to identify all of the vertices

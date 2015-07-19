@@ -220,29 +220,62 @@ describe('subgraph', function() {
       });
     }); // end addEdge
 
-    it('copy', function() {
-      var idea = tools.ideas.create();
 
-      // empty
-      var sg = new subgraph.Subgraph();
-      expect(sg.copy()).to.deep.equal(sg);
+    describe('copy', function() {
+      it('init', function() {
+        // this is mutable, this is just for tracking the unit tests
+        expect(Object.keys(new subgraph.Subgraph()))
+          .to.deep.equal(['_match', '_matchParent', '_idea', '_data', '_dataParent', '_edges', '_vertexCount', 'concrete']);
+      });
 
-      var a = sg.addVertex(subgraph.matcher.filler);
-      expect(sg.copy()).to.deep.equal(sg);
+      it('<split this test apart>', function() {
 
-      var b = sg.addVertex(subgraph.matcher.id, idea.id);
-      expect(sg.copy()).to.deep.equal(sg);
+        var idea = tools.ideas.create();
 
-      sg.addEdge(a, links.list.thought_description, b);
-      expect(sg.copy()).to.deep.equal(sg);
+        // empty
+        var sg = new subgraph.Subgraph();
+        var sg_x = sg.copy();
+        var sg_y = sg.copy();
+        expect(sg_x).to.deep.equal(sg);
+        expect(sg_y).to.deep.equal(sg);
+        expect(sg_x._dataParent).to.equal(sg._dataParent); // they share a common parent
+        expect(sg_y._dataParent).to.equal(sg._dataParent);
+        expect(sg_x._data).to.not.equal(sg._data); // they do not share a common child data
+        expect(sg_y._data).to.not.equal(sg._data);
 
-      sg.setData(a, { some: 'thing' });
-      expect(sg.copy()).to.deep.equal(sg);
-    });
+        var a = sg.addVertex(subgraph.matcher.filler);
+        expect(sg.copy()).to.deep.equal(sg);
 
-    describe('~~New!~~ lazy copy', function() {
+        var b = sg.addVertex(subgraph.matcher.id, idea.id);
+        expect(sg.copy()).to.deep.equal(sg);
+
+        sg.addEdge(a, links.list.thought_description, b);
+        expect(sg.copy()).to.deep.equal(sg);
+
+        sg.setData(a, { some: 'thing' });
+        expect(sg.copy()).to.deep.equal(sg);
+      });
+
+      it.skip('Subgraph._match');
+
+      it.skip('Subgraph._idea');
+
+      it.skip('Subgraph._data');
+
+      it.skip('Subgraph._edges');
+
+      it.skip('Subgraph._vertexCount');
+
+      it.skip('Subgraph.concrete');
+
       it.skip('flatten', function() {
         // a function that takes the nested nature of the copy/subcopies and flattens a subgraph into it's own unparented copy
+        // has the same effect as subgraph.parse(subgraph.flatten(sg)), but is more effecient than that
+        // --
+        // brainstorm: is this necessary? what does it buy us?
+        // - pro: shorter _xxxParent linked lists
+        // - con: _data sort of manages itself when necessary (set a local copy; clip parent)
+        // - con: the parents aren't very deep in practice [citation needed]
       });
 
       it.skip('of _idea', function() {
@@ -250,7 +283,7 @@ describe('subgraph', function() {
         // the only time this matters is during searching, and then it's just a LONG list of single matches
         // which then requires flattening
       });
-    }); // end lazy copy
+    }); // end copy
 
     describe('getMatch', function() {
       it('in root', function() {

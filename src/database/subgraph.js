@@ -17,6 +17,10 @@ var numnum = require('../planning/primitives/number');
 // there are three different stages to this subgraph
 // each vertex contains data for these three stages
 // but for the sake of efficiency, they are not stored together
+//
+// when an _idea is defined, then there isn't any need to use the _match for that node
+// when an _idea is defined, then it will never be unset (this is immutable)
+// TODO does this mean we should remove the match data for this vertex?
 
 function Subgraph() {
   // this is how we are going to match an idea in the search and match
@@ -94,7 +98,14 @@ Subgraph.prototype.copy = function() {
   sg._dataParent = this._dataParent;
   // both this._data and sg._data will be empty
 
-  sg._edges = _.clone(this._edges);
+  // TODO do we need to clone the edge array?
+  // - can we make the assumption that you shouldn't add edges after a copy?
+  // - can we assume that if you add an edge, then it applies to all versions?
+  //sg._edges = this._edges
+  // since edges are immutable, we can copy the array
+  sg._edges = this._edges.filter(function() { return true; });
+  // a deep clone is overkill
+  //sg._edges = _.clone(this._edges);
 
   sg._vertexCount = this._vertexCount;
   sg.concrete = this.concrete;
@@ -420,7 +431,7 @@ exports.match = require('./subgraph/match');
 exports.rewrite = require('./subgraph/rewrite');
 
 // inner and outer have already been subgraph.match, and vertexMap is the mapping
-// @deprecated use the existing goals from the plan - although... maybe it's still useful in stub.createStates
+// @deprecated use the existing goals from the plan (attach them to the glue during tryTransition)
 exports.createGoal = function(outer, inner, vertexMap) {
   var goal = inner.copy();
   _.forEach(vertexMap, function(o_id, i_id) {
@@ -432,7 +443,7 @@ exports.createGoal = function(outer, inner, vertexMap) {
 };
 
 // outer has already been subgraph.match and vertexMap is the mapping; the transitions are the values we care about
-// @deprecated use the existing goals from the plan
+// used to allow replanning when you already have a vertexMap (a specific match; because requirements may match in multiple ways)
 exports.createGoal2 = function(outer, transitions, vertexMap) {
   var goal = new Subgraph();
   var new_transitions = [];
@@ -457,6 +468,7 @@ exports.createGoal2 = function(outer, transitions, vertexMap) {
 
 // when a plan has finished being created, should archive
 // @return a new goal with all the data/ideas from stated mapped onto it
+// @deprecated this isn't much different from being concrete; this doesn't buy us anything
 exports.solidifyGoal = function(state, goal) {
   return exports.match(state, goal).map(function(map) {
     var g = new Subgraph();

@@ -110,6 +110,11 @@ SerialAction.prototype.tryTransition = function(state) {
       // so we need to figure out how that relates to this set of requirements/transitions (what was the goal of all these changes)
       // because it's very likely that there were other things that changed, too
       // only THESE transitions should define the end goal
+      //
+      // we need to recover the vertex map of these requirements; they were calculated at some point in time, but discarded
+      // (they got turned into the serial plan that exists now; there isn't much room for the old set)
+      // TODO can we save the vertexMap? ~ when the stub is recalculated
+      // - it doesn't look like we can; most solveAt 'immediate' and 'create' occur before we have a glue
 
       // these are all the possibilities matches
       var result = subgraph.match(originalState.state, that.requirements);

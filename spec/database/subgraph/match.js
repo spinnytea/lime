@@ -356,10 +356,9 @@ describe('subgraph', function() {
           expect(outer.concrete).to.equal(true);
         });
 
-        // TODO what does it mean to have a concrete inner object with matchRef
-        // - how does this even work with a subgraphMatch search
-        // - it's easy to say "oh, just match the idea data since we already have it"
-        // - but what if the matcher(v.data, vertices[v.matchData].data) is no longer true?
+        // this test doesn't really matter since it won't use the matchers
+        // if the inner is concrete, then it just matches the vertices
+        // matchRef doesn't matter in this case
 //        it.skip('inner concrete');
 
         it('inner target w/ data', function() {
