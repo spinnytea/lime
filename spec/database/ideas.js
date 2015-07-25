@@ -133,23 +133,42 @@ describe('ideas', function() {
 
         expect(_.pluck(ideaA.link(links.list.thought_description), 'id')).to.deep.equal([ideaB.id]);
         expect(_.pluck(ideaB.link(links.list.thought_description.opposite), 'id')).to.deep.equal([ideaA.id]);
+
+        ideas.units.boundaries.saveObj.reset();
+        expect(ideas.units.boundaries.saveObj).to.have.callCount(0);
+
+        ideas.save(ideaA);
+        ideas.save(ideaB);
+
+        expect(ideas.units.boundaries.saveObj).to.have.callCount(4);
+        expect(ideas.units.boundaries.saveObj).to.have.been.calledWith(ideaA.id, 'data', {});
+        expect(ideas.units.boundaries.saveObj).to.have.been.calledWith(ideaA.id, 'links', { thought_description: [ ideaB.id ] });
+        expect(ideas.units.boundaries.saveObj).to.have.been.calledWith(ideaB.id, 'data', {});
+        expect(ideas.units.boundaries.saveObj).to.have.been.calledWith(ideaB.id, 'links', { 'thought_description-opp': [ ideaA.id ] });
       });
 
       it('remove', function() {
         ideaA = tools.ideas.create();
         ideaB = tools.ideas.create();
 
+        expect(ideas.units.memory[ideaA.id].links).to.deep.equal({});
+        expect(ideas.units.memory[ideaB.id].links).to.deep.equal({});
 
         // verify add
         ideaA.link(links.list.thought_description, ideaB.id); // link by id
         expect(_.pluck(ideaA.link(links.list.thought_description), 'id')).to.deep.equal([ideaB.id]);
         expect(_.pluck(ideaB.link(links.list.thought_description.opposite), 'id')).to.deep.equal([ideaA.id]);
 
+        expect(ideas.units.memory[ideaA.id].links).to.deep.equal({ thought_description: [ ideaB.id ] });
+        expect(ideas.units.memory[ideaB.id].links).to.deep.equal({ 'thought_description-opp': [ ideaA.id ] });
+
         // verify remove
         ideaA.unlink(links.list.thought_description, ideaB.id); // link by id
         expect(_.pluck(ideaA.link(links.list.thought_description), 'id')).to.deep.equal([]);
         expect(_.pluck(ideaB.link(links.list.thought_description.opposite), 'id')).to.deep.equal([]);
 
+        expect(ideas.units.memory[ideaA.id].links).to.deep.equal({});
+        expect(ideas.units.memory[ideaB.id].links).to.deep.equal({});
 
         // now with opposite
 
@@ -158,11 +177,16 @@ describe('ideas', function() {
         expect(_.pluck(ideaA.link(links.list.thought_description), 'id')).to.deep.equal([ideaB.id]);
         expect(_.pluck(ideaB.link(links.list.thought_description.opposite), 'id')).to.deep.equal([ideaA.id]);
 
+        expect(ideas.units.memory[ideaA.id].links).to.deep.equal({ thought_description: [ ideaB.id ] });
+        expect(ideas.units.memory[ideaB.id].links).to.deep.equal({ 'thought_description-opp': [ ideaA.id ] });
+
         // verify remove
         ideaB.unlink(links.list.thought_description.opposite, ideaA.id); // link by id
         expect(_.pluck(ideaA.link(links.list.thought_description), 'id')).to.deep.equal([]);
         expect(_.pluck(ideaB.link(links.list.thought_description.opposite), 'id')).to.deep.equal([]);
 
+        expect(ideas.units.memory[ideaA.id].links).to.deep.equal({});
+        expect(ideas.units.memory[ideaB.id].links).to.deep.equal({});
 
         expect(ideas.units.boundaries.saveObj).to.have.callCount(0);
         expect(ideas.units.boundaries.loadObj).to.have.callCount(0);
@@ -416,15 +440,16 @@ describe('ideas', function() {
       expect(ideas.units.filename('123', 'links')).to.equal(config.settings.location + '/12/123_links.json');
     });
 
-    // integration test
-    describe('boundaries', function() {
-      it.skip('saveObj');
-
-      it.skip('loadObj');
-
-      it.skip('path doesn\'t exist, w/ location');
-
-      it.skip('path doesn\'t exist, w/o location');
-    }); // end boundaries
+    //// integration test
+    //// TODO where should I perform these tests?
+    //describe('boundaries', function() {
+    //  it.skip('saveObj');
+    //
+    //  it.skip('loadObj');
+    //
+    //  it.skip('path doesn\'t exist, w/ location');
+    //
+    //  it.skip('path doesn\'t exist, w/o location');
+    //}); // end boundaries
   });
 }); // end ideas

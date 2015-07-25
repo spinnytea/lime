@@ -38,6 +38,7 @@ exports.units.filename = function(id, which) {
 };
 
 exports.units.boundaries = {};
+/* istanbul ignore next */
 exports.units.boundaries.saveObj = function(id, which, obj) {
   var path = exports.units.filepath(id);
   if(!fs.existsSync(path)) {
@@ -54,6 +55,7 @@ exports.units.boundaries.saveObj = function(id, which, obj) {
   else if(fs.existsSync(filename))
     fs.unlink(filename);
 };
+/* istanbul ignore next */
 exports.units.boundaries.loadObj = function(id, which) {
   var filename = exports.units.filename(id, which);
   if(fs.existsSync(filename))
