@@ -7,7 +7,6 @@ var config = require('../../src/config');
 var discrete = require('../../src/planning/primitives/discrete');
 var ideas = require('../../src/database/ideas');
 var links = require('../../src/database/links');
-var tools = require('../testingTools');
 
 exports.mock = function() {
   var bak = {};
@@ -58,7 +57,7 @@ describe('ideas', function() {
 
     it('update', function() {
       var data = { 'things': 3.14 };
-      var idea = tools.ideas.create();
+      var idea = ideas.create();
 
       expect(idea.data()).to.deep.equal({});
       expect(ideas.units.memory[idea.id].data).to.deep.equal({});
@@ -77,7 +76,7 @@ describe('ideas', function() {
     });
 
     it('update closed', function() {
-      var idea = tools.ideas.create();
+      var idea = ideas.create();
       expect(ideas.units.memory).to.have.property(idea.id);
       expect(idea.data()).to.deep.equal({});
 
@@ -102,7 +101,7 @@ describe('ideas', function() {
 
     it('data closed', function() {
       var data = { 'things': 3.14 };
-      var idea = tools.ideas.create(data);
+      var idea = ideas.create(data);
       expect(idea.data()).to.deep.equal(data);
       expect(ideas.units.memory).to.have.property(idea.id);
 
@@ -123,8 +122,8 @@ describe('ideas', function() {
       var ideaA, ideaB;
 
       it('add', function() {
-        ideaA = tools.ideas.create();
-        ideaB = tools.ideas.create();
+        ideaA = ideas.create();
+        ideaB = ideas.create();
         ideas.close(ideaA);
         ideas.close(ideaB);
 
@@ -154,8 +153,8 @@ describe('ideas', function() {
       });
 
       it('remove', function() {
-        ideaA = tools.ideas.create();
-        ideaB = tools.ideas.create();
+        ideaA = ideas.create();
+        ideaB = ideas.create();
 
         expect(ideas.units.memory[ideaA.id].links).to.deep.equal({});
         expect(ideas.units.memory[ideaB.id].links).to.deep.equal({});
@@ -199,14 +198,14 @@ describe('ideas', function() {
       });
 
       it('add: invalid arg', function() {
-        var ideaA = tools.ideas.create();
+        var ideaA = ideas.create();
 
         expect(function() { ideaA.link(); }).to.throw(TypeError);
         expect(function() { ideaA.link('thing'); }).to.throw(TypeError);
       });
 
       it('remove: invalid arg', function() {
-        var ideaA = tools.ideas.create();
+        var ideaA = ideas.create();
 
         expect(function() { ideaA.unlink(); }).to.throw(TypeError);
         expect(function() { ideaA.unlink('thing', ideaA); }).to.throw(TypeError);
@@ -219,19 +218,19 @@ describe('ideas', function() {
 
     describe('create', function() {
       it('empty', function() {
-        var idea = tools.ideas.create();
+        var idea = ideas.create();
         expect(idea.data()).to.deep.equal({});
       });
 
       it('w/ data', function() {
-        var idea = tools.ideas.create({ 'things': 2.7 });
+        var idea = ideas.create({ 'things': 2.7 });
         expect(idea.data()).to.deep.equal({ 'things': 2.7 });
       });
     });
 
     describe('save / load', function() {
       it('no data', function() {
-        var idea = tools.ideas.create();
+        var idea = ideas.create();
 
         ideas.save(idea);
 
@@ -264,7 +263,7 @@ describe('ideas', function() {
 
       it('with data', function() {
         var data = { 'things': -1 };
-        var idea = tools.ideas.create(data);
+        var idea = ideas.create(data);
 
         expect(ideas.units.boundaries.saveObj).to.have.callCount(2);
         expect(ideas.units.boundaries.loadObj).to.have.callCount(0);
@@ -302,7 +301,7 @@ describe('ideas', function() {
       });
 
       it('save: unloaded', function() {
-        var idea = tools.ideas.create({ 'things': 42 });
+        var idea = ideas.create({ 'things': 42 });
         expect(ideas.units.boundaries.saveObj).to.have.callCount(2);
         expect(ideas.units.boundaries.loadObj).to.have.callCount(0);
         ideas.close(idea);
@@ -318,7 +317,7 @@ describe('ideas', function() {
       });
 
       it('load: loaded', function() {
-        var idea = tools.ideas.create();
+        var idea = ideas.create();
         expect(ideas.units.boundaries.saveObj).to.have.callCount(0);
         expect(ideas.units.boundaries.loadObj).to.have.callCount(0);
         ideas.load(idea);
@@ -350,7 +349,7 @@ describe('ideas', function() {
       expect(ideas.units.boundaries.saveObj).to.have.callCount(0);
       expect(ideas.units.boundaries.loadObj).to.have.callCount(0);
 
-      var idea = tools.ideas.create();
+      var idea = ideas.create();
       expect(ideas.units.memory).to.have.property(idea.id);
       expect(function() { ideas.close(idea); }).to.not.throw();
       expect(ideas.units.boundaries.saveObj).to.have.callCount(2);
@@ -379,7 +378,7 @@ describe('ideas', function() {
     });
 
     it('should accept an id or an idea', function() {
-      var idea = tools.ideas.create();
+      var idea = ideas.create();
       var proxy = ideas.proxy(idea);
       var proxy2 = ideas.proxy(idea.id);
       var proxy3 = ideas.proxy(proxy);
