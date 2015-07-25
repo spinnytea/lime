@@ -21,6 +21,9 @@ exports.mock = function() {
     ideas.units.boundaries.loadObj = sinon.stub();
     // this is a stock object that we use a lot for tests
     ideas.units.boundaries.loadObj.withArgs(discrete.definitions.list.boolean, 'data').returns({ type: 'lime_discrete_definition', states: [ true, false ] });
+    // TODO make the default operation of loadObj should throw an error
+    // - only defined calls should return something different
+    // - this will help control unit test results
   });
   after(function() {
     ideas.units.boundaries.saveObj = bak.saveObj;

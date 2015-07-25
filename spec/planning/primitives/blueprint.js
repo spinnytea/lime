@@ -1,16 +1,19 @@
 'use strict';
 var _ = require('lodash');
-var expect = require('chai').expect;
+var expect = require('chai').use(require('sinon-chai')).expect;
+var sinon = require('sinon');
 var actuator = require('../../../src/planning/actuator');
 var blueprint = require('../../../src/planning/primitives/blueprint');
 var discrete = require('../../../src/planning/primitives/discrete');
+var ideas = require('../../../src/database/ideas');
 var links = require('../../../src/database/links');
 var number = require('../../../src/planning/primitives/number');
 var path = require('../../../src/planning/primitives/path');
 var subgraph = require('../../../src/database/subgraph');
-var tools = require('../../testingTools');
 
 describe('blueprint', function() {
+  require('../../database/ideas').mock();
+  
   it('init', function() {
     // this is to ensure we test everything
     expect(Object.keys(blueprint)).to.deep.equal(['loaders', 'load', 'Action', 'State', 'context', 'list']);
@@ -34,18 +37,17 @@ describe('blueprint', function() {
   // this is just a basic test
   // it still needs to be tested for each of the implementing prototypes
   it('load', function() {
-    var idea = tools.ideas.create({ });
+    var idea = ideas.create({ });
 
-    var didcall = false;
-    blueprint.loaders.test = function() { didcall = true; return 'banana'; };
-    expect(didcall).to.equal(false);
+    blueprint.loaders.test = sinon.stub().returns('banana');
+    expect(blueprint.loaders.test).to.have.callCount(0);
 
     expect(blueprint.load(idea.id)).to.equal(undefined);
-    expect(didcall).to.equal(false);
+    expect(blueprint.loaders.test).to.have.callCount(0);
 
     idea.update({ type: 'blueprint', subtype: 'test', blueprint: {} });
     expect(blueprint.load(idea.id)).to.equal('banana');
-    expect(didcall).to.equal(true);
+    expect(blueprint.loaders.test).to.have.callCount(1);
   });
 
   it.skip('load(undefined)', function() {
@@ -72,7 +74,7 @@ describe('blueprint', function() {
       var idea;
       var a, b;
       beforeEach(function() {
-        idea = tools.ideas.create();
+        idea = ideas.create();
 
         a = new blueprint.State(new subgraph.Subgraph(), []);
         b = new blueprint.State(new subgraph.Subgraph(), []);
@@ -204,7 +206,7 @@ describe('blueprint', function() {
           var data_outer = { thing1: 1, thing2: 2 };
           var data_inner = { thing1: 1 };
 
-          var idea2 = tools.ideas.create(data_outer);
+          var idea2 = ideas.create(data_outer);
           idea.link(links.list.thought_description, idea2);
 
           a.state.addEdge(
@@ -237,7 +239,7 @@ describe('blueprint', function() {
       describe('matchRef', function() {
         it('basic', function() {
           // idea --links to--> idea2
-          var idea2 = tools.ideas.create();
+          var idea2 = ideas.create();
           idea.link(links.list.thought_description, idea2);
 
           // concrete subgraph of idea-->idea2
@@ -273,8 +275,8 @@ describe('blueprint', function() {
         it('to a similar', function() {
           // the data
           var DATA = discrete.cast({ value: true, unit: discrete.definitions.list.boolean });
-          var idea2 = tools.ideas.create(DATA);
-          var idea3 = tools.ideas.create(DATA);
+          var idea2 = ideas.create(DATA);
+          var idea3 = ideas.create(DATA);
           idea.link(links.list.thought_description, idea2);
           idea2.link(links.list.thought_description, idea3);
 
@@ -308,7 +310,7 @@ describe('blueprint', function() {
     }); // end distance
 
     it('actions', function() {
-      var idea_1 = tools.ideas.create();
+      var idea_1 = ideas.create();
 
       var bs = new blueprint.State(new subgraph.Subgraph(), []);
       var a = new actuator.Action();

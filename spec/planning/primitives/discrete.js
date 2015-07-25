@@ -1,10 +1,12 @@
 'use strict';
 var expect = require('chai').expect;
 var discrete = require('../../../src/planning/primitives/discrete');
-var tools = require('../../testingTools');
 
 var boolean = discrete.definitions.list.boolean;
+
 describe('discrete', function() {
+  require('../../database/ideas').mock();
+
   it('init', function() {
     // this is to ensure we test everything
     expect(Object.keys(discrete)).to.deep.equal(['isDiscrete', 'cast', 'difference', 'definitions']);
@@ -71,8 +73,6 @@ describe('discrete', function() {
 
     expect(discrete.difference(r, r)).to.equal(0);
     expect(discrete.difference(r, b)).to.equal(1);
-
-    tools.ideas.clean(roygbiv);
   });
 
   describe('definitions', function() {
@@ -86,8 +86,6 @@ describe('discrete', function() {
       var roygbiv = discrete.definitions.create(states);
       expect(roygbiv.data().type).to.not.equal(undefined);
       expect(roygbiv.data().states).to.deep.equal(states);
-
-      tools.ideas.clean(roygbiv);
 
       // difference fn doesn't exist
       expect(function() { discrete.definitions.create(['a', 'b'], 'not a diff fn'); }).to.throw('"not a diff fn" does not exist');

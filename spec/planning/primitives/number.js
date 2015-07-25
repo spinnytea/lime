@@ -1,9 +1,10 @@
 'use strict';
 var _ = require('lodash');
 var expect = require('chai').expect;
+var ideas = require('../../../src/database/ideas');
 var number = require('../../../src/planning/primitives/number');
-var tools = require('../../testingTools');
 
+var wrongUnit = _.merge(num(1), {unit:'imaunit'});
 function num() {
   return {
     type: 'lime_number',
@@ -13,7 +14,7 @@ function num() {
 }
 
 describe('number', function() {
-  var wrongUnit = _.merge(num(1), {unit:'imaunit'});
+  require('../../database/ideas').mock();
 
   it('init', function() {
     // this is to ensure we test everything
@@ -155,7 +156,7 @@ describe('number', function() {
     expect(number.difference(num(1, 3), num(5))).to.equal(2);
 
 
-    var idea = tools.ideas.create({scale: 3});
+    var idea = ideas.create({scale: 3});
     function num2() {
       var ret = num.apply({}, arguments);
       ret.unit = idea.id;
