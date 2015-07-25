@@ -8,6 +8,23 @@ var ideas = require('../../src/database/ideas');
 var links = require('../../src/database/links');
 var tools = require('../testingTools');
 
+exports.mock = function() {
+  var bak = {};
+  before(function() {
+    bak.saveObj = ideas.units.boundaries.saveObj;
+    bak.loadObj = ideas.units.boundaries.loadObj;
+  });
+  beforeEach(function() {
+    // create a new spy for every test
+    ideas.units.boundaries.saveObj = sinon.spy();
+    ideas.units.boundaries.loadObj = sinon.spy();
+  });
+  after(function() {
+    ideas.units.boundaries.saveObj = bak.saveObj;
+    ideas.units.boundaries.loadObj = bak.loadObj;
+  });
+};
+
 describe('ideas', function() {
   it('init', function() {
     // this is assumed by ideas; we can't really do anything but ensure it's existence
@@ -18,18 +35,7 @@ describe('ideas', function() {
   });
 
   describe('ProxyIdea', function() {
-    var bak = {};
-    beforeEach(function() {
-      bak.saveObj = ideas.units.boundaries.saveObj;
-      bak.loadObj = ideas.units.boundaries.loadObj;
-
-      ideas.units.boundaries.saveObj = sinon.spy();
-      ideas.units.boundaries.loadObj = sinon.spy();
-    });
-    afterEach(function() {
-      ideas.units.boundaries.saveObj = bak.saveObj;
-      ideas.units.boundaries.loadObj = bak.loadObj;
-    });
+    exports.mock();
 
     it('new', function() {
       var idea = ideas.proxy('_test_');
@@ -178,22 +184,6 @@ describe('ideas', function() {
     }); // end links
   }); // end ProxyIdea
 
-  it('ideas.proxy', function() {
-    expect(function() { ideas.proxy(); }).to.throw(TypeError);
-    expect(function() { ideas.proxy(true); }).to.throw(TypeError);
-
-    // there really isn't a way for me to properly test this
-    // I have been avoiding adding a handle to the internal memory object
-    // there really isn't a way to test that nothing was loaded
-    // so... whatevs
-
-    var idea = tools.ideas.create();
-    ideas.close(idea);
-    var proxy = ideas.proxy(idea);
-
-    expect(proxy.id).to.equal(idea.id);
-  });
-
   describe('crud', function() {
     describe('create', function() {
       it('empty', function() {
@@ -282,6 +272,33 @@ describe('ideas', function() {
   }); // end crud
 
   describe('proxy', function() {
+    exports.mock();
+
+    afterEach(function() {
+      // just verify
+      // it's not really a question, so it doesn't need to be in each test
+      expect(ideas.units.boundaries.saveObj).to.have.callCount(0);
+      expect(ideas.units.boundaries.loadObj).to.have.callCount(0);
+    });
+
+    it('should throw errors', function() {
+      expect(function() { ideas.proxy(); }).to.throw(TypeError);
+      expect(function() { ideas.proxy(true); }).to.throw(TypeError);
+    });
+
+    it('should accept an id or an idea', function() {
+      var idea = tools.ideas.create();
+      var proxy = ideas.proxy(idea);
+      var proxy2 = ideas.proxy(idea.id);
+      var proxy3 = ideas.proxy(proxy);
+
+      expect(proxy.id).to.equal(idea.id); // created with idea
+      expect(proxy2.id).to.equal(idea.id); // created with id
+      expect(proxy3.id).to.equal(idea.id); // created with a proxy (fun fun)
+      expect(proxy).to.deep.equal(proxy2); // they are deeply equal
+      expect(proxy).to.not.equal(proxy2); // they are different objects
+    });
+
     it('shouldn\'t load memory', function() {
       var id = '_test_';
       expect(ideas.units.memory[id]).to.equal(undefined);
