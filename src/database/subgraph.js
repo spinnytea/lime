@@ -346,6 +346,8 @@ exports.stringify = function(sg, dump) {
 
   var data = _.clone(sg._data);
   acrossParents(sg._dataParent, function(value, id) {
+    // the children can overwrite the data without affecting the parents
+    // so if the data is already present, then don't overwrite it
     if(!(id in data))
       data[id] = value;
   });

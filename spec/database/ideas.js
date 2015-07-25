@@ -4,6 +4,7 @@ var Promise = require('bluebird'); // jshint ignore:line
 var expect = require('chai').use(require('sinon-chai')).expect;
 var sinon = require('sinon');
 var config = require('../../src/config');
+var discrete = require('../../src/planning/primitives/discrete');
 var ideas = require('../../src/database/ideas');
 var links = require('../../src/database/links');
 var tools = require('../testingTools');
@@ -17,7 +18,9 @@ exports.mock = function() {
   beforeEach(function() {
     // create a new spy for every test
     ideas.units.boundaries.saveObj = sinon.spy();
-    ideas.units.boundaries.loadObj = sinon.spy();
+    ideas.units.boundaries.loadObj = sinon.stub();
+    // this is a stock object that we use a lot for tests
+    ideas.units.boundaries.loadObj.withArgs(discrete.definitions.list.boolean, 'data').returns({ type: 'lime_discrete_definition', states: [ true, false ] });
   });
   after(function() {
     ideas.units.boundaries.saveObj = bak.saveObj;
@@ -104,7 +107,7 @@ describe('ideas', function() {
       expect(ideas.units.memory).to.not.have.property(idea.id);
 
       expect(ideas.units.boundaries.loadObj).to.have.callCount(0);
-      ideas.units.boundaries.loadObj = sinon.stub().returns(data);
+      ideas.units.boundaries.loadObj.withArgs(idea.id, 'data').returns(data);
 
       expect(idea.data()).to.deep.equal(data);
       expect(ideas.units.memory).to.have.property(idea.id);
@@ -245,7 +248,6 @@ describe('ideas', function() {
         expect(ideas.units.boundaries.saveObj).to.have.calledWith(idea.id, 'links', {});
         ideas.units.boundaries.saveObj.reset();
 
-        ideas.units.boundaries.loadObj = sinon.stub();
         ideas.units.boundaries.loadObj.withArgs(idea.id, 'data').returns({});
         ideas.units.boundaries.loadObj.withArgs(idea.id, 'links').returns({});
         expect(idea.data()).to.deep.equal({});
@@ -285,7 +287,6 @@ describe('ideas', function() {
         expect(ideas.units.boundaries.saveObj).to.have.calledWith(idea.id, 'links', {});
         ideas.units.boundaries.saveObj.reset();
 
-        ideas.units.boundaries.loadObj = sinon.stub();
         ideas.units.boundaries.loadObj.withArgs(idea.id, 'data').returns(data);
         ideas.units.boundaries.loadObj.withArgs(idea.id, 'links').returns({});
         expect(idea.data()).to.deep.equal(data);

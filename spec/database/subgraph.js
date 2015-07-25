@@ -2,10 +2,10 @@
 var _ = require('lodash');
 var expect = require('chai').expect;
 var discrete = require('../../src/planning/primitives/discrete');
+var ideas = require('../../src/database/ideas');
 var links = require('../../src/database/links');
 var number = require('../../src/planning/primitives/number');
 var subgraph = require('../../src/database/subgraph');
-var tools = require('../testingTools');
 
 // @param match: the result of subgraph.match ([vertexMap])
 function checkSubgraphMatch(match, outer, inner) {
@@ -26,6 +26,8 @@ function checkSubgraphMatch(match, outer, inner) {
 }
 
 describe('subgraph', function() {
+  require('./ideas').mock();
+
   it('init', function() {
     // this is to ensure we test everything
     expect(Object.keys(subgraph)).to.deep.equal(['Subgraph', 'matcher', 'stringify', 'parse', 'search', 'match', 'rewrite', 'createGoal', 'createGoal2', 'solidifyGoal']);
@@ -68,7 +70,7 @@ describe('subgraph', function() {
       });
 
       it('matcher.id', function() {
-        var idea = tools.ideas.create();
+        var idea = ideas.create();
 
         var sg = new subgraph.Subgraph();
         var a = sg.addVertex(subgraph.matcher.id, idea.id);
@@ -87,7 +89,7 @@ describe('subgraph', function() {
       });
 
       it('matcher.number', function() {
-        var unit = tools.ideas.create();
+        var unit = ideas.create();
         var errorStr = 'matcher.number using non-number';
         var sg = new subgraph.Subgraph();
         var v = sg.addVertex(subgraph.matcher.filler);
@@ -114,6 +116,8 @@ describe('subgraph', function() {
         var errorStr = 'matcher.discrete using non-discrete';
         var sg = new subgraph.Subgraph();
         var v = sg.addVertex(subgraph.matcher.filler);
+
+        ideas.proxy(discrete.definitions.list.boolean).data();
 
         expect(function() {
           // if the discrete data is valid, then it shouldn't error
@@ -154,7 +158,7 @@ describe('subgraph', function() {
       });
 
       it('id/filler', function() {
-        var ideaA = tools.ideas.create();
+        var ideaA = ideas.create();
 
         var sg = new subgraph.Subgraph();
         var a = sg.addVertex(subgraph.matcher.id, ideaA);
@@ -175,8 +179,8 @@ describe('subgraph', function() {
       });
 
       it('two id match', function() {
-        var ideaA = tools.ideas.create();
-        var ideaB = tools.ideas.create();
+        var ideaA = ideas.create();
+        var ideaB = ideas.create();
         ideaA.link(links.list.thought_description, ideaB);
 
         var sg = new subgraph.Subgraph();
@@ -198,8 +202,8 @@ describe('subgraph', function() {
       });
 
       it('two id mis-match', function() {
-        var ideaA = tools.ideas.create();
-        var ideaB = tools.ideas.create();
+        var ideaA = ideas.create();
+        var ideaB = ideas.create();
 
         var sg = new subgraph.Subgraph();
         var a = sg.addVertex(subgraph.matcher.id, ideaA);
@@ -220,7 +224,6 @@ describe('subgraph', function() {
       });
     }); // end addEdge
 
-
     describe('copy', function() {
       it('init', function() {
         // this is mutable, this is just for tracking the unit tests
@@ -229,8 +232,7 @@ describe('subgraph', function() {
       });
 
       it('<split this test apart>', function() {
-
-        var idea = tools.ideas.create();
+        var idea = ideas.create();
 
         // empty
         var sg = new subgraph.Subgraph();
@@ -371,7 +373,7 @@ describe('subgraph', function() {
     }); // end getMatch
 
     it('getIdea', function() {
-      var idea = tools.ideas.create();
+      var idea = ideas.create();
       var sg = new subgraph.Subgraph();
       var v = sg.addVertex(subgraph.matcher.id, idea);
 
@@ -379,9 +381,9 @@ describe('subgraph', function() {
     });
 
     it('allIdeas', function() {
-      var ideaA = tools.ideas.create();
-      var ideaB = tools.ideas.create();
-      var ideaC = tools.ideas.create();
+      var ideaA = ideas.create();
+      var ideaB = ideas.create();
+      var ideaC = ideas.create();
       var sg = new subgraph.Subgraph();
       sg.addVertex(subgraph.matcher.id, ideaA);
 
@@ -395,7 +397,7 @@ describe('subgraph', function() {
     });
 
     it('deleteIdea', function() {
-      var idea = tools.ideas.create();
+      var idea = ideas.create();
       var sg = new subgraph.Subgraph();
       var v = sg.addVertex(subgraph.matcher.id, idea);
 
@@ -417,7 +419,7 @@ describe('subgraph', function() {
     describe('getData', function() {
       it('with data', function() {
         var data = { somat: 42 };
-        var idea = tools.ideas.create(data);
+        var idea = ideas.create(data);
         var sg = new subgraph.Subgraph();
         var a = sg.addVertex(subgraph.matcher.id, idea.id);
 
@@ -435,7 +437,7 @@ describe('subgraph', function() {
       });
 
       it('without data', function() {
-        var idea = tools.ideas.create();
+        var idea = ideas.create();
         var sg = new subgraph.Subgraph();
         var a = sg.addVertex(subgraph.matcher.id, idea.id);
 
@@ -535,8 +537,8 @@ describe('subgraph', function() {
 
     describe('deleteData', function() {
       it('basic', function() {
-        var a = tools.ideas.create({a: 1});
-        var b = tools.ideas.create({b: 2});
+        var a = ideas.create({a: 1});
+        var b = ideas.create({b: 2});
         a.link(links.list.thought_description, b);
 
         var sg = new subgraph.Subgraph();
@@ -585,7 +587,7 @@ describe('subgraph', function() {
 
   describe('matcher', function() {
     it('id: function', function() {
-      var idea = tools.ideas.create();
+      var idea = ideas.create();
 
       expect(subgraph.matcher.id(idea, idea.id)).to.equal(true);
       expect(subgraph.matcher.id(idea, '')).to.equal(false);
@@ -595,8 +597,8 @@ describe('subgraph', function() {
     // matcher.id shouldn't ever actually be used in subgraph.search
     // it doesn't even really make sense in the context of matchRef (since it doesn't use data)
     it('id: basic search', function() {
-      var mark = tools.ideas.create();
-      var apple = tools.ideas.create();
+      var mark = ideas.create();
+      var apple = ideas.create();
       mark.link(links.list.thought_description, apple);
 
       var sg = new subgraph.Subgraph();
@@ -619,8 +621,8 @@ describe('subgraph', function() {
     });
 
     it('filler: basic search', function() {
-      var mark = tools.ideas.create();
-      var apple = tools.ideas.create();
+      var mark = ideas.create();
+      var apple = ideas.create();
       mark.link(links.list.thought_description, apple);
 
       var sg = new subgraph.Subgraph();
@@ -645,8 +647,8 @@ describe('subgraph', function() {
     });
 
     it('exact: basic search', function() {
-      var mark = tools.ideas.create();
-      var apple = tools.ideas.create({'thing': 3.14});
+      var mark = ideas.create();
+      var apple = ideas.create({'thing': 3.14});
       mark.link(links.list.thought_description, apple);
 
       var sg = new subgraph.Subgraph();
@@ -687,8 +689,8 @@ describe('subgraph', function() {
     });
 
     it('similar: basic search', function() {
-      var mark = tools.ideas.create();
-      var apple = tools.ideas.create({'thing1': 3.14, 'thing2': 2.71});
+      var mark = ideas.create();
+      var apple = ideas.create({'thing1': 3.14, 'thing2': 2.71});
       mark.link(links.list.thought_description, apple);
 
       var sg = new subgraph.Subgraph();
@@ -714,7 +716,7 @@ describe('subgraph', function() {
     });
 
     it('number: function', function() {
-      var unit = tools.ideas.create();
+      var unit = ideas.create();
       var data = number.cast({ value: number.value(10), unit: unit.id });
 
       expect(subgraph.matcher.number(data, { value: number.value(10), unit: unit.id })).to.equal(true);
@@ -727,9 +729,9 @@ describe('subgraph', function() {
     });
 
     it('number: basic search', function() {
-      var unit = tools.ideas.create();
-      var mark = tools.ideas.create();
-      var apple = tools.ideas.create({ value: number.value(2), unit: unit.id });
+      var unit = ideas.create();
+      var mark = ideas.create();
+      var apple = ideas.create({ value: number.value(2), unit: unit.id });
       mark.link(links.list.thought_description, apple);
 
       var sg = new subgraph.Subgraph();
@@ -768,8 +770,8 @@ describe('subgraph', function() {
 
     it('discrete: basic search', function() {
       var unit = discrete.definitions.list.boolean;
-      var mark = tools.ideas.create();
-      var hasApple = tools.ideas.create({ value: false, unit: discrete.definitions.list.boolean });
+      var mark = ideas.create();
+      var hasApple = ideas.create({ value: false, unit: discrete.definitions.list.boolean });
       mark.link(links.list.thought_description, hasApple);
 
       var sg = new subgraph.Subgraph();
@@ -796,10 +798,10 @@ describe('subgraph', function() {
   }); // end matchers
 
   it('stringify & parse', function() {
-    var unit = tools.ideas.create();
-    var num = tools.ideas.create({ value: number.value(2), unit: unit.id });
-    var crt = tools.ideas.create({ value: true, unit: discrete.definitions.list.boolean });
-    var mark = tools.ideas.create();
+    var unit = ideas.create();
+    var num = ideas.create({ value: number.value(2), unit: unit.id });
+    var crt = ideas.create({ value: true, unit: discrete.definitions.list.boolean });
+    var mark = ideas.create();
     mark.link(links.list.thought_description, num);
     mark.link(links.list.thought_description, crt);
 
@@ -870,12 +872,12 @@ describe('subgraph', function() {
   });
 
   it('stringify for dump (+ with parents)', function() {
-    var aunit = tools.ideas.create();
-    var bunit = tools.ideas.create();
-    var mark = tools.ideas.create();
-    var apple = tools.ideas.create({ value: number.value(2), unit: aunit.id });
+    var aunit = ideas.create();
+    var bunit = ideas.create();
+    var mark = ideas.create();
+    var apple = ideas.create({ value: number.value(2), unit: aunit.id });
     mark.link(links.list.thought_description, apple);
-    var banana = tools.ideas.create({ value: number.value(4), unit: bunit.id });
+    var banana = ideas.create({ value: number.value(4), unit: bunit.id });
     mark.link(links.list.thought_description, banana);
     var sg = new subgraph.Subgraph();
     var m = sg.addVertex(subgraph.matcher.id, mark.id);
@@ -937,9 +939,9 @@ describe('subgraph', function() {
   });
 
   it('createGoal', function() {
-    var a = tools.ideas.create('a');
-    var b = tools.ideas.create('b');
-    var c = tools.ideas.create('c');
+    var a = ideas.create('a');
+    var b = ideas.create('b');
+    var c = ideas.create('c');
     a.link(links.list.thought_description, b);
     b.link(links.list.thought_description, c);
 
@@ -979,10 +981,10 @@ describe('subgraph', function() {
 
   it('solidifyGoal', function() {
     // root points to a,b,c
-    var r = tools.ideas.create('r');
-    var a = tools.ideas.create('a');
-    var b = tools.ideas.create('b');
-    var c = tools.ideas.create();
+    var r = ideas.create('r');
+    var a = ideas.create('a');
+    var b = ideas.create('b');
+    var c = ideas.create();
     r.link(links.list.thought_description, a);
     r.link(links.list.thought_description, b);
     r.link(links.list.thought_description, c);
