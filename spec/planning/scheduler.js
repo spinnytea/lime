@@ -1,18 +1,20 @@
 'use strict';
 var expect = require('chai').expect;
 
+var ideas = require('../../src/database/ideas');
 var links = require('../../src/database/links');
 var scheduler = require('../../src/planning/scheduler');
 var subgraph = require('../../src/database/subgraph');
-var tools = require('../testingTools');
 
 describe('scheduler', function() {
+  require('../database/ideas').mock();
+
   describe('defer', function() {
     var context, goal, result;
 
     beforeEach(function() {
-      var idea = tools.ideas.create();
-      idea.link(links.list.thought_description, tools.ideas.create());
+      var idea = ideas.create();
+      idea.link(links.list.thought_description, ideas.create());
 
       context = new subgraph.Subgraph();
       context.addEdge(

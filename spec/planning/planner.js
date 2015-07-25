@@ -5,6 +5,7 @@ var astar = require('../../src/planning/algorithms/astar');
 var actuator = require('../../src/planning/actuator');
 var blueprint = require('../../src/planning/primitives/blueprint');
 var config = require('../../src/config');
+var ideas = require('../../src/database/ideas');
 var links = require('../../src/database/links');
 var number = require('../../src/planning/primitives/number');
 var planner = require('../../src/planning/planner');
@@ -12,9 +13,10 @@ var scheduler = require('../../src/planning/scheduler');
 var serialplan = require('../../src/planning/serialplan');
 var stub = require('../../src/planning/stub');
 var subgraph = require('../../src/database/subgraph');
-var tools = require('../testingTools');
 
 describe('planner', function() {
+  require('../database/ideas').mock();
+
   it('init', function() {
     // this is to ensure we test everything
     expect(Object.keys(planner)).to.deep.equal(['create']);
@@ -28,9 +30,9 @@ describe('planner', function() {
     before(function() {
       // our state, just a simple object with a value of 0
       // athing -> count
-      var athing = tools.ideas.create();
-      count_unit = tools.ideas.create();
-      count = tools.ideas.create({ value: number.value(0), unit: count_unit.id });
+      var athing = ideas.create();
+      count_unit = ideas.create();
+      count = ideas.create({ value: number.value(0), unit: count_unit.id });
       athing.link(links.list.thought_description, count);
 
 
