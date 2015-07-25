@@ -185,6 +185,8 @@ describe('ideas', function() {
   }); // end ProxyIdea
 
   describe('crud', function() {
+    exports.mock();
+
     describe('create', function() {
       it('empty', function() {
         var idea = tools.ideas.create();
@@ -198,52 +200,106 @@ describe('ideas', function() {
     });
 
     describe('save / load', function() {
-      it('no data', function(done) {
+      it('no data', function() {
         var idea = tools.ideas.create();
 
         ideas.save(idea);
 
-        Promise.all([
-          tools.ideas.exists(idea.id, 'data', false),
-          tools.ideas.exists(idea.id, 'links', false)
-        ]).then(function(results) {
-          expect(results).to.deep.equal([false, false]);
+        expect(ideas.units.boundaries.saveObj).to.have.callCount(2);
+        expect(ideas.units.boundaries.loadObj).to.have.callCount(0);
+        expect(ideas.units.boundaries.saveObj).to.have.calledWith(idea.id, 'data', {});
+        expect(ideas.units.boundaries.saveObj).to.have.calledWith(idea.id, 'links', {});
+        ideas.units.boundaries.saveObj.reset();
 
-          ideas.close(idea);
-          ideas.load(idea.id); // the proxy will still work
+        expect(ideas.units.memory[idea.id].data).to.deep.equal({});
+        ideas.close(idea);
+        expect(ideas.units.memory[idea.id]).to.equal(undefined);
 
-          expect(idea.data()).to.deep.equal({});
-        }).done(done, done);
+        expect(ideas.units.boundaries.saveObj).to.have.callCount(2);
+        expect(ideas.units.boundaries.loadObj).to.have.callCount(0);
+        expect(ideas.units.boundaries.saveObj).to.have.calledWith(idea.id, 'data', {});
+        expect(ideas.units.boundaries.saveObj).to.have.calledWith(idea.id, 'links', {});
+        ideas.units.boundaries.saveObj.reset();
+
+        ideas.units.boundaries.loadObj = sinon.stub();
+        ideas.units.boundaries.loadObj.withArgs(idea.id, 'data').returns({});
+        ideas.units.boundaries.loadObj.withArgs(idea.id, 'links').returns({});
+        expect(idea.data()).to.deep.equal({});
+        expect(ideas.units.memory[idea.id].data).to.deep.equal({});
+
+        expect(ideas.units.boundaries.saveObj).to.have.callCount(0);
+        expect(ideas.units.boundaries.loadObj).to.have.callCount(2);
+        expect(ideas.units.boundaries.loadObj).to.have.calledWith(idea.id, 'data');
+        expect(ideas.units.boundaries.loadObj).to.have.calledWith(idea.id, 'links');
       });
 
-      it('with data', function(done) {
+      it('with data', function() {
         var data = { 'things': -1 };
         var idea = tools.ideas.create(data);
 
+        expect(ideas.units.boundaries.saveObj).to.have.callCount(2);
+        expect(ideas.units.boundaries.loadObj).to.have.callCount(0);
+        expect(ideas.units.boundaries.saveObj).to.have.calledWith(idea.id, 'data', data);
+        expect(ideas.units.boundaries.saveObj).to.have.calledWith(idea.id, 'links', {});
+        ideas.units.boundaries.saveObj.reset();
+
         ideas.save(idea);
-        Promise.all([
-          tools.ideas.exists(idea.id, 'data', true),
-          tools.ideas.exists(idea.id, 'links', false)
-        ]).then(function(results) {
-          expect(results).to.deep.equal([true, false]);
 
-          ideas.close(idea);
-          ideas.load(idea.id); // the proxy will still work
+        expect(ideas.units.boundaries.saveObj).to.have.callCount(2);
+        expect(ideas.units.boundaries.loadObj).to.have.callCount(0);
+        expect(ideas.units.boundaries.saveObj).to.have.calledWith(idea.id, 'data', data);
+        expect(ideas.units.boundaries.saveObj).to.have.calledWith(idea.id, 'links', {});
+        ideas.units.boundaries.saveObj.reset();
 
-          expect(idea.data()).to.deep.equal(data);
-        }).done(done, done);
+        expect(ideas.units.memory[idea.id].data).to.deep.equal(data);
+        ideas.close(idea);
+        expect(ideas.units.memory[idea.id]).to.equal(undefined);
+
+        expect(ideas.units.boundaries.saveObj).to.have.callCount(2);
+        expect(ideas.units.boundaries.loadObj).to.have.callCount(0);
+        expect(ideas.units.boundaries.saveObj).to.have.calledWith(idea.id, 'data', data);
+        expect(ideas.units.boundaries.saveObj).to.have.calledWith(idea.id, 'links', {});
+        ideas.units.boundaries.saveObj.reset();
+
+        ideas.units.boundaries.loadObj = sinon.stub();
+        ideas.units.boundaries.loadObj.withArgs(idea.id, 'data').returns(data);
+        ideas.units.boundaries.loadObj.withArgs(idea.id, 'links').returns({});
+        expect(idea.data()).to.deep.equal(data);
+        expect(ideas.units.memory[idea.id].data).to.deep.equal(data);
+
+        expect(ideas.units.boundaries.saveObj).to.have.callCount(0);
+        expect(ideas.units.boundaries.loadObj).to.have.callCount(2);
+        expect(ideas.units.boundaries.loadObj).to.have.calledWith(idea.id, 'data');
+        expect(ideas.units.boundaries.loadObj).to.have.calledWith(idea.id, 'links');
       });
 
       it('save: unloaded', function() {
         var idea = tools.ideas.create({ 'things': 42 });
+        expect(ideas.units.boundaries.saveObj).to.have.callCount(2);
+        expect(ideas.units.boundaries.loadObj).to.have.callCount(0);
         ideas.close(idea);
+        expect(ideas.units.boundaries.saveObj).to.have.callCount(4);
+        expect(ideas.units.boundaries.loadObj).to.have.callCount(0);
         ideas.save(idea);
+        expect(ideas.units.boundaries.saveObj).to.have.callCount(4);
+        expect(ideas.units.boundaries.loadObj).to.have.callCount(0);
+        ideas.save(idea);
+        ideas.save(idea);
+        expect(ideas.units.boundaries.saveObj).to.have.callCount(4);
+        expect(ideas.units.boundaries.loadObj).to.have.callCount(0);
       });
 
       it('load: loaded', function() {
         var idea = tools.ideas.create();
+        expect(ideas.units.boundaries.saveObj).to.have.callCount(0);
+        expect(ideas.units.boundaries.loadObj).to.have.callCount(0);
+        ideas.load(idea);
+        expect(ideas.units.boundaries.saveObj).to.have.callCount(0);
+        expect(ideas.units.boundaries.loadObj).to.have.callCount(0);
         ideas.load(idea);
         ideas.load(idea);
+        expect(ideas.units.boundaries.saveObj).to.have.callCount(0);
+        expect(ideas.units.boundaries.loadObj).to.have.callCount(0);
       });
 
       it('invalid arg', function() {
@@ -253,21 +309,29 @@ describe('ideas', function() {
 
         expect(function() { ideas.load(); }).to.throw();
         expect(function() { ideas.load(1); }).to.throw();
+
+        expect(ideas.units.boundaries.saveObj).to.have.callCount(0);
+        expect(ideas.units.boundaries.loadObj).to.have.callCount(0);
       });
-
-      it.skip('path doesn\'t exist, w/ location');
-
-      it.skip('path doesn\'t exist, w/o location');
     }); // end save / load
 
     it('close', function() {
       expect(function() { ideas.close(); }).to.throw();
       expect(function() { ideas.close(10); }).to.throw();
       expect(function() { ideas.close({ foo: '1 smoothie lifetime' }); }).to.throw();
+      expect(ideas.units.boundaries.saveObj).to.have.callCount(0);
+      expect(ideas.units.boundaries.loadObj).to.have.callCount(0);
 
       var idea = tools.ideas.create();
+      expect(ideas.units.memory).to.have.property(idea.id);
       expect(function() { ideas.close(idea); }).to.not.throw();
-      expect(function() { ideas.close('a'); }).to.not.throw();
+      expect(ideas.units.boundaries.saveObj).to.have.callCount(2);
+      expect(ideas.units.boundaries.loadObj).to.have.callCount(0);
+
+      expect(ideas.units.memory).to.not.have.property('_test_');
+      expect(function() { ideas.close('_test_'); }).to.not.throw();
+      expect(ideas.units.boundaries.saveObj).to.have.callCount(2); // no change since that thought doesn't exist
+      expect(ideas.units.boundaries.loadObj).to.have.callCount(0);
     });
   }); // end crud
 
@@ -307,23 +371,27 @@ describe('ideas', function() {
     });
   }); // end proxy
 
-  it('context', function() {
-    // first, ensure the context has be
-    expect(config.data).to.not.equal(undefined);
-    expect(config.data.ideas).to.not.equal(undefined);
+  describe('context', function() {
+    exports.mock();
 
-    expect(config.data.ideas.context.test).to.equal(undefined);
-    var test_context = ideas.context('test');
-    expect(test_context).to.be.an('object'); // proxy idea
-    expect(config.data.ideas.context.test).to.not.equal(undefined);
+    it('should update config', function() {
+      // first, ensure the context has be
+      expect(config.data).to.not.equal(undefined);
+      expect(config.data.ideas).to.not.equal(undefined);
 
-    // if we call it again, we should get the same thing
-    expect(ideas.context('test')).to.deep.equal(test_context);
+      expect(config.data.ideas.context.test).to.equal(undefined);
+      var test_context = ideas.context('test');
+      expect(test_context).to.be.an('object'); // proxy idea
+      expect(config.data.ideas.context.test).to.not.equal(undefined);
 
-    // clean up after the test
-    delete config.data.ideas.context.test;
-    config.save();
-  });
+      // if we call it again, we should get the same thing
+      expect(ideas.context('test')).to.deep.equal(test_context);
+
+      // clean up after the test
+      delete config.data.ideas.context.test;
+      config.save();
+    });
+  }); // end context
 
   describe('units', function() {
     it('init', function() {
@@ -353,6 +421,10 @@ describe('ideas', function() {
       it.skip('saveObj');
 
       it.skip('loadObj');
+
+      it.skip('path doesn\'t exist, w/ location');
+
+      it.skip('path doesn\'t exist, w/o location');
     }); // end boundaries
   });
 }); // end ideas
