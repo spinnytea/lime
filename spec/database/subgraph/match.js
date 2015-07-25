@@ -1,10 +1,10 @@
 'use strict';
 var expect = require('chai').expect;
 var discrete = require('../../../src/planning/primitives/discrete');
+var ideas = require('../../../src/database/ideas');
 var links = require('../../../src/database/links');
 var number = require('../../../src/planning/primitives/number');
 var subgraph = require('../../../src/database/subgraph');
-var tools = require('../../testingTools');
 
 // @param match: the result of subgraph.match ([vertexMap])
 function checkSubgraphMatch(match, outer, inner) {
@@ -26,6 +26,8 @@ function checkSubgraphMatch(match, outer, inner) {
 
 describe('subgraph', function() {
   describe('match', function() {
+    require('../ideas').mock();
+
     it('init', function() {
       expect(Object.keys(subgraph.match.units)).to.deep.equal(['initializeVertexMap', 'subgraphMatch', 'resolveMatchData', 'vertexTransitionableAcceptable', 'vertexFixedMatch']);
     });
@@ -33,11 +35,11 @@ describe('subgraph', function() {
     var context, mark, apple, price;
     var outer, c, m, a, p;
     beforeEach(function() {
-      context = tools.ideas.create();
-      mark = tools.ideas.create();
-      apple = tools.ideas.create();
-      var money = tools.ideas.create();
-      price = tools.ideas.create({value: number.value(10), unit: money.id});
+      context = ideas.create();
+      mark = ideas.create();
+      apple = ideas.create();
+      var money = ideas.create();
+      price = ideas.create({value: number.value(10), unit: money.id});
       mark.link(links.list.context, context);
       mark.link(links.list.thought_description, apple);
       apple.link(links.list.thought_description, price);
@@ -147,8 +149,8 @@ describe('subgraph', function() {
     });
 
     it('disjoint', function() {
-      var banana = tools.ideas.create();
-      var bprice = tools.ideas.create({value: 20});
+      var banana = ideas.create();
+      var bprice = ideas.create({value: 20});
       banana.link(links.list.thought_description, bprice);
 
       var b = outer.addVertex(subgraph.matcher.id, banana);
@@ -199,7 +201,7 @@ describe('subgraph', function() {
       // vertex with idea
       // verify the transitionable rules in exports.match
       it('pre-match', function() {
-        var idea = tools.ideas.create();
+        var idea = ideas.create();
         var outer = new subgraph.Subgraph();
         var o = outer.addVertex(subgraph.matcher.id, idea);
         var inner = new subgraph.Subgraph();
@@ -256,9 +258,9 @@ describe('subgraph', function() {
       // vertex without idea
       // verify the transitionable rules in subgraphMatch
       it('subgraphMatch', function() {
-        var id1 = tools.ideas.create();
-        var id2 = tools.ideas.create();
-        var id3 = tools.ideas.create();
+        var id1 = ideas.create();
+        var id2 = ideas.create();
+        var id3 = ideas.create();
         id1.link(links.list.thought_description, id2);
         id1.link(links.list.thought_description, id3);
 
@@ -302,9 +304,9 @@ describe('subgraph', function() {
 //      it.skip('pre-match');
 
       it('unit only', function() {
-        var unit = tools.ideas.create();
-        var v1 = tools.ideas.create({ value: number.value(5), unit: unit.id });
-        var v2 = tools.ideas.create({ value: number.value(15), unit: unit.id });
+        var unit = ideas.create();
+        var v1 = ideas.create({ value: number.value(5), unit: unit.id });
+        var v2 = ideas.create({ value: number.value(15), unit: unit.id });
         unit.link(links.list.thought_description, v1);
         unit.link(links.list.thought_description, v2);
 
@@ -338,10 +340,10 @@ describe('subgraph', function() {
         var mark, desire, apple;
         var outer, om, od, o_;
         beforeEach(function() {
-          mark = tools.ideas.create({name: 'mark'}); // anchor
-          desire = tools.ideas.create({name: 'apple'}); // matchRef
-          apple = tools.ideas.create({name: 'apple', target: true}); // target
-          var banana = tools.ideas.create({name: 'banana'}); // distractor
+          mark = ideas.create({name: 'mark'}); // anchor
+          desire = ideas.create({name: 'apple'}); // matchRef
+          apple = ideas.create({name: 'apple', target: true}); // target
+          var banana = ideas.create({name: 'banana'}); // distractor
           mark.link(links.list.thought_description, desire);
           mark.link(links.list.thought_description, apple);
           mark.link(links.list.thought_description, banana);
@@ -440,14 +442,14 @@ describe('subgraph', function() {
         // the two roots act as anchors for different branches
         // branch a will use discrete/number matchers
         // branch b will use discrete/number matchers via matchRef
-        var a_root = tools.ideas.create();
-        var a_crt = tools.ideas.create(discrete.cast({value: true, unit: discrete.definitions.list.boolean}));
-        var a_num = tools.ideas.create(number.cast({value: number.value(1), unit: '0'}));
+        var a_root = ideas.create();
+        var a_crt = ideas.create(discrete.cast({value: true, unit: discrete.definitions.list.boolean}));
+        var a_num = ideas.create(number.cast({value: number.value(1), unit: '0'}));
         a_root.link(links.list.thought_description, a_crt);
         a_crt.link(links.list.thought_description, a_num);
-        var b_root = tools.ideas.create();
-        var b_crt = tools.ideas.create(a_crt.data());
-        var b_num = tools.ideas.create(a_num.data());
+        var b_root = ideas.create();
+        var b_crt = ideas.create(a_crt.data());
+        var b_num = ideas.create(a_num.data());
         b_root.link(links.list.thought_description, b_crt);
         b_crt.link(links.list.thought_description, b_num);
 
@@ -538,7 +540,7 @@ describe('subgraph', function() {
     var inner, i, im;
     var outer, o;
     beforeEach(function() {
-      idea = tools.ideas.create();
+      idea = ideas.create();
       inner = new subgraph.Subgraph();
       i = inner.addVertex(subgraph.matcher.filler);
       im = inner.addVertex(subgraph.matcher.filler, i, {matchRef:true});
