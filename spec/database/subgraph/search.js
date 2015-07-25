@@ -1,11 +1,13 @@
 'use strict';
 var expect = require('chai').expect;
+var ideas = require('../../../src/database/ideas');
 var links = require('../../../src/database/links');
 var subgraph = require('../../../src/database/subgraph');
-var tools = require('../../testingTools');
 
 describe('subgraph', function() {
   describe('search', function() {
+    require('../ideas').mock();
+    
     it('init', function() {
       expect(Object.keys(subgraph.search.units)).to.deep.equal(['findEdgeToExpand', 'expandEdge']);
     });
@@ -28,7 +30,7 @@ describe('subgraph', function() {
     });
 
     it('only id', function() {
-      var mark = tools.ideas.create();
+      var mark = ideas.create();
       var sg = new subgraph.Subgraph();
       sg.addVertex(subgraph.matcher.id, mark);
 
@@ -45,9 +47,9 @@ describe('subgraph', function() {
     });
 
     it('disjoint + id', function() {
-      var mark = tools.ideas.create();
-      var apple = tools.ideas.create();
-      var price = tools.ideas.create({value: 10});
+      var mark = ideas.create();
+      var apple = ideas.create();
+      var price = ideas.create({value: 10});
       mark.link(links.list.thought_description, apple);
       apple.link(links.list.thought_description, price);
 
@@ -65,9 +67,9 @@ describe('subgraph', function() {
     });
 
     it('disjoint + filler', function() {
-      var mark = tools.ideas.create();
-      var apple = tools.ideas.create();
-      var price = tools.ideas.create({value: 10});
+      var mark = ideas.create();
+      var apple = ideas.create();
+      var price = ideas.create({value: 10});
       mark.link(links.list.thought_description, apple);
       apple.link(links.list.thought_description, price);
 
@@ -82,13 +84,13 @@ describe('subgraph', function() {
     });
 
     it('disjoint', function() {
-      var mark = tools.ideas.create();
-      var apple = tools.ideas.create();
-      var price = tools.ideas.create({value: 10});
+      var mark = ideas.create();
+      var apple = ideas.create();
+      var price = ideas.create({value: 10});
       mark.link(links.list.thought_description, apple);
       apple.link(links.list.thought_description, price);
-      var banana = tools.ideas.create();
-      var bprice = tools.ideas.create({value: 20});
+      var banana = ideas.create();
+      var bprice = ideas.create({value: 20});
       banana.link(links.list.thought_description, bprice);
 
       var sg = new subgraph.Subgraph();
@@ -124,14 +126,14 @@ describe('subgraph', function() {
         var fruit, apple, banana;
         var mark, desire;
         beforeEach(function() {
-          fruit = tools.ideas.create();
-          apple = tools.ideas.create({name: 'apple'});
-          banana = tools.ideas.create({name: 'banana'});
+          fruit = ideas.create();
+          apple = ideas.create({name: 'apple'});
+          banana = ideas.create({name: 'banana'});
           fruit.link(links.list.thought_description, apple);
           fruit.link(links.list.thought_description, banana);
 
-          mark = tools.ideas.create();
-          desire = tools.ideas.create();
+          mark = ideas.create();
+          desire = ideas.create();
           mark.link(links.list.thought_description, desire);
         });
 
@@ -176,8 +178,8 @@ describe('subgraph', function() {
         var mark, apple;
         var sg, m, a;
         beforeEach(function() {
-          mark = tools.ideas.create();
-          apple = tools.ideas.create();
+          mark = ideas.create();
+          apple = ideas.create();
           mark.link(links.list.thought_description, apple);
         });
 
@@ -212,9 +214,9 @@ describe('subgraph', function() {
       describe('selectedEdge', function() {
         it('isSrc && isDst mismatch', function() {
           var fruit, apple, banana;
-          fruit = tools.ideas.create();
-          apple = tools.ideas.create({name: 'apple'});
-          banana = tools.ideas.create({name: 'banana'});
+          fruit = ideas.create();
+          apple = ideas.create({name: 'apple'});
+          banana = ideas.create({name: 'banana'});
           fruit.link(links.list.thought_description, apple);
           fruit.link(links.list.thought_description, banana);
 
@@ -245,7 +247,7 @@ describe('subgraph', function() {
 
       describe('expand branches', function() {
         it('0', function() {
-          var mark = tools.ideas.create();
+          var mark = ideas.create();
 
           var sg = new subgraph.Subgraph();
           var m = sg.addVertex(subgraph.matcher.id, mark);
@@ -256,8 +258,8 @@ describe('subgraph', function() {
         });
 
         it('1', function() {
-          var mark = tools.ideas.create();
-          var apple = tools.ideas.create();
+          var mark = ideas.create();
+          var apple = ideas.create();
           mark.link(links.list.thought_description, apple);
 
           var sg = new subgraph.Subgraph();
@@ -269,9 +271,9 @@ describe('subgraph', function() {
         });
 
         it('many', function() {
-          var mark = tools.ideas.create();
-          var apple = tools.ideas.create();
-          var banana = tools.ideas.create();
+          var mark = ideas.create();
+          var apple = ideas.create();
+          var banana = ideas.create();
           mark.link(links.list.thought_description, apple);
           mark.link(links.list.thought_description, banana);
 
@@ -311,9 +313,9 @@ describe('subgraph', function() {
 
         // general recursive case
         it('some', function() {
-          var mark = tools.ideas.create();
-          var apple = tools.ideas.create();
-          var price = tools.ideas.create({value: 10});
+          var mark = ideas.create();
+          var apple = ideas.create();
+          var price = ideas.create({value: 10});
           mark.link(links.list.thought_description, apple);
           apple.link(links.list.thought_description, price);
 
@@ -333,9 +335,9 @@ describe('subgraph', function() {
     }); // end clauses
 
     it('multi-part search', function() {
-      var mark = tools.ideas.create();
-      var apple = tools.ideas.create();
-      var price = tools.ideas.create({value: 10});
+      var mark = ideas.create();
+      var apple = ideas.create();
+      var price = ideas.create({value: 10});
       mark.link(links.list.thought_description, apple);
       apple.link(links.list.thought_description, price);
 
