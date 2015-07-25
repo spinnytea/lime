@@ -1,28 +1,29 @@
 'use strict';
 var expect = require('chai').expect;
 var discrete = require('../../../src/planning/primitives/discrete');
+var ideas = require('../../../src/database/ideas');
 var number = require('../../../src/planning/primitives/number');
 var subgraph = require('../../../src/database/subgraph');
-var tools = require('../../testingTools');
 
 describe('subgraph', function() {
   describe('rewrite', function() {
+    require('../ideas').mock();
+
     var indeterminate, money, price, wumpus, any, empty, wumpusUpdateIdea;
     var sg, p, w, a, e, wu;
     var priceData, wumpusData, priceUpdate, priceUpdate2, wumpusUpdate, wumpusUpdate2, anyData, anyUpdate;
 
     beforeEach(function() {
       indeterminate = discrete.definitions.create(['true', 'false', 'maybe']);
-      tools.ideas.clean(indeterminate);
-      money = tools.ideas.create();
+      money = ideas.create();
 
       priceData = { value: number.value(10), unit: money.id };
-      price = tools.ideas.create(priceData);
+      price = ideas.create(priceData);
       wumpusData = { value: 'true', unit: indeterminate.id };
-      wumpus = tools.ideas.create(wumpusData);
+      wumpus = ideas.create(wumpusData);
       anyData = { thing: 42 };
-      any = tools.ideas.create(anyData);
-      empty = tools.ideas.create();
+      any = ideas.create(anyData);
+      empty = ideas.create();
 
       sg = new subgraph.Subgraph();
       p = sg.addVertex(subgraph.matcher.id, price, {transitionable:true});
@@ -37,7 +38,7 @@ describe('subgraph', function() {
       anyUpdate = { object: 3.14 };
 
       // replace_id
-      wumpusUpdateIdea = tools.ideas.create(wumpusUpdate);
+      wumpusUpdateIdea = ideas.create(wumpusUpdate);
       wu = sg.addVertex(subgraph.matcher.id, wumpusUpdateIdea);
     });
 
