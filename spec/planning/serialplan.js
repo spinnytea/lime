@@ -10,9 +10,10 @@ var number = require('../../src/planning/primitives/number');
 var scheduler = require('../../src/planning/scheduler');
 var serialplan = require('../../src/planning/serialplan');
 var subgraph = require('../../src/database/subgraph');
-var tools = require('../testingTools');
 
 describe('serialplan', function() {
+  require('../database/ideas').mock();
+
   it.skip('a tiered plan is a serial plan', function() {
     // do we just add a boolean?
     // do we just save the goals?
@@ -30,9 +31,9 @@ describe('serialplan', function() {
   before(function() {
     // our state, just a simple object with a value of 0
     // athing -> count
-    var athing = tools.ideas.create();
-    count_unit = tools.ideas.create();
-    count = tools.ideas.create({ value: number.value(0), unit: count_unit.id });
+    var athing = ideas.create();
+    count_unit = ideas.create();
+    count = ideas.create({ value: number.value(0), unit: count_unit.id });
     athing.link(links.list.thought_description, count);
 
 
@@ -367,39 +368,31 @@ describe('serialplan', function() {
       expect(actionImplCount).to.equal(0);
     });
 
-    it('save & load', function() {
+    it('prepSave & loader', function() {
       var sp = new serialplan.Action([a, a, a, a, a]);
+      // make a fake ID for this test
+      // (pretend it's gone through s.save())
+      sp.idea = '_test_';
 
-      // okay, so we save the plan for the first time
-      // it should generate an idea
-      expect(sp.idea).to.equal(undefined);
-      sp.save();
-      expect(sp.idea).to.not.equal(undefined);
-      // but it shouldn't create a new one
-      var id = sp.idea;
-      sp.save();
-      expect(sp.idea).to.equal(id);
+      var data = sp.prepSave();
 
-      // this is important
-      // we need to serialize the object and reload it
-      ideas.close(id);
+      // the data needs to be able to go through
+      expect(JSON.parse(JSON.stringify(data))).to.deep.equal(data);
 
-      var loaded = blueprint.load(id);
+
+      var loaded = blueprint.loaders.SerialAction(data.blueprint);
       expect(loaded).to.be.an.instanceOf(serialplan.Action);
+      expect(loaded).to.deep.equal(sp); // this is our real test
 
-      // this is the ultimate test of the load
-      expect(loaded).to.deep.equal(sp);
-      // sans using the actuator in battle
+      //
+
+      // now use the stub in battle!
       expect(loaded.tryTransition(start).length).to.equal(1);
       loaded.runBlueprint(start, loaded.tryTransition(start)[0]);
       expect(actionImplCount).to.equal(5);
-
-      tools.ideas.clean(id);
     });
     it.skip('blueprint.load: cache currently loaded plans');
     // check sp.plans[0] === sp.plans[1]
-
-    it.skip('prepSave');
 
     it('nested blueprint', function() {
       var sp2 = new serialplan.Action([a, a, a]);
