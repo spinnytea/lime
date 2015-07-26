@@ -529,195 +529,203 @@ describe('subgraph', function() {
         //checkSubgraphMatch(subgraph.match(outer, inner, true), outerKeys, innerKeys);
       });
     }); // end matchRef
+
+    describe('units', function() {
+      it('init', function() {
+        // this is to ensure we test everything
+        expect(Object.keys(subgraph.match.units)).to.deep.equal(['initializeVertexMap', 'subgraphMatch', 'resolveMatchData', 'vertexTransitionableAcceptable', 'vertexFixedMatch']);
+        // memory is a data structure, so it doesn't need to be tested directly
+      });
+
+      it.skip('initializeVertexMap');
+
+      it.skip('subgraphMatch');
+
+      describe('resolveMatchData', function() {
+        // this function expects subgraph to behave in a particular way
+        // so we can't simply pass in values for inner and outer
+        var idea;
+        var inner, i, im;
+        var outer, o;
+        beforeEach(function() {
+          idea = ideas.create();
+          inner = new subgraph.Subgraph();
+          i = inner.addVertex(subgraph.matcher.filler);
+          im = inner.addVertex(subgraph.matcher.filler, i, {matchRef:true});
+          outer = new subgraph.Subgraph();
+          o = outer.addVertex(subgraph.matcher.filler);
+        });
+
+        it('use inner data', function() {
+          idea.update({loc:'data'});
+          inner.setData(i, {loc:'cache'});
+          var resolve = function() {
+            return subgraph.match.units.resolveMatchData(inner, i, inner.getMatch(i), {}, outer);
+          };
+
+          // !matchRef
+          expect(resolve()).to.deep.equal({loc:'cache'});
+
+          // idea associated
+          inner._idea[i] = idea;
+          inner.deleteData(i);
+          expect(resolve()).to.deep.equal({loc:'data'});
+        });
+
+        it('matchRef, use inner data', function() {
+          idea.update({loc:'data'});
+          inner.setData(i, {loc:'cache'});
+          inner.setData(im, {loc:'ref cache'});
+          var resolve = function() {
+            return subgraph.match.units.resolveMatchData(inner, im, inner.getMatch(im), {}, outer);
+          };
+
+          // the local cache doesn't mean anything
+          // defer to the referenced value
+          expect(resolve()).to.deep.equal({loc:'cache'});
+
+          // use the local idea
+          inner.deleteData(im);
+          inner._idea[im] = idea;
+          expect(resolve()).to.deep.equal({loc:'data'});
+
+          // use ref cache
+          inner.deleteData(im);
+          inner.deleteIdea(im);
+          expect(resolve()).to.deep.equal({loc:'cache'});
+
+          // use ref idea
+          inner.deleteData(i);
+          inner._idea[i] = idea;
+          expect(resolve()).to.deep.equal({loc:'data'});
+        });
+
+        // this can't happen in our algorithm; does it need to be supported?
+        //it('!matchRef, use outer data', function() {
+        //  outer.setData(o, {loc:'cache'});
+        //  var resolve = function() {
+        //    var vertexMap = {};
+        //    vertexMap[i] = o;
+        //    return subgraph.match.units.resolveMatchData(inner, i, inner.getMatch(i), vertexMap, outer);
+        //  };
+        //
+        //  expect(resolve()).to.deep.equal({loc:'cache'});
+        //});
+
+        it('matchRef, use outer data', function() {
+          // im -> i -> o
+          idea.update({loc:'data'});
+          outer.setData(o, {loc:'cache'});
+          outer._idea[o] = idea;
+          var resolve = function() {
+            var vertexMap = {};
+            vertexMap[i] = o;
+            return subgraph.match.units.resolveMatchData(inner, im, inner.getMatch(im), vertexMap, outer);
+          };
+
+          // use the cached data
+          expect(resolve()).to.deep.equal({loc:'cache'});
+
+          // use the idea data
+          outer.deleteData(o);
+          expect(resolve()).to.deep.equal({loc:'data'});
+        });
+
+        it('no match', function() {
+          var resolve = function() {
+            return subgraph.match.units.resolveMatchData(inner, im, inner.getMatch(im), {}, outer);
+          };
+
+          expect(resolve()).to.deep.equal(null);
+        });
+      }); // end resolveMatchData
+
+      describe('vertexTransitionableAcceptable', function() {
+        // alias just to make this name call shorter
+        var acceptable = subgraph.match.units.vertexTransitionableAcceptable;
+        var bool = discrete.definitions.list.boolean;
+
+        it('inner not transitionable', function() {
+          // if the inner is not transitionable, then nothing else matters
+          // the result will always be true
+          var answer = true;
+
+          expect(acceptable(true, {}, false, {})).to.equal(answer);
+          expect(acceptable(false, {}, false, {})).to.equal(answer);
+          expect(acceptable(undefined, undefined, false, undefined)).to.equal(answer);
+          expect(acceptable(null, null, false, null)).to.equal(answer);
+        });
+
+        it('outer not transitionable', function() {
+          // assumption: inner is transitionable
+          // if the outer is not transitionable, then nothing else matters
+          // the result will always be false
+          var answer = false;
+
+          expect(acceptable(false, {}, true, {})).to.equal(answer);
+          expect(acceptable(false, undefined, true, undefined)).to.equal(answer);
+          expect(acceptable(false, null, true, null)).to.equal(answer);
+        });
+
+        it('no units', function() {
+          // assumption: inner is transitionable
+          // assumption: outer is transitionable
+          // if either of the data objects doesn't have units, then we will assume our transition is allowed
+          var answer = true;
+
+          expect(acceptable(true, undefined, true, undefined)).to.equal(answer);
+          expect(acceptable(true, {}, true, {})).to.equal(answer);
+          expect(acceptable(true, {unit: 'a'}, true, {})).to.equal(answer);
+          expect(acceptable(true, {}, true, {unit: 'b'})).to.equal(answer);
+        });
+        it.skip('factor transition type into this decision');
+
+        it('unit mismatch', function() {
+          // assumption: inner is transitionable
+          // assumption: outer is transitionable
+          // if both have units, and the units don't match, then it's not transitionable
+          expect(acceptable(true, {unit: 'a'}, true, {unit: 'b'}, true)).to.equal(false);
+          expect(acceptable(true, {unit: 'a'}, true, {unit: 'b'}, false)).to.equal(false);
+          expect(acceptable(true, {value:number.value(0),unit:'a'}, true, {value:number.value(0),unit:'b'}, true)).to.equal(false);
+          expect(acceptable(true, {value:number.value(0),unit:'a'}, true, {value:number.value(0),unit:'b'}, false)).to.equal(false);
+        });
+
+        it('unitOnly / must be transitionable values', function() {
+          // assumption: inner is transitionable
+          // assumption: outer is transitionable
+
+          // if the units match, then the data must still be a number or discrete
+          expect(acceptable(true, {unit: 'a'}, true, {unit: 'a'}, true)).to.equal(false);
+
+          expect(acceptable(true, {value:number.value(0),unit:'a'}, true, {value:number.value(1),unit:'a'}, true)).to.equal(true);
+          expect(acceptable(true, {value:false,unit:bool}, true, {value:true,unit:bool}, true)).to.equal(true);
+        });
+
+        it('!unitOnly', function() {
+          // assumption: inner is transitionable
+          // assumption: outer is transitionable
+          // right now, the only things that can perform transitions are numbers and discrete
+
+          // if the data isn't one of those, then it won't transition
+          expect(acceptable(true, {unit: 'a'}, true, {unit: 'a'})).to.equal(false);
+
+          expect(acceptable(true, {value:true,unit:bool}, true, {value:true,unit:bool})).to.equal(true);
+          expect(acceptable(true, {value:number.value(0),unit:'a'}, true, {value:number.value(0),unit:'a'})).to.equal(true);
+          expect(acceptable(true, {value:number.value(0, 2),unit:'a'}, true, {value:number.value(1, 3),unit:'a'})).to.equal(true);
+        });
+      }); // end vertexTransitionableAcceptable
+
+      describe('vertexFixedMatch', function() {
+        // we don't need to test all the matchers
+        // but there are distinctly two categories we want to ensure work
+        it.skip('against matcher.id');
+
+        it.skip('against data');
+
+        it.skip('pass-through', function() {
+          // unitOnly && transitionable
+        });
+      }); // end vertexNonTransitionableMatch
+    }); // end units
   }); // end match (part 2)
-
-  it.skip('initializeVertexMap');
-
-  it.skip('subgraphMatch');
-
-  describe('resolveMatchData', function() {
-    // this function expects subgraph to behave in a particular way
-    // so we can't simply pass in values for inner and outer
-    var idea;
-    var inner, i, im;
-    var outer, o;
-    beforeEach(function() {
-      idea = ideas.create();
-      inner = new subgraph.Subgraph();
-      i = inner.addVertex(subgraph.matcher.filler);
-      im = inner.addVertex(subgraph.matcher.filler, i, {matchRef:true});
-      outer = new subgraph.Subgraph();
-      o = outer.addVertex(subgraph.matcher.filler);
-    });
-
-    it('use inner data', function() {
-      idea.update({loc:'data'});
-      inner.setData(i, {loc:'cache'});
-      var resolve = function() {
-        return subgraph.match.units.resolveMatchData(inner, i, inner.getMatch(i), {}, outer);
-      };
-
-      // !matchRef
-      expect(resolve()).to.deep.equal({loc:'cache'});
-
-      // idea associated
-      inner._idea[i] = idea;
-      inner.deleteData(i);
-      expect(resolve()).to.deep.equal({loc:'data'});
-    });
-
-    it('matchRef, use inner data', function() {
-      idea.update({loc:'data'});
-      inner.setData(i, {loc:'cache'});
-      inner.setData(im, {loc:'ref cache'});
-      var resolve = function() {
-        return subgraph.match.units.resolveMatchData(inner, im, inner.getMatch(im), {}, outer);
-      };
-
-      // the local cache doesn't mean anything
-      // defer to the referenced value
-      expect(resolve()).to.deep.equal({loc:'cache'});
-
-      // use the local idea
-      inner.deleteData(im);
-      inner._idea[im] = idea;
-      expect(resolve()).to.deep.equal({loc:'data'});
-
-      // use ref cache
-      inner.deleteData(im);
-      inner.deleteIdea(im);
-      expect(resolve()).to.deep.equal({loc:'cache'});
-
-      // use ref idea
-      inner.deleteData(i);
-      inner._idea[i] = idea;
-      expect(resolve()).to.deep.equal({loc:'data'});
-    });
-
-    // this can't happen in our algorithm; does it need to be supported?
-    //it('!matchRef, use outer data', function() {
-    //  outer.setData(o, {loc:'cache'});
-    //  var resolve = function() {
-    //    var vertexMap = {};
-    //    vertexMap[i] = o;
-    //    return subgraph.match.units.resolveMatchData(inner, i, inner.getMatch(i), vertexMap, outer);
-    //  };
-    //
-    //  expect(resolve()).to.deep.equal({loc:'cache'});
-    //});
-
-    it('matchRef, use outer data', function() {
-      // im -> i -> o
-      idea.update({loc:'data'});
-      outer.setData(o, {loc:'cache'});
-      outer._idea[o] = idea;
-      var resolve = function() {
-        var vertexMap = {};
-        vertexMap[i] = o;
-        return subgraph.match.units.resolveMatchData(inner, im, inner.getMatch(im), vertexMap, outer);
-      };
-
-      // use the cached data
-      expect(resolve()).to.deep.equal({loc:'cache'});
-
-      // use the idea data
-      outer.deleteData(o);
-      expect(resolve()).to.deep.equal({loc:'data'});
-    });
-
-    it('no match', function() {
-      var resolve = function() {
-        return subgraph.match.units.resolveMatchData(inner, im, inner.getMatch(im), {}, outer);
-      };
-
-      expect(resolve()).to.deep.equal(null);
-    });
-  }); // end resolveMatchData
-
-  describe('vertexTransitionableAcceptable', function() {
-    // alias just to make this name call shorter
-    var acceptable = subgraph.match.units.vertexTransitionableAcceptable;
-    var bool = discrete.definitions.list.boolean;
-
-    it('inner not transitionable', function() {
-      // if the inner is not transitionable, then nothing else matters
-      // the result will always be true
-      var answer = true;
-
-      expect(acceptable(true, {}, false, {})).to.equal(answer);
-      expect(acceptable(false, {}, false, {})).to.equal(answer);
-      expect(acceptable(undefined, undefined, false, undefined)).to.equal(answer);
-      expect(acceptable(null, null, false, null)).to.equal(answer);
-    });
-
-    it('outer not transitionable', function() {
-      // assumption: inner is transitionable
-      // if the outer is not transitionable, then nothing else matters
-      // the result will always be false
-      var answer = false;
-
-      expect(acceptable(false, {}, true, {})).to.equal(answer);
-      expect(acceptable(false, undefined, true, undefined)).to.equal(answer);
-      expect(acceptable(false, null, true, null)).to.equal(answer);
-    });
-
-    it('no units', function() {
-      // assumption: inner is transitionable
-      // assumption: outer is transitionable
-      // if either of the data objects doesn't have units, then we will assume our transition is allowed
-      var answer = true;
-
-      expect(acceptable(true, undefined, true, undefined)).to.equal(answer);
-      expect(acceptable(true, {}, true, {})).to.equal(answer);
-      expect(acceptable(true, {unit: 'a'}, true, {})).to.equal(answer);
-      expect(acceptable(true, {}, true, {unit: 'b'})).to.equal(answer);
-    });
-    it.skip('factor transition type into this decision');
-
-    it('unit mismatch', function() {
-      // assumption: inner is transitionable
-      // assumption: outer is transitionable
-      // if both have units, and the units don't match, then it's not transitionable
-      expect(acceptable(true, {unit: 'a'}, true, {unit: 'b'}, true)).to.equal(false);
-      expect(acceptable(true, {unit: 'a'}, true, {unit: 'b'}, false)).to.equal(false);
-      expect(acceptable(true, {value:number.value(0),unit:'a'}, true, {value:number.value(0),unit:'b'}, true)).to.equal(false);
-      expect(acceptable(true, {value:number.value(0),unit:'a'}, true, {value:number.value(0),unit:'b'}, false)).to.equal(false);
-    });
-
-    it('unitOnly / must be transitionable values', function() {
-      // assumption: inner is transitionable
-      // assumption: outer is transitionable
-
-      // if the units match, then the data must still be a number or discrete
-      expect(acceptable(true, {unit: 'a'}, true, {unit: 'a'}, true)).to.equal(false);
-
-      expect(acceptable(true, {value:number.value(0),unit:'a'}, true, {value:number.value(1),unit:'a'}, true)).to.equal(true);
-      expect(acceptable(true, {value:false,unit:bool}, true, {value:true,unit:bool}, true)).to.equal(true);
-    });
-
-    it('!unitOnly', function() {
-      // assumption: inner is transitionable
-      // assumption: outer is transitionable
-      // right now, the only things that can perform transitions are numbers and discrete
-
-      // if the data isn't one of those, then it won't transition
-      expect(acceptable(true, {unit: 'a'}, true, {unit: 'a'})).to.equal(false);
-
-      expect(acceptable(true, {value:true,unit:bool}, true, {value:true,unit:bool})).to.equal(true);
-      expect(acceptable(true, {value:number.value(0),unit:'a'}, true, {value:number.value(0),unit:'a'})).to.equal(true);
-      expect(acceptable(true, {value:number.value(0, 2),unit:'a'}, true, {value:number.value(1, 3),unit:'a'})).to.equal(true);
-    });
-  }); // end vertexTransitionableAcceptable
-
-  describe('vertexFixedMatch', function() {
-    // we don't need to test all the matchers
-    // but there are distinctly two categories we want to ensure work
-    it.skip('against matcher.id');
-
-    it.skip('against data');
-
-    it.skip('pass-through', function() {
-      // unitOnly && transitionable
-    });
-  }); // end vertexNonTransitionableMatch
 }); // end subgraph
