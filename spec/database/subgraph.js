@@ -121,7 +121,7 @@ describe('subgraph', function() {
 
         expect(function() {
           // if the discrete data is valid, then it shouldn't error
-          sg.addVertex(subgraph.matcher.discrete, discrete.cast({value: true, unit: discrete.definitions.list.boolean }));
+          sg.addVertex(subgraph.matcher.discrete, discrete.cast({ value: true, unit: discrete.definitions.list.boolean }));
         }).to.not.throw();
 
         expect(function() {
@@ -757,7 +757,7 @@ describe('subgraph', function() {
     });
 
     it('discrete: function', function() {
-      var data = discrete.cast({value: true, unit: discrete.definitions.list.boolean });
+      var data = discrete.cast({ value: true, unit: discrete.definitions.list.boolean });
 
       expect(subgraph.matcher.discrete(data, {value: true, unit: discrete.definitions.list.boolean })).to.equal(true);
       expect(subgraph.matcher.discrete(data, {value: false, unit: discrete.definitions.list.boolean })).to.equal(false);
@@ -975,7 +975,40 @@ describe('subgraph', function() {
     expect(goal.getIdea(ic).id).to.equal(c.id);
   });
 
-  it.skip('createTransitionedGoal');
+  it('createTransitionedGoal', function() {
+    var a = ideas.create('a');
+    var b = ideas.create('b');
+    var c = ideas.create('c');
+    a.link(links.list.thought_description, b);
+    b.link(links.list.thought_description, c);
+
+    var outer = new subgraph.Subgraph();
+    var oa = outer.addVertex(subgraph.matcher.id, a);
+    var ob = outer.addVertex(subgraph.matcher.id, b);
+    var oc = outer.addVertex(subgraph.matcher.id, c);
+    outer.addEdge(oa, links.list.thought_description, ob);
+    outer.addEdge(ob, links.list.thought_description, oc);
+
+    // to be 'complete':
+    // build an inner w/ transitions
+    // match the outer/inner to get a vertexMap
+    var transitions = [{
+      vertex_id: '_test_',
+      replace: discrete.cast({ value: true, unit: discrete.definitions.list.boolean })
+    }];
+    var vertexMap = {};
+    vertexMap['_test_'] = ob;
+
+    var goal = subgraph.createTransitionedGoal(outer, transitions, vertexMap);
+    expect(goal._vertexCount).to.equal(1);
+    expect(goal._edges.length).to.equal(0);
+    expect(goal.concrete).to.equal(true);
+    var vertex_id = '0'; // we are making an assumption that this is the vertex_id
+    expect(goal.getIdea(vertex_id)).to.be.an('object');
+    expect(goal.getIdea(vertex_id).id).to.equal(b.id);
+    expect(goal.getData(vertex_id)).to.be.an('object');
+    expect(goal.getData(vertex_id).value).to.equal(true);
+  });
 
   describe('units', function() {
     it('init', function() {
