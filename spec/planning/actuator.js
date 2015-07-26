@@ -16,7 +16,7 @@ describe('actuator', function() {
   it('init', function() {
     // this is to ensure we test everything
     expect(Object.keys(actuator)).to.deep.equal(['Action', 'actions']);
-    expect(Object.keys(actuator.Action.prototype)).to.deep.equal(['runCost', 'tryTransition', 'runBlueprint', 'scheduleBlueprint', 'cost', 'apply', 'save']);
+    expect(Object.keys(actuator.Action.prototype)).to.deep.equal(['runCost', 'tryTransition', 'runBlueprint', 'scheduleBlueprint', 'cost', 'apply', 'save', 'prepSave']);
   });
 
   var apple, money, price; // our idea graph is about .. money
@@ -196,6 +196,8 @@ describe('actuator', function() {
 
     tools.ideas.clean(id);
   });
+
+  it.skip('prepSave');
 
   describe('planning', function() {
     it('bug: match new state with inconcrete goal', function() {

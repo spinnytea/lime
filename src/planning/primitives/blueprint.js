@@ -128,12 +128,27 @@ BlueprintAction.prototype.apply = function() {
   throw new Error(this.constructor.name + ' does not implement apply');
 };
 
-// save the Action so it can be loaded using one of the blueprint.loaders
-// (e.g. ActuatorAction will need to implement save, and supply a loader)
-// Note: the data must conform to blueprint.load
 // @return the id that the plan is saved to (probably also recorded under bp.idea)
 BlueprintAction.prototype.save = function() {
-  throw new Error(this.constructor.name + ' does not implement save');
+  var idea;
+  if(this.idea)
+    idea = ideas.load(this.idea);
+  else {
+    idea = ideas.create();
+    idea.link(links.list.context, exports.context);
+    this.idea = idea.id;
+  }
+
+  idea.update(this.prepSave());
+
+  return this.idea;
+};
+
+// when we call blueprint.save, we need to have an object that can be JSON.stringify
+// the data must conform to blueprint.load
+// (e.g. ActuatorAction needs to implement prepSave and supply a loader)
+BlueprintAction.prototype.prepSave = function() {
+  throw new Error(this.constructor.name + ' does not implement prepSave');
 };
 
 // saving and loading blueprints

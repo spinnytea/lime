@@ -17,7 +17,7 @@ describe('blueprintDummyTest', function() {
     expect(blueprint.Action).to.be.a('function');
     expect(serialplan.Action).to.be.a('function');
     expect(actuator.Action).to.be.a('function');
-    var proto = ['runCost', 'tryTransition', 'runBlueprint', 'scheduleBlueprint', 'cost', 'apply', 'save'];
+    var proto = ['runCost', 'tryTransition', 'runBlueprint', 'scheduleBlueprint', 'cost', 'apply', 'save', 'prepSave'];
     expect(Object.keys(blueprint.Action.prototype)).to.deep.equal(proto);
     expect(Object.keys(serialplan.Action.prototype)).to.deep.equal(proto);
     expect(_.intersection(Object.keys(actuator.Action.prototype), proto)).to.deep.equal(proto);
@@ -39,7 +39,7 @@ describe('blueprintDummyTest', function() {
     //expect(function() { sa.tryTransition(); }).to.throw('SerialAction does not implement tryTransition');
 
     var ma = new MockAction();
-    ['runCost', 'tryTransition', 'runBlueprint', 'apply', 'save'].forEach(function(p) {
+    ['runCost', 'tryTransition', 'runBlueprint', 'apply', 'prepSave'].forEach(function(p) {
       expect(function() {
         ma[p]();
       }).to.throw('MockAction does not implement ' + p);

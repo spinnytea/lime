@@ -7,8 +7,6 @@
 var _ = require('lodash');
 var Promise = require('bluebird');
 var blueprint = require('./primitives/blueprint');
-var ideas = require('../database/ideas');
-var links = require('../database/links');
 var planner = require('./planner');
 var subgraph = require('../database/subgraph');
 
@@ -186,17 +184,9 @@ SerialAction.prototype.apply = function(state, glue) {
   }, state);
 };
 
-SerialAction.prototype.save = function() {
-  var idea;
-  if(this.idea)
-    idea = ideas.load(this.idea);
-  else {
-    idea = ideas.create();
-    idea.link(links.list.context, blueprint.context);
-    this.idea = idea.id;
-  }
-
-  idea.update({
+// blueprint.prepSave
+SerialAction.prototype.prepSave = function() {
+  return {
     type: 'blueprint',
     subtype: 'SerialAction',
     blueprint: {
@@ -209,9 +199,7 @@ SerialAction.prototype.save = function() {
       // fact is, we can just derive anything from the plan list
 //      _myRunCost: this._myRunCost,
     }
-  });
-
-  return this.idea;
+  };
 };
 
 exports.Action = SerialAction;

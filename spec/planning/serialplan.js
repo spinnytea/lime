@@ -102,7 +102,7 @@ describe('serialplan', function() {
   it('init', function() {
     // this is to ensure we test everything
     expect(Object.keys(serialplan)).to.deep.equal(['Action']);
-    expect(Object.keys(serialplan.Action.prototype)).to.deep.equal(['runCost', 'tryTransition', 'runBlueprint', 'scheduleBlueprint', 'cost', 'apply', 'save']);
+    expect(Object.keys(serialplan.Action.prototype)).to.deep.equal(['runCost', 'tryTransition', 'runBlueprint', 'scheduleBlueprint', 'cost', 'apply', 'save', 'prepSave']);
   });
 
   describe('SerialPlan', function() {
@@ -398,6 +398,8 @@ describe('serialplan', function() {
     });
     it.skip('blueprint.load: cache currently loaded plans');
     // check sp.plans[0] === sp.plans[1]
+
+    it.skip('prepSave');
 
     it('nested blueprint', function() {
       var sp2 = new serialplan.Action([a, a, a]);

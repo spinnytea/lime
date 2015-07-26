@@ -9,8 +9,6 @@
 // and then set the a.action to the name of that action
 var _ = require('lodash');
 var blueprint = require('./primitives/blueprint');
-var ideas = require('../database/ideas');
-var links = require('../database/links');
 var scheduler = require('./scheduler');
 var subgraph = require('../database/subgraph');
 
@@ -102,18 +100,9 @@ ActuatorAction.prototype.apply = function(state, glue) {
   return new blueprint.State(subgraph.rewrite(state.state, ts, false), state.availableActions);
 };
 
-// blueprint.save
-ActuatorAction.prototype.save = function() {
-  var idea;
-  if(this.idea)
-    idea = ideas.load(this.idea);
-  else {
-    idea = ideas.create();
-    idea.link(links.list.context, blueprint.context);
-    this.idea = idea.id;
-  }
-
-  idea.update({
+// blueprint.prepSave
+ActuatorAction.prototype.prepSave = function() {
+  return {
     type: 'blueprint',
     subtype: 'ActuatorAction',
     blueprint: {
@@ -123,9 +112,7 @@ ActuatorAction.prototype.save = function() {
       causeAndEffect: this.causeAndEffect,
       action: this.action
     }
-  });
-
-  return this.idea;
+  };
 };
 
 exports.Action = ActuatorAction;

@@ -15,7 +15,7 @@ describe('stub', function() {
   it('init', function() {
     // this is to ensure we test everything
     expect(Object.keys(stub)).to.deep.equal(['Action', 'solveAt', 'createStates']);
-    expect(Object.keys(stub.Action.prototype)).to.deep.equal(['runCost', 'tryTransition', 'runBlueprint', 'scheduleBlueprint', 'cost', 'apply', 'save']);
+    expect(Object.keys(stub.Action.prototype)).to.deep.equal(['runCost', 'tryTransition', 'runBlueprint', 'scheduleBlueprint', 'cost', 'apply', 'save', 'prepSave']);
   });
 
   it('invalid solveAt', function() {
@@ -121,6 +121,8 @@ describe('stub', function() {
 
       tools.ideas.clean(id);
     });
+
+    it.skip('prepSave');
   }); // end Action
 
   it.skip('createStates', function() {

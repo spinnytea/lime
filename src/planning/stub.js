@@ -5,8 +5,6 @@
 var _ = require('lodash');
 var actuator = require('./actuator');
 var blueprint = require('./primitives/blueprint');
-var ideas = require('../database/ideas');
-var links = require('../database/links');
 var subgraph = require('../database/subgraph');
 
 function StubAction(solveAt) {
@@ -26,18 +24,9 @@ StubAction.prototype.runCost = actuator.Action.prototype.runCost;
 StubAction.prototype.tryTransition = actuator.Action.prototype.tryTransition;
 StubAction.prototype.apply = actuator.Action.prototype.apply;
 
-// blueprint.save
-StubAction.prototype.save = function() {
-  var idea;
-  if(this.idea)
-    idea = ideas.load(this.idea);
-  else {
-    idea = ideas.create();
-    idea.link(links.list.context, blueprint.context);
-    this.idea = idea.id;
-  }
-
-  idea.update({
+// blueprint.prepSave
+StubAction.prototype.prepSave = function() {
+  return {
     type: 'blueprint',
     subtype: 'StubAction',
     blueprint: {
@@ -47,9 +36,7 @@ StubAction.prototype.save = function() {
       causeAndEffect: this.causeAndEffect,
       solveAt: this.solveAt
     }
-  });
-
-  return this.idea;
+  };
 };
 
 exports.Action = StubAction;
