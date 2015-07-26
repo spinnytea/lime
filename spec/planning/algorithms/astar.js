@@ -6,7 +6,6 @@ var astar = require('../../../src/planning/algorithms/astar');
 var Path = require('../../../src/planning/primitives/path');
 var NumberSlide = require('../NumberSlide');
 
-
 describe('astar', function() {
   it('init', function() {
     expect(config.settings.astar_max_paths).to.be.a('number');
@@ -25,12 +24,28 @@ describe('astar', function() {
       expect(Object.keys(astar.units)).to.deep.equal(['frontier', 'step']);
     });
 
-    it.skip('frontier');
+    it('frontier', function() {
+      var frontier = astar.units.frontier();
 
-    // this is basically testing that our sort function works
-    // which is a pretty big deal
-    // look to lm-wumpus for examples
-    it.skip('frontier order');
+      frontier.enq({ cost: 1, distFromGoal: 4 });
+      frontier.enq({ cost: 3, distFromGoal: 5 });
+      frontier.enq({ cost: 1, distFromGoal: 5 });
+      frontier.enq({ cost: 1, distFromGoal: 0 });
+      frontier.enq({ cost: 12, distFromGoal: 4 });
+
+      expect(frontier.size()).to.equal(5);
+      expect(frontier.deq()).to.deep.equal({ cost: 1, distFromGoal: 0 });
+      expect(frontier.size()).to.equal(4);
+      expect(frontier.deq()).to.deep.equal({ cost: 1, distFromGoal: 4 });
+      expect(frontier.size()).to.equal(3);
+      expect(frontier.deq()).to.deep.equal({ cost: 1, distFromGoal: 5 });
+      expect(frontier.size()).to.equal(2);
+      expect(frontier.deq()).to.deep.equal({ cost: 12, distFromGoal: 4 });
+      expect(frontier.size()).to.equal(1);
+      expect(frontier.deq()).to.deep.equal({ cost: 3, distFromGoal: 5 });
+      expect(frontier.size()).to.equal(0);
+      expect(frontier.isEmpty()).to.equal(true);
+    });
 
     it.skip('step');
     it.skip('step when at goal');
