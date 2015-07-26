@@ -482,19 +482,3 @@ exports.createGoal2 = function(outer, transitions, vertexMap) {
 
   return exports.rewrite(goal, new_transitions, false);
 };
-
-// when a plan has finished being created, should archive
-// @return a new goal with all the data/ideas from stated mapped onto it
-// @deprecated this isn't much different from being concrete; this doesn't buy us anything
-exports.solidifyGoal = function(state, goal) {
-  return exports.match(state, goal).map(function(map) {
-    var g = new Subgraph();
-    _.forEach(map, function(o_id, i_id) {
-      // XXX should we save the old match data? instead of setting all id matchers?
-      var g_id = g.addVertex(exports.matcher.id, state.getIdea(o_id),
-        {transitionable:goal.getMatch(i_id).options.transitionable});
-      g.setData(g_id, state.getData(o_id));
-    });
-    return g;
-  });
-};
