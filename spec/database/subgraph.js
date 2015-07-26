@@ -231,44 +231,105 @@ describe('subgraph', function() {
           .to.deep.equal(['_match', '_matchParent', '_idea', '_data', '_dataParent', '_edges', '_vertexCount', 'concrete']);
       });
 
-      it('<split this test apart>', function() {
-        var idea = ideas.create();
+      var sg_r, sg_a, sg_b;
+      var ra, bb;
+      beforeEach(function() {
+        sg_r = new subgraph.Subgraph();
+        ra = sg_r.addVertex(subgraph.matcher.id, '_test_');
+        sg_r.setData(ra, 1);
 
-        // empty
-        var sg = new subgraph.Subgraph();
-        var sg_x = sg.copy();
-        var sg_y = sg.copy();
-        expect(sg_x).to.deep.equal(sg);
-        expect(sg_y).to.deep.equal(sg);
-        expect(sg_x._dataParent).to.equal(sg._dataParent); // they share a common parent
-        expect(sg_y._dataParent).to.equal(sg._dataParent);
-        expect(sg_x._data).to.not.equal(sg._data); // they do not share a common child data
-        expect(sg_y._data).to.not.equal(sg._data);
+        sg_a = sg_r.copy();
+        sg_a.setData(ra, 2);
 
-        var a = sg.addVertex(subgraph.matcher.filler);
-        expect(sg.copy()).to.deep.equal(sg);
+        sg_b = sg_r.copy();
+        bb = sg_b.addVertex(subgraph.matcher.filler);
+        sg_b.setData(bb, 3);
+        sg_b.addEdge(ra, links.list.thought_description, bb);
+        sg_b._idea[ra] = ideas.proxy('_test_');
+        sg_b._idea[bb] = ideas.proxy('_test_2_');
 
-        var b = sg.addVertex(subgraph.matcher.id, idea.id);
-        expect(sg.copy()).to.deep.equal(sg);
-
-        sg.addEdge(a, links.list.thought_description, b);
-        expect(sg.copy()).to.deep.equal(sg);
-
-        sg.setData(a, { some: 'thing' });
-        expect(sg.copy()).to.deep.equal(sg);
+        sg_r.setData(ra, 4);
       });
 
-      it.skip('Subgraph._match');
+      it('behavior', function() {
+        expect(sg_r.getData(ra)).to.equal(4);
+        expect(sg_r.getIdea(ra).id).to.equal('_test_');
 
-      it.skip('Subgraph._idea');
+        expect(sg_a.getData(ra)).to.equal(2);
+        expect(sg_a.getIdea(ra).id).to.equal('_test_');
 
-      it.skip('Subgraph._data');
+        expect(sg_b.getData(ra)).to.equal(1);
+        expect(sg_b.getIdea(ra).id).to.equal('_test_');
+        expect(sg_b.getData(bb)).to.equal(3);
+        expect(sg_b.getIdea(bb).id).to.equal('_test_2_');
 
-      it.skip('Subgraph._edges');
+        expect(sg_a.getMatch(ra)).to.equal(sg_b.getMatch(ra));
+        expect(sg_b.getMatch(ra)).to.equal(sg_b.getMatch(ra));
+      });
 
-      it.skip('Subgraph._vertexCount');
+      it('Subgraph._match', function() {
+        expect(Object.keys(sg_a._match)).to.deep.equal([]);
+        expect(sg_r).to.have.deep.property('_matchParent.parent');
+        expect(sg_r).to.have.deep.property('_matchParent.obj');
+        expect(sg_r._matchParent.parent).to.equal(undefined);
+        expect(Object.keys(sg_r._matchParent.obj)).to.deep.equal([ra]);
 
-      it.skip('Subgraph.concrete');
+        expect(sg_a._match).to.not.equal(sg_r._match);
+        expect(Object.keys(sg_a._match)).to.deep.equal([]);
+        expect(sg_a._matchParent).to.equal(sg_r._matchParent);
+
+        expect(sg_b._match).to.not.equal(sg_r._match);
+        expect(Object.keys(sg_b._match)).to.deep.equal([bb]);
+        expect(sg_b._matchParent).to.equal(sg_r._matchParent);
+      });
+
+      it('Subgraph._idea', function() {
+        expect(Object.keys(sg_r._idea)).to.deep.equal([ra]);
+
+        expect(Object.keys(sg_a._idea)).to.deep.equal([ra]);
+        expect(sg_a._idea).to.not.equal(sg_r._idea);
+
+        expect(Object.keys(sg_b._idea)).to.deep.equal([ra, bb]);
+        expect(sg_b._idea).to.not.equal(sg_r._idea);
+      });
+
+      it('Subgraph._data', function() {
+        expect(Object.keys(sg_r._data)).to.deep.equal([ra]);
+        expect(sg_r).to.have.deep.property('_dataParent.parent');
+        expect(sg_r).to.have.deep.property('_dataParent.obj');
+        expect(sg_r._dataParent.parent).to.equal(undefined);
+        expect(Object.keys(sg_r._dataParent.obj)).to.deep.equal([ra]);
+
+        expect(sg_a._data).to.not.equal(sg_r._data);
+        expect(Object.keys(sg_a._data)).to.deep.equal([ra]);
+        expect(sg_a._dataParent).to.equal(sg_r._dataParent);
+
+        expect(sg_b._data).to.not.equal(sg_r._data);
+        expect(Object.keys(sg_b._data)).to.deep.equal([bb]);
+        expect(sg_b._dataParent).to.equal(sg_b._dataParent);
+      });
+
+      it('Subgraph._edges', function() {
+        expect(sg_r._edges.length).to.equal(0);
+
+        expect(sg_a._edges.length).to.equal(0);
+        expect(sg_a._edges).to.not.equal(sg_r._edges);
+
+        expect(sg_b._edges.length).to.equal(1);
+        expect(sg_b._edges).to.not.equal(sg_r._edges);
+      });
+
+      it('Subgraph._vertexCount', function() {
+        expect(sg_r._vertexCount).to.equal(1);
+        expect(sg_a._vertexCount).to.equal(1);
+        expect(sg_b._vertexCount).to.equal(2);
+      });
+
+      it('Subgraph.concrete', function() {
+        expect(sg_r.concrete).to.equal(true);
+        expect(sg_a.concrete).to.equal(true);
+        expect(sg_b.concrete).to.equal(false); // since we added another vertex with filler, but didn't update it
+      });
 
       it.skip('flatten', function() {
         // a function that takes the nested nature of the copy/subcopies and flattens a subgraph into it's own unparented copy
@@ -853,11 +914,12 @@ describe('subgraph', function() {
     var b = sg.addVertex(subgraph.matcher.filler);
     sg.addEdge(a, links.list.thought_description, b);
     sg.setData(a, 10);
+    sg.setData(b, -1);
     var copy = sg.copy();
     copy.setData(b, 20);
 
     expect(copy.getData(b)).to.equal(20);
-    expect(sg.getData(b)).to.equal(undefined);
+    expect(sg.getData(b)).to.equal(-1);
 
     var str = subgraph.stringify(copy);
     expect(str).to.be.a('string');
