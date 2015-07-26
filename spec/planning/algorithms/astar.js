@@ -47,8 +47,88 @@ describe('astar', function() {
       expect(frontier.isEmpty()).to.equal(true);
     });
 
-    it.skip('step');
-    it.skip('step when at goal');
+    it('step', function() {
+      function summary(frontier) {
+        // pull out all the elements in the frontier so we can have a good sorted order
+        var list = [];
+        while(!frontier.isEmpty()) {
+          list.push(frontier.deq());
+        }
+        list.forEach(function(p) {
+          frontier.enq(p);
+        });
+
+        return list.map(function(path) {
+          return {
+            cost: path.cost,
+            dist: path.distFromGoal,
+            actions: _.pluck(path.actions, 'dir')
+          };
+        });
+      }
+
+      var goal = new NumberSlide.State([[1, 2], [3, 0]]);
+      var start = new NumberSlide.State([[2, 0], [1, 3]]);
+      var frontier = astar.units.frontier();
+      var path;
+
+      path = new Path.Path([start], [], [], goal);
+      astar.units.step(path, frontier);
+      expect(frontier._elements.length).to.equal(2);
+      expect(summary(frontier)).to.deep.equal([
+        { cost: 1, dist: 4, actions: [ 'down' ] },
+        { cost: 1, dist: 4, actions: [ 'left' ] }
+      ]);
+
+      path = frontier.deq();
+      astar.units.step(path, frontier);
+      expect(frontier._elements.length).to.equal(3);
+      expect(summary(frontier)).to.deep.equal([
+        { cost: 1, dist: 4, actions: [ 'left' ] },
+        { cost: 2, dist: 4, actions: [ 'down', 'up' ] },
+        { cost: 2, dist: 6, actions: [ 'down', 'left' ] }
+      ]);
+
+      path = frontier.deq();
+      astar.units.step(path, frontier);
+      expect(frontier._elements.length).to.equal(4);
+      expect(summary(frontier)).to.deep.equal([
+        { cost: 2, dist: 2, actions: [ 'left', 'down' ] },
+        { cost: 2, dist: 4, actions: [ 'down', 'up' ] },
+        { cost: 2, dist: 4, actions: [ 'left', 'right' ] },
+        { cost: 2, dist: 6, actions: [ 'down', 'left' ] }
+      ]);
+
+      path = frontier.deq();
+      astar.units.step(path, frontier);
+      expect(frontier._elements.length).to.equal(5);
+      expect(summary(frontier)).to.deep.equal([
+        { cost: 3, dist: 0, actions: [ 'left', 'down', 'right' ] },
+        { cost: 2, dist: 4, actions: [ 'left', 'right' ] },
+        { cost: 2, dist: 4, actions: [ 'down', 'up' ] },
+        { cost: 3, dist: 4, actions: [ 'left', 'down', 'up' ] },
+        { cost: 2, dist: 6, actions: [ 'down', 'left' ] }
+      ]);
+
+      path = frontier.deq();
+
+      expect(path.distFromGoal).to.equal(0); // this was verfied in the summary
+      expect(path.last.matches(goal)).to.equal(true);
+
+      //
+      // what if we take another step after reaching the goal?
+      //
+      //astar.units.step(path, frontier);
+      //expect(frontier._elements.length).to.equal(6);
+      //expect(summary(frontier)).to.deep.equal([
+      //  { cost: 4, dist: 2, actions: [ 'left', 'down', 'right', 'up' ] },
+      //  { cost: 4, dist: 2, actions: [ 'left', 'down', 'right', 'left' ] },
+      //  { cost: 2, dist: 4, actions: [ 'down', 'up' ] },
+      //  { cost: 2, dist: 4, actions: [ 'left', 'right' ] },
+      //  { cost: 3, dist: 4, actions: [ 'left', 'down', 'up' ] },
+      //  { cost: 2, dist: 6, actions: [ 'down', 'left' ] }
+      //]);
+    });
   }); // end unit
 
   describe('search', function() {
