@@ -13,6 +13,8 @@ exports.mock = function() {
   before(function() {
     bak.saveObj = ideas.units.boundaries.saveObj;
     bak.loadObj = ideas.units.boundaries.loadObj;
+    ideas.units.boundaries.saveObj = sinon.spy();
+    ideas.units.boundaries.loadObj = sinon.stub();
   });
   beforeEach(function() {
     // create a new spy for every test

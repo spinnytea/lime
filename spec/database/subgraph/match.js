@@ -195,6 +195,8 @@ describe('subgraph', function() {
   }); // end match (part 1)
 
   describe('match', function() {
+    require('../ideas').mock();
+
     // transitionable vertices must match by value
     describe('transitionable', function() {
       // test exports.match

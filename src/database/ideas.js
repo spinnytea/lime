@@ -40,6 +40,7 @@ exports.units.filename = function(id, which) {
 exports.units.boundaries = {};
 /* istanbul ignore next */
 exports.units.boundaries.saveObj = function(id, which, obj) {
+  //void(which, obj, mkdirp); if(id !== '2') throw new Error('Not during unit tests');
   var path = exports.units.filepath(id);
   if(!fs.existsSync(path)) {
     // we don't want to recreate the whole directory root

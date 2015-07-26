@@ -5,7 +5,7 @@ var fs = require('fs');
 // config.settings are static
 exports.settings = {
   // the root location of the database
-  location: '/Volumes/MyPassport/lime database',
+  location: '/Volumes/RAM Disk',
 
   // TODO astar_max_paths is an initial seed value, can/should we adjust it at runtime? Or does this operate at too low of a level
   // XXX if we increase this number
