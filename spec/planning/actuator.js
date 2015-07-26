@@ -10,9 +10,9 @@ var number = require('../../src/planning/primitives/number');
 var scheduler = require('../../src/planning/scheduler');
 var subgraph = require('../../src/database/subgraph');
 
-var tools = require('../testingTools');
-
 describe('actuator', function() {
+  require('../database/ideas').mock();
+
   it('init', function() {
     // this is to ensure we test everything
     expect(Object.keys(actuator)).to.deep.equal(['Action', 'actions']);
@@ -25,9 +25,9 @@ describe('actuator', function() {
   before(function() {
     // init some data
     // we have a price (a number with a unit)
-    apple = tools.ideas.create();
-    money = tools.ideas.create();
-    price = tools.ideas.create({ value: number.value(10), unit: money.id });
+    apple = ideas.create();
+    money = ideas.create();
+    price = ideas.create({ value: number.value(10), unit: money.id });
     apple.link(links.list.thought_description, price);
 
     // create an action
@@ -169,35 +169,29 @@ describe('actuator', function() {
     expect(actionImplCount).to.equal(0);
   });
 
-  it('save & load', function() {
-    // before an action is saved, there is no idea
-    expect(a.idea).to.equal(undefined);
-    a.save();
-    expect(a.idea).to.not.equal(undefined);
-    // if we save again, it should use the same idea
-    var id = a.idea;
-    a.save();
-    expect(a.idea).to.equal(id);
+  it('prepSave & loader', function() {
+    // make a fake ID for this test
+    // (pretend it's gone through s.save())
+    a.idea = '_test_';
 
-    // this is important, we need to serialize the object
-    ideas.close(id);
+    var data = a.prepSave();
 
-    var loaded = blueprint.load(id);
+    // the data needs to be able to go through
+    expect(JSON.parse(JSON.stringify(data))).to.deep.equal(data);
+
+    var loaded = blueprint.loaders.ActuatorAction(data.blueprint);
     expect(loaded).to.be.an.instanceOf(actuator.Action);
+    expect(loaded).to.deep.equal(a); // this is our real test
 
-    // this is the ultimate test of the load
-    expect(loaded).to.deep.equal(a);
-    // sans using the actuator in battle
+    //
+
+    // now use the stub in battle!
     expect(loaded.tryTransition(bs).length).to.equal(1);
     expect(price.data().value).to.deep.equal(number.value(10));
     loaded.runBlueprint(bs, loaded.tryTransition(bs)[0]);
     expect(actionImplCount).to.equal(1);
     expect(price.data().value).to.deep.equal(number.value(30));
-
-    tools.ideas.clean(id);
   });
-
-  it.skip('prepSave');
 
   describe('planning', function() {
     it('bug: match new state with inconcrete goal', function() {
@@ -283,7 +277,7 @@ describe('actuator', function() {
       // turns out, there wasn't
       // there must be a problem my impl
       //   (use wumpus, go to room via room reference)
-      var target_money = tools.ideas.create({ value: number.value(50), unit: money.id });
+      var target_money = ideas.create({ value: number.value(50), unit: money.id });
       bs.state.addVertex(subgraph.matcher.id, target_money);
       expect(bs.state.concrete).to.equal(true);
 
@@ -311,7 +305,7 @@ describe('actuator', function() {
   }); // end planning
 
   // we need to test a blueprint function
-  it('blueprint.list', function() {
+  it.skip('blueprint.list', function() {
     // create a node that is the base of blueprints
     // save this in config.data
     // when we do a blueprint.save(), hook it up as a child
