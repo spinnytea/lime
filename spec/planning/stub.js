@@ -9,9 +9,9 @@ var number = require('../../src/planning/primitives/number');
 var stub = require('../../src/planning/stub');
 var subgraph = require('../../src/database/subgraph');
 
-var tools = require('../testingTools');
-
 describe('stub', function() {
+  require('../database/ideas').mock();
+
   it('init', function() {
     // this is to ensure we test everything
     expect(Object.keys(stub)).to.deep.equal(['Action', 'solveAt', 'createStates']);
@@ -34,9 +34,9 @@ describe('stub', function() {
     before(function() {
       // init some data
       // we have a price (a number with a unit)
-      apple = tools.ideas.create();
-      money = tools.ideas.create();
-      price = tools.ideas.create({ value: number.value(10), unit: money.id });
+      apple = ideas.create();
+      money = ideas.create();
+      price = ideas.create({ value: number.value(10), unit: money.id });
       apple.link(links.list.thought_description, price);
 
       s = new stub.Action('create');
@@ -94,35 +94,33 @@ describe('stub', function() {
       expect(s.apply).to.equal(actuator.Action.prototype.apply);
     });
 
-    it('save & load', function() {
-      // before an action is saved, there is no idea
-      expect(s.idea).to.equal(undefined);
-      s.save();
-      expect(s.idea).to.not.equal(undefined);
-      // if we save again, it should use the same idea
-      var id = s.idea;
-      s.save();
-      expect(s.idea).to.equal(id);
+    it('save', function() {
+      expect(s.save).to.equal(actuator.Action.prototype.save);
+    });
 
-      // this is important, we need to serialize the object
-      ideas.close(id);
+    it('prepSave & loader', function() {
+      // make a fake ID for this test
+      // (pretend it's gone through s.save())
+      s.idea = '_test_';
 
-      var loaded = blueprint.load(id);
+      var data = s.prepSave();
+
+      // the data needs to be able to go through
+      expect(JSON.parse(JSON.stringify(data))).to.deep.equal(data);
+
+      var loaded = blueprint.loaders.StubAction(data.blueprint);
       expect(loaded).to.be.an.instanceOf(stub.Action);
+      expect(loaded).to.deep.equal(s); // this is our real test
 
-      // this is the ultimate test of the load
-      expect(loaded).to.deep.equal(s);
-      // sans using the actuator in battle
+      //
+
+      // now use the stub in battle!
       var results = loaded.tryTransition(bs);
       expect(results.length).to.equal(1);
       expect(price.data().value).to.deep.equal(number.value(10));
       var bs_next = loaded.apply(bs, results[0]);
       expect(bs_next.state.getData(bs_p).value).to.deep.equal(number.value(30));
-
-      tools.ideas.clean(id);
     });
-
-    it.skip('prepSave');
   }); // end Action
 
   it.skip('createStates', function() {
