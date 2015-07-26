@@ -17,7 +17,9 @@ describe('links', function() {
     expect(function() { links.list.thought_description.name = 'stuff'; }).to.throw(Error);
   });
 
-  describe('type_of', function() {
-    it.skip('hierarchy');
-  }); // end type_of
+  // XXX links needs a type_of hierarchy
+  // - when we get the list of links, it should go up the chain
+  //describe('type_of', function() {
+  //  it.skip('hierarchy');
+  //}); // end type_of
 }); // end links
