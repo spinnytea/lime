@@ -8,6 +8,23 @@ var links = require('./links');
 var crtcrt = require('../planning/primitives/discrete');
 var numnum = require('../planning/primitives/number');
 
+// we need some way of accessing function so we can unit test them
+// nothing inside exports.unit should need to be called or substituted
+Object.defineProperty(exports, 'units', { value: {} });
+
+// build a new transition map using the glue
+// the transitions are based on an inner graph
+// e.g. we matched requirements to a context, and now we want to transition the context
+exports.units.convertInnerTransitions = function(transitions, glue) {
+  return transitions.map(function(t) {
+    t = _.clone(t);
+    t.vertex_id = glue[t.vertex_id];
+    if(t.hasOwnProperty('replace_id'))
+      t.replace_id = glue[t.replace_id];
+    return t;
+  });
+};
+
 // this is an overlay on the idea database
 // it is a proxy or wrapper around the idea graph
 // it's main purpose is to find a subgraph within the larger database

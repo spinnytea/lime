@@ -975,8 +975,6 @@ describe('subgraph', function() {
     expect(goal.getIdea(ic).id).to.equal(c.id);
   });
 
-  it.skip('createGoal');
-
   it.skip('createGoal2');
 
   it('solidifyGoal', function() {
@@ -1028,4 +1026,13 @@ describe('subgraph', function() {
     expect(two.getIdea(gs).id).to.equal(c.id);
     expect(two.getData(gs)).to.equal(undefined);
   });
+
+  describe('units', function() {
+    it('init', function() {
+      // this is to ensure we test everything
+      expect(Object.keys(subgraph.units)).to.deep.equal(['convertInnerTransitions']);
+    });
+
+    it.skip('convertInnerTransitions');
+  }); // end units
 }); // end subgraph

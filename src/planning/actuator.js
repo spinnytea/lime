@@ -52,16 +52,7 @@ ActuatorAction.prototype.tryTransition = function(state) {
 
 // blueprint.runBlueprint
 ActuatorAction.prototype.runBlueprint = function(state, glue) {
-  // build a new transition map using the glue
-  // I don't want to get into the muddy details of what is in a transition
-  // but we need to swap out the vertex_id
-  var ts = this.transitions.map(function(t) {
-    t = _.clone(t);
-    t.vertex_id = glue[t.vertex_id];
-    if(t.hasOwnProperty('replace_id'))
-      t.replace_id = glue[t.replace_id];
-    return t;
-  });
+  var ts = subgraph.units.convertInnerTransitions(this.transitions, glue);
 
   // interact with the world
   if(this.action)
@@ -89,13 +80,7 @@ ActuatorAction.prototype.scheduleBlueprint = function(state, glue) {
 
 // path.apply
 ActuatorAction.prototype.apply = function(state, glue) {
-  var ts = this.transitions.map(function(t) {
-    t = _.clone(t);
-    t.vertex_id = glue[t.vertex_id];
-    if(t.hasOwnProperty('replace_id'))
-      t.replace_id = glue[t.replace_id];
-    return t;
-  });
+  var ts = subgraph.units.convertInnerTransitions(this.transitions, glue);
 
   return new blueprint.State(subgraph.rewrite(state.state, ts, false), state.availableActions);
 };

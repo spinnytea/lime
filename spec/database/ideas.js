@@ -454,5 +454,5 @@ describe('ideas', function() {
     //
     //  it.skip('path doesn\'t exist, w/o location');
     //}); // end boundaries
-  });
+  }); // end units
 }); // end ideas
