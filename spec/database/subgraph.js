@@ -331,21 +331,16 @@ describe('subgraph', function() {
         expect(sg_b.concrete).to.equal(false); // since we added another vertex with filler, but didn't update it
       });
 
-      it.skip('flatten', function() {
-        // a function that takes the nested nature of the copy/subcopies and flattens a subgraph into it's own unparented copy
-        // has the same effect as subgraph.parse(subgraph.flatten(sg)), but is more effecient than that
-        // --
-        // brainstorm: is this necessary? what does it buy us?
-        // - pro: shorter _xxxParent linked lists
-        // - con: _data sort of manages itself when necessary (set a local copy; clip parent)
-        // - con: the parents aren't very deep in practice [citation needed]
-      });
-
-      it.skip('of _idea', function() {
-        // is this even worth it?
-        // the only time this matters is during searching, and then it's just a LONG list of single matches
-        // which then requires flattening
-      });
+      //it.skip('flatten', function() {
+      //  // XXX do we need to create a flatten function?
+      //  // a function that takes the nested nature of the copy/subcopies and flattens a subgraph into it's own unparented copy
+      //  // has the same effect as subgraph.parse(subgraph.flatten(sg)), but is more effecient than that
+      //  // --
+      //  // brainstorm: is this necessary? what does it buy us?
+      //  // - pro: shorter _xxxParent linked lists
+      //  // - con: _data sort of manages itself when necessary (set a local copy; clip parent)
+      //  // - con: the parents aren't very deep in practice [citation needed]
+      //});
     }); // end copy
 
     describe('getMatch', function() {
