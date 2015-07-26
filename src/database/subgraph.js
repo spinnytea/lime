@@ -461,7 +461,7 @@ exports.createGoal = function(outer, inner, vertexMap) {
 
 // outer has already been subgraph.match and vertexMap is the mapping; the transitions are the values we care about
 // used to allow replanning when you already have a vertexMap (a specific match; because requirements may match in multiple ways)
-exports.createGoal2 = function(outer, transitions, vertexMap) {
+exports.createTransitionedGoal = function(outer, transitions, vertexMap) {
   var goal = new Subgraph();
   var new_transitions = [];
 

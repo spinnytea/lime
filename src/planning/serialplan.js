@@ -117,7 +117,7 @@ SerialAction.prototype.tryTransition = function(state) {
       // these are all the possibilities matches
       var result = subgraph.match(originalState.state, that.requirements);
       // here are all the goals from all those results
-      var goals = result.map(function(vertexMap) { return subgraph.createGoal2(originalState.state, that.transitions, vertexMap); });
+      var goals = result.map(function(vertexMap) { return subgraph.createTransitionedGoal(originalState.state, that.transitions, vertexMap); });
       // these are all the goals that are the same as our result
       var matchingGoals = goals.filter(function(g) { return subgraph.match(curr.state.state, g).length; });
 
