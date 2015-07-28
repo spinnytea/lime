@@ -32,3 +32,8 @@ That one industrial engineering game I have on Steam
 Physical Orientation
 - those brain teaser puzzles that linked together
 - you have to figure out how to put them together or take them apart
+
+Play Flow
+- this is a different kind of problem, it isn't strictly take some actions
+- now, remember, it's the agent that needs to do things
+- so really, it's a "teach the agent this kind of problem solving" and "have it solve this"
