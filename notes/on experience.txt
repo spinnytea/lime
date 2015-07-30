@@ -1,0 +1,23 @@
+I'm brainstorming how this will work long run, but I can't make it all happen right away
+
+as sensor data comes in, it needs to be saved for processing
+you can start identifying structures/data
+If you run out of time before the next data comes in, then stop working on the current one, and work on the new one
+If you are supposed to take action on data, then
+ - is the state changing?
+   - if not, then you can keep working
+   - if it is, does it relate to your localized task? (based on current requirements theories)
+     - if the changes are unrelated, then keep going
+     - if the changes are related
+       -> flustered!
+          make note, and try to take action quicker with less analysis
+          make this configurable; and scope dependent
+          sometimes it's not good to make brash actions
+If you are just observing, then glean what you can now
+  how will this help your current understanding?
+  how do we cycle back what we think we know
+  if we save enough of the state, then we can come back an meditate later
+  actually, it's probably good to save the whole state up front
+  eventually we will need to phase out some of the data once our states are too large
+    only save things that are flagged as potential learning opportunities
+    after meditating, then discard anything that we haven't learned from

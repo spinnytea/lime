@@ -21,6 +21,23 @@ experience
     Do we search for experiences
     Do we need to search for experience data specifically?
     Do we reuse subgraph.search? Do I need a new function; should it be general or special purpose?
+  --
+  Start by learning what 'turn left' means; remove the requirements and transition and build up from scratch
+    refute requirements
+    should transitions be probabilities? - stop planning when probability gets too low
+    test transitions guesses against known outcomes
+    Does this make sense?
+      I'm mixing scales; atomic actions vs learned actions
+      how does this work for the continuous cases?
+      --
+      Yes, it does make sense.
+      I AM mixing scales, but that's okay.
+      Sometimes I want to treat the actions as atomic; that needs to be it's own test env
+      Sometimes I want to treat the actions as complex; that needs to be it's own test env
+      Because
+      Once I let the LM control motors that will push the keys that will cause the actions
+      - Wouldn't it be nice if I first had a model of the world "turn left"
+      - and then figure out how to make that happen separately
 
 testing
   focus on proper isolation testing
