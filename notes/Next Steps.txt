@@ -2,6 +2,26 @@
 | When you run out of direction, look here for things you already thought of doing next. |
 +----------------------------------------------------------------------------------------+
 
+experience
+  What do we need to save?
+    Context before (subgraph if IDs/Data, No Match data)
+      Do we need the WHOLE context? how do we know what's important?
+      Do we need to cache ALL the data? How do we know what's important?
+    Which Action / Glue
+    Changes (a data-diff between before an after)
+  How do we process the data
+    Prove that in a deterministic world, our actions do what they say and nothing more
+    What about the % chance of failure? No, change the rules
+      make it more logical
+      make it so there are some unseen/repeatable things
+      e.g. if your back is to a pit, you need to move forward twice
+      the stochastic should really be "there are more rules that your actions don't account for"
+      but seriously, can we simplify it to a % chance until we figure out the rules?
+  How do we search for data to process?
+    Do we search for experiences
+    Do we need to search for experience data specifically?
+    Do we reuse subgraph.search? Do I need a new function; should it be general or special purpose?
+
 testing
   focus on proper isolation testing
   use ideas.units.memory in idea testing
