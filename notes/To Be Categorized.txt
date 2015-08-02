@@ -90,3 +90,4 @@ Planning direction
 
 
 http://www.tinkerpop.com/
+https://en.wikibooks.org/wiki/Artificial_Intelligence/AI_Agents_and_their_Environments
