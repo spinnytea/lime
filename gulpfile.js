@@ -12,6 +12,11 @@ gulp.task('c', ['clean:db']);
 gulp.task('m', ['mocha']);
 
 gulp.task('clean:db', function() {
+  if(config.settings.do_not_clean) {
+    console.log('Database marked as "do not clean"');
+    return;
+  }
+
   return gulp.src(config.settings.location + '/**/*', { read: false })
     .pipe(rm());
 });
