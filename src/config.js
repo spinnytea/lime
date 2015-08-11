@@ -6,7 +6,7 @@ var fs = require('fs');
 exports.settings = {
   // the root location of the database
   location: '/Volumes/MyPassport/lime database',
-  //location: '/Volumes/MyPassport/todo',
+  //location: '/Volumes/Learning Machine Source/git/lm-wumpus/todo_database',
   //location: '/Volumes/RAM Disk',
   do_not_clean: false,
 
