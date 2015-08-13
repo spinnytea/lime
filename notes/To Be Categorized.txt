@@ -87,7 +87,23 @@ Planning direction
     planning forward with arbitrary goals? arbitrary plans from various goals to one starting point
     i think the key is that we can't keep the arbitary goals when planning forward
     does this mean that planning backwards is easily invalidated?
-
-
-http://www.tinkerpop.com/
-https://en.wikibooks.org/wiki/Artificial_Intelligence/AI_Agents_and_their_Environments
+Data Scale
+  Knowledge
+    When working with the database directly (task list)
+    I am going to save each idea one at a time, but I'm going to do so up to n times.
+    Saving is O(1)*O(n) = O(n)
+    I am going to query for the data, and it will return n items each times, and I'm going to do this n times.
+    Access is O(n)*O(n) = O(n^2).
+  Actions
+    When we incorporate actions (wumpus)
+    I am going to save a whole state, and this will happen n times.
+    Saving is O(n^2)
+    I am going to access a whole state, with some large branching factor
+    time*state*branching
+    Access is O(n^3)
+  Experience
+    When we incorporate learning into wumpus
+    I am going to run through n states
+    time*state*repetition
+    Saving is O(n^3)
+    Access is O(n^?)
