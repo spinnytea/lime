@@ -30,7 +30,8 @@ exports.list = {
   thought_description: undefined,
   type_of: undefined,
   property: undefined,
-  context: undefined
+  context: undefined,
+  experience: undefined
 };
 
 
@@ -69,3 +70,7 @@ exports.create('property');
 //
 // idea --context-> ContextIdea
 exports.create('context');
+
+
+// action --experience--> experienceIdea
+exports.create('experience');
