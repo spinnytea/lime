@@ -24,6 +24,7 @@ exports.list = {
   context: undefined
 };
 
+
 // no embedded structural meaning
 // heavily used in testing
 exports.create('thought_description');
@@ -47,6 +48,10 @@ exports.create('property');
 
 
 // helps identify when certain ideas are relevant
+// TODO I've mostly been using these as hard coded type anchors
+// - should I be using a different name?
+// - context is used for ONE dynamic thing in lm-wumpus; the game instance
+// - I think that one use is the true intent
 //
 // idea --context-> ContextIdea
 exports.create('context');
