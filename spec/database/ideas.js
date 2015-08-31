@@ -199,6 +199,22 @@ describe('ideas', function() {
         expect(ideas.units.boundaries.loadObj).to.have.callCount(0);
       });
 
+      it('add undirected', function() {
+        var link = links.list._test__undirected_;
+
+        ideaA = ideas.create();
+        ideaB = ideas.create();
+        ideaA.link(link, ideaB); // link be idea
+
+        expect(ideaA.link(link)).to.deep.equal([ideaB]);
+        expect(ideaB.link(link)).to.deep.equal([ideaA]);
+
+        ideaA.unlink(link, ideaB);
+
+        expect(ideaA.link(link)).to.deep.equal([]);
+        expect(ideaB.link(link)).to.deep.equal([]);
+      });
+
       it('add: invalid arg', function() {
         var ideaA = ideas.create();
 

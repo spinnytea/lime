@@ -11,10 +11,18 @@ describe('links', function() {
 
   it('create/list', function() {
     expect(links.list.thought_description.name).to.equal('thought_description');
+    expect(links.list.thought_description.opposite).to.not.equal(links.list.thought_description);
     expect(links.list.thought_description.opposite.opposite).to.equal(links.list.thought_description);
 
     expect(function() { links.list.thought_description = 'stuff'; }).to.throw(Error);
     expect(function() { links.list.thought_description.name = 'stuff'; }).to.throw(Error);
+  });
+
+  it('create undirected', function() {
+    var name = '_test__undirected_';
+    expect(links.list[name].name).to.equal(name);
+    expect(links.list[name].opposite.name).to.equal(name);
+    expect(links.list[name].opposite).to.equal(links.list[name]);
   });
 
   // XXX links needs a type_of hierarchy

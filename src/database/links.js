@@ -2,15 +2,21 @@
 // link ideas together
 // these are the edges of the graph
 
-exports.create = function(name) {
+exports.create = function(name, undirected) {
+  undirected = !!undirected;
   var link = {};
   var opp = {};
 
-  Object.defineProperty(link, 'name', { get: function() { return name; } });
-  Object.defineProperty(opp, 'name', { get: function() { return name + '-opp'; } });
+  if(!undirected) {
+    Object.defineProperty(link, 'name', { get: function() { return name; } });
+    Object.defineProperty(opp, 'name', { get: function() { return name + '-opp'; } });
 
-  Object.defineProperty(link, 'opposite', { get: function() { return opp; } });
-  Object.defineProperty(opp, 'opposite', { get: function() { return link; } });
+    Object.defineProperty(link, 'opposite', { get: function() { return opp; } });
+    Object.defineProperty(opp, 'opposite', { get: function() { return link; } });
+  } else {
+    Object.defineProperty(link, 'name', { get: function() { return name; } });
+    Object.defineProperty(link, 'opposite', { get: function() { return link; } });
+  }
 
   // add the link to the list
   Object.defineProperty(exports.list, name, { enumerable: true, get: function() { return link; } });
@@ -28,6 +34,11 @@ exports.list = {
 // no embedded structural meaning
 // heavily used in testing
 exports.create('thought_description');
+
+
+// no embedded structural meaning
+// used in testing
+exports.create('_test__undirected_', true);
 
 
 // apple
