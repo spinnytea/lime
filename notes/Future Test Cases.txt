@@ -87,7 +87,7 @@ Phoenix
   When you teach it to "play," set up some tutorial levels, first. Make sure to clearing think about the goal of each tutorial.
   Since this is a programmed scenario, some of the tasks can be "hand waved" or given by the scenario. (for example, I don't need to identify objects; the api can just supply a list of them)
   
-  This isn't a static state game like keep assuming it is. It isn't like solving a puzzle.
+  This isn't a static state game like I keep assuming it is. It isn't like solving a puzzle.
   
   [ ] Identify objects in environment
   [ ] Identify meta data about objects (such as movement pattern)
