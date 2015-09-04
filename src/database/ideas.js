@@ -7,6 +7,7 @@ var fs = require('fs');
 var mkdirp = require('mkdirp');
 var config = require('../config');
 var ids = require('../ids');
+var links = require('./links');
 
 // we need some way of accessing function so we can unit test them
 // nothing inside exports.unit should need to be called or substituted
@@ -103,11 +104,11 @@ ProxyIdea.prototype.link = function(link, idea) {
 
     // ensure the links for this type has been created
     // add the id to the list
-    (memory[this.id].links[link.name] = memory[this.id].links[link.name] || []).push(id);
-    (memory[id].links[link.opposite.name] = memory[id].links[link.opposite.name] || []).push(this.id);
+    (memory[this.id].links[link.name] = memory[this.id].links[link.name] || {})[id] = new links.link();
+    (memory[id].links[link.opposite.name] = memory[id].links[link.opposite.name] || {})[this.id] = new links.link();
   } else {
     exports.load(this.id);
-    return (memory[this.id].links[link.name] || [])
+    return Object.keys(memory[this.id].links[link.name] || {})
       .map(function(id) { return new ProxyIdea(id); });
   }
 };
@@ -121,15 +122,16 @@ ProxyIdea.prototype.unlink = function(link, idea) {
 
   // remove the idea from this
   var list = memory[this.id].links[link.name];
-  list.splice(list.indexOf(idea.id), 1);
-  if(list.length === 0) {
+  delete list[idea.id];
+  // TODO use a faster 'has keys' function
+  if(Object.keys(list).length === 0) {
     delete memory[this.id].links[link.name];
   }
 
   // remove this from the idea
   list = memory[idea.id].links[link.opposite.name];
-  list.splice(list.indexOf(this.id), 1);
-  if(list.length === 0) {
+  delete list[this.id];
+  if(Object.keys(list).length === 0) {
     delete memory[idea.id].links[link.opposite.name];
   }
 };

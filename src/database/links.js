@@ -2,6 +2,9 @@
 // link ideas together
 // these are the edges of the graph
 
+exports.link = function() {
+};
+
 exports.create = function(name, undirected) {
   undirected = !!undirected;
   var link = {};
