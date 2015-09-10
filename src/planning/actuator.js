@@ -16,6 +16,7 @@ function ActuatorAction() {
   blueprint.Action.call(this);
 
   // the name of the action to use
+  // TODO rename to 'rawFn'
   this.action = null;
 }
 _.extend(ActuatorAction.prototype, blueprint.Action.prototype);
