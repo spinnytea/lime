@@ -41,7 +41,7 @@ function agent_inside_room(agent_x, agent_y, agent_r, room_x, room_y, room_r) {
 describe.only('hardsensor', function() {
   require('../database/ideas').mock();
   it('init', function() {
-    expect(Object.keys(hardsensor)).to.deep.equal(['Sensor', 'sensors']);
+    expect(Object.keys(hardsensor)).to.deep.equal(['Sensor', 'sensors', 'groupfn']);
   });
 
   describe('Sensor', function() {
@@ -117,7 +117,7 @@ describe.only('hardsensor', function() {
       // agent --inside-> room
       links.create('agent_inside_room');
 
-      hardsensor.sensors.agent_inside_room = function(state, glue) {
+      hardsensor.sensors.agent_inside_room = function(state, glueGroup) {
         var agent = '0';
         var agent_x = '1';
         var agent_y = '2';
@@ -127,7 +127,7 @@ describe.only('hardsensor', function() {
         var room_y = '7';
         var room_r = '8';
 
-        void(agent, agent_x, agent_y, agent_r, room, room_x, room_y, room_r, state, glue);
+        void(agent, agent_x, agent_y, agent_r, room, room_x, room_y, room_r, state, glueGroup);
 
         return [];
       };
@@ -193,4 +193,24 @@ describe.only('hardsensor', function() {
       //expect(i_agent.link(links.list.agent_inside_room)).to.deep.equal([i_room1.id]);
     });
   }); // end Sensor
+
+  describe('groupfn', function() {
+    it('none', function() {
+      var glues = [{ 0:0, 1:1 }, {0:1,1:2}];
+      var sets = [[{ 0:0, 1:1 }], [{0:1,1:2}]];
+      expect(hardsensor.groupfn.none(glues, undefined)).to.deep.equal(sets);
+    });
+
+    it('byOuterIdea', function() {
+      // different groups
+      var glues = [{ 0:0, 1:1 }, {0:1,1:2}];
+      var sets = [[{ 0:0, 1:1 }], [{0:1,1:2}]];
+      expect(hardsensor.groupfn.byOuterIdea(glues, 0)).to.deep.equal(sets);
+
+      // same groups
+      glues = [{ 0:0, 1:1 }, {0:0,1:2}];
+      sets = [[{ 0:0, 1:1 }, {0:0,1:2}]];
+      expect(hardsensor.groupfn.byOuterIdea(glues, 0)).to.deep.equal(sets);
+    });
+  });
 }); // end hardsensor
