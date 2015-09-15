@@ -70,8 +70,8 @@ describe.only('hardsensor', function() {
       i_r1_y = ideas.create(number.cast({ value: number.value(0), unit: i_y_unit.id }));
       i_r1_r = ideas.create(number.cast({ value: number.value(1), unit: i_r_unit.id }));
       i_room2 = ideas.create();
-      i_r2_x = ideas.create(number.cast({ value: number.value(0), unit: i_x_unit.id }));
-      i_r2_y = ideas.create(number.cast({ value: number.value(0), unit: i_y_unit.id }));
+      i_r2_x = ideas.create(number.cast({ value: number.value(6), unit: i_x_unit.id }));
+      i_r2_y = ideas.create(number.cast({ value: number.value(6), unit: i_y_unit.id }));
       i_r2_r = ideas.create(number.cast({ value: number.value(1), unit: i_r_unit.id }));
 
       i_agent.link(links.list.property, i_a_x);
@@ -129,7 +129,26 @@ describe.only('hardsensor', function() {
 
         void(agent, agent_x, agent_y, agent_r, room, room_x, room_y, room_r, state, glueGroup);
 
-        return [];
+        var rooms = glueGroup.filter(function(glue) {
+          return agent_inside_room(
+            state.getData(glue[agent_x]).value,
+            state.getData(glue[agent_y]).value,
+            state.getData(glue[agent_r]).value,
+            state.getData(glue[room_x]).value,
+            state.getData(glue[room_y]).value,
+            state.getData(glue[room_r]).value
+          );
+        }).map(function(glue) {
+          return state.getIdea(glue[room]);
+        });
+
+        if(!rooms.length)
+          return undefined;
+
+        // TODO ensure links
+        console.log(rooms);
+
+        return undefined;
       };
 
 
@@ -152,6 +171,9 @@ describe.only('hardsensor', function() {
       hs.requirements.addEdge(h_room, links.list.property, h_r_x);
       hs.requirements.addEdge(h_room, links.list.property, h_r_y);
       hs.requirements.addEdge(h_room, links.list.property, h_r_r);
+
+      hs.groupfn = 'byOuterIdea';
+      hs.groupConfig = h_agent;
 
 
       // for simplicity, these values are hardcoded in the agent_inside_room
@@ -188,7 +210,7 @@ describe.only('hardsensor', function() {
     it('sense', function() {
       expect(i_agent.link(links.list.agent_inside_room)).to.deep.equal([]);
 
-      //hs.sense(context);
+      hs.sense(context);
 
       //expect(i_agent.link(links.list.agent_inside_room)).to.deep.equal([i_room1.id]);
     });

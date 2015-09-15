@@ -39,13 +39,13 @@ function HardcodedSensor() {
 // @param state: a subgraph
 HardcodedSensor.prototype.sense = function(state) {
   var that = this;
-  this.groupfn(subgraph.match(state, this.requirements), this.groupConfig).forEach(function(glueGroup) {
+  exports.groupfn[this.groupfn](subgraph.match(state, this.requirements), this.groupConfig).forEach(function(glueGroup) {
     var ts = exports.sensors[that.sensor](state, glueGroup);
 
     // TODO subgraph.rewrite needs to support idea.link and idea.unlink
     // XXX we could just have the sensor function rewrite the graph directly, but we need this mechanism for learned sensors
     // TODO we need to "ensure a list of links", which means we need to remove old ones
-    if(subgraph.rewrite(state, ts, true) === undefined)
+    if(ts && subgraph.rewrite(state, ts, true) === undefined)
       throw new Error('rewrite failed');
   });
 };
