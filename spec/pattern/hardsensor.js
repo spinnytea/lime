@@ -134,18 +134,11 @@ describe.only('hardsensor', function() {
           return state.getIdea(glue[room]);
         });
 
-        // ensure links
-        var agent_idea = state.getIdea(glueGroup[0][agent]);
-
-        // unlink all the old rooms
-        agent_idea.link(links.list.agent_inside_room).forEach(function(idea) {
-          agent_idea.unlink(links.list.agent_inside_room, idea);
-        });
-
-        // link all the new rooms
-        rooms.forEach(function(room) {
-          agent_idea.link(links.list.agent_inside_room, room);
-        });
+        return {
+          ensureLinks: links.list.agent_inside_room,
+          from: state.getIdea(glueGroup[0][agent]),
+          to: rooms
+        };
       };
 
 

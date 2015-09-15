@@ -40,20 +40,19 @@ function HardcodedSensor() {
 HardcodedSensor.prototype.sense = function(state) {
   var that = this;
   exports.groupfn[this.groupfn](subgraph.match(state, this.requirements), this.groupConfig).forEach(function(glueGroup) {
-    exports.sensors[that.sensor](state, glueGroup);
+    var instruction = exports.sensors[that.sensor](state, glueGroup);
 
-    // xTODOx subgraph.rewrite needs to support idea.link and idea.unlink
-    // - maybe?
-    // - that's only if we use transitions to do this
-    // - transitions were specifically written to handle the data within a vertex node
-    // - manipulating anything other than that is... awkward
-    // - we probably want a different location to do that
-    // - anything we do in a transition, a subgraph needs to have support for
-    // - subgraphs aren't going to handled "ensure this list of links" very well; that's basically a list of subgraphs
-    // TODO we could just have the sensor function rewrite the graph directly, but we need this mechanism for learned sensors
-    // - so we need a another rewrite thing similar to transitions for subgraph
-    // - we can do it directly in the sensors?
-    // - THIS needs to support link and unlink to start
+    if(instruction) {
+      if(instruction.ensureLinks) {
+        var from = instruction.from; // idea
+        var to = instruction.to; // [idea]
+        var link = instruction.ensureLinks; // links.list.something
+        // remove all existing
+        from.link(link).forEach(function(idea) { from.unlink(link, idea); });
+        // add all new
+        to.forEach(function(t) { from.link(link, t); });
+      }
+    }
   });
 };
 
