@@ -137,11 +137,18 @@ describe.only('hardsensor', function() {
         if(!rooms.length)
           return undefined;
 
-        // TODO ensure links
-        console.log(rooms);
-        void(agent);
+        // ensure links
+        var agent_idea = state.getIdea(glueGroup[0][agent]);
 
-        return undefined;
+        // unlink all the old rooms
+        agent_idea.link(links.list.agent_inside_room).forEach(function(idea) {
+          agent_idea.unlink(links.list.agent_inside_room, idea);
+        });
+
+        // link all the new rooms
+        rooms.forEach(function(room) {
+          agent_idea.link(links.list.agent_inside_room, room);
+        });
       };
 
 
@@ -201,7 +208,7 @@ describe.only('hardsensor', function() {
 
       hs.sense(context);
 
-      //expect(i_agent.link(links.list.agent_inside_room)).to.deep.equal([i_room1.id]);
+      expect(i_agent.link(links.list.agent_inside_room)).to.deep.equal([i_room1]);
     });
   }); // end Sensor
 
