@@ -1,5 +1,6 @@
 'use strict';
 var _ = require('lodash');
+var sensor = require('./sensor');
 var subgraph = require('../database/subgraph');
 
 // Task 57
@@ -19,6 +20,7 @@ var subgraph = require('../database/subgraph');
 // My first sensor will be hard coding that optimized sensor the way I expect it will be eventually produced.
 
 function HardcodedSensor() {
+  sensor.Sensor.call(this);
 
   // the requirements are going to use whatever IDs they please
   // the sensor function needs to reference these with 'well known' names (variables)
@@ -31,10 +33,25 @@ function HardcodedSensor() {
   // must be defined before calling HardcodedSensor.prototype.sense
   this.sensor = null;
 
-  this.groupfn = exports.groupfn.none;
+  this.groupfn = exports.groupfn.none.name;
   // some group functions need to have specific config data to work
   this.groupConfig = undefined;
 }
+_.extend(HardcodedSensor.prototype, sensor.Sensor.prototype);
+
+HardcodedSensor.prototype.prepSave = function() {
+  return {
+    type: 'sensor',
+    subtype: 'HardcodedSensor',
+    sensor: {
+      idea: this.idea,
+      requirements: subgraph.stringify(this.requirements),
+      sensor: this.sensor,
+      groupfn: this.groupfn,
+      groupConfig: this.groupConfig
+    }
+  };
+};
 
 // @param state: a subgraph
 HardcodedSensor.prototype.sense = function(state) {
@@ -83,4 +100,14 @@ exports.groupfn = {
       return sets;
     }, {}));
   }
+};
+
+sensor.loaders.HardcodedSensor = function(sensor) {
+  var hs = new HardcodedSensor();
+  hs.idea = sensor.idea;
+  hs.requirements = subgraph.parse(sensor.requirements);
+  hs.sensor = sensor.sensor;
+  hs.groupfn = sensor.groupfn;
+  hs.groupConfig = sensor.groupConfig;
+  return hs;
 };

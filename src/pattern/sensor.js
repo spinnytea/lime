@@ -1,0 +1,45 @@
+'use strict';
+var ideas = require('../database/ideas');
+var links = require('../database/links');
+// I know there will be other types of sensors eventually
+// I just don't know what they will look like
+
+function Sensor() {
+
+}
+
+// @return the id that the plan is saved to (probably also recorded under bp.idea)
+Sensor.prototype.save = function() {
+  var idea;
+  if(this.idea)
+    idea = ideas.load(this.idea);
+  else {
+    idea = ideas.create();
+    idea.link(links.list.context, exports.context);
+    this.idea = idea.id;
+  }
+
+  idea.update(this.prepSave());
+
+  return this.idea;
+};
+
+// when we call sensor.save, we need to have an object that can be JSON.stringify
+// the data must conform to sensor.load
+// (e.g. HardcodedSensor needs to implement prepSave and supply a loader)
+Sensor.prototype.prepSave = function() {
+  throw new Error(this.constructor.name + ' does not implement prepSave');
+};
+
+exports.Sensor = Sensor;
+
+// saving and loading sensors
+// register constructors by name so we can load saved sensors
+exports.context = ideas.context('sensor');
+exports.loaders = {};
+exports.load = function(id) {
+  var data = ideas.load(id).data();
+  if(!(data.type === 'sensor' && data.sensor && typeof data.subtype === 'string'))
+    return undefined;
+  return exports.loaders[data.subtype](data.sensor);
+};

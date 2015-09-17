@@ -4,6 +4,7 @@ var hardcodedsensor = require('../../src/pattern/hardcodedsensor');
 var ideas = require('../../src/database/ideas');
 var links = require('../../src/database/links');
 var number = require('../../src/planning/primitives/number');
+var sensor = require('../../src/pattern/sensor');
 var subgraph = require('../../src/database/subgraph');
 
 // all parameters are numbers
@@ -46,7 +47,7 @@ describe.only('hardcodedsensor', function() {
 
   describe('Sensor', function() {
     it('init', function() {
-      expect(Object.keys(hardcodedsensor.Sensor.prototype)).to.deep.equal(['sense']);
+      expect(Object.keys(hardcodedsensor.Sensor.prototype)).to.deep.equal(['save', 'prepSave', 'sense']);
     });
 
     var i_x_unit, i_y_unit, i_r_unit, context, hs;
@@ -191,6 +192,25 @@ describe.only('hardcodedsensor', function() {
 
       room_r.r = 100;
       expect(agent_inside_room(agent_x, agent_y, room_x, room_y, room_r)).to.equal(true);
+    });
+
+    it('prepSave & load', function() {
+      // make a fake ID for this test
+      // (pretend it's gone through s.save())
+      hs.idea = '_test_';
+
+      var data = hs.prepSave();
+
+      // the data needs to be able to go through
+      expect(JSON.parse(JSON.stringify(data))).to.deep.equal(data);
+      expect(data.type).to.equal('sensor');
+      expect(data.subtype).to.equal('HardcodedSensor');
+      expect(data).to.have.property('sensor');
+
+
+      var loaded = sensor.loaders.HardcodedSensor(data.sensor);
+      expect(loaded).to.be.an.instanceOf(hardcodedsensor.Sensor);
+      expect(loaded).to.deep.equal(hs); // this is our real test
     });
 
     it('sense', function() {
