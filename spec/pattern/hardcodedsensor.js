@@ -258,5 +258,62 @@ describe.only('hardcodedsensor', function() {
       sets = [[{ 0:0, 1:1 }, {0:0,1:2}]];
       expect(hardcodedsensor.groupfn.byOuterIdea(glues, 0)).to.deep.equal(sets);
     });
+  }); // end groupfn
+
+  it('sensor.load', function() {
+    var hs = new hardcodedsensor.Sensor();
+    expect(hs.idea).to.equal(undefined);
+
+    hs.save();
+
+    expect(hs.idea).to.not.equal(undefined);
+
+    // attach the hs to an arbitrary additional context
+    var context = ideas.create();
+    ideas.load(hs.idea).link(links.list.context, context);
+
+
+    // search for our sensor
+    // (basic)
+    // if we have data from a use case, so we need to ensure this sensor is included in the list
+    var list = sensor.list();
+    expect(list.length).to.be.gt(0);
+    expect(list.map(function(i) { return i.id; })).to.include(hs.idea);
+
+    // search for our sensor
+    // ([])
+    // an empty list is still valid; should be the same as providing no context
+    list = sensor.list([]);
+    expect(list.length).to.be.gt(0);
+    expect(list.map(function(i) { return i.id; })).to.include(hs.idea);
+
+    // search for our sensor
+    // (ID string)
+    list = sensor.list(context.id);
+    expect(list.length).to.equal(1);
+    expect(list[0].id).to.equal(hs.idea);
+
+    // search for our sensor
+    // (proxy idea)
+    list = sensor.list(context);
+    expect(list.length).to.equal(1);
+    expect(list[0].id).to.equal(hs.idea);
+
+    // search for our actuator
+    // ([ID string])
+    list = sensor.list([context.id]);
+    expect(list.length).to.equal(1);
+    expect(list[0].id).to.equal(hs.idea);
+
+    // search for our actuator
+    // ([proxy idea])
+    list = sensor.list([context]);
+    expect(list.length).to.equal(1);
+    expect(list[0].id).to.equal(hs.idea);
+
+    // search for our sensor
+    // returns nothing
+    list = sensor.list('not a valid context');
+    expect(list.length).to.equal(0);
   });
 }); // end hardcodedsensor
