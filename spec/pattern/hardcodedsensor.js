@@ -1,6 +1,6 @@
 'use strict';
 var expect = require('chai').use(require('sinon-chai')).expect;
-var hardsensor = require('../../src/pattern/hardsensor');
+var hardcodedsensor = require('../../src/pattern/hardcodedsensor');
 var ideas = require('../../src/database/ideas');
 var links = require('../../src/database/links');
 var number = require('../../src/planning/primitives/number');
@@ -38,15 +38,15 @@ function agent_inside_room(agent_x, agent_y, room_x, room_y, room_r) {
   return false;
 }
 
-describe.only('hardsensor', function() {
+describe.only('hardcodedsensor', function() {
   require('../database/ideas').mock();
   it('init', function() {
-    expect(Object.keys(hardsensor)).to.deep.equal(['Sensor', 'sensors', 'groupfn']);
+    expect(Object.keys(hardcodedsensor)).to.deep.equal(['Sensor', 'sensors', 'groupfn']);
   });
 
   describe('Sensor', function() {
     it('init', function() {
-      expect(Object.keys(hardsensor.Sensor.prototype)).to.deep.equal(['sense']);
+      expect(Object.keys(hardcodedsensor.Sensor.prototype)).to.deep.equal(['sense']);
     });
 
     var i_x_unit, i_y_unit, i_r_unit, context, hs;
@@ -113,7 +113,7 @@ describe.only('hardsensor', function() {
       // agent --inside-> room
       links.create('agent_inside_room');
 
-      hardsensor.sensors.agent_inside_room = function(state, glueGroup) {
+      hardcodedsensor.sensors.agent_inside_room = function(state, glueGroup) {
         var agent = '0';
         var agent_x = '1';
         var agent_y = '2';
@@ -142,7 +142,7 @@ describe.only('hardsensor', function() {
       };
 
 
-      hs = new hardsensor.Sensor();
+      hs = new hardcodedsensor.Sensor();
       hs.sensor = 'agent_inside_room';
       h_agent = hs.requirements.addVertex(subgraph.matcher.id, i_agent);
       h_a_x = hs.requirements.addVertex(subgraph.matcher.similar, { unit: i_x_unit.id });
@@ -224,19 +224,19 @@ describe.only('hardsensor', function() {
     it('none', function() {
       var glues = [{ 0:0, 1:1 }, {0:1,1:2}];
       var sets = [[{ 0:0, 1:1 }], [{0:1,1:2}]];
-      expect(hardsensor.groupfn.none(glues, undefined)).to.deep.equal(sets);
+      expect(hardcodedsensor.groupfn.none(glues, undefined)).to.deep.equal(sets);
     });
 
     it('byOuterIdea', function() {
       // different groups
       var glues = [{ 0:0, 1:1 }, {0:1,1:2}];
       var sets = [[{ 0:0, 1:1 }], [{0:1,1:2}]];
-      expect(hardsensor.groupfn.byOuterIdea(glues, 0)).to.deep.equal(sets);
+      expect(hardcodedsensor.groupfn.byOuterIdea(glues, 0)).to.deep.equal(sets);
 
       // same groups
       glues = [{ 0:0, 1:1 }, {0:0,1:2}];
       sets = [[{ 0:0, 1:1 }, {0:0,1:2}]];
-      expect(hardsensor.groupfn.byOuterIdea(glues, 0)).to.deep.equal(sets);
+      expect(hardcodedsensor.groupfn.byOuterIdea(glues, 0)).to.deep.equal(sets);
     });
   });
-}); // end hardsensor
+}); // end hardcodedsensor
