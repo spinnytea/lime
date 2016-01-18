@@ -6,7 +6,6 @@ exports.link = function() {
 };
 
 exports.create = function(name, undirected) {
-  undirected = !!undirected;
   var link = {};
   var opp = {};
 
