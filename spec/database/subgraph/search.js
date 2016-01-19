@@ -5,7 +5,7 @@ var links = require('../../../src/database/links');
 var subgraph = require('../../../src/database/subgraph');
 
 describe('subgraph', function() {
-  describe.only('search', function() {
+  describe('search', function() {
     require('../ideas').mock();
     
     it('init', function() {
@@ -232,7 +232,7 @@ describe('subgraph', function() {
           // expand this edge last
           // by the time we get here, f and a will be pinned down
           // but this edge is invalid, so the search will fail
-          sg.addEdge(a, links.list.type_of, f, 0);
+          sg.addEdge(a, links.list.thought_description, f, 0);
 
           // for our sanity, verify the underlying state
           expect(sg.concrete).to.equal(false);
@@ -374,15 +374,18 @@ describe('subgraph', function() {
         var something = sg.addVertex(subgraph.matcher.filler);
         sg.addEdge(something, links.list.type_of, s);
 
+        // call find edges to make sure it's setup correctly
+        expect(subgraph.search.units.findEdgeToExpand).to.be.a('Function');
+        var result = subgraph.search.units.findEdgeToExpand(sg);
+        expect(result.branches).to.deep.equal([ quad, rectangle, square ]);
 
-        // TODO call this function directly
-        expect(subgraph.search.units.findEdgeToExpand).to.equal(undefined);
-
-
-        // TODO make sure this returns 3 results
-        // move this up to the "search" level
-        var result = subgraph.search(sg);
-        expect(result.length).to.equal(1);
+        // call search to find matches
+        // XXX move this up to the "search" level
+        result = subgraph.search(sg);
+        expect(result.length).to.equal(3);
+        expect(result[0].getIdea(something)).to.deep.equal(quad);
+        expect(result[1].getIdea(something)).to.deep.equal(rectangle);
+        expect(result[2].getIdea(something)).to.deep.equal(square);
       });
 
       it.skip('everything else');

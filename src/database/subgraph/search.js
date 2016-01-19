@@ -69,23 +69,19 @@ function findEdgeToExpand(subgraph) {
 
       var currBranches = (isSrc ? (srcIdea.link(currEdge.link)) : (dstIdea.link(currEdge.link.opposite)) );
       if(currEdge.link.transitive) {
-        console.log(currEdge.link.name, isSrc, isDst);
         // keep following the link
         var uniqueMap = _.indexBy(currBranches, 'id');
-        var dir = isSrc?currEdge.link:currEdge.link.opposite;
+        var dir = isSrc?currEdge.link:currEdge.link.opposite; // follow the direction AWAY from the defined vertex
         while(currBranches.length) {
           var next = currBranches.pop();
-          console.log('next', next.data());
           next.link(dir).forEach(function(b) {
             if(!uniqueMap.hasOwnProperty(b.id)) {
-              console.log('b', next.data());
               uniqueMap[b.id] = b;
               currBranches.push(b);
             }
           });
         }
         currBranches = _.values(uniqueMap);
-        console.log('----');
       }
 
 
@@ -107,7 +103,10 @@ function findEdgeToExpand(subgraph) {
       // TODO cache the result so we don't need to check this for every subgraph
       if(!srcIdea.link(currEdge.link).some(function(idea) { return idea.id === dstIdea.id; }))
       // if we can't resolve this edge, then this graph is invalid
-        return false;
+      //  return false;
+      // if the link is transitive, then it may not be directly connected
+      // XXX do we *need* to verify that the link is valid?
+        return !!currEdge.link.transitive;
     }
 
     return true;
