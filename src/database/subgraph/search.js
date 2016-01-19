@@ -1,6 +1,7 @@
 'use strict';
 // this is a function to support subgraphs
 
+var _ = require('lodash');
 var SG = require('../subgraph');
 
 // find a list of subgraphs in the database that matches the supplied subgraph
@@ -67,6 +68,26 @@ function findEdgeToExpand(subgraph) {
         return true;
 
       var currBranches = (isSrc ? (srcIdea.link(currEdge.link)) : (dstIdea.link(currEdge.link.opposite)) );
+      if(currEdge.link.transitive) {
+        console.log(currEdge.link.name, isSrc, isDst);
+        // keep following the link
+        var uniqueMap = _.indexBy(currBranches, 'id');
+        var dir = isSrc?currEdge.link:currEdge.link.opposite;
+        while(currBranches.length) {
+          var next = currBranches.pop();
+          console.log('next', next.data());
+          next.link(dir).forEach(function(b) {
+            if(!uniqueMap.hasOwnProperty(b.id)) {
+              console.log('b', next.data());
+              uniqueMap[b.id] = b;
+              currBranches.push(b);
+            }
+          });
+        }
+        currBranches = _.values(uniqueMap);
+        console.log('----');
+      }
+
 
       if(!selected.edge) {
         selected.edge = currEdge;

@@ -32,6 +32,11 @@ describe('links', function() {
       expect(links.list[name].opposite.name).to.equal(name);
       expect(links.list[name].opposite).to.equal(links.list[name]);
     });
+
+    it('options', function() {
+      expect(links.list.thought_description.transitive).to.equal(false);
+      expect(links.list.type_of.transitive).to.equal(true);
+    });
   }); // end create/list
 
   // XXX links needs a type_of hierarchy

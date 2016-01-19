@@ -5,7 +5,7 @@ var links = require('../../../src/database/links');
 var subgraph = require('../../../src/database/subgraph');
 
 describe('subgraph', function() {
-  describe('search', function() {
+  describe.only('search', function() {
     require('../ideas').mock();
     
     it('init', function() {
@@ -359,7 +359,34 @@ describe('subgraph', function() {
       expect(sg.concrete).to.equal(true);
     });
 
-    it.skip('findEdgeToExpand');
+    describe('findEdgeToExpand', function() {
+      it('transitive', function() {
+        var shape = ideas.create({name: 'shape'});
+        var quad = ideas.create({name: 'quad'});
+        var rectangle = ideas.create({name: 'rectangle'});
+        var square = ideas.create({name: 'square'});
+        square.link(links.list.type_of, rectangle);
+        rectangle.link(links.list.type_of, quad);
+        quad.link(links.list.type_of, shape);
+
+        var sg = new subgraph.Subgraph();
+        var s = sg.addVertex(subgraph.matcher.id, shape);
+        var something = sg.addVertex(subgraph.matcher.filler);
+        sg.addEdge(something, links.list.type_of, s);
+
+
+        // TODO call this function directly
+        expect(subgraph.search.units.findEdgeToExpand).to.equal(undefined);
+
+
+        // TODO make sure this returns 3 results
+        // move this up to the "search" level
+        var result = subgraph.search(sg);
+        expect(result.length).to.equal(1);
+      });
+
+      it.skip('everything else');
+    });
 
     it.skip('expandEdge');
   }); // end search

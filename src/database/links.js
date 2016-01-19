@@ -1,13 +1,20 @@
 'use strict';
+var _ = require('lodash');
 // link ideas together
 // these are the edges of the graph
 
 exports.link = function() {
 };
 
-exports.create = function(name, undirected) {
-  var link = {};
-  var opp = {};
+exports.create = function(name, undirected, options) {
+  options = _.merge({
+    transitive: false, // XXX add a description
+  }, options);
+  delete options.name;
+  delete options.opposite;
+
+  var link = _.assign({}, options);
+  var opp = _.assign({}, options);
 
   if(!undirected) {
     Object.defineProperty(link, 'name', { get: function() { return name; } });
@@ -50,7 +57,7 @@ exports.create('_test__undirected_', true);
 // mark --typeof_of-> person
 // mark --has-> apple
 // person --can_has-> apple
-exports.create('type_of');
+exports.create('type_of', false, { transitive: true });
 //create('has');
 
 
