@@ -1,10 +1,10 @@
 'use strict';
 var expect = require('chai').use(require('sinon-chai')).expect;
-var hardcodedsensor = require('../../src/pattern/hardcodedsensor');
+var hardcodedsensor = require('../../src/sensor/hardcodedsensor');
 var ideas = require('../../src/database/ideas');
 var links = require('../../src/database/links');
 var number = require('../../src/planning/primitives/number');
-var sensor = require('../../src/pattern/sensor');
+var sensor = require('../../src/sensor/sensor');
 var subgraph = require('../../src/database/subgraph');
 
 // all parameters are numbers
@@ -39,7 +39,7 @@ function agent_inside_room(agent_x, agent_y, room_x, room_y, room_r) {
   return false;
 }
 
-describe.only('hardcodedsensor', function() {
+describe('hardcodedsensor', function() {
   require('../database/ideas').mock();
   it('init', function() {
     expect(Object.keys(hardcodedsensor)).to.deep.equal(['Sensor', 'sensors', 'groupfn']);
