@@ -188,12 +188,16 @@ Subgraph.prototype.addVertex = function(matcher, data, options) {
 // @param link: the link from src to dst
 // @param dst: a vertex ID
 // @param pref: higher prefs will be considered first (default: 0)
-Subgraph.prototype.addEdge = function(src, link, dst, pref) {
+// @param transitive: the same as link.transitive; will search in a transitive manner
+// XXX should pref be "options"; options.pref; do we need other options, such as transitive search? (there is a transitive link, but maybe a particular search will want to be transitive, e.g. parent/child)
+// - not a "taxonomy parent-child" relationship, but literal task-list parent/child
+Subgraph.prototype.addEdge = function(src, link, dst, pref, transitive) {
   this._edges.push({
     src: src,
     link: link,
     dst: dst,
-    pref: (pref || 0)
+    pref: (pref || 0),
+    transitive: transitive
   });
 
   var srcIdea = this.getIdea(src);
@@ -203,11 +207,14 @@ Subgraph.prototype.addEdge = function(src, link, dst, pref) {
       // both ideas are defined
       // so we need to see if the edge fits this definition
       if(!srcIdea.link(link).some(function(idea) { return idea.id === dstIdea.id; })) {
-        // if the edge doesn't match, then this is no longer concrete and these edges don't match
-        // the rest of the graph is fine, this section is invalid
-        this.deleteIdea(src);
-        this.deleteIdea(dst);
-        this.concrete = false;
+        // TODO we need to verify that the transitive-link is valid
+        if(!link.transitive && !transitive) {
+          // if the edge doesn't match, then this is no longer concrete and these edges don't match
+          // the rest of the graph is fine, this section is invalid
+          this.deleteIdea(src);
+          this.deleteIdea(dst);
+          this.concrete = false;
+        }
       }
     }
   }
@@ -397,7 +404,8 @@ exports.stringify = function(sg, dump) {
         src: value.src,
         link: value.link.name,
         dst: value.dst,
-        pref: value.pref
+        pref: value.pref,
+        transitive: value.transitive
       };
     }),
 
@@ -433,7 +441,7 @@ exports.parse = function(str) {
   sg._data = str.data;
 
   _.forEach(str.edges, function(e) {
-    sg.addEdge(e.src, links.list[e.link], e.dst, e.pref);
+    sg.addEdge(e.src, links.list[e.link], e.dst, e.pref, e.transitive);
   });
 
   sg._vertexCount = str.vertexCount;

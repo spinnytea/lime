@@ -15,6 +15,7 @@ module.exports = function search(subgraph) {
 
   // find an edge to expand
   var selected = findEdgeToExpand(subgraph);
+  // if some of the edges are invalid, then return 'no match'
   if(selected === undefined) return [];
 
   // expand the edge
@@ -68,7 +69,7 @@ function findEdgeToExpand(subgraph) {
         return true;
 
       var currBranches = (isSrc ? (srcIdea.link(currEdge.link)) : (dstIdea.link(currEdge.link.opposite)) );
-      if(currEdge.link.transitive) {
+      if(currEdge.link.transitive || currEdge.transitive) {
         // keep following the link
         var uniqueMap = _.indexBy(currBranches, 'id');
         var dir = isSrc?currEdge.link:currEdge.link.opposite; // follow the direction AWAY from the defined vertex
@@ -101,12 +102,15 @@ function findEdgeToExpand(subgraph) {
     } else if(isSrc && isDst) {
       // verify that all this edge is present
       // TODO cache the result so we don't need to check this for every subgraph
-      if(!srcIdea.link(currEdge.link).some(function(idea) { return idea.id === dstIdea.id; }))
-      // if we can't resolve this edge, then this graph is invalid
-      //  return false;
-      // if the link is transitive, then it may not be directly connected
-      // XXX do we *need* to verify that the link is valid?
-        return !!currEdge.link.transitive;
+      if(!srcIdea.link(currEdge.link).some(function(idea) { return idea.id === dstIdea.id; })) {
+        // if the link is transitive, then it may not be directly connected
+        // TODO we need to verify that the transitive-link is valid
+        if(!!currEdge.link.transitive || !!currEdge.transitive)
+          return searchForTransitiveLink(srcIdea, currEdge.link, dstIdea);
+
+        // if we can't resolve this edge, then this graph is invalid
+        return false;
+      }
     }
 
     return true;
@@ -116,6 +120,13 @@ function findEdgeToExpand(subgraph) {
     return undefined;
 
   return selected;
+}
+
+function searchForTransitiveLink(srcIdea, link, dstIdea) {
+  return srcIdea.link(link).some(function(idea) {
+    if(idea.id === dstIdea.id) return true;
+    return searchForTransitiveLink(idea, link, dstIdea);
+  });
 }
 
 // @return the subgraph(s) with the expansion applied

@@ -867,8 +867,8 @@ describe('subgraph', function() {
     var mc = sg.addVertex(subgraph.matcher.discrete, c, {matchRef:true});
     var n = sg.addVertex(subgraph.matcher.number, { value: number.value(0, Infinity), unit: unit.id }, {transitionable:true});
     var mn = sg.addVertex(subgraph.matcher.number, n, {matchRef:true});
-    sg.addEdge(m, links.list.thought_description, n, 1);
-    sg.addEdge(m, links.list.thought_description, c, 1);
+    sg.addEdge(m, links.list.thought_description, n, 1, true);
+    sg.addEdge(m, links.list.thought_description, c, 1, false);
     sg.addEdge(m, links.list.thought_description, mc, 1);
     sg.addEdge(m, links.list.thought_description, mn, 1);
 

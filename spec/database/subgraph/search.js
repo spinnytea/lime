@@ -362,30 +362,64 @@ describe('subgraph', function() {
     describe('findEdgeToExpand', function() {
       it('transitive', function() {
         var shape = ideas.create({name: 'shape'});
+        var circle = ideas.create({name: 'circle'});
         var quad = ideas.create({name: 'quad'});
         var rectangle = ideas.create({name: 'rectangle'});
         var square = ideas.create({name: 'square'});
         square.link(links.list.type_of, rectangle);
         rectangle.link(links.list.type_of, quad);
         quad.link(links.list.type_of, shape);
+        circle.link(links.list.type_of, shape);
 
         var sg = new subgraph.Subgraph();
-        var s = sg.addVertex(subgraph.matcher.id, shape);
         var something = sg.addVertex(subgraph.matcher.filler);
-        sg.addEdge(something, links.list.type_of, s);
-
+        sg.addEdge(something, links.list.type_of, sg.addVertex(subgraph.matcher.id, shape), 1);
+        sg.addEdge(something, links.list.type_of, sg.addVertex(subgraph.matcher.id, quad));
         // call find edges to make sure it's setup correctly
-        expect(subgraph.search.units.findEdgeToExpand).to.be.a('Function');
         var result = subgraph.search.units.findEdgeToExpand(sg);
-        expect(result.branches).to.deep.equal([ quad, rectangle, square ]);
+        expect(result.branches.length).to.equal(4);
 
         // call search to find matches
-        // XXX move this up to the "search" level
         result = subgraph.search(sg);
-        expect(result.length).to.equal(3);
-        expect(result[0].getIdea(something)).to.deep.equal(quad);
-        expect(result[1].getIdea(something)).to.deep.equal(rectangle);
-        expect(result[2].getIdea(something)).to.deep.equal(square);
+        expect(result.length).to.equal(2);
+        expect(result[0].getIdea(something)).to.deep.equal(rectangle);
+        expect(result[1].getIdea(something)).to.deep.equal(square);
+
+        //
+
+        sg = new subgraph.Subgraph();
+        something = sg.addVertex(subgraph.matcher.filler);
+        sg.addEdge(something, links.list.type_of, sg.addVertex(subgraph.matcher.id, shape));
+        sg.addEdge(something, links.list.type_of, sg.addVertex(subgraph.matcher.id, quad), 1);
+        // call find edges to make sure it's setup correctly
+        result = subgraph.search.units.findEdgeToExpand(sg);
+        expect(result.branches.length).to.equal(2);
+
+        // call search to find matches
+        result = subgraph.search(sg);
+        expect(result.length).to.equal(2);
+        expect(result[0].getIdea(something)).to.deep.equal(rectangle);
+        expect(result[1].getIdea(something)).to.deep.equal(square);
+
+        //
+
+        // test ID match
+        sg = new subgraph.Subgraph();
+        something = sg.addVertex(subgraph.matcher.id, rectangle);
+        sg.addEdge(something, links.list.type_of, sg.addVertex(subgraph.matcher.id, shape));
+        result = subgraph.search(sg);
+        expect(result.length).to.equal(1);
+        expect(result[0].getIdea(something)).to.deep.equal(rectangle);
+
+        //
+
+        // test a matcher fn
+        sg = new subgraph.Subgraph();
+        something = sg.addVertex(subgraph.matcher.exact, {name: 'rectangle'});
+        sg.addEdge(something, links.list.type_of, sg.addVertex(subgraph.matcher.id, shape));
+        result = subgraph.search(sg);
+        expect(result.length).to.equal(1);
+        expect(result[0].getIdea(something)).to.deep.equal(rectangle);
       });
 
       it.skip('everything else');
