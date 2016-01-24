@@ -4,6 +4,8 @@ var _ = require('lodash');
 // these are the edges of the graph
 
 exports.link = function() {
+  // some links may have data eventually
+  // things like probabilities or extra info
 };
 
 exports.create = function(name, undirected, options) {
