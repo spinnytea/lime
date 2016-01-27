@@ -33,6 +33,12 @@ function HardcodedSensor() {
   // must be defined before calling HardcodedSensor.prototype.sense
   this.sensor = null;
 
+  // as it's implemented, the sensor will overwrite old sensor data
+  // so it will remove ALL links for a given "source" and update the sensor data to reflect the current state
+  // the grouping allows us to sense/remove/apply, so we can wait to remove links until we have the new data
+  // -
+  // since the sensor is applied to the "who state," we know that if it's not in the new list, then it shouldn't be there at all
+  // TODO rather than grouping... should we collect ALL instructions, then do removals and apply them all (rather than removing by group)
   this.groupfn = exports.groupfn.none.name;
   // some group functions need to have specific config data to work
   this.groupConfig = undefined;
