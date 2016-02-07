@@ -71,7 +71,7 @@ function findEdgeToExpand(subgraph) {
       var currBranches = (isSrc ? (srcIdea.link(currEdge.link)) : (dstIdea.link(currEdge.link.opposite)) );
       if(currEdge.link.transitive || currEdge.transitive) {
         // keep following the link
-        var uniqueMap = _.indexBy(currBranches, 'id');
+        var uniqueMap = _.keyBy(currBranches, 'id');
         var dir = isSrc?currEdge.link:currEdge.link.opposite; // follow the direction AWAY from the defined vertex
         while(currBranches.length) {
           var next = currBranches.pop();

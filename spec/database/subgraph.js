@@ -443,13 +443,13 @@ describe('subgraph', function() {
       var sg = new subgraph.Subgraph();
       sg.addVertex(subgraph.matcher.id, ideaA);
 
-      expect(_.pluck(sg.allIdeas(), 'id')).to.deep.equal([ideaA.id]);
+      expect(_.map(sg.allIdeas(), 'id')).to.deep.equal([ideaA.id]);
 
       sg = sg.copy();
       sg.addVertex(subgraph.matcher.id, ideaB);
       sg.addVertex(subgraph.matcher.id, ideaC);
 
-      expect(_.pluck(sg.allIdeas(), 'id')).to.deep.equal([ideaA.id, ideaB.id, ideaC.id]);
+      expect(_.map(sg.allIdeas(), 'id')).to.deep.equal([ideaA.id, ideaB.id, ideaC.id]);
     });
 
     it('deleteIdea', function() {

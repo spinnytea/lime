@@ -62,7 +62,7 @@ describe('astar', function() {
           return {
             cost: path.cost,
             dist: path.distFromGoal,
-            actions: _.pluck(path.actions, 'dir')
+            actions: _.map(path.actions, 'dir')
           };
         });
       }
@@ -165,7 +165,7 @@ describe('astar', function() {
       expect(path).to.be.an.instanceOf(Path.Path);
       expect(path.states[0].numbers).to.deep.equal(start.numbers);
       expect(_.last(path.states).numbers).to.deep.equal(goal.numbers);
-      expect(_.pluck(path.actions, 'dir')).to.deep.equal([
+      expect(_.map(path.actions, 'dir')).to.deep.equal([
         'down', 'left', 'up', 'left', 'down', 'down', 'right', 'right'
       ]);
     });
@@ -182,16 +182,16 @@ describe('astar', function() {
 
       // prove path A
       var path = astar.search(start, [goalA]);
-      expect(_.pluck(path.actions, 'dir')).to.deep.equal(['left', 'up']);
+      expect(_.map(path.actions, 'dir')).to.deep.equal(['left', 'up']);
       expect(path.goal).to.equal(goalA);
       //  prove path B
       path = astar.search(start, [goalB]);
-      expect(_.pluck(path.actions, 'dir')).to.deep.equal(['up', 'left', 'down']);
+      expect(_.map(path.actions, 'dir')).to.deep.equal(['up', 'left', 'down']);
       expect(path.goal).to.equal(goalB);
 
       // now prove that it picks the shortest one
       path = astar.search(start, [goalA, goalB]);
-      expect(_.pluck(path.actions, 'dir')).to.deep.equal(['left', 'up']);
+      expect(_.map(path.actions, 'dir')).to.deep.equal(['left', 'up']);
       expect(path.goal).to.equal(goalA);
     });
 
@@ -216,7 +216,7 @@ describe('astar', function() {
 
       var path = astar.search(start, goal);
       expect(path).to.be.an.instanceOf(Path.Path);
-      expect(_.pluck(path.actions, 'dir')).to.deep.equal([ 'right', 'right', 'right', 'right' ]);
+      expect(_.map(path.actions, 'dir')).to.deep.equal([ 'right', 'right', 'right', 'right' ]);
 
       config.settings.astar_max_paths = 2;
       path = astar.search(start, goal);

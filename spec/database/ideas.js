@@ -138,8 +138,8 @@ describe('ideas', function() {
         expect(ideas.units.boundaries.saveObj).to.have.callCount(4);
         expect(ideas.units.boundaries.loadObj).to.have.callCount(4);
 
-        expect(_.pluck(ideaA.link(links.list.thought_description), 'id')).to.deep.equal([ideaB.id]);
-        expect(_.pluck(ideaB.link(links.list.thought_description.opposite), 'id')).to.deep.equal([ideaA.id]);
+        expect(_.map(ideaA.link(links.list.thought_description), 'id')).to.deep.equal([ideaB.id]);
+        expect(_.map(ideaB.link(links.list.thought_description.opposite), 'id')).to.deep.equal([ideaA.id]);
 
         ideas.units.boundaries.saveObj.reset();
         expect(ideas.units.boundaries.saveObj).to.have.callCount(0);
@@ -166,8 +166,8 @@ describe('ideas', function() {
 
         // verify add
         ideaA.link(links.list.thought_description, ideaB.id); // link by id
-        expect(_.pluck(ideaA.link(links.list.thought_description), 'id')).to.deep.equal([ideaB.id]);
-        expect(_.pluck(ideaB.link(links.list.thought_description.opposite), 'id')).to.deep.equal([ideaA.id]);
+        expect(_.map(ideaA.link(links.list.thought_description), 'id')).to.deep.equal([ideaB.id]);
+        expect(_.map(ideaB.link(links.list.thought_description.opposite), 'id')).to.deep.equal([ideaA.id]);
 
         // XXX since I can't set a dynamic key during object construction, we need to create the object beforehand
         var linkA = { 'thought_description': {} }; linkA['thought_description'][ideaB.id] = {};
@@ -177,8 +177,8 @@ describe('ideas', function() {
 
         // verify remove
         ideaA.unlink(links.list.thought_description, ideaB.id); // link by id
-        expect(_.pluck(ideaA.link(links.list.thought_description), 'id')).to.deep.equal([]);
-        expect(_.pluck(ideaB.link(links.list.thought_description.opposite), 'id')).to.deep.equal([]);
+        expect(_.map(ideaA.link(links.list.thought_description), 'id')).to.deep.equal([]);
+        expect(_.map(ideaB.link(links.list.thought_description.opposite), 'id')).to.deep.equal([]);
 
         expect(ideas.units.memory[ideaA.id].links).to.deep.equal({});
         expect(ideas.units.memory[ideaB.id].links).to.deep.equal({});
@@ -187,16 +187,16 @@ describe('ideas', function() {
 
         // verify add
         ideaA.link(links.list.thought_description, ideaB.id); // link by id
-        expect(_.pluck(ideaA.link(links.list.thought_description), 'id')).to.deep.equal([ideaB.id]);
-        expect(_.pluck(ideaB.link(links.list.thought_description.opposite), 'id')).to.deep.equal([ideaA.id]);
+        expect(_.map(ideaA.link(links.list.thought_description), 'id')).to.deep.equal([ideaB.id]);
+        expect(_.map(ideaB.link(links.list.thought_description.opposite), 'id')).to.deep.equal([ideaA.id]);
 
         expect(ideas.units.memory[ideaA.id].links).to.deep.equal(linkA);
         expect(ideas.units.memory[ideaB.id].links).to.deep.equal(linkB);
 
         // verify remove
         ideaB.unlink(links.list.thought_description.opposite, ideaA.id); // link by id
-        expect(_.pluck(ideaA.link(links.list.thought_description), 'id')).to.deep.equal([]);
-        expect(_.pluck(ideaB.link(links.list.thought_description.opposite), 'id')).to.deep.equal([]);
+        expect(_.map(ideaA.link(links.list.thought_description), 'id')).to.deep.equal([]);
+        expect(_.map(ideaB.link(links.list.thought_description.opposite), 'id')).to.deep.equal([]);
 
         expect(ideas.units.memory[ideaA.id].links).to.deep.equal({});
         expect(ideas.units.memory[ideaB.id].links).to.deep.equal({});

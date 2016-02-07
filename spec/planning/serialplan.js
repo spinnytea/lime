@@ -123,13 +123,13 @@ describe('serialplan', function() {
       expect(glues.length).to.equal(1); // there is only possible path
       expect(glues[0].length).to.equal(sp.plans.length); // there are 5 steps in the path
       // each of these has a mapping from a_c to state_count
-      expect(_.pluck(glues[0], a_c)).to.deep.equal([state_count, state_count, state_count, state_count, state_count]);
+      expect(_.map(glues[0], a_c)).to.deep.equal([state_count, state_count, state_count, state_count, state_count]);
 
       // we should be able to try our transition from the goal
       // (this is just trying things out; doesn't mean it will take us places)
       glues = sp.tryTransition(goal);
       expect(glues.length).to.equal(1);
-      expect(_.pluck(glues[0], a_c)).to.deep.equal([state_count, state_count, state_count, state_count, state_count]);
+      expect(_.map(glues[0], a_c)).to.deep.equal([state_count, state_count, state_count, state_count, state_count]);
 
       // something we can't apply the transition to
       // so the array is empty
