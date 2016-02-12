@@ -72,6 +72,7 @@ gulp.task('test', [], function() {
 });
 
 gulp.task('coverage', [], function (cb) {
+  console.log('*******\n*******\nWhen running coverage, call config.init within config.\n*******\n*******');
   gulp.src(['src/**/*.js'])
     .pipe(istanbul({
       includeUntested: true

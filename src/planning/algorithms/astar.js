@@ -126,12 +126,14 @@ exports.search = function(start, goal) {
 
 // this is meant for debugging
 // it's left here as an example, but shouldn't be used normally
+/* istanbul ignore next */
 function printActions(path, prefix) { // jshint ignore:line
   console.log((prefix || '') +
     formatNumber(path.cost + path.distFromGoal, 2) + ' ' +
     JSON.stringify(path.actions.map(getName)));
 }
 
+/* istanbul ignore next */
 function getName(obj) {
   if(obj.constructor.name === 'ActuatorAction')
     return obj.action; // .substr(22);
@@ -143,6 +145,7 @@ function getName(obj) {
 // there is no built in format for this
 // util.format doesn't do any more than specify the type
 // I could get a third party package, but this is stupid simple and only for debugging anyway
+/* istanbul ignore next */
 function formatNumber(num, length) {
   num = ''+num;
   while(num.length < length)
