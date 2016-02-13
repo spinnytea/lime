@@ -1,6 +1,5 @@
 'use strict';
 var _ = require('lodash');
-var Promise = require('bluebird'); // jshint ignore:line
 var expect = require('chai').use(require('sinon-chai')).expect;
 var sinon = require('sinon');
 var config = require('../../src/config');

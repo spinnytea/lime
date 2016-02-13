@@ -69,11 +69,7 @@ BlueprintAction.prototype.runCost = function() {
 //
 // @param state: a BlueprintState
 // @return an array of glue objects (an array of inputs meant for runBlueprint, scheduleBlueprint)
-BlueprintAction.prototype.tryTransition = function(state) {
-  // I can't get jshint it ignore the unused param
-  // but I want the param as documentation
-  void(state);
-
+BlueprintAction.prototype.tryTransition = function(state) { /* jshint unused:vars */
   throw new Error(this.constructor.name + ' does not implement tryTransition');
 };
 
@@ -86,12 +82,7 @@ BlueprintAction.prototype.tryTransition = function(state) {
 //
 // @param state: a BlueprintState (will be modified)
 // @param glue: a result of tryTransition
-BlueprintAction.prototype.runBlueprint = function(state, glue) {
-  // I can't get jshint it ignore the unused param
-  // but I want the param as documentation
-  void(state);
-  void(glue);
-
+BlueprintAction.prototype.runBlueprint = function(state, glue) { /* jshint unused:vars */
   throw new Error(this.constructor.name + ' does not implement runBlueprint');
 };
 
@@ -106,12 +97,7 @@ BlueprintAction.prototype.runBlueprint = function(state, glue) {
 // @param state: a BlueprintState (will be modified)
 // @param glue: a result of tryTransition
 // @return a promise that will be rejected if the plan ultimately fails, or will be resolved when the goal has been met
-BlueprintAction.prototype.scheduleBlueprint = function(state, glue) {
-  // I can't get jshint it ignore the unused param
-  // but I want the param as documentation
-  void(state);
-  void(glue);
-
+BlueprintAction.prototype.scheduleBlueprint = function(state, glue) { /* jshint unused:vars */
   throw new Error(this.constructor.name + ' does not implement scheduleBlueprint');
 };
 
