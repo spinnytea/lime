@@ -10,7 +10,10 @@ exports.settings = {
   //location: '/Volumes/Learning Machine Source/git/lm-wumpus/todo_database',
   //location: '/Volumes/RAM Disk',
   get location() { throw new Error('must overwrite "location" (the location of the idea database)'); },
-  do_not_clean: false,
+
+  // if there is an implementation to erase a database,
+  // then this is a flag that should be honored
+  do_not_erase: false,
 
   // TODO astar_max_paths is an initial seed value, can/should we adjust it at runtime? Or does this operate at too low of a level
   // XXX if we increase this number
