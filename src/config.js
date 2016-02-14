@@ -28,14 +28,18 @@ exports.init = function(projectConfig) {
   if(projectConfig.location) delete exports.settings.location;
   _.assign(exports.settings, projectConfig);
 
-  // a settings file stored 'in the database'
-  // XXX even when this program becomes distributed, config.data needs to be a singleton across all nodes
-  // - it stores init-time constants and generated ids
-  // config.data can be updated and saved
-  if(fs.existsSync(exports.settings.location + '/_settings.json'))
-    exports.data = JSON.parse(fs.readFileSync(exports.settings.location + '/_settings.json', {encoding: 'utf8'}));
-  else
+  if(!exports.settings.in_memory) {
+    // a settings file stored 'in the database'
+    // XXX even when this program becomes distributed, config.data needs to be a singleton across all nodes
+    // - it stores init-time constants and generated ids
+    // config.data can be updated and saved
+    if(fs.existsSync(exports.settings.location + '/_settings.json'))
+      exports.data = JSON.parse(fs.readFileSync(exports.settings.location + '/_settings.json', {encoding: 'utf8'}));
+    else
+      exports.data = {};
+  } else {
     exports.data = {};
+  }
 
   hasInit = true;
   onInit.forEach(function(fn) { fn(); });

@@ -20,6 +20,12 @@ config.onInit(function() {
       context: {}
     };
     config.save();
+
+    if(config.settings.in_memory) {
+      exports.units.boundaries.saveObj = memorySave;
+      exports.units.boundaries.loadObj = memoryLoad;
+      exports.units.boundaries.memory = { data: {}, links: {} };
+    }
   }
 });
 
@@ -40,9 +46,13 @@ exports.units.filename = function(id, which) {
   return exports.units.filepath(id) + '/' + id + '_' + which + '.json';
 };
 
-exports.units.boundaries = {};
+exports.units.boundaries = {
+  saveObj: fileSave,
+  loadObj: fileLoad,
+};
+
 /* istanbul ignore next */
-exports.units.boundaries.saveObj = function(id, which, obj) {
+function fileSave(id, which, obj) {
   //void(which, obj, mkdirp); if(id !== '2') throw new Error('Not during unit tests');
   var path = exports.units.filepath(id);
   if(!fs.existsSync(path)) {
@@ -58,14 +68,20 @@ exports.units.boundaries.saveObj = function(id, which, obj) {
     fs.writeFileSync(filename, JSON.stringify(obj), {encoding:'utf8'});
   else if(fs.existsSync(filename))
     fs.unlink(filename);
-};
+}
 /* istanbul ignore next */
-exports.units.boundaries.loadObj = function(id, which) {
+function fileLoad(id, which) {
   var filename = exports.units.filename(id, which);
   if(fs.existsSync(filename))
     return JSON.parse(fs.readFileSync(filename, {encoding:'utf8'}));
   return undefined;
-};
+}
+function memorySave(id, which, obj) {
+  exports.units.boundaries.memory[which][id] = obj;
+}
+function memoryLoad(id, which) {
+  return exports.units.boundaries.memory[which][id];
+}
 
 /*
  * this is the singleton that we will keep an internal reference to
