@@ -65,16 +65,15 @@ HardcodedSensor.prototype.sense = function(state) {
   exports.groupfn[this.groupfn](subgraph.match(state, this.requirements), this.groupConfig).forEach(function(glueGroup) {
     var instruction = exports.sensors[that.sensor](state, glueGroup);
 
-    if(instruction) {
-      if(instruction.ensureLinks) {
-        var from = instruction.from; // idea
-        var to = instruction.to; // [idea]
-        var link = instruction.ensureLinks; // links.list.something
-        // remove all existing
-        from.link(link).forEach(function(idea) { from.unlink(link, idea); });
-        // add all new
-        to.forEach(function(t) { from.link(link, t); });
-      }
+    /* istanbul ignore else */
+    if(instruction.ensureLinks) {
+      var from = instruction.from; // idea
+      var to = instruction.to; // [idea]
+      var link = instruction.ensureLinks; // links.list.something
+      // remove all existing
+      from.link(link).forEach(function(idea) { from.unlink(link, idea); });
+      // add all new
+      to.forEach(function(t) { from.link(link, t); });
     }
   });
 };

@@ -1,9 +1,9 @@
 'use strict';
 var _ = require('lodash');
 var expect = require('chai').expect;
-var blueprint = require('../../src/planning/primitives/blueprint');
-var serialplan = require('../../src/planning/serialplan');
-var actuator = require('../../src/planning/actuator');
+var blueprint = require('../../../src/planning/primitives/blueprint');
+var serialplan = require('../../../src/planning/serialplan');
+var actuator = require('../../../src/planning/actuator');
 
 function MockAction() {
   blueprint.Action.call(this);

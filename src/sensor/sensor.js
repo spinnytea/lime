@@ -36,9 +36,6 @@ exports.Sensor = Sensor;
 
 // saving and loading sensors
 // register constructors by name so we can load saved sensors
-require('../config').onInit(function() {
-  exports.context = ideas.context('sensor');
-});
 exports.loaders = {};
 exports.load = function(id) {
   var data = ideas.load(id).data();
@@ -81,3 +78,6 @@ exports.list = function(contexts) {
     return m.getIdea(result);
   });
 };
+require('../config').onInit(function() {
+  exports.context = ideas.context('sensor');
+});
