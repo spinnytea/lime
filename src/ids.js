@@ -1,13 +1,15 @@
 'use strict';
 var config = require('./config');
 
-// ensure settings has a place for ids
-/* istanbul ignore if */
-if(!config.data.ids) {
-  config.data.ids = {};
-  // XXX should there be some kind of init process?
-  config.save();
-}
+config.onInit(function() {
+  // ensure settings has a place for ids
+  /* istanbul ignore if */
+  if(!config.data.ids) {
+    config.data.ids = {};
+    // XXX should there be some kind of init process?
+    config.save();
+  }
+});
 
 var tokens = [
 	'0', '1', '2', '3', '4', '5', '6', '7', '8', '9', // numbers

@@ -303,7 +303,6 @@ BlueprintState.prototype.matches = function(blueprintstate) {
 exports.State = BlueprintState;
 
 
-exports.context = ideas.context('blueprint');
 exports.list = function(contexts) {
   // build our search
   var sg = new subgraph.Subgraph();
@@ -336,3 +335,7 @@ exports.list = function(contexts) {
     return m.getIdea(result);
   });
 };
+
+require('../../config').onInit(function() {
+  exports.context = ideas.context('blueprint');
+});

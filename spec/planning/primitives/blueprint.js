@@ -16,7 +16,7 @@ describe('blueprint', function() {
   
   it('init', function() {
     // this is to ensure we test everything
-    expect(Object.keys(blueprint)).to.deep.equal(['loaders', 'load', 'Action', 'State', 'context', 'list']);
+    expect(Object.keys(blueprint)).to.deep.equal(['loaders', 'load', 'Action', 'State', 'list', 'context']);
     // there isn't a need to test loaders directly
     // when we test the load of actuator, serialplan, etc then loaders will be tested through them
     // we can't test list without anything to retrieve; this will be tested in the prototypes that need it

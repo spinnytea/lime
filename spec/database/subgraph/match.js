@@ -643,7 +643,6 @@ describe('subgraph', function() {
       describe('vertexTransitionableAcceptable', function() {
         // alias just to make this name call shorter
         var acceptable = subgraph.match.units.vertexTransitionableAcceptable;
-        var bool = discrete.definitions.list.boolean;
 
         it('inner not transitionable', function() {
           // if the inner is not transitionable, then nothing else matters
@@ -693,6 +692,7 @@ describe('subgraph', function() {
         it('unitOnly / must be transitionable values', function() {
           // assumption: inner is transitionable
           // assumption: outer is transitionable
+          var bool = discrete.definitions.list.boolean;
 
           // if the units match, then the data must still be a number or discrete
           expect(acceptable(true, {unit: 'a'}, true, {unit: 'a'}, true)).to.equal(false);
@@ -705,6 +705,7 @@ describe('subgraph', function() {
           // assumption: inner is transitionable
           // assumption: outer is transitionable
           // right now, the only things that can perform transitions are numbers and discrete
+          var bool = discrete.definitions.list.boolean;
 
           // if the data isn't one of those, then it won't transition
           expect(acceptable(true, {unit: 'a'}, true, {unit: 'a'})).to.equal(false);

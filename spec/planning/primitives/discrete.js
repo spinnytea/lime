@@ -2,10 +2,12 @@
 var expect = require('chai').expect;
 var discrete = require('../../../src/planning/primitives/discrete');
 
-var boolean = discrete.definitions.list.boolean;
-
 describe('discrete', function() {
   require('../../database/ideas').mock();
+  var boolean;
+  before(function() {
+    boolean = discrete.definitions.list.boolean;
+  });
 
   it('init', function() {
     // this is to ensure we test everything

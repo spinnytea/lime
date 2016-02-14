@@ -22,6 +22,12 @@ exports.settings = {
   astar_max_paths: 100
 };
 
+var hasInit = false;
+var onInit = [];
+exports.onInit = function(fn) {
+  onInit.push(fn);
+  if(hasInit) fn();
+};
 exports.init = function(projectConfig) {
   if(projectConfig.location) delete exports.settings.location;
   _.assign(exports.settings, projectConfig);
@@ -34,6 +40,9 @@ exports.init = function(projectConfig) {
     exports.data = JSON.parse(fs.readFileSync(exports.settings.location + '/_settings.json', {encoding: 'utf8'}));
   else
     exports.data = {};
+
+  hasInit = true;
+  onInit.forEach(function(fn) { fn(); });
 };
 
 // TODO save on exit

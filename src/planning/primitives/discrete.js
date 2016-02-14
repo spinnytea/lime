@@ -128,23 +128,25 @@ exports.definitions.create = function(states, differenceFnName) {
 //
 // setup some stock discrete definitions
 //
-var configNeedsSaving = false;
-/* istanbul ignore if */
-if(!config.data.discrete) {
-  config.data.discrete = {};
-  configNeedsSaving = true;
-}
-/* istanbul ignore if */
-if(!config.data.discrete.boolean) {
-  var idea = exports.definitions.create([true, false]);
-  config.data.discrete.boolean = idea.id;
-  ideas.close(idea);
-  configNeedsSaving = true;
-}
-/* istanbul ignore if */
-if(configNeedsSaving)
-  config.save();
+config.onInit(function() {
+  var configNeedsSaving = false;
+  /* istanbul ignore if */
+  if(!config.data.discrete) {
+    config.data.discrete = {};
+    configNeedsSaving = true;
+  }
+  /* istanbul ignore if */
+  if(!config.data.discrete.boolean) {
+    var idea = exports.definitions.create([true, false]);
+    config.data.discrete.boolean = idea.id;
+    ideas.close(idea);
+    configNeedsSaving = true;
+  }
+  /* istanbul ignore if */
+  if(configNeedsSaving)
+    config.save();
 
-exports.definitions.list = {
-  boolean: config.data.discrete.boolean
-};
+  exports.definitions.list = {
+    boolean: config.data.discrete.boolean
+  };
+});

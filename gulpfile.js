@@ -7,11 +7,6 @@ var jshint = require('gulp-jshint');
 var mocha = require('gulp-mocha');
 var rm = require('gulp-rm');
 
-config.init({
-  //location: '/Volumes/MyPassport/lime database',
-  location: '/Volumes/RAM Disk',
-});
-
 // some aliases
 gulp.task('c', ['clean:db']);
 gulp.task('m', ['mocha']);
@@ -72,7 +67,6 @@ gulp.task('test', [], function() {
 });
 
 gulp.task('coverage', [], function (cb) {
-  console.log('*******\n*******\nWhen running coverage, call config.init within config.\n*******\n*******');
   gulp.src(['src/**/*.js'])
     .pipe(istanbul({
       includeUntested: true

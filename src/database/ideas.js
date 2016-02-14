@@ -13,13 +13,15 @@ var links = require('./links');
 // nothing inside exports.unit should need to be called or substituted
 Object.defineProperty(exports, 'units', { value: {} });
 
-/* istanbul ignore if */
-if(!config.data.ideas) {
-  config.data.ideas = {
-    context: {}
-  };
-  config.save();
-}
+config.onInit(function() {
+  /* istanbul ignore if */
+  if(!config.data.ideas) {
+    config.data.ideas = {
+      context: {}
+    };
+    config.save();
+  }
+});
 
 var NEXT_ID = 'ideas';
 var memory = exports.units.memory = {};
