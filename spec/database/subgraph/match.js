@@ -534,12 +534,14 @@ describe('subgraph', function() {
       it('init', function() {
         // this is to ensure we test everything
         expect(Object.keys(subgraph.match.units)).to.deep.equal(['initializeVertexMap', 'subgraphMatch', 'resolveMatchData', 'vertexTransitionableAcceptable', 'vertexFixedMatch']);
-        // memory is a data structure, so it doesn't need to be tested directly
+        expect(Object.keys(subgraph.match.units.subgraphMatch)).to.deep.equal(['filterOuter']);
       });
 
       it.skip('initializeVertexMap');
 
       it.skip('subgraphMatch');
+
+      it.skip('subgraphMatch.filterOuter');
 
       describe('resolveMatchData', function() {
         // this function expects subgraph to behave in a particular way

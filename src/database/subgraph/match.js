@@ -58,6 +58,7 @@ module.exports = function match(subgraphOuter, subgraphInner, unitOnly) {
 Object.defineProperty(module.exports, 'units', { value: {} });
 module.exports.units.initializeVertexMap = initializeVertexMap;
 module.exports.units.subgraphMatch = subgraphMatch;
+module.exports.units.subgraphMatch.filterOuter = filterOuter;
 module.exports.units.resolveMatchData = resolveMatchData;
 module.exports.units.vertexTransitionableAcceptable = vertexTransitionableAcceptable;
 module.exports.units.vertexFixedMatch = vertexFixedMatch;
@@ -126,82 +127,19 @@ function subgraphMatch(subgraphOuter, subgraphInner, outerEdges, innerEdges, ver
   }, null);
   innerEdges.splice(innerEdges.indexOf(innerEdge), 1);
 
-  var srcMapped = (innerEdge.src in vertexMap);
-  var dstMapped = (innerEdge.dst in vertexMap);
   // TODO instead of rebuilding the inverse on every [recursive] iteration, build it alongside vertexMap
   var inverseMap = _.invert(vertexMap);
-  var innerSrcMatch = subgraphInner.getMatch(innerEdge.src);
-  var innerDstMatch = subgraphInner.getMatch(innerEdge.dst);
 
   // find all matching outer edges
   var matches = outerEdges.filter(function(currEdge) {
-    if(innerEdge.link === currEdge.link.opposite) {
-      // reverse edge
-      currEdge = {
-        src: currEdge.dst,
-        link: currEdge.link.opposite,
-        dst: currEdge.src
-      };
-    } else if(innerEdge.link !== currEdge.link)
-    // the edges don't match
-      return false;
-
-    // skip the vertices that are mapped to something different
-    if(srcMapped) {
-      if(vertexMap[innerEdge.src] !== currEdge.src)
-        return false;
-    } else {
-      // currEdge src is mapped to a different inner id
-      if(currEdge.src in inverseMap)
-        return false;
-    }
-    if(dstMapped) {
-      if(vertexMap[innerEdge.dst] !== currEdge.dst)
-        return false;
-    } else {
-      // currEdge dst is mapped to a different inner id
-      if(currEdge.dst in inverseMap)
-        return false;
-    }
-
-    // find the target data we are interested
-    var srcData = resolveMatchData(subgraphInner, innerEdge.src, innerSrcMatch, vertexMap, subgraphOuter);
-    if(srcData === null)
-      return false;
-    var dstData = resolveMatchData(subgraphInner, innerEdge.dst, innerDstMatch, vertexMap, subgraphOuter);
-    if(dstData === null)
-      return false;
-
-    // check the transitionability of both src and dst
-    if(!vertexTransitionableAcceptable(
-        subgraphOuter.getMatch(currEdge.src).options.transitionable,
-        subgraphOuter.getData(currEdge.src),
-        innerSrcMatch.options.transitionable,
-        srcData,
-        unitOnly))
-      return false;
-    if(!vertexTransitionableAcceptable(
-        subgraphOuter.getMatch(currEdge.dst).options.transitionable,
-        subgraphOuter.getData(currEdge.dst),
-        innerDstMatch.options.transitionable,
-        dstData,
-        unitOnly))
-      return false;
-
-    if(!subgraphInner.getIdea(innerEdge.src)) {
-      if (!vertexFixedMatch(srcData, innerSrcMatch, subgraphOuter, currEdge.src, unitOnly))
-        return false;
-    }
-    if(!subgraphInner.getIdea(innerEdge.dst)) {
-      if(!vertexFixedMatch(dstData, innerDstMatch, subgraphOuter, currEdge.dst, unitOnly))
-        return false;
-    }
-
-    return true;
+    return filterOuter(subgraphOuter, subgraphInner, currEdge, innerEdge, vertexMap, inverseMap, unitOnly);
   });
 
   // recurse (on picking matchRef too soon)
   if(matches.length === 0) {
+    var innerSrcMatch = subgraphInner.getMatch(innerEdge.src);
+    var innerDstMatch = subgraphInner.getMatch(innerEdge.dst);
+
     // because of indirection, we may need to skip an edge and try the next best one
     // so if our current edge uses inderection, and there are other edges to try, then, well, try again
     // but next time, don't consider this edge
@@ -246,6 +184,78 @@ function subgraphMatch(subgraphOuter, subgraphInner, outerEdges, innerEdges, ver
     return list;
   }, []);
 } // end subgraphMatch
+
+// in subgraphMatch, we need to find a list outer edges that match the current inner edge
+function filterOuter(subgraphOuter, subgraphInner, currEdge, innerEdge, vertexMap, inverseMap, unitOnly) {
+  var srcMapped = (innerEdge.src in vertexMap);
+  var dstMapped = (innerEdge.dst in vertexMap);
+  var innerSrcMatch = subgraphInner.getMatch(innerEdge.src);
+  var innerDstMatch = subgraphInner.getMatch(innerEdge.dst);
+
+  if(innerEdge.link === currEdge.link.opposite) {
+    // reverse edge
+    currEdge = {
+      src: currEdge.dst,
+      link: currEdge.link.opposite,
+      dst: currEdge.src
+    };
+  } else if(innerEdge.link !== currEdge.link)
+  // the edges don't match
+    return false;
+
+  // skip the vertices that are mapped to something different
+  if(srcMapped) {
+    if(vertexMap[innerEdge.src] !== currEdge.src)
+      return false;
+  } else {
+    // currEdge src is mapped to a different inner id
+    if(currEdge.src in inverseMap)
+      return false;
+  }
+  if(dstMapped) {
+    if(vertexMap[innerEdge.dst] !== currEdge.dst)
+      return false;
+  } else {
+    // currEdge dst is mapped to a different inner id
+    if(currEdge.dst in inverseMap)
+      return false;
+  }
+
+  // find the target data we are interested
+  var srcData = resolveMatchData(subgraphInner, innerEdge.src, innerSrcMatch, vertexMap, subgraphOuter);
+  if(srcData === null)
+    return false;
+  var dstData = resolveMatchData(subgraphInner, innerEdge.dst, innerDstMatch, vertexMap, subgraphOuter);
+  if(dstData === null)
+    return false;
+
+  // check the transitionability of both src and dst
+  if(!vertexTransitionableAcceptable(
+      subgraphOuter.getMatch(currEdge.src).options.transitionable,
+      subgraphOuter.getData(currEdge.src),
+      innerSrcMatch.options.transitionable,
+      srcData,
+      unitOnly))
+    return false;
+  if(!vertexTransitionableAcceptable(
+      subgraphOuter.getMatch(currEdge.dst).options.transitionable,
+      subgraphOuter.getData(currEdge.dst),
+      innerDstMatch.options.transitionable,
+      dstData,
+      unitOnly))
+    return false;
+
+  if(!subgraphInner.getIdea(innerEdge.src)) {
+    if (!vertexFixedMatch(srcData, innerSrcMatch, subgraphOuter, currEdge.src, unitOnly))
+      return false;
+  }
+  if(!subgraphInner.getIdea(innerEdge.dst)) {
+    if(!vertexFixedMatch(dstData, innerDstMatch, subgraphOuter, currEdge.dst, unitOnly))
+      return false;
+  }
+
+  return true;
+} // end outerFilter
 
 // subgraphs are non-trivial
 // the data could be in a few different places
