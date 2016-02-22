@@ -6,6 +6,12 @@ var discrete = require('../../planning/primitives/discrete');
 var number = require('../../planning/primitives/number');
 var SG = require('../subgraph');
 
+// FIXME this is the ugliest hack ever
+// - and it only works for "special" edge types
+// - (what if the context subgraph is large and extra edges, and the misplaced inconcrete edge is just another type)
+// - maybe this won't be an issue, which is why I'm checking it in now, but it might crop up later
+var NOT_A_LINK = 1;
+
 // use subgraphOuter as a base
 // does subgraphInner fit inside of subgraphOuter?
 // (basically a subgraph match on two subgraphs)
@@ -131,8 +137,15 @@ function subgraphMatch(subgraphOuter, subgraphInner, outerEdges, innerEdges, ver
   var inverseMap = _.invert(vertexMap);
 
   // find all matching outer edges
+  var all_link_type_mismatch = true;
   var matches = outerEdges.filter(function(currEdge) {
-    return filterOuter(subgraphOuter, subgraphInner, currEdge, innerEdge, vertexMap, inverseMap, unitOnly);
+    var ret = filterOuter(subgraphOuter, subgraphInner, currEdge, innerEdge, vertexMap, inverseMap, unitOnly);
+    if(ret !== NOT_A_LINK) {
+      all_link_type_mismatch = false;
+    } else {
+      ret = false;
+    }
+    return ret;
   });
 
   // recurse (on picking matchRef too soon)
@@ -153,7 +166,7 @@ function subgraphMatch(subgraphOuter, subgraphInner, outerEdges, innerEdges, ver
     // but what if all the edges are already matched?
     var srcMapped = (innerEdge.src in vertexMap);
     var dstMapped = (innerEdge.dst in vertexMap);
-    if(srcMapped && dstMapped) {
+    if(all_link_type_mismatch && srcMapped && dstMapped) {
       if(innerEdges.length)
         return subgraphMatch(subgraphOuter, subgraphInner, outerEdges, innerEdges, vertexMap, unitOnly, skipThisTime);
       else
@@ -212,7 +225,8 @@ function filterOuter(subgraphOuter, subgraphInner, currEdge, innerEdge, vertexMa
     };
   } else if(innerEdge.link !== currEdge.link)
   // the edges don't match
-    return false;
+  // TODO all returns should be part of an enum
+    return NOT_A_LINK;
 
   // skip the vertices that are mapped to something different
   if(srcMapped) {
