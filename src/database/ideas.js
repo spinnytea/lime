@@ -13,22 +13,6 @@ var links = require('./links');
 // nothing inside exports.unit should need to be called or substituted
 Object.defineProperty(exports, 'units', { value: {} });
 
-config.onInit(function() {
-  /* istanbul ignore if */
-  if(!config.data.ideas) {
-    config.data.ideas = {
-      context: {}
-    };
-    config.save();
-
-    if(config.settings.in_memory) {
-      exports.units.boundaries.saveObj = memorySave;
-      exports.units.boundaries.loadObj = memoryLoad;
-      exports.units.boundaries.memory = { data: {}, links: {} };
-    }
-  }
-});
-
 var NEXT_ID = 'ideas';
 var memory = exports.units.memory = {};
 
@@ -77,10 +61,10 @@ function fileLoad(id, which) {
   return undefined;
 }
 function memorySave(id, which, obj) {
-  exports.units.boundaries.memory[which][id] = obj;
+  exports.units.boundaries.database[which][id] = obj;
 }
 function memoryLoad(id, which) {
-  return exports.units.boundaries.memory[which][id];
+  return exports.units.boundaries.database[which][id];
 }
 
 /*
@@ -216,3 +200,19 @@ exports.context = function(name) {
     return id;
   }
 };
+
+config.onInit(function() {
+  /* istanbul ignore if */
+  if(!config.data.ideas) {
+    config.data.ideas = {
+      context: {}
+    };
+    config.save();
+
+    if(config.settings.in_memory) {
+      exports.units.boundaries.saveObj = memorySave;
+      exports.units.boundaries.loadObj = memoryLoad;
+      exports.units.boundaries.database = { data: {}, links: {} };
+    }
+  }
+});
