@@ -174,6 +174,35 @@ describe('subgraph', function() {
       checkSubgraphMatch(subgraph.match(outer, sg), [m, a, p, b, bp], [_m, _a, _p, _b, _bp]);
     });
 
+    it('context has not edge', function() {
+      // the idea graph has V,E
+      // the context has V, but missing an E
+      // the inconcrete sg has V,E
+
+      // here is our extra link in the idea graph
+      // the existing context doesn't know about it
+      price.link(links.list.context, context);
+
+      var sg = new subgraph.Subgraph();
+      var _c = sg.addVertex(subgraph.matcher.id, context);
+      var _m = sg.addVertex(subgraph.matcher.id, mark);
+      var _a = sg.addVertex(subgraph.matcher.filler);
+      var _p = sg.addVertex(subgraph.matcher.similar, {value: number.value(10)});
+      sg.addEdge(_m, links.list.context, _c);
+      sg.addEdge(_m, links.list.thought_description, _a, 2);
+      sg.addEdge(_a, links.list.thought_description, _p, 2);
+
+      // we want to test both paths; is this the last inner edge, or are there more?
+      var sg2 = sg.copy();
+
+      // and here is the extra link in the inconcrete graph
+      sg.addEdge(_m, links.list.context, _c, 1);
+      sg2.addEdge(_m, links.list.context, _c, -1);
+
+      checkSubgraphMatch(subgraph.match(outer, sg), [c, m, a, p], [_c, _m, _a, _p]);
+      checkSubgraphMatch(subgraph.match(outer, sg2), [c, m, a, p], [_c, _m, _a, _p]);
+    });
+
     // when we construct subgraphs, each node represents a single idea
     // it doesn't make sense to intend multiple nodes to match the same idea
     // ... these tests don't make sense; they break the definition of a subgraph
@@ -191,7 +220,8 @@ describe('subgraph', function() {
     // inner larger than outer should never be satisfiable
     // does this even need to be a test?
     // ... no
-//    it.skip('inner larger than outer');
+    // ... but ... wouldn't it be better to exit early?
+    it.skip('inner larger than outer');
   }); // end match (part 1)
 
   describe('match', function() {

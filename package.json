@@ -12,6 +12,7 @@
   "devDependencies": {
     "bluebird": "^3.2.2",
     "chai": "^2.2.0",
+    "chai-things": "^0.2.0",
     "gulp": "^3.8.6",
     "gulp-istanbul": "^0.10.3",
     "gulp-jshint": "^2.0.0",

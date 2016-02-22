@@ -149,6 +149,17 @@ function subgraphMatch(subgraphOuter, subgraphInner, outerEdges, innerEdges, ver
       return subgraphMatch(subgraphOuter, subgraphInner, outerEdges, innerEdges, vertexMap, unitOnly, skipThisTime);
     }
 
+    // this innerEdge doesn't have a match in the outer graph
+    // but what if all the edges are already matched?
+    var srcMapped = (innerEdge.src in vertexMap);
+    var dstMapped = (innerEdge.dst in vertexMap);
+    if(srcMapped && dstMapped) {
+      if(innerEdges.length)
+        return subgraphMatch(subgraphOuter, subgraphInner, outerEdges, innerEdges, vertexMap, unitOnly, skipThisTime);
+      else
+        return [vertexMap];
+    }
+
     // no matches, and we've skipped everything
     return [];
   }

@@ -1,5 +1,5 @@
 'use strict';
-var expect = require('chai').expect;
+var expect = require('chai').use(require('chai-things')).expect;
 var ideas = require('../../../src/database/ideas');
 var links = require('../../../src/database/links');
 var subgraph = require('../../../src/database/subgraph');
@@ -382,8 +382,9 @@ describe('subgraph', function() {
         // call search to find matches
         result = subgraph.search(sg);
         expect(result.length).to.equal(2);
-        expect(result[0].getIdea(something)).to.deep.equal(rectangle);
-        expect(result[1].getIdea(something)).to.deep.equal(square);
+        result = result.map(function(r) { return r.getIdea(something); });
+        expect(result).to.include(rectangle);
+        expect(result).to.include(square);
 
         //
 
@@ -398,8 +399,9 @@ describe('subgraph', function() {
         // call search to find matches
         result = subgraph.search(sg);
         expect(result.length).to.equal(2);
-        expect(result[0].getIdea(something)).to.deep.equal(rectangle);
-        expect(result[1].getIdea(something)).to.deep.equal(square);
+        result = result.map(function(r) { return r.getIdea(something); });
+        expect(result).to.include(rectangle);
+        expect(result).to.include(square);
 
         //
 
