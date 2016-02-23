@@ -6,16 +6,6 @@ var discrete = require('../../planning/primitives/discrete');
 var number = require('../../planning/primitives/number');
 var SG = require('../subgraph');
 
-// FIXME this is the ugliest hack ever
-// - and it only works for "special" edge types
-// - (what if the context subgraph is large and extra edges, and the misplaced inconcrete edge is just another type)
-// - maybe this won't be an issue, which is why I'm checking it in now, but it might crop up later
-// TODO I'm not sure I even like this implementation
-// - I'd rather not just assume the context doesn't have the link and try to clean up afterwards
-// - I'd rather tag some edges (in subgraph.edge or link properties) as circumventing the subgraph and looking to the idea.link instead
-// - this would let us expand the frontier in a controlled way AND avoid this silly check
-var NOT_A_LINK = 1;
-
 // use subgraphOuter as a base
 // does subgraphInner fit inside of subgraphOuter?
 // (basically a subgraph match on two subgraphs)
@@ -69,21 +59,26 @@ Object.defineProperty(module.exports, 'units', { value: {} });
 module.exports.units.initializeVertexMap = initializeVertexMap;
 module.exports.units.subgraphMatch = subgraphMatch;
 module.exports.units.subgraphMatch.filterOuter = filterOuter;
+module.exports.units.subgraphMatch.createOuterEdges = createOuterEdges;
 module.exports.units.resolveMatchData = resolveMatchData;
 module.exports.units.vertexTransitionableAcceptable = vertexTransitionableAcceptable;
 module.exports.units.vertexFixedMatch = vertexFixedMatch;
+
+// build a reverse map (outer.idea.id -> outer.vertex_id)
+// this way we only need to loop over the outer ideas once (it can get large)
+// this makes it O(ni*log(no)), instead of O(ni*no)
+function buildInverseOuterMap(subgraphOuter) {
+  return _.reduce(subgraphOuter.allIdeas(), function(map, vo_idea, vo_key) {
+    map[vo_idea.id] = vo_key;
+    return map;
+  }, {});
+}
 
 // pre-fill a vertex map with identified thoughts
 function initializeVertexMap(subgraphOuter, subgraphInner, unitOnly) {
   var vertexMap = {};
 
-  // build a reverse map (outer.idea.id -> outer.vertex_id)
-  // this way we only need to loop over the outer ideas once (it can get large)
-  // this makes it O(ni*log(no)), instead of O(ni*no)
-  var inverseOuterMap = _.reduce(subgraphOuter.allIdeas(), function(map, vo_idea, vo_key) {
-    map[vo_idea.id] = vo_key;
-    return map;
-  }, {});
+  var inverseOuterMap = buildInverseOuterMap(subgraphOuter);
   // if the match is not possible, then exit early and return []
   var possible = true;
 
@@ -140,16 +135,13 @@ function subgraphMatch(subgraphOuter, subgraphInner, outerEdges, innerEdges, ver
   // TODO instead of rebuilding the inverse on every [recursive] iteration, build it alongside vertexMap
   var inverseMap = _.invert(vertexMap);
 
+  var edgesToChooseFrom = outerEdges;
+  if(innerEdge.options.byIdeaLink)
+    edgesToChooseFrom = createOuterEdges(subgraphOuter, subgraphInner, innerEdge, vertexMap);
+
   // find all matching outer edges
-  var all_link_type_mismatch = true;
-  var matches = outerEdges.filter(function(currEdge) {
-    var ret = filterOuter(subgraphOuter, subgraphInner, currEdge, innerEdge, vertexMap, inverseMap, unitOnly);
-    if(ret !== NOT_A_LINK) {
-      all_link_type_mismatch = false;
-    } else {
-      ret = false;
-    }
-    return ret;
+  var matches = edgesToChooseFrom.filter(function(currEdge) {
+    return filterOuter(subgraphOuter, subgraphInner, currEdge, innerEdge, vertexMap, inverseMap, unitOnly);
   });
 
   // recurse (on picking matchRef too soon)
@@ -164,17 +156,6 @@ function subgraphMatch(subgraphOuter, subgraphInner, outerEdges, innerEdges, ver
       innerEdges.push(innerEdge);
       skipThisTime.push(innerEdge);
       return subgraphMatch(subgraphOuter, subgraphInner, outerEdges, innerEdges, vertexMap, unitOnly, skipThisTime);
-    }
-
-    // this innerEdge doesn't have a match in the outer graph
-    // but what if all the edges are already matched?
-    var srcMapped = (innerEdge.src in vertexMap);
-    var dstMapped = (innerEdge.dst in vertexMap);
-    if(all_link_type_mismatch && srcMapped && dstMapped) {
-      if(innerEdges.length)
-        return subgraphMatch(subgraphOuter, subgraphInner, outerEdges, innerEdges, vertexMap, unitOnly, skipThisTime);
-      else
-        return [vertexMap];
     }
 
     // no matches, and we've skipped everything
@@ -229,8 +210,7 @@ function filterOuter(subgraphOuter, subgraphInner, currEdge, innerEdge, vertexMa
     };
   } else if(innerEdge.link !== currEdge.link)
   // the edges don't match
-  // TODO all returns should be part of an enum
-    return NOT_A_LINK;
+    return false;
 
   // skip the vertices that are mapped to something different
   if(srcMapped) {
@@ -285,6 +265,43 @@ function filterOuter(subgraphOuter, subgraphInner, currEdge, innerEdge, vertexMa
 
   return true;
 } // end outerFilter
+
+// in subgraphMatch, TODO we need short description of the function
+// return a list of vertex edges (src, link, dst}
+// all vertices must
+function createOuterEdges(subgraphOuter, subgraphInner, innerEdge, vertexMap) {
+  var isSrc = (innerEdge.src in vertexMap);
+  var dstMapped = (innerEdge.dst in vertexMap);
+
+  // if there is nothing to start from, then our list is empty
+  if(!isSrc && !dstMapped)
+    return [];
+
+  // find a vertex
+  // expand the link
+  // return the list
+  var idea = subgraphOuter.getIdea(vertexMap[isSrc?innerEdge.src:innerEdge.dst]);
+  var links = idea.link(isSrc?innerEdge.link:innerEdge.link.opposite);
+
+  // convert the link proxy id's into subgraphOuter ids
+  var inverseOuterMap = buildInverseOuterMap(subgraphOuter);
+  return links.map(function(proxy) {
+    var src;
+    var dst;
+    if(isSrc) {
+      src = vertexMap[innerEdge.src];
+      dst = inverseOuterMap[proxy.id];
+    } else {
+      src = inverseOuterMap[proxy.id];
+      dst = vertexMap[innerEdge.dst];
+    }
+    return {
+      src: src,
+      link: innerEdge.link,
+      dst: dst
+    };
+  });
+} // end expandInner
 
 // subgraphs are non-trivial
 // the data could be in a few different places

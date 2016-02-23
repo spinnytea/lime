@@ -146,6 +146,7 @@ Subgraph.prototype.copy = function() {
 // }
 Subgraph.prototype.addVertex = function(matcher, data, options) {
   options = _.merge({
+    // TODO do these NEED to be specified? can we leave them undefined?
     transitionable: false,
     matchRef: false // TODO look for uses of matchRef; ensure it doesn't use the local data (it should only use the matchRef's data)
   }, options);
@@ -187,14 +188,16 @@ Subgraph.prototype.addVertex = function(matcher, data, options) {
 // @param src: a vertex ID
 // @param link: the link from src to dst
 // @param dst: a vertex ID
-// @param pref: higher prefs will be considered first (default: 0)
-// @param transitive: the same as link.transitive; will search in a transitive manner
+// @param options.pref: higher prefs will be considered first (default: 0)
+// @param options.transitive: the same as link.transitive; will search in a transitive manner TODO does subgraph.match need to support this?
+// @param options.byIdeaLink: during subgraph.match, instead of matching subgraph edges uses the existing idea link TODO come up with a better key name
 // XXX should pref be "options"; options.pref; we need other options
 Subgraph.prototype.addEdge = function(src, link, dst, options) {
-  if(_.isNumber(options)) throw new Error('pref');
   options = _.merge({
+    // TODO do these NEED to be specified? can we leave them undefined?
     pref: 0,
-    transitive: false
+    transitive: false,
+    byIdeaLink: false
   }, options);
 
   this._edges.push({

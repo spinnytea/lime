@@ -196,8 +196,8 @@ describe('subgraph', function() {
       var sg2 = sg.copy();
 
       // and here is the extra link in the inconcrete graph
-      sg.addEdge(_m, links.list.context, _c, { pref: 1 });
-      sg2.addEdge(_m, links.list.context, _c, { pref: -1 });
+      sg.addEdge(_m, links.list.context, _c, { pref: 1, byIdeaLink: true });
+      sg2.addEdge(_m, links.list.context, _c, { pref: -1, byIdeaLink: true });
 
       checkSubgraphMatch(subgraph.match(outer, sg), [c, m, a, p], [_c, _m, _a, _p]);
       checkSubgraphMatch(subgraph.match(outer, sg2), [c, m, a, p], [_c, _m, _a, _p]);
@@ -564,7 +564,7 @@ describe('subgraph', function() {
       it('init', function() {
         // this is to ensure we test everything
         expect(Object.keys(subgraph.match.units)).to.deep.equal(['initializeVertexMap', 'subgraphMatch', 'resolveMatchData', 'vertexTransitionableAcceptable', 'vertexFixedMatch']);
-        expect(Object.keys(subgraph.match.units.subgraphMatch)).to.deep.equal(['filterOuter']);
+        expect(Object.keys(subgraph.match.units.subgraphMatch)).to.deep.equal(['filterOuter', 'createOuterEdges']);
       });
 
       it.skip('initializeVertexMap');
@@ -572,6 +572,8 @@ describe('subgraph', function() {
       it.skip('subgraphMatch');
 
       it.skip('subgraphMatch.filterOuter');
+
+      it.skip('subgraphMatch.createOuterEdges');
 
       describe('resolveMatchData', function() {
         // this function expects subgraph to behave in a particular way
