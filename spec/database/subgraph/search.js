@@ -147,7 +147,7 @@ describe('subgraph', function() {
 
           var f = sg.addVertex(subgraph.matcher.id, fruit);
           var _f = sg.addVertex(subgraph.matcher.exact, d, {matchRef:true});
-          sg.addEdge(f, links.list.thought_description, _f, 1); // make the pref higher to ensure this is considered first
+          sg.addEdge(f, links.list.thought_description, _f, { pref: 1 }); // make the pref higher to ensure this is considered first
 
           desire.update({name: 'apple'});
 
@@ -165,7 +165,7 @@ describe('subgraph', function() {
           var _f = sg.addVertex(subgraph.matcher.exact, d, {matchRef:true});
           // make the pref higher to ensure this is considered first
           // hook up this edge backwards (so we can test isDst)
-          sg.addEdge(_f, links.list.thought_description.opposite, f, 1);
+          sg.addEdge(_f, links.list.thought_description.opposite, f, { pref: 1 });
 
           desire.update({name: 'banana'});
 
@@ -225,14 +225,14 @@ describe('subgraph', function() {
           var a = sg.addVertex(subgraph.matcher.id, apple);
           // we need banana in the test since the idea for fruit and apple will be deleted
           var b = sg.addVertex(subgraph.matcher.id, banana);
-          sg.addEdge(f, links.list.thought_description, a, 1); // expand this edge second
-          sg.addEdge(f, links.list.thought_description, b, 2); // expand this edge first
+          sg.addEdge(f, links.list.thought_description, a, { pref: 1 }); // expand this edge second
+          sg.addEdge(f, links.list.thought_description, b, { pref: 2 }); // expand this edge first
           expect(sg.concrete).to.equal(true);
 
           // expand this edge last
           // by the time we get here, f and a will be pinned down
           // but this edge is invalid, so the search will fail
-          sg.addEdge(a, links.list.thought_description, f, 0);
+          sg.addEdge(a, links.list.thought_description, f, { pref: 0 });
 
           // for our sanity, verify the underlying state
           expect(sg.concrete).to.equal(false);
@@ -373,7 +373,7 @@ describe('subgraph', function() {
 
         var sg = new subgraph.Subgraph();
         var something = sg.addVertex(subgraph.matcher.filler);
-        sg.addEdge(something, links.list.type_of, sg.addVertex(subgraph.matcher.id, shape), 1);
+        sg.addEdge(something, links.list.type_of, sg.addVertex(subgraph.matcher.id, shape), { pref: 1 });
         sg.addEdge(something, links.list.type_of, sg.addVertex(subgraph.matcher.id, quad));
         // call find edges to make sure it's setup correctly
         var result = subgraph.search.units.findEdgeToExpand(sg);
@@ -391,7 +391,7 @@ describe('subgraph', function() {
         sg = new subgraph.Subgraph();
         something = sg.addVertex(subgraph.matcher.filler);
         sg.addEdge(something, links.list.type_of, sg.addVertex(subgraph.matcher.id, shape));
-        sg.addEdge(something, links.list.type_of, sg.addVertex(subgraph.matcher.id, quad), 1);
+        sg.addEdge(something, links.list.type_of, sg.addVertex(subgraph.matcher.id, quad), { pref: 1 });
         // call find edges to make sure it's setup correctly
         result = subgraph.search.units.findEdgeToExpand(sg);
         expect(result.branches.length).to.equal(2);

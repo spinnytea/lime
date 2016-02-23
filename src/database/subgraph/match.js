@@ -131,7 +131,7 @@ function subgraphMatch(subgraphOuter, subgraphInner, outerEdges, innerEdges, ver
   // pick the best inner edge
   // (this should help us reduce the number of branches)
   var innerEdge = innerEdges.reduce(function(prev, curr) {
-    if(prev === null || curr.pref > prev.pref && skipThisTime.indexOf(curr) === -1)
+    if(prev === null || curr.options.pref > prev.options.pref && skipThisTime.indexOf(curr) === -1)
       return curr;
     return prev;
   }, null);

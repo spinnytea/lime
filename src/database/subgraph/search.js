@@ -89,12 +89,12 @@ function findEdgeToExpand(subgraph) {
       if(!selected.edge) {
         selected.edge = currEdge;
         selected.branches = currBranches;
-      } else if(currEdge.pref === selected.edge.pref) {
+      } else if(currEdge.options.pref === selected.edge.options.pref) {
         if(currBranches.length < selected.branches.length) {
           selected.edge = currEdge;
           selected.branches = currBranches;
         }
-      } else if(currEdge.pref > selected.edge.pref) {
+      } else if(currEdge.options.pref > selected.edge.options.pref) {
         selected.edge = currEdge;
         selected.branches = currBranches;
       }

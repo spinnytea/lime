@@ -190,13 +190,18 @@ Subgraph.prototype.addVertex = function(matcher, data, options) {
 // @param pref: higher prefs will be considered first (default: 0)
 // @param transitive: the same as link.transitive; will search in a transitive manner
 // XXX should pref be "options"; options.pref; we need other options
-Subgraph.prototype.addEdge = function(src, link, dst, pref, transitive) {
+Subgraph.prototype.addEdge = function(src, link, dst, options) {
+  if(_.isNumber(options)) throw new Error('pref');
+  options = _.merge({
+    pref: 0,
+    transitive: false
+  }, options);
+
   this._edges.push({
     src: src,
     link: link,
     dst: dst,
-    pref: (pref || 0),
-    transitive: transitive
+    options: options
   });
 
   var srcIdea = this.getIdea(src);
@@ -207,7 +212,7 @@ Subgraph.prototype.addEdge = function(src, link, dst, pref, transitive) {
       // so we need to see if the edge fits this definition
       if(!srcIdea.link(link).some(function(idea) { return idea.id === dstIdea.id; })) {
         // TODO we need to verify that the transitive-link is valid
-        if(!link.transitive && !transitive) {
+        if(!link.transitive && !options.transitive) {
           // if the edge doesn't match, then this is no longer concrete and these edges don't match
           // the rest of the graph is fine, this section is invalid
           this.deleteIdea(src);
@@ -403,8 +408,7 @@ exports.stringify = function(sg, dump) {
         src: value.src,
         link: value.link.name,
         dst: value.dst,
-        pref: value.pref,
-        transitive: value.transitive
+        options: value.options
       };
     }),
 
@@ -440,7 +444,7 @@ exports.parse = function(str) {
   sg._data = str.data;
 
   _.forEach(str.edges, function(e) {
-    sg.addEdge(e.src, links.list[e.link], e.dst, e.pref, e.transitive);
+    sg.addEdge(e.src, links.list[e.link], e.dst, e.options);
   });
 
   sg._vertexCount = str.vertexCount;

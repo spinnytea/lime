@@ -57,11 +57,11 @@ exports.list = function(contexts) {
     // a single context presented as an ID string
     // a single proxy idea
     if(typeof contexts === 'string' || contexts.id)
-      sg.addEdge(result, links.list.context, sg.addVertex(subgraph.matcher.id, contexts), 1);
+      sg.addEdge(result, links.list.context, sg.addVertex(subgraph.matcher.id, contexts), { pref: 1 });
     // an array of contexts
     else if(contexts.length)
       contexts.forEach(function(c) {
-        sg.addEdge(result, links.list.context, sg.addVertex(subgraph.matcher.id, c), 1);
+        sg.addEdge(result, links.list.context, sg.addVertex(subgraph.matcher.id, c), { pref: 1 });
       });
   }
 

@@ -189,15 +189,15 @@ describe('subgraph', function() {
       var _a = sg.addVertex(subgraph.matcher.filler);
       var _p = sg.addVertex(subgraph.matcher.similar, {value: number.value(10)});
       sg.addEdge(_m, links.list.context, _c);
-      sg.addEdge(_m, links.list.thought_description, _a, 2);
-      sg.addEdge(_a, links.list.thought_description, _p, 2);
+      sg.addEdge(_m, links.list.thought_description, _a, { pref: 2 });
+      sg.addEdge(_a, links.list.thought_description, _p, { pref: 2 });
 
       // we want to test both paths; is this the last inner edge, or are there more?
       var sg2 = sg.copy();
 
       // and here is the extra link in the inconcrete graph
-      sg.addEdge(_m, links.list.context, _c, 1);
-      sg2.addEdge(_m, links.list.context, _c, -1);
+      sg.addEdge(_m, links.list.context, _c, { pref: 1 });
+      sg2.addEdge(_m, links.list.context, _c, { pref: -1 });
 
       checkSubgraphMatch(subgraph.match(outer, sg), [c, m, a, p], [_c, _m, _a, _p]);
       checkSubgraphMatch(subgraph.match(outer, sg2), [c, m, a, p], [_c, _m, _a, _p]);
@@ -405,17 +405,17 @@ describe('subgraph', function() {
           var i_ = prep.addVertex(subgraph.matcher.similar, id, {matchRef:true});
 
           inner = prep.copy();
-          inner.addEdge(im, links.list.thought_description, i_, -1);
+          inner.addEdge(im, links.list.thought_description, i_, { pref: -1 });
           checkSubgraphMatch(subgraph.match(outer, inner), [om, od, o_], [im, id, i_]);
           inner = prep.copy();
-          inner.addEdge(im, links.list.thought_description, i_, +1);
+          inner.addEdge(im, links.list.thought_description, i_, { pref: 1 });
           checkSubgraphMatch(subgraph.match(outer, inner), [om, od, o_], [im, id, i_]);
 
           inner = prep.copy();
-          inner.addEdge(i_, links.list.thought_description.opposite, im, -1);
+          inner.addEdge(i_, links.list.thought_description.opposite, im, { pref: -1 });
           checkSubgraphMatch(subgraph.match(outer, inner), [om, od, o_], [im, id, i_]);
           inner = prep.copy();
-          inner.addEdge(i_, links.list.thought_description.opposite, im, +1);
+          inner.addEdge(i_, links.list.thought_description.opposite, im, { pref: 1 });
           checkSubgraphMatch(subgraph.match(outer, inner), [om, od, o_], [im, id, i_]);
         });
 
@@ -429,17 +429,17 @@ describe('subgraph', function() {
           var i_ = prep.addVertex(subgraph.matcher.similar, id, {matchRef:true});
 
           inner = prep.copy();
-          inner.addEdge(im, links.list.thought_description, i_, -1);
+          inner.addEdge(im, links.list.thought_description, i_, { pref: -1 });
           checkSubgraphMatch(subgraph.match(outer, inner), [om, od, o_], [im, id, i_]);
           inner = prep.copy();
-          inner.addEdge(im, links.list.thought_description, i_, +1);
+          inner.addEdge(im, links.list.thought_description, i_, { pref: 1 });
           checkSubgraphMatch(subgraph.match(outer, inner), [om, od, o_], [im, id, i_]);
 
           inner = prep.copy();
-          inner.addEdge(i_, links.list.thought_description.opposite, im, -1);
+          inner.addEdge(i_, links.list.thought_description.opposite, im, { pref: -1 });
           checkSubgraphMatch(subgraph.match(outer, inner), [om, od, o_], [im, id, i_]);
           inner = prep.copy();
-          inner.addEdge(i_, links.list.thought_description.opposite, im, +1);
+          inner.addEdge(i_, links.list.thought_description.opposite, im, { pref: 1 });
           checkSubgraphMatch(subgraph.match(outer, inner), [om, od, o_], [im, id, i_]);
         });
 

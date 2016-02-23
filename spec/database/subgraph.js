@@ -150,11 +150,11 @@ describe('subgraph', function() {
         expect(edge.src).to.equal(a);
         expect(edge.link).to.equal(links.list.thought_description);
         expect(edge.dst).to.equal(b);
-        expect(edge.pref).to.equal(0);
+        expect(edge.options.pref).to.equal(0);
 
-        sg.addEdge(a, links.list.thought_description, b, 100);
+        sg.addEdge(a, links.list.thought_description, b, { pref: 100 });
         expect(sg._edges.length).to.equal(2);
-        expect(sg._edges[1].pref).to.equal(100);
+        expect(sg._edges[1].options.pref).to.equal(100);
       });
 
       it('id/filler', function() {
@@ -164,18 +164,18 @@ describe('subgraph', function() {
         var a = sg.addVertex(subgraph.matcher.id, ideaA);
         var b = sg.addVertex(subgraph.matcher.filler);
 
-        sg.addEdge(a, links.list.thought_description, b, 3);
+        sg.addEdge(a, links.list.thought_description, b, { pref: 3 });
 
         expect(sg._edges.length).to.equal(1);
         var edge = sg._edges[0];
         expect(edge.src).to.equal(a);
         expect(edge.link).to.equal(links.list.thought_description);
         expect(edge.dst).to.equal(b);
-        expect(edge.pref).to.equal(3);
+        expect(edge.options.pref).to.equal(3);
 
-        sg.addEdge(a, links.list.thought_description, b, 100);
+        sg.addEdge(a, links.list.thought_description, b, { pref: 100 });
         expect(sg._edges.length).to.equal(2);
-        expect(sg._edges[1].pref).to.equal(100);
+        expect(sg._edges[1].options.pref).to.equal(100);
       });
 
       it('two id match', function() {
@@ -194,7 +194,7 @@ describe('subgraph', function() {
         expect(edge.src).to.equal(a);
         expect(edge.link).to.equal(links.list.thought_description);
         expect(edge.dst).to.equal(b);
-        expect(edge.pref).to.equal(0);
+        expect(edge.options.pref).to.equal(0);
 
         expect(sg.concrete).to.equal(true);
         expect(sg.getIdea(a).id).to.equal(ideaA.id);
@@ -216,7 +216,7 @@ describe('subgraph', function() {
         expect(edge.src).to.equal(a);
         expect(edge.link).to.equal(links.list.thought_description);
         expect(edge.dst).to.equal(b);
-        expect(edge.pref).to.equal(0);
+        expect(edge.options.pref).to.equal(0);
 
         expect(sg.concrete).to.equal(false);
         expect(sg.getIdea(a)).to.equal(undefined);
@@ -867,10 +867,10 @@ describe('subgraph', function() {
     var mc = sg.addVertex(subgraph.matcher.discrete, c, {matchRef:true});
     var n = sg.addVertex(subgraph.matcher.number, { value: number.value(0, Infinity), unit: unit.id }, {transitionable:true});
     var mn = sg.addVertex(subgraph.matcher.number, n, {matchRef:true});
-    sg.addEdge(m, links.list.thought_description, n, 1, true);
-    sg.addEdge(m, links.list.thought_description, c, 1, false);
-    sg.addEdge(m, links.list.thought_description, mc, 1);
-    sg.addEdge(m, links.list.thought_description, mn, 1);
+    sg.addEdge(m, links.list.thought_description, n, { pref: 1, transitive: true });
+    sg.addEdge(m, links.list.thought_description, c, { pref: 1, transitive: false });
+    sg.addEdge(m, links.list.thought_description, mc, { pref: 1 });
+    sg.addEdge(m, links.list.thought_description, mn, { pref: 1 });
 
     var str = subgraph.stringify(sg);
     expect(str).to.be.a('string');
@@ -939,7 +939,7 @@ describe('subgraph', function() {
     var sg = new subgraph.Subgraph();
     var m = sg.addVertex(subgraph.matcher.id, mark.id);
     var a = sg.addVertex(subgraph.matcher.number, { value: number.value(0, Infinity), unit: aunit.id }, {transitionable:true});
-    sg.addEdge(m, links.list.thought_description, a, 1);
+    sg.addEdge(m, links.list.thought_description, a, { pref: 1 });
 
     var expected = {};
 
