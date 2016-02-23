@@ -10,6 +10,10 @@ var SG = require('../subgraph');
 // - and it only works for "special" edge types
 // - (what if the context subgraph is large and extra edges, and the misplaced inconcrete edge is just another type)
 // - maybe this won't be an issue, which is why I'm checking it in now, but it might crop up later
+// TODO I'm not sure I even like this implementation
+// - I'd rather not just assume the context doesn't have the link and try to clean up afterwards
+// - I'd rather tag some edges (in subgraph.edge or link properties) as circumventing the subgraph and looking to the idea.link instead
+// - this would let us expand the frontier in a controlled way AND avoid this silly check
 var NOT_A_LINK = 1;
 
 // use subgraphOuter as a base

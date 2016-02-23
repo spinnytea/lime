@@ -189,8 +189,7 @@ Subgraph.prototype.addVertex = function(matcher, data, options) {
 // @param dst: a vertex ID
 // @param pref: higher prefs will be considered first (default: 0)
 // @param transitive: the same as link.transitive; will search in a transitive manner
-// XXX should pref be "options"; options.pref; do we need other options, such as transitive search? (there is a transitive link, but maybe a particular search will want to be transitive, e.g. parent/child)
-// - not a "taxonomy parent-child" relationship, but literal task-list parent/child
+// XXX should pref be "options"; options.pref; we need other options
 Subgraph.prototype.addEdge = function(src, link, dst, pref, transitive) {
   this._edges.push({
     src: src,
