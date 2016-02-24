@@ -38,68 +38,81 @@ module.exports = function rewrite(subgraph, transitions, actual) {
 
   // validate transitions
   if(!transitions.every(function(t) {
-      var match = subgraph.getMatch(t.vertex_id);
-      if(!match)
-        return false;
-
-      // if a transition hasn't been specified, there is nothing to do
-      if(!(t.replace || t.combine || t.hasOwnProperty('replace_id') || t.cycle))
-        return false;
-
-      if(!match.options.transitionable) {
-        return false;
-      }
-
-      var data = subgraph.getData(t.vertex_id);
-
-      // if there is no data, then there is nothing to transition
-      if(data === undefined)
-        return false;
-
-      // verify the transition data
-      if(t.replace) {
-        if(data.unit && t.replace.unit && data.unit !== t.replace.unit)
-          return false;
-      } else if(t.hasOwnProperty('replace_id')) {
-        var rdata = subgraph.getData(t.replace_id);
-        if(data.unit && data.unit && data.unit !== rdata.unit)
-          return false;
-      } else if(t.cycle) {
-        // TODO does the discrete unit need to be defined as 'cyclical' before we can use 'cycle'
-        if(data.unit !== t.cycle.unit || !discrete.isDiscrete(data))
-          return false;
-      } else { // if(t.combine) {
-        if(data.unit !== t.combine.unit || !number.isNumber(data) || !number.isNumber(t.combine))
-          return false;
-      }
-
-      return true;
+      return checkVertex(subgraph, t);
     })) return undefined; // if not all of the transitions are correct, return undefined
 
   // apply transitions
   transitions.forEach(function(t) {
-    if(t.replace) {
-      subgraph.setData(t.vertex_id, t.replace);
-    } else if(t.hasOwnProperty('replace_id')) {
-      subgraph.setData(t.vertex_id, subgraph.getData(t.replace_id));
-    } else if(t.cycle) {
-      var data = _.clone(subgraph.getData(t.vertex_id));
-      var states = ideas.load(data.unit).data().states;
-      var idx = states.indexOf(data.value)+t.cycle.value;
-      idx = (((idx%states.length)+states.length)%states.length);
-      data.value = states[idx];
-      subgraph.setData(t.vertex_id, data);
-    } else { // if(t.combine) {
-      subgraph.setData(t.vertex_id, number.combine(subgraph.getData(t.vertex_id), t.combine));
-    }
-
-    if(actual)
-    // XXX should combine use "update?" or should I perform a combine on the raw
-    // - number.combine(v.idea.data(), t.combine)
-    // - should number.difference(v.data, v.idea.data()) === 0 before combine?
-    // - should _.isEqual(v.data, v.idea.data()) before combine?
-      subgraph.getIdea(t.vertex_id).update(subgraph.getData(t.vertex_id));
+    transitionVertex(subgraph, t, actual);
   });
 
   return subgraph;
 }; // end rewrite
+
+Object.defineProperty(module.exports, 'units', { value: {} });
+module.exports.units.checkVertex = checkVertex;
+module.exports.units.transitionVertex = transitionVertex;
+
+// return true if the vertex transition is valid
+function checkVertex(subgraph, t) {
+  var match = subgraph.getMatch(t.vertex_id);
+  if(!match)
+    return false;
+
+  // if a transition hasn't been specified, there is nothing to do
+  if(!(t.replace || t.combine || t.hasOwnProperty('replace_id') || t.cycle))
+    return false;
+
+  if(!match.options.transitionable) {
+    return false;
+  }
+
+  var data = subgraph.getData(t.vertex_id);
+
+  // if there is no data, then there is nothing to transition
+  if(data === undefined)
+    return false;
+
+  // verify the transition data
+  if(t.replace) {
+    if(data.unit && t.replace.unit && data.unit !== t.replace.unit)
+      return false;
+  } else if(t.hasOwnProperty('replace_id')) {
+    var rdata = subgraph.getData(t.replace_id);
+    if(data.unit && data.unit && data.unit !== rdata.unit)
+      return false;
+  } else if(t.cycle) {
+    // TODO does the discrete unit need to be defined as 'cyclical' before we can use 'cycle'
+    if(data.unit !== t.cycle.unit || !discrete.isDiscrete(data))
+      return false;
+  } else { // if(t.combine) {
+    if(data.unit !== t.combine.unit || !number.isNumber(data) || !number.isNumber(t.combine))
+      return false;
+  }
+
+  return true;
+} // end checkVertex
+
+function transitionVertex(subgraph, t, actual) {
+  if(t.replace) {
+    subgraph.setData(t.vertex_id, t.replace);
+  } else if(t.hasOwnProperty('replace_id')) {
+    subgraph.setData(t.vertex_id, subgraph.getData(t.replace_id));
+  } else if(t.cycle) {
+    var data = _.clone(subgraph.getData(t.vertex_id));
+    var states = ideas.load(data.unit).data().states;
+    var idx = states.indexOf(data.value)+t.cycle.value;
+    idx = (((idx%states.length)+states.length)%states.length);
+    data.value = states[idx];
+    subgraph.setData(t.vertex_id, data);
+  } else { // if(t.combine) {
+    subgraph.setData(t.vertex_id, number.combine(subgraph.getData(t.vertex_id), t.combine));
+  }
+
+  if(actual)
+  // XXX should combine use "update?" or should I perform a combine on the raw
+  // - number.combine(v.idea.data(), t.combine)
+  // - should number.difference(v.data, v.idea.data()) === 0 before combine?
+  // - should _.isEqual(v.data, v.idea.data()) before combine?
+    subgraph.getIdea(t.vertex_id).update(subgraph.getData(t.vertex_id));
+} // end transitionVertex

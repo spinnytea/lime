@@ -337,5 +337,16 @@ describe('subgraph', function() {
       sg2 = subgraph.rewrite(sg, [{vertex_id: w, combine: wumpusData }], true);
       expect(sg2).to.equal(undefined);
     });
+
+    describe('units', function() {
+      it('init', function() {
+        // this is to ensure we test everything
+        expect(Object.keys(subgraph.rewrite.units)).to.deep.equal(['checkVertex', 'transitionVertex']);
+      });
+
+      it.skip('checkVertex');
+
+      it.skip('transitionVertex');
+    }); // end units
   }); // end rewrite
 }); // end subgraph

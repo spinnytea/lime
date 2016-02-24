@@ -97,8 +97,9 @@ Subgraph.prototype.copy = function() {
   sg._matchParent = this._matchParent;
   // both this._match and sg._match will be empty
 
-  // the match data and ideas should/will never change
+  // the ideas should/will never change
   // so we can reference the original
+  // this is what we are trying to pin down, so as we do so we can copy them directly
   _.assign(sg._idea, this._idea);
 
   // if there is locally defined cache data
@@ -476,6 +477,7 @@ exports.createGoal = function(outer, inner, vertexMap) {
 
 // outer has already been subgraph.match and vertexMap is the mapping; the transitions are the values we care about
 // used to allow replanning when you already have a vertexMap (a specific match; because requirements may match in multiple ways)
+// TODO move createTransitionedGoal into rewrite
 exports.createTransitionedGoal = function(outer, transitions, vertexMap) {
   var goal = new Subgraph();
   var new_transitions = [];
