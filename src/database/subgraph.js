@@ -229,6 +229,8 @@ Subgraph.prototype.addEdge = function(src, link, dst, options) {
   // if only one of the vertices has an idea, then
   // - this.concrete is already false
   // - there is no idea to check for a match, anyway
+
+  return id;
 };
 
 Subgraph.prototype.getMatch = function(id) {

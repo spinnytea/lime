@@ -351,7 +351,7 @@ describe('subgraph', function() {
         var v = sg.addVertex(subgraph.matcher.filler);
 
         expect(sg._matchParent).to.equal(undefined);
-        expect(v in sg._match).to.equal(true);
+        expect(sg._match).to.have.property(v);
 
         expect(sg.getMatch(v)).to.not.equal(undefined);
       });
@@ -361,7 +361,7 @@ describe('subgraph', function() {
         var v = 'not a vertex id';
 
         expect(sg._matchParent).to.equal(undefined);
-        expect(v in sg._match).to.equal(false);
+        expect(sg._match).to.not.have.property(v);
 
         expect(sg.getMatch(v)).to.equal(undefined);
       });
@@ -374,8 +374,8 @@ describe('subgraph', function() {
 
         expect(sg._matchParent).to.not.equal(undefined);
         expect(sg._matchParent.parent).to.equal(undefined);
-        expect(v in sg._match).to.equal(false);
-        expect(v in sg._matchParent.obj).to.equal(true);
+        expect(sg._match).to.not.have.property(v);
+        expect(sg._matchParent.obj).to.have.property(v);
 
         expect(sg.getMatch(v)).to.not.equal(undefined);
       });
@@ -537,7 +537,7 @@ describe('subgraph', function() {
         sg.setData(v, 10);
 
         expect(sg._dataParent).to.equal(undefined);
-        expect(v in sg._data).to.equal(true);
+        expect(sg._data).to.have.property(v);
 
         expect(sg.getData(v)).to.equal(10);
       });
@@ -641,6 +641,91 @@ describe('subgraph', function() {
         // data should be gone from that one but still available in the other
       });
     }); // end deleteData
+
+    describe('getEdge', function() {
+      it('in root', function() {
+        var sg = new subgraph.Subgraph();
+        var e = sg.addEdge('src', links.list.thought_description, 'dst');
+
+        expect(sg._edgesParent).to.equal(undefined);
+        expect(sg._edges).to.have.property(e);
+
+        expect(sg.getEdge(e)).to.not.equal(undefined);
+      });
+
+      it('no parent miss (special case)', function() {
+        var sg = new subgraph.Subgraph();
+        var e = 'not an edge id';
+
+        expect(sg._edgesParent).to.equal(undefined);
+        expect(sg._edges).to.not.have.property(e);
+
+        expect(sg.getEdge(e)).to.equal(undefined);
+      });
+
+      it('single parent (special case)', function() {
+        var sg = new subgraph.Subgraph();
+        var e = sg.addEdge('src', links.list.thought_description, 'dst');
+        sg = sg.copy();
+        sg.addEdge('src2', links.list.thought_description, 'dst2');
+
+        expect(sg._edgesParent).to.not.equal(undefined);
+        expect(sg._edgesParent.parent).to.equal(undefined);
+        expect(sg._edges).to.not.have.property(e);
+        expect(sg._edgesParent.obj).to.have.property(e);
+
+        expect(sg.getEdge(e)).to.not.equal(undefined);
+      });
+
+      it('two parents', function() {
+        var sg = new subgraph.Subgraph();
+        var e = sg.addEdge('src', links.list.thought_description, 'dst');
+        sg = sg.copy();
+        sg.addEdge('src2', links.list.thought_description, 'dst2');
+        sg = sg.copy();
+        sg.addEdge('src3', links.list.thought_description, 'dst3');
+
+        expect(sg._edgesParent).to.not.equal(undefined);
+        expect(sg._edgesParent.parent).to.not.equal(undefined);
+        expect(sg._edgesParent.parent.parent).to.equal(undefined);
+
+        expect(sg.getEdge(e)).to.not.equal(undefined);
+      });
+
+      it('three parents', function() {
+        var sg = new subgraph.Subgraph();
+        var e = sg.addEdge('src', links.list.thought_description, 'dst');
+        sg = sg.copy();
+        sg.addEdge('src2', links.list.thought_description, 'dst2');
+        sg = sg.copy();
+        sg.addEdge('src3', links.list.thought_description, 'dst3');
+        sg = sg.copy();
+        sg.addEdge('src4', links.list.thought_description, 'dst4');
+
+        expect(sg._edgesParent).to.not.equal(undefined);
+        expect(sg._edgesParent.parent).to.not.equal(undefined);
+        expect(sg._edgesParent.parent.parent).to.not.equal(undefined);
+        expect(sg._edgesParent.parent.parent.parent).to.equal(undefined);
+
+        expect(sg.getEdge(e)).to.not.equal(undefined);
+      });
+
+      it('non-edge with parents', function() {
+        var sg = new subgraph.Subgraph();
+        var e = 'not an edge id';
+        sg.addEdge('src', links.list.thought_description, 'dst');
+        sg = sg.copy();
+        sg.addEdge('src2', links.list.thought_description, 'dst2');
+        sg = sg.copy();
+        sg.addEdge('src3', links.list.thought_description, 'dst3');
+
+        expect(sg._edgesParent).to.not.equal(undefined);
+        expect(sg._edgesParent.parent).to.not.equal(undefined);
+        expect(sg._edgesParent.parent.parent).to.equal(undefined);
+
+        expect(sg.getEdge(e)).to.equal(undefined);
+      });
+    }); // end getEdge
 
     it.skip('allEdges');
   }); // end Subgraph
