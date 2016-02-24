@@ -285,22 +285,16 @@ function createOuterEdges(subgraphOuter, subgraphInner, innerEdge, vertexMap) {
 
   // convert the link proxy id's into subgraphOuter ids
   var inverseOuterMap = buildInverseOuterMap(subgraphOuter);
-  return links.map(function(proxy) {
-    var src;
-    var dst;
-    if(isSrc) {
-      src = vertexMap[innerEdge.src];
-      dst = inverseOuterMap[proxy.id];
-    } else {
-      src = inverseOuterMap[proxy.id];
-      dst = vertexMap[innerEdge.dst];
-    }
-    return {
-      src: src,
-      link: innerEdge.link,
-      dst: dst
-    };
-  });
+  return links
+    .map(function(proxy) { return inverseOuterMap[proxy.id]; })
+    .filter(function(id) { return id; })
+    .map(function(id) {
+      return {
+        src: isSrc?vertexMap[innerEdge.src]:id,
+        link: innerEdge.link,
+        dst: isSrc?id:vertexMap[innerEdge.dst]
+      };
+    });
 } // end expandInner
 
 // subgraphs are non-trivial
