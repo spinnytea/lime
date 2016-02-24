@@ -59,7 +59,6 @@ Object.defineProperty(module.exports, 'units', { value: {} });
 module.exports.units.initializeVertexMap = initializeVertexMap;
 module.exports.units.subgraphMatch = subgraphMatch;
 module.exports.units.subgraphMatch.filterOuter = filterOuter;
-module.exports.units.subgraphMatch.createOuterEdges = createOuterEdges;
 module.exports.units.resolveMatchData = resolveMatchData;
 module.exports.units.vertexTransitionableAcceptable = vertexTransitionableAcceptable;
 module.exports.units.vertexFixedMatch = vertexFixedMatch;
@@ -135,12 +134,8 @@ function subgraphMatch(subgraphOuter, subgraphInner, outerEdges, innerEdges, ver
   // TODO instead of rebuilding the inverse on every [recursive] iteration, build it alongside vertexMap
   var inverseMap = _.invert(vertexMap);
 
-  var edgesToChooseFrom = outerEdges;
-  if(innerEdge.options.byIdeaLink)
-    edgesToChooseFrom = createOuterEdges(subgraphOuter, subgraphInner, innerEdge, vertexMap);
-
   // find all matching outer edges
-  var matches = edgesToChooseFrom.filter(function(currEdge) {
+  var matches = outerEdges.filter(function(currEdge) {
     return filterOuter(subgraphOuter, subgraphInner, currEdge, innerEdge, vertexMap, inverseMap, unitOnly);
   });
 
@@ -265,37 +260,6 @@ function filterOuter(subgraphOuter, subgraphInner, currEdge, innerEdge, vertexMa
 
   return true;
 } // end outerFilter
-
-// in subgraphMatch, TODO we need short description of the function
-// return a list of vertex edges (src, link, dst}
-// all vertices must
-function createOuterEdges(subgraphOuter, subgraphInner, innerEdge, vertexMap) {
-  var isSrc = (innerEdge.src in vertexMap);
-  var dstMapped = (innerEdge.dst in vertexMap);
-
-  // if there is nothing to start from, then our list is empty
-  if(!isSrc && !dstMapped)
-    return [];
-
-  // find a vertex
-  // expand the link
-  // return the list
-  var idea = subgraphOuter.getIdea(vertexMap[isSrc?innerEdge.src:innerEdge.dst]);
-  var links = idea.link(isSrc?innerEdge.link:innerEdge.link.opposite);
-
-  // convert the link proxy id's into subgraphOuter ids
-  var inverseOuterMap = buildInverseOuterMap(subgraphOuter);
-  return links
-    .map(function(proxy) { return inverseOuterMap[proxy.id]; })
-    .filter(function(id) { return id; })
-    .map(function(id) {
-      return {
-        src: isSrc?vertexMap[innerEdge.src]:id,
-        link: innerEdge.link,
-        dst: isSrc?id:vertexMap[innerEdge.dst]
-      };
-    });
-} // end expandInner
 
 // subgraphs are non-trivial
 // the data could be in a few different places

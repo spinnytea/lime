@@ -190,14 +190,15 @@ Subgraph.prototype.addVertex = function(matcher, data, options) {
 // @param dst: a vertex ID
 // @param options.pref: higher prefs will be considered first (default: 0)
 // @param options.transitive: the same as link.transitive; will search in a transitive manner TODO does subgraph.match need to support this?
+//
+// - rejected options
 // @param options.byIdeaLink: during subgraph.match, instead of matching subgraph edges uses the existing idea link TODO come up with a better key name
-// XXX should pref be "options"; options.pref; we need other options
+// - we can't do this because the subgraph represents our imagination, we can't plan ahead if we don't let the subgraph contain ALL the information
 Subgraph.prototype.addEdge = function(src, link, dst, options) {
   options = _.merge({
     // TODO do these NEED to be specified? can we leave them undefined?
     pref: 0,
-    transitive: false,
-    byIdeaLink: false
+    transitive: false
   }, options);
 
   this._edges.push({

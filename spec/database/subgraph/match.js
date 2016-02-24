@@ -174,58 +174,6 @@ describe('subgraph', function() {
       checkSubgraphMatch(subgraph.match(outer, sg), [m, a, p, b, bp], [_m, _a, _p, _b, _bp]);
     });
 
-    describe.only('byIdeaLink', function() {
-      var sg, _c, _m, _a, _p;
-      beforeEach(function() {
-        // the idea graph has V,E
-        // the context has V, but missing an E
-        // the inconcrete sg has V,E
-
-        // here is our extra link in the idea graph
-        // the existing context doesn't know about it
-        price.link(links.list.context, context);
-
-        sg = new subgraph.Subgraph();
-        _c = sg.addVertex(subgraph.matcher.id, context);
-        _m = sg.addVertex(subgraph.matcher.id, mark);
-        _a = sg.addVertex(subgraph.matcher.filler);
-        _p = sg.addVertex(subgraph.matcher.similar, {value: number.value(10)});
-        sg.addEdge(_m, links.list.context, _c);
-        sg.addEdge(_m, links.list.thought_description, _a, { pref: 2 });
-        sg.addEdge(_a, links.list.thought_description, _p, { pref: 2 });
-      });
-
-      it('middle', function() {
-        sg.addEdge(_m, links.list.context, _c, { pref: 1, byIdeaLink: true });
-        checkSubgraphMatch(subgraph.match(outer, sg), [c, m, a, p], [_c, _m, _a, _p]);
-      });
-
-      it('last', function() {
-        sg.addEdge(_m, links.list.context, _c, { pref: -1, byIdeaLink: true });
-        checkSubgraphMatch(subgraph.match(outer, sg), [c, m, a, p], [_c, _m, _a, _p]);
-      });
-
-      it('no link', function() {
-        sg.addEdge(_m, links.list.context, _a, { pref: -1, byIdeaLink: true });
-        expect(subgraph.match(outer, sg)).to.deep.equal([]);
-      });
-
-      it('not in subgraph', function() {
-        var something = ideas.create();
-        mark.link(links.list.thought_description, something);
-        var _s = sg.addVertex(subgraph.matcher.id, something);
-        sg.addEdge(_m, links.list.thought_description, _s, { pref: -1, byIdeaLink: true });
-
-        // no match
-        expect(subgraph.match(outer, sg)).to.deep.equal([]);
-
-        // but the inconcerete graph will resolve
-        var ret = subgraph.search(sg);
-        expect(ret.length).to.equal(1);
-        expect(ret[0].concrete).to.equal(true);
-      });
-    }); // end byIdeaLink
-
     // when we construct subgraphs, each node represents a single idea
     // it doesn't make sense to intend multiple nodes to match the same idea
     // ... these tests don't make sense; they break the definition of a subgraph
@@ -587,7 +535,7 @@ describe('subgraph', function() {
       it('init', function() {
         // this is to ensure we test everything
         expect(Object.keys(subgraph.match.units)).to.deep.equal(['initializeVertexMap', 'subgraphMatch', 'resolveMatchData', 'vertexTransitionableAcceptable', 'vertexFixedMatch']);
-        expect(Object.keys(subgraph.match.units.subgraphMatch)).to.deep.equal(['filterOuter', 'createOuterEdges']);
+        expect(Object.keys(subgraph.match.units.subgraphMatch)).to.deep.equal(['filterOuter']);
       });
 
       it.skip('initializeVertexMap');
@@ -595,8 +543,6 @@ describe('subgraph', function() {
       it.skip('subgraphMatch');
 
       it.skip('subgraphMatch.filterOuter');
-
-      it.skip('subgraphMatch.createOuterEdges');
 
       describe('resolveMatchData', function() {
         // this function expects subgraph to behave in a particular way
