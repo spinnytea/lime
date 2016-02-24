@@ -31,7 +31,7 @@ describe('subgraph', function() {
   it('init', function() {
     // this is to ensure we test everything
     expect(Object.keys(subgraph)).to.deep.equal(['Subgraph', 'matcher', 'stringify', 'parse', 'search', 'match', 'rewrite', 'createGoal', 'createTransitionedGoal']);
-    expect(Object.keys(subgraph.Subgraph.prototype)).to.deep.equal(['copy', 'addVertex', 'addEdge', 'getMatch', 'getIdea', 'allIdeas', 'deleteIdea', 'getData', 'setData', 'deleteData']);
+    expect(Object.keys(subgraph.Subgraph.prototype)).to.deep.equal(['copy', 'addVertex', 'addEdge', 'getMatch', 'getIdea', 'allIdeas', 'deleteIdea', 'getData', 'setData', 'deleteData', 'getEdge', 'allEdges']);
     expect(Object.keys(subgraph.matcher)).to.deep.equal(['id', 'filler', 'exact', 'similar', 'number', 'discrete']);
   });
 
@@ -145,7 +145,7 @@ describe('subgraph', function() {
 
         sg.addEdge(a, links.list.thought_description, b);
 
-        expect(sg._edges.length).to.equal(1);
+        expect(sg._edgeCount).to.equal(1);
         var edge = sg._edges[0];
         expect(edge.src).to.equal(a);
         expect(edge.link).to.equal(links.list.thought_description);
@@ -153,7 +153,7 @@ describe('subgraph', function() {
         expect(edge.options.pref).to.equal(0);
 
         sg.addEdge(a, links.list.thought_description, b, { pref: 100 });
-        expect(sg._edges.length).to.equal(2);
+        expect(sg._edgeCount).to.equal(2);
         expect(sg._edges[1].options.pref).to.equal(100);
       });
 
@@ -166,7 +166,7 @@ describe('subgraph', function() {
 
         sg.addEdge(a, links.list.thought_description, b, { pref: 3 });
 
-        expect(sg._edges.length).to.equal(1);
+        expect(sg._edgeCount).to.equal(1);
         var edge = sg._edges[0];
         expect(edge.src).to.equal(a);
         expect(edge.link).to.equal(links.list.thought_description);
@@ -174,7 +174,7 @@ describe('subgraph', function() {
         expect(edge.options.pref).to.equal(3);
 
         sg.addEdge(a, links.list.thought_description, b, { pref: 100 });
-        expect(sg._edges.length).to.equal(2);
+        expect(sg._edgeCount).to.equal(2);
         expect(sg._edges[1].options.pref).to.equal(100);
       });
 
@@ -189,7 +189,7 @@ describe('subgraph', function() {
 
         sg.addEdge(a, links.list.thought_description, b);
 
-        expect(sg._edges.length).to.equal(1);
+        expect(sg._edgeCount).to.equal(1);
         var edge = sg._edges[0];
         expect(edge.src).to.equal(a);
         expect(edge.link).to.equal(links.list.thought_description);
@@ -211,7 +211,7 @@ describe('subgraph', function() {
 
         sg.addEdge(a, links.list.thought_description, b);
 
-        expect(sg._edges.length).to.equal(1);
+        expect(sg._edgeCount).to.equal(1);
         var edge = sg._edges[0];
         expect(edge.src).to.equal(a);
         expect(edge.link).to.equal(links.list.thought_description);
@@ -228,7 +228,7 @@ describe('subgraph', function() {
       it('init', function() {
         // this is mutable, this is just for tracking the unit tests
         expect(Object.keys(new subgraph.Subgraph()))
-          .to.deep.equal(['_match', '_matchParent', '_idea', '_data', '_dataParent', '_edges', '_vertexCount', 'concrete']);
+          .to.deep.equal(['_match', '_matchParent', '_idea', '_data', '_dataParent', '_edges', '_edgesParent', '_vertexCount', '_edgeCount', 'concrete']);
       });
 
       var sg_r, sg_a, sg_b;
@@ -310,14 +310,16 @@ describe('subgraph', function() {
       });
 
       it('Subgraph._edges', function() {
-        expect(sg_r._edges.length).to.equal(0);
+        expect(sg_r._edgeCount).to.equal(0);
 
-        expect(sg_a._edges.length).to.equal(0);
+        expect(sg_a._edgeCount).to.equal(0);
         expect(sg_a._edges).to.not.equal(sg_r._edges);
 
-        expect(sg_b._edges.length).to.equal(1);
+        expect(sg_b._edgeCount).to.equal(1);
         expect(sg_b._edges).to.not.equal(sg_r._edges);
       });
+
+      it.skip('Subgraph._edgesParent');
 
       it('Subgraph._vertexCount', function() {
         expect(sg_r._vertexCount).to.equal(1);
@@ -639,6 +641,8 @@ describe('subgraph', function() {
         // data should be gone from that one but still available in the other
       });
     }); // end deleteData
+
+    it.skip('allEdges');
   }); // end Subgraph
 
   describe('matcher', function() {
@@ -882,8 +886,6 @@ describe('subgraph', function() {
     expect(parsed._match).to.deep.equal(sg._match);
     expect(parsed._idea).to.deep.equal(sg._idea);
     expect(parsed._data).to.deep.equal(sg._data);
-    // edges are not as complicated
-    // they probably won't ever be an issue
     expect(parsed._edges).to.deep.equal(sg._edges);
     expect(parsed).to.deep.equal(sg);
 
@@ -927,6 +929,8 @@ describe('subgraph', function() {
     expect(_.values(parsed._data)).to.deep.equal([10, 20]);
     expect(parsed._dataParent).to.equal(undefined);
   });
+
+  it.skip('stringify & parse with edge parents'); // roll into the above test
 
   it('stringify for dump (+ with parents)', function() {
     var aunit = ideas.create();
@@ -1058,7 +1062,7 @@ describe('subgraph', function() {
 
     var goal = subgraph.createTransitionedGoal(outer, transitions, vertexMap);
     expect(goal._vertexCount).to.equal(1);
-    expect(goal._edges.length).to.equal(0);
+    expect(goal._edgeCount).to.equal(0);
     expect(goal.concrete).to.equal(true);
     var vertex_id = '0'; // we are making an assumption that this is the vertex_id
     expect(goal.getIdea(vertex_id)).to.be.an('object');

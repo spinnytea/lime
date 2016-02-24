@@ -77,6 +77,10 @@ describe('actuator', function() {
       a.requirements._data = a.requirements._dataParent.obj;
       a.requirements._dataParent = undefined;
     }
+    if(a.requirements._edgesParent) {
+      a.requirements._edges = a.requirements._edgesParent.obj;
+      a.requirements._edgesParent = undefined;
+    }
   });
 
   it('runCost', function() {

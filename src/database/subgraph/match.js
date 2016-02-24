@@ -38,7 +38,7 @@ module.exports = function match(subgraphOuter, subgraphInner, unitOnly) {
     return [];
 
   // if there are no edges, return the map
-  if(subgraphInner._edges.length === 0) {
+  if(subgraphInner._edgeCount === 0) {
     // if there are edges, and all vertices have been mapped, we still need to check the edges to make sure they match
     // this is a special case for when there are no edges
     // it keeps us from needing to bake it into the top of subgraphMatch
@@ -49,7 +49,7 @@ module.exports = function match(subgraphOuter, subgraphInner, unitOnly) {
 
   // with this information, fill out the map using the edges
   // (note: there may not yet be any edges specified)
-  return subgraphMatch(subgraphOuter, subgraphInner, _.clone(subgraphOuter._edges), _.clone(subgraphInner._edges), vertexMap, unitOnly, [])
+  return subgraphMatch(subgraphOuter, subgraphInner, subgraphOuter.allEdges(), subgraphInner.allEdges(), vertexMap, unitOnly, [])
     .filter(function(map) {
       return Object.keys(map).length === subgraphInner._vertexCount;
     });

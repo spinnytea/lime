@@ -51,7 +51,7 @@ module.exports.units.expandEdge = expandEdge;
 function findEdgeToExpand(subgraph) {
   var selected = { edge: undefined, branches: undefined };
 
-  var valid = subgraph._edges.every(function(currEdge) {
+  var valid = subgraph.allEdges().every(function(currEdge) {
     var srcIdea = subgraph.getIdea(currEdge.src);
     var dstIdea = subgraph.getIdea(currEdge.dst);
     var isSrc = (srcIdea !== undefined);

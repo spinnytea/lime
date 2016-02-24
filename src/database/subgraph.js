@@ -62,12 +62,19 @@ function Subgraph() {
 
 
   // how the vertices are linked together
-  this._edges = [];
+  this._edges = {};
+  // do a lazy copy of cache data
+  // don't copy the data if we don't need to
+  this._edgesParent = undefined;
 
 
   // when we generate a new vertex, we need a new key
   // we also want fast access to the number of vertices we have
   this._vertexCount = 0;
+
+  // when we generate a new edge, we need a new key
+  // we also want fast access to the number of edges we have
+  this._edgeCount = 0;
 
   // true
   //   does this represent a specific subgraph
@@ -83,51 +90,40 @@ function Subgraph() {
 Subgraph.prototype.copy = function() {
   var sg = new Subgraph();
 
-  // if there is locally defined match data
-  // then put it in a parent object
-  // make that a parent of this
-  if(!_.isEmpty(this._match)) {
-    this._matchParent = {
-      obj: this._match,
-      parent: this._matchParent
-    };
-    this._match = {};
-  }
-  // defined or undefined, we need to pass the parent to the copy
-  sg._matchParent = this._matchParent;
-  // both this._match and sg._match will be empty
-
   // the ideas should/will never change
   // so we can reference the original
   // this is what we are trying to pin down, so as we do so we can copy them directly
   _.assign(sg._idea, this._idea);
 
-  // if there is locally defined cache data
-  // then put it in a parent object
-  // make that a parent of this
-  if(!_.isEmpty(this._data)) {
-    this._dataParent = {
-      obj: this._data,
-      parent: this._dataParent
-    };
-    this._data = {};
-  }
-  // defined or undefined, we need to pass the parent to the copy
-  sg._dataParent = this._dataParent;
-  // both this._data and sg._data will be empty
-
-  // TODO do we need to clone the edge array?
-  // - can we make the assumption that you shouldn't add edges after a copy?
-  // - can we assume that if you add an edge, then it applies to all versions?
-  //sg._edges = this._edges
-  // since edges are immutable, we can do a shallow copy of the array (note clone vs cloneDeep)
-  sg._edges = _.clone(this._edges);
+  // do the parent copy for the applicable values
+  copyParentyThing(this, sg, 'match');
+  copyParentyThing(this, sg, 'data');
+  copyParentyThing(this, sg, 'edges');
 
   sg._vertexCount = this._vertexCount;
+  sg._edgeCount = this._edgeCount;
   sg.concrete = this.concrete;
 
   return sg;
 };
+function copyParentyThing(old, copy, key) {
+  key = '_' + key;
+  var parentKey = key + 'Parent';
+
+  // if there are locally defined values
+  // then put it in a parent object
+  // make that a parent of this
+  if(!_.isEmpty(old[key])) {
+    old[parentKey] = {
+      obj: old[key],
+      parent: old[parentKey]
+    };
+    old[key] = {};
+  }
+  // defined or undefined, we need to pass the parent to the copy
+  copy[parentKey] = old[parentKey];
+  // both old and new will have key thing will be empty
+}
 
 // add a vertex to the graph
 // this only specifies match data
@@ -202,12 +198,15 @@ Subgraph.prototype.addEdge = function(src, link, dst, options) {
     transitive: false
   }, options);
 
-  this._edges.push({
+  var id = this._edgeCount + '';
+  this._edgeCount++;
+
+  this._edges[id] = {
     src: src,
     link: link,
     dst: dst,
     options: options
-  });
+  };
 
   var srcIdea = this.getIdea(src);
   if(srcIdea) {
@@ -305,11 +304,41 @@ Subgraph.prototype.deleteData = function() {
   }
 };
 
+Subgraph.prototype.getEdge = function(id) {
+  if(id in this._edges)
+    return this._edges[id];
+
+  // use case micro optimizations
+  // this will USUALLY be 0 or 1 layers deep
+  if(!this._edgesParent)
+    return undefined;
+  var parent = this._edgesParent;
+  if(parent.parent === undefined)
+    return parent.obj[id];
+
+  return searchParent(id, parent);
+};
+// collect all the edges into a list
+Subgraph.prototype.allEdges = function() {
+  var edges = _.clone(this._edges);
+  acrossParents(this._edgesParent, function(value, id) {
+    // the children can overwrite the data without affecting the parents
+    // so if the data is already present, then don't overwrite it
+    if(!(id in edges))
+      edges[id] = value;
+  });
+  return _.values(edges);
+};
+
 exports.Subgraph = Subgraph;
 
 
 function forAllVertices(sg, callback) {
   for(var i=0; i<sg._vertexCount; i++)
+    callback(i+'');
+}
+function forAllEdges(sg, callback) {
+  for(var i=0; i<sg._edgeCount; i++)
     callback(i+'');
 }
 function searchParent(id, parent) {
@@ -400,6 +429,17 @@ exports.stringify = function(sg, dump) {
     });
   }
 
+  var edges = {};
+  forAllEdges(sg, function(id) {
+    var value = sg.getEdge(id);
+    edges[id] = {
+      src: value.src,
+      link: value.link.name,
+      dst: value.dst,
+      options: value.options
+    };
+  });
+
   return JSON.stringify({
     match: match,
     idea: _.reduce(sg.allIdeas(), function(result, value, key) {
@@ -408,16 +448,10 @@ exports.stringify = function(sg, dump) {
     }, {}),
     data: data,
 
-    edges: _.map(sg._edges, function(value) {
-      return {
-        src: value.src,
-        link: value.link.name,
-        dst: value.dst,
-        options: value.options
-      };
-    }),
+    edges: edges,
 
     vertexCount: sg._vertexCount,
+    edgeCount: sg._edgeCount,
     concrete: sg.concrete
   });
 };
@@ -448,11 +482,17 @@ exports.parse = function(str) {
 
   sg._data = str.data;
 
-  _.forEach(str.edges, function(e) {
-    sg.addEdge(e.src, links.list[e.link], e.dst, e.options);
+  _.forEach(str.edges, function(e, key) {
+    sg._edges[key] = {
+      src: e.src,
+      link: links.list[e.link],
+      dst: e.dst,
+      options: e.options
+    };
   });
 
   sg._vertexCount = str.vertexCount;
+  sg._edgeCount = str.edgeCount;
   sg.concrete = str.concrete;
 
   return sg;
