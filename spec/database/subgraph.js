@@ -232,7 +232,7 @@ describe('subgraph', function() {
       });
 
       var sg_r, sg_a, sg_b;
-      var ra, bb;
+      var ra, bb, be;
       beforeEach(function() {
         sg_r = new subgraph.Subgraph();
         ra = sg_r.addVertex(subgraph.matcher.id, '_test_');
@@ -244,7 +244,7 @@ describe('subgraph', function() {
         sg_b = sg_r.copy();
         bb = sg_b.addVertex(subgraph.matcher.filler);
         sg_b.setData(bb, 3);
-        sg_b.addEdge(ra, links.list.thought_description, bb);
+        be = sg_b.addEdge(ra, links.list.thought_description, bb);
         sg_b._idea[ra] = ideas.proxy('_test_');
         sg_b._idea[bb] = ideas.proxy('_test_2_');
 
@@ -310,21 +310,28 @@ describe('subgraph', function() {
       });
 
       it('Subgraph._edges', function() {
-        expect(sg_r._edgeCount).to.equal(0);
+        expect(Object.keys(sg_r._edges)).to.deep.equal([]);
+        expect(sg_r._edgesParent).to.equal(undefined);
 
-        expect(sg_a._edgeCount).to.equal(0);
         expect(sg_a._edges).to.not.equal(sg_r._edges);
+        expect(Object.keys(sg_a._edges)).to.deep.equal([]);
+        expect(sg_a._edgesParent).to.equal(undefined);
 
-        expect(sg_b._edgeCount).to.equal(1);
         expect(sg_b._edges).to.not.equal(sg_r._edges);
+        expect(Object.keys(sg_b._edges)).to.deep.equal([be]);
+        expect(sg_r._edgesParent).to.equal(undefined);
       });
-
-      it.skip('Subgraph._edgesParent');
 
       it('Subgraph._vertexCount', function() {
         expect(sg_r._vertexCount).to.equal(1);
         expect(sg_a._vertexCount).to.equal(1);
         expect(sg_b._vertexCount).to.equal(2);
+      });
+
+      it('Subgraph._edgeCount', function() {
+        expect(sg_r._edgeCount).to.equal(0);
+        expect(sg_a._edgeCount).to.equal(0);
+        expect(sg_b._edgeCount).to.equal(1);
       });
 
       it('Subgraph.concrete', function() {
@@ -727,7 +734,17 @@ describe('subgraph', function() {
       });
     }); // end getEdge
 
-    it.skip('allEdges');
+    it('allEdges', function() {
+      var sg = new subgraph.Subgraph();
+      sg.addEdge('a', links.list.thought_description, undefined);
+      sg.addEdge('b', links.list.thought_description, undefined);
+      var sg2 = sg.copy();
+      sg.addEdge('c', links.list.thought_description, undefined);
+      sg.addEdge('d', links.list.thought_description, undefined);
+
+      expect(sg2.allEdges().map(function(e) { return e.src; })).to.deep.equal(['a', 'b']);
+      expect(sg.allEdges().map(function(e) { return e.src; })).to.deep.equal(['a', 'b', 'c', 'd']);
+    });
   }); // end Subgraph
 
   describe('matcher', function() {
