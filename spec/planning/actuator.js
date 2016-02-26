@@ -197,7 +197,21 @@ describe('actuator', function() {
     expect(price.data().value).to.deep.equal(number.value(30));
   });
 
-  it.skip('save & load');
+  it('save & load', function() {
+    var a = new actuator.Action();
+    a.requirements.addVertex(subgraph.matcher.id, apple);
+    a.action = '__some_action__';
+
+    expect(a.idea).to.equal(undefined);
+    a.save();
+    expect(a.idea).to.not.equal(undefined);
+
+    var loaded = blueprint.load(a.idea);
+
+    expect(loaded).to.not.equal(undefined);
+    expect(loaded.action).to.equal(a.action);
+    expect(loaded).to.deep.equal(a);
+  });
 
   describe('planning', function() {
     it('bug: match new state with inconcrete goal', function() {

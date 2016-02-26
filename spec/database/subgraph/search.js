@@ -285,15 +285,17 @@ describe('subgraph', function() {
           var result = subgraph.search(sg);
           expect(result.length).to.equal(2);
 
-          var one = result[0];
-          expect(one).to.not.equal(sg);
-          expect(one.getIdea(m).id).to.deep.equal(mark.id);
-          expect(one.getIdea(f).id).to.deep.equal(apple.id);
+          // neither should equal sg
+          expect(result[0]).to.not.equal(sg);
+          expect(result[1]).to.not.equal(sg);
+          // both should match mark
+          expect(result[0].getIdea(m).id).to.deep.equal(mark.id);
+          expect(result[1].getIdea(m).id).to.deep.equal(mark.id);
 
-          var two = result[1];
-          expect(two).to.not.equal(sg);
-          expect(two.getIdea(m).id).to.deep.equal(mark.id);
-          expect(two.getIdea(f).id).to.deep.equal(banana.id);
+          // there should be one match for apple and one for banana
+          result = result.map(function(r) { return r.getIdea(f).id; });
+          expect(result).to.include(apple.id);
+          expect(result).to.include(banana.id);
         });
 
         it.skip('not sure what to call this', function() {
