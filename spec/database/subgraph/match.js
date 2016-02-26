@@ -189,10 +189,30 @@ describe('subgraph', function() {
 //    it.skip('outer larger than inner');
 
     // inner larger than outer should never be satisfiable
-    // does this even need to be a test?
-    // ... no
-    // ... but ... wouldn't it be better to exit early?
-    it.skip('inner larger than outer');
+    it('inner larger than outer', function() {
+      var o = new subgraph.Subgraph();
+      var o_m = o.addVertex(subgraph.matcher.id, mark);
+      var o_a = o.addVertex(subgraph.matcher.filler);
+      o.addEdge(o_m, links.list.thought_description, o_a);
+
+      var i = new subgraph.Subgraph();
+      var i_m = i.addVertex(subgraph.matcher.id, mark);
+      var i_a = i.addVertex(subgraph.matcher.filler);
+      var i_p = i.addVertex(subgraph.matcher.similar, {value: number.value(10)});
+      i.addEdge(i_m, links.list.thought_description, i_a);
+      i.addEdge(i_a, links.list.thought_description, i_p);
+
+      expect(o.concrete).to.equal(false);
+      expect(i.concrete).to.equal(false);
+      expect(subgraph.search(o).length).to.equal(1);
+      expect(subgraph.search(i.copy()).length).to.equal(1);
+      expect(o.concrete).to.equal(true);
+      expect(i.concrete).to.equal(false);
+
+      // okay, the test is setup correctly
+
+      expect(subgraph.match(o, i)).to.deep.equal([]);
+    });
   }); // end match (part 1)
 
   describe('match', function() {

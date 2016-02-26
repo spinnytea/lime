@@ -31,6 +31,9 @@ module.exports = function match(subgraphOuter, subgraphInner, unitOnly) {
   if(subgraphInner._vertexCount === 0)
     return [];
 
+  if(subgraphInner._vertexCount > subgraphOuter._vertexCount)
+    return [];
+
   unitOnly = (unitOnly === true);
 
   var vertexMap = initializeVertexMap(subgraphOuter, subgraphInner, unitOnly);
