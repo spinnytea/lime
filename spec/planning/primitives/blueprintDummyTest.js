@@ -1,9 +1,9 @@
 'use strict';
 var _ = require('lodash');
 var expect = require('chai').expect;
+var actuator = require('../../../src/planning/actuator');
 var blueprint = require('../../../src/planning/primitives/blueprint');
 var serialplan = require('../../../src/planning/serialplan');
-var actuator = require('../../../src/planning/actuator');
 
 function MockAction() {
   blueprint.Action.call(this);
@@ -46,8 +46,21 @@ describe('blueprintDummyTest', function() {
     });
   });
 
-  it.skip('loaders', function() {
+  it('loaders', function() {
+    require('../../database/ideas').mock();
     // check to see that an error is thrown if try to construct an object and there is no loader present
     // blueprint.loaders[this.constructor.name]
+
+    var ma = new MockAction();
+    ma.prepSave = function() {
+      return {
+        type: 'blueprint',
+        subtype: 'MockAction', // TODO is there a way to detect this automatically? then prepSave only needs to return the blueprint contents
+        blueprint: {}
+      };
+    };
+    ma.save();
+    expect(ma.idea).to.not.equal(undefined);
+    expect(function() { return blueprint.load(ma.idea); }).to.throw('not a function');
   });
 }); // end blueprint chain
