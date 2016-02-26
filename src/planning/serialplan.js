@@ -187,18 +187,14 @@ SerialAction.prototype.apply = function(state, glue) {
 // blueprint.prepSave
 SerialAction.prototype.prepSave = function() {
   return {
-    type: 'blueprint',
-    subtype: 'SerialAction',
-    blueprint: {
-      idea: this.idea,
-      transitions: this.transitions,
-      causeAndEffect: this.causeAndEffect,
-      plans: this.plans.map(function(p) { return p.save(); })
-      // we can derive the requirements from the first plan
-//      requirements: subgraph.stringify(this.requirements),
-      // fact is, we can just derive anything from the plan list
-//      _myRunCost: this._myRunCost,
-    }
+    idea: this.idea,
+    transitions: this.transitions,
+    causeAndEffect: this.causeAndEffect,
+    plans: this.plans.map(function(p) { return p.save(); })
+    //// we can derive the requirements from the first plan
+    //requirements: subgraph.stringify(this.requirements),
+    //// fact is, we can just derive anything from the plan list
+    //_myRunCost: this._myRunCost,
   };
 };
 

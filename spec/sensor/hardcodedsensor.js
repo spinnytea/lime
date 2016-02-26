@@ -194,7 +194,7 @@ describe('hardcodedsensor', function() {
       expect(agent_inside_room(agent_x, agent_y, room_x, room_y, room_r)).to.equal(true);
     });
 
-    it('prepSave & load', function() {
+    it('prepSave & loader', function() {
       // make a fake ID for this test
       // (pretend it's gone through s.save())
       hs.idea = '_test_';
@@ -203,15 +203,13 @@ describe('hardcodedsensor', function() {
 
       // the data needs to be able to go through
       expect(JSON.parse(JSON.stringify(data))).to.deep.equal(data);
-      expect(data.type).to.equal('sensor');
-      expect(data.subtype).to.equal('HardcodedSensor');
-      expect(data).to.have.property('sensor');
 
-
-      var loaded = sensor.loaders.HardcodedSensor(data.sensor);
+      var loaded = sensor.loaders.HardcodedSensor(data);
       expect(loaded).to.be.an.instanceOf(hardcodedsensor.Sensor);
       expect(loaded).to.deep.equal(hs); // this is our real test
     });
+
+    it.skip('save & load');
 
     it('sense', function() {
       expect(i_agent.link(links.list.agent_inside_room)).to.deep.equal([]);

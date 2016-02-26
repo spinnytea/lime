@@ -125,7 +125,14 @@ BlueprintAction.prototype.save = function() {
     this.idea = idea.id;
   }
 
-  idea.update(this.prepSave());
+  if(!exports.loaders.hasOwnProperty(this.constructor.name))
+   throw new TypeError('loader not defined for ' + this.constructor.name);
+
+  idea.update({
+    type: 'blueprint',
+    subtype: this.constructor.name,
+    blueprint: this.prepSave()
+  });
 
   return this.idea;
 };

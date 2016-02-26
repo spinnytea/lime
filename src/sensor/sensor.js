@@ -20,7 +20,14 @@ Sensor.prototype.save = function() {
     this.idea = idea.id;
   }
 
-  idea.update(this.prepSave());
+  if(!exports.loaders.hasOwnProperty(this.constructor.name))
+    throw new TypeError('loader not defined for ' + this.constructor.name);
+
+  idea.update({
+    type: 'sensor',
+    subtype: this.constructor.name,
+    sensor: this.prepSave()
+  });
 
   return this.idea;
 };

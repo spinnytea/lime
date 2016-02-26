@@ -108,7 +108,7 @@ describe('stub', function() {
       // the data needs to be able to go through
       expect(JSON.parse(JSON.stringify(data))).to.deep.equal(data);
 
-      var loaded = blueprint.loaders.StubAction(data.blueprint);
+      var loaded = blueprint.loaders.StubAction(data);
       expect(loaded).to.be.an.instanceOf(stub.Action);
       expect(loaded).to.deep.equal(s); // this is our real test
 
@@ -121,6 +121,8 @@ describe('stub', function() {
       var bs_next = loaded.apply(bs, results[0]);
       expect(bs_next.state.getData(bs_p).value).to.deep.equal(number.value(30));
     });
+
+    it.skip('save & load');
   }); // end Action
 
   it.skip('createStates', function() {

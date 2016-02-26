@@ -27,15 +27,11 @@ StubAction.prototype.apply = actuator.Action.prototype.apply;
 // blueprint.prepSave
 StubAction.prototype.prepSave = function() {
   return {
-    type: 'blueprint',
-    subtype: 'StubAction',
-    blueprint: {
-      idea: this.idea,
-      requirements: subgraph.stringify(this.requirements),
-      transitions: this.transitions,
-      causeAndEffect: this.causeAndEffect,
-      solveAt: this.solveAt
-    }
+    idea: this.idea,
+    requirements: subgraph.stringify(this.requirements),
+    transitions: this.transitions,
+    causeAndEffect: this.causeAndEffect,
+    solveAt: this.solveAt
   };
 };
 

@@ -183,7 +183,7 @@ describe('actuator', function() {
     // the data needs to be able to go through
     expect(JSON.parse(JSON.stringify(data))).to.deep.equal(data);
 
-    var loaded = blueprint.loaders.ActuatorAction(data.blueprint);
+    var loaded = blueprint.loaders.ActuatorAction(data);
     expect(loaded).to.be.an.instanceOf(actuator.Action);
     expect(loaded).to.deep.equal(a); // this is our real test
 
@@ -196,6 +196,8 @@ describe('actuator', function() {
     expect(actionImplCount).to.equal(1);
     expect(price.data().value).to.deep.equal(number.value(30));
   });
+
+  it.skip('save & load');
 
   describe('planning', function() {
     it('bug: match new state with inconcrete goal', function() {

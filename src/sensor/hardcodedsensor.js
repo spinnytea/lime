@@ -47,15 +47,11 @@ _.extend(HardcodedSensor.prototype, sensor.Sensor.prototype);
 
 HardcodedSensor.prototype.prepSave = function() {
   return {
-    type: 'sensor',
-    subtype: 'HardcodedSensor',
-    sensor: {
-      idea: this.idea,
-      requirements: subgraph.stringify(this.requirements),
-      sensor: this.sensor,
-      groupfn: this.groupfn,
-      groupConfig: this.groupConfig
-    }
+    idea: this.idea,
+    requirements: subgraph.stringify(this.requirements),
+    sensor: this.sensor,
+    groupfn: this.groupfn,
+    groupConfig: this.groupConfig
   };
 };
 

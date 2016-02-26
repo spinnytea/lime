@@ -89,15 +89,11 @@ ActuatorAction.prototype.apply = function(state, glue) {
 // blueprint.prepSave
 ActuatorAction.prototype.prepSave = function() {
   return {
-    type: 'blueprint',
-    subtype: 'ActuatorAction',
-    blueprint: {
-      idea: this.idea,
-      requirements: subgraph.stringify(this.requirements),
-      transitions: this.transitions,
-      causeAndEffect: this.causeAndEffect,
-      action: this.action
-    }
+    idea: this.idea,
+    requirements: subgraph.stringify(this.requirements),
+    transitions: this.transitions,
+    causeAndEffect: this.causeAndEffect,
+    action: this.action
   };
 };
 

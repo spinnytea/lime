@@ -380,7 +380,7 @@ describe('serialplan', function() {
       expect(JSON.parse(JSON.stringify(data))).to.deep.equal(data);
 
 
-      var loaded = blueprint.loaders.SerialAction(data.blueprint);
+      var loaded = blueprint.loaders.SerialAction(data);
       expect(loaded).to.be.an.instanceOf(serialplan.Action);
       expect(loaded).to.deep.equal(sp); // this is our real test
 
@@ -393,6 +393,8 @@ describe('serialplan', function() {
     });
     it.skip('blueprint.load: cache currently loaded plans');
     // check sp.plans[0] === sp.plans[1]
+
+    it.skip('save & load');
 
     it('nested blueprint', function() {
       var sp2 = new serialplan.Action([a, a, a]);
