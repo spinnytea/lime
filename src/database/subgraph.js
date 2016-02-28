@@ -152,6 +152,8 @@ Subgraph.prototype.addVertex = function(matcher, data, options) {
     throw new RangeError('invalid matcher');
   if(options.matchRef && this.getMatch(data) === undefined)
     throw new RangeError('matchRef target (match.data) must already be a vertex');
+  if(matcher === exports.matcher.substring)
+    data.value = data.value.toLowerCase();
 
   var id = this._vertexCount + '';
   this._vertexCount++;
@@ -385,6 +387,14 @@ exports.matcher = {
     // matchData should be contained within data
     return _.isEqual(data, _.merge(_.cloneDeep(data), matchData));
   },
+  substring: function substring(data, matchData) {
+    if(matchData.path && matchData.path.length)
+      data = _.property(matchData.path)(data);
+    if(!_.isString(data))
+      return false;
+    return data.toLowerCase().indexOf(matchData.value) !== -1;
+  },
+
   number: function number(data, matchData) {
     return numnum.difference(data, matchData) === 0;
   },

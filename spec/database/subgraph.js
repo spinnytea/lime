@@ -32,7 +32,12 @@ describe('subgraph', function() {
     // this is to ensure we test everything
     expect(Object.keys(subgraph)).to.deep.equal(['Subgraph', 'matcher', 'stringify', 'parse', 'search', 'match', 'rewrite', 'createGoal', 'createTransitionedGoal']);
     expect(Object.keys(subgraph.Subgraph.prototype)).to.deep.equal(['copy', 'addVertex', 'addEdge', 'getMatch', 'getIdea', 'allIdeas', 'deleteIdea', 'getData', 'setData', 'deleteData', 'getEdge', 'allEdges']);
-    expect(Object.keys(subgraph.matcher)).to.deep.equal(['id', 'filler', 'exact', 'similar', 'number', 'discrete']);
+    expect(Object.keys(subgraph.matcher)).to.deep.equal(['id', 'filler', 'exact', 'similar', 'substring', 'number', 'discrete']);
+
+    _.forEach(subgraph.matcher, function(fn, name) {
+      expect(fn).to.be.a('Function');
+      expect(fn.name).to.equal(name);
+    });
   });
 
   describe('Subgraph', function() {
@@ -871,6 +876,57 @@ describe('subgraph', function() {
       sg = new subgraph.Subgraph();
       m = sg.addVertex(subgraph.matcher.id, mark.id);
       a = sg.addVertex(subgraph.matcher.similar, {'asdfasdfasdf': 1234});
+      sg.addEdge(m, links.list.thought_description, a);
+
+      result = subgraph.search(sg);
+      expect(result.length).to.equal(0);
+    });
+
+    it('substring: function', function() {
+      var data;
+      expect(subgraph.matcher.substring(data, { value: 'some' })).to.equal(false);
+
+      data = 'some STRING';
+      expect(subgraph.matcher.substring(data, { value: 'some' })).to.equal(true);
+      expect(subgraph.matcher.substring(data, { value: 'some', path: [] })).to.equal(true);
+      expect(subgraph.matcher.substring(data, { value: 'some', path: '' })).to.equal(true);
+      expect(subgraph.matcher.substring(data, { value: 'string' })).to.equal(true);
+
+      data = { one: data };
+      expect(subgraph.matcher.substring(data, { value: 'some' })).to.equal(false);
+      expect(subgraph.matcher.substring(data, { value: 'some', path: ['one'] })).to.equal(true);
+      expect(subgraph.matcher.substring(data, { value: 'some', path: 'one' })).to.equal(true);
+
+      data = { two: data };
+      expect(subgraph.matcher.substring(data, { value: 'some', path: 'two' })).to.equal(false);
+      expect(subgraph.matcher.substring(data, { value: 'some', path: 'one' })).to.equal(false);
+      expect(subgraph.matcher.substring(data, { value: 'some', path: ['two', 'one'] })).to.equal(true);
+      expect(subgraph.matcher.substring(data, { value: 'some', path: 'two.one' })).to.equal(true);
+      expect(subgraph.matcher.substring(data, { value: 'some', path: 'two.one.three' })).to.equal(false);
+      expect(subgraph.matcher.substring(data, { value: 'some', path: 'three.two.one' })).to.equal(false);
+      expect(subgraph.matcher.substring(data, { value: 'string', path: 'two.one' })).to.equal(true);
+    });
+
+    it('substring: basic search', function() {
+      var mark = ideas.create();
+      var apple = ideas.create({'thing': 'ExPeNsIvE'});
+      mark.link(links.list.thought_description, apple);
+
+      var sg = new subgraph.Subgraph();
+      var m = sg.addVertex(subgraph.matcher.id, mark.id);
+      var a = sg.addVertex(subgraph.matcher.substring, { value: 'eXpEnSiVe', path: 'thing' });
+      sg.addEdge(m, links.list.thought_description, a);
+
+      var result = subgraph.search(sg);
+      expect(result.length).to.equal(1);
+
+      expect(sg.getIdea(m).id).to.equal(mark.id);
+      expect(sg.getIdea(a).id).to.equal(apple.id);
+
+      // fail
+      sg = new subgraph.Subgraph();
+      m = sg.addVertex(subgraph.matcher.id, mark.id);
+      a = sg.addVertex(subgraph.matcher.substring, { value: 'not very spensive', path: 'thinger' });
       sg.addEdge(m, links.list.thought_description, a);
 
       result = subgraph.search(sg);
