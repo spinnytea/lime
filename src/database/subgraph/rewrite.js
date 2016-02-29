@@ -38,12 +38,15 @@ module.exports = function rewrite(subgraph, transitions, actual) {
 
   // validate transitions
   if(!transitions.every(function(t) {
-      return checkVertex(subgraph, t);
+      if(t.hasOwnProperty('vertex_id')) return checkVertex(subgraph, t);
+      else if(t.hasOwnProperty('edge_id')) return checkEdge(subgraph, t);
+      else return false;
     })) return undefined; // if not all of the transitions are correct, return undefined
 
   // apply transitions
   transitions.forEach(function(t) {
-    transitionVertex(subgraph, t, actual);
+    if(t.hasOwnProperty('vertex_id')) transitionVertex(subgraph, t, actual);
+    else transitionEdge(subgraph, t, actual);
   });
 
   return subgraph;
@@ -52,15 +55,17 @@ module.exports = function rewrite(subgraph, transitions, actual) {
 Object.defineProperty(module.exports, 'units', { value: {} });
 module.exports.units.checkVertex = checkVertex;
 module.exports.units.transitionVertex = transitionVertex;
+module.exports.units.checkEdge = checkEdge;
+module.exports.units.transitionEdge = transitionEdge;
 
 // return true if the vertex transition is valid
 function checkVertex(subgraph, t) {
-  var match = subgraph.getMatch(t.vertex_id);
-  if(!match)
-    return false;
-
   // if a transition hasn't been specified, there is nothing to do
   if(!(t.replace || t.combine || t.hasOwnProperty('replace_id') || t.cycle))
+    return false;
+
+  var match = subgraph.getMatch(t.vertex_id);
+  if(!match)
     return false;
 
   if(!match.options.transitionable) {
@@ -70,6 +75,7 @@ function checkVertex(subgraph, t) {
   var data = subgraph.getData(t.vertex_id);
 
   // if there is no data, then there is nothing to transition
+  // XXX is this valid, can a transition fill it in?
   if(data === undefined)
     return false;
 
@@ -116,3 +122,44 @@ function transitionVertex(subgraph, t, actual) {
   // - should _.isEqual(v.data, v.idea.data()) before combine?
     subgraph.getIdea(t.vertex_id).update(subgraph.getData(t.vertex_id));
 } // end transitionVertex
+
+
+function checkEdge(subgraph, t) {
+  var edge = subgraph.getEdge(t.edge_id);
+  if(!edge)
+    return false;
+
+  // if a transition hasn't been specified, there is nothing to do
+  if(!(t.hasOwnProperty('replace_src') || t.hasOwnProperty('replace_dst')))
+    return false;
+
+  if(!edge.options.transitionable) {
+    return false;
+  }
+
+  if(t.hasOwnProperty('replace_src')) {
+    if(!subgraph.getMatch(t.replace_src))
+      return false;
+  } else { // if(t.hasOwnProperty('replace_dst')) {
+    if(!subgraph.getMatch(t.replace_dst))
+      return false;
+  }
+
+  return true;
+} // end checkEdge
+
+function transitionEdge(subgraph, t, actual) {
+  var edge = subgraph.getEdge(t.edge_id);
+
+  if(actual)
+    subgraph.getIdea(edge.src).unlink(edge.link, subgraph.getIdea(edge.dst));
+
+  if(t.hasOwnProperty('replace_src')) {
+    edge.src = t.replace_src;
+  } else { // if(t.hasOwnProperty('replace_dst')) {
+    edge.dst = t.replace_dst;
+  }
+
+  if(actual)
+    subgraph.getIdea(edge.src).link(edge.link, subgraph.getIdea(edge.dst));
+} // end transitionEdge

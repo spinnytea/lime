@@ -197,7 +197,8 @@ Subgraph.prototype.addEdge = function(src, link, dst, options) {
   options = _.merge({
     // TODO do these NEED to be specified? can we leave them undefined?
     pref: 0,
-    transitive: false
+    transitive: false,
+    transitionable: false
   }, options);
 
   var id = this._edgeCount + '';
