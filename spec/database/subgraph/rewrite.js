@@ -65,9 +65,6 @@ describe('subgraph', function() {
     });
 
     it('validate transitions', function() {
-      // no transitions
-      expect(subgraph.rewrite(sg, [])).to.equal(undefined);
-
       // invalid
       expect(subgraph.rewrite(sg, ['!@#$ not an id'])).to.equal(undefined);
       expect(subgraph.rewrite(sg, [0])).to.equal(undefined);
@@ -88,6 +85,12 @@ describe('subgraph', function() {
     });
 
     describe('!actual', function() {
+      it('no transitions', function() {
+        var sg2 = subgraph.rewrite(sg, []);
+        expect(sg2).to.not.equal(sg);
+        expect(sg2).to.deep.equal(sg);
+      });
+
       it('replace number', function() {
         var sg2 = subgraph.rewrite(sg, [{vertex_id: p, replace: priceUpdate }]);
         expect(sg2).to.be.an.instanceOf(subgraph.Subgraph);
@@ -298,8 +301,11 @@ describe('subgraph', function() {
     }); // end !actual
 
     it('actual', function() {
+      var sg2 = subgraph.rewrite(sg, [], true);
+      expect(sg2).to.equal(sg);
+
       // replace number
-      var sg2 = subgraph.rewrite(sg, [{vertex_id: p, replace: priceUpdate }], true);
+      sg2 = subgraph.rewrite(sg, [{vertex_id: p, replace: priceUpdate }], true);
       expect(sg2).to.be.an.instanceOf(subgraph.Subgraph);
       expect(sg2).to.equal(sg);
       expect(sg.getData(p)).to.deep.equal(priceUpdate);

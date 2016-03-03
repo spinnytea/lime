@@ -28,10 +28,6 @@ describe('subgraph', function() {
   describe('match', function() {
     require('../ideas').mock();
 
-    it('init', function() {
-      expect(Object.keys(subgraph.match.units)).to.deep.equal(['initializeVertexMap', 'subgraphMatch', 'resolveMatchData', 'vertexTransitionableAcceptable', 'vertexFixedMatch']);
-    });
-
     var context, mark, apple, price;
     var outer, c, m, a, p;
     beforeEach(function() {
@@ -554,15 +550,14 @@ describe('subgraph', function() {
     describe('units', function() {
       it('init', function() {
         // this is to ensure we test everything
-        expect(Object.keys(subgraph.match.units)).to.deep.equal(['initializeVertexMap', 'subgraphMatch', 'resolveMatchData', 'vertexTransitionableAcceptable', 'vertexFixedMatch']);
-        expect(Object.keys(subgraph.match.units.subgraphMatch)).to.deep.equal(['filterOuter']);
+        expect(Object.keys(subgraph.match.units)).to.deep.equal(['initializeVertexMap', 'subgraphMatch', 'filterOuter', 'resolveMatchData', 'vertexTransitionableAcceptable', 'vertexFixedMatch']);
       });
 
       it.skip('initializeVertexMap');
 
       it.skip('subgraphMatch');
 
-      it.skip('subgraphMatch.filterOuter');
+      it.skip('filterOuter');
 
       describe('resolveMatchData', function() {
         // this function expects subgraph to behave in a particular way

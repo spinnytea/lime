@@ -23,11 +23,6 @@ var number = require('../../planning/primitives/number');
 module.exports = function rewrite(subgraph, transitions, actual) {
   if(!subgraph.concrete)
     return undefined;
-  // if there are no transitions, then this action doesn't make sense
-  // we could just return subgraph, but that may be confusing
-  // XXX why would it be confusing? why would this not be allowed?
-  if(transitions.length === 0)
-    return undefined;
 
   actual = (actual === true);
 
@@ -37,6 +32,7 @@ module.exports = function rewrite(subgraph, transitions, actual) {
     subgraph = subgraph.copy();
 
   // validate transitions
+  // TODO do we really need to validate the transitions?
   if(!transitions.every(function(t) {
       if(t.hasOwnProperty('vertex_id')) return checkVertex(subgraph, t);
       else if(t.hasOwnProperty('edge_id')) return checkEdge(subgraph, t);

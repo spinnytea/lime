@@ -23,6 +23,8 @@ var SG = require('../subgraph');
 // - can we try one solution, and start to nail down likely version
 //   (pin down, say, 6, and then try all 4! remaining options)
 // - how does the consume of this result decide which path to take since we don't explicitly list the options
+//
+// TODO make a state object that we can pass between functions instead of all these crazy arguments
 module.exports = function match(subgraphOuter, subgraphInner, unitOnly) {
   if(!subgraphOuter.concrete)
     throw new RangeError('the outer subgraph must be concrete before you can match against it');
@@ -61,14 +63,14 @@ module.exports = function match(subgraphOuter, subgraphInner, unitOnly) {
 Object.defineProperty(module.exports, 'units', { value: {} });
 module.exports.units.initializeVertexMap = initializeVertexMap;
 module.exports.units.subgraphMatch = subgraphMatch;
-module.exports.units.subgraphMatch.filterOuter = filterOuter;
+module.exports.units.filterOuter = filterOuter;
 module.exports.units.resolveMatchData = resolveMatchData;
 module.exports.units.vertexTransitionableAcceptable = vertexTransitionableAcceptable;
 module.exports.units.vertexFixedMatch = vertexFixedMatch;
 
 // build a reverse map (outer.idea.id -> outer.vertex_id)
-// this way we only need to loop over the outer ideas once (it can get large)
-// this makes it O(ni*log(no)), instead of O(ni*no)
+// <insert: arguments for indexing>
+// < ((ni+no)*log(no) vs (ni*no)) >
 function buildInverseOuterMap(subgraphOuter) {
   return _.reduce(subgraphOuter.allIdeas(), function(map, vo_idea, vo_key) {
     map[vo_idea.id] = vo_key;
@@ -77,6 +79,9 @@ function buildInverseOuterMap(subgraphOuter) {
 }
 
 // pre-fill a vertex map with identified thoughts
+// TODO write up two ways of calculating this
+// - one for the n
+// - xlnx / (x-lnx); if ni is greater than that thing, use the index
 function initializeVertexMap(subgraphOuter, subgraphInner, unitOnly) {
   var vertexMap = {};
 
@@ -132,7 +137,6 @@ function subgraphMatch(subgraphOuter, subgraphInner, outerEdges, innerEdges, ver
       return curr;
     return prev;
   }, null);
-  innerEdges.splice(innerEdges.indexOf(innerEdge), 1);
 
   // TODO instead of rebuilding the inverse on every [recursive] iteration, build it alongside vertexMap
   var inverseMap = _.invert(vertexMap);
@@ -151,7 +155,6 @@ function subgraphMatch(subgraphOuter, subgraphInner, outerEdges, innerEdges, ver
     // so if our current edge uses inderection, and there are other edges to try, then, well, try again
     // but next time, don't consider this edge
     if((innerSrcMatch.options.matchRef || innerDstMatch.options.matchRef) && innerEdges.length > skipThisTime.length) {
-      innerEdges.push(innerEdge);
       skipThisTime.push(innerEdge);
       return subgraphMatch(subgraphOuter, subgraphInner, outerEdges, innerEdges, vertexMap, unitOnly, skipThisTime);
     }
@@ -160,6 +163,8 @@ function subgraphMatch(subgraphOuter, subgraphInner, outerEdges, innerEdges, ver
     return [];
   }
 
+  // shallow copy the inner without the current match
+  var newInner = innerEdges.filter(function(e) { return e !== innerEdge; });
   // recurse (standard)
   return matches.map(function(outerEdge) {
     // update the new matches
@@ -172,9 +177,8 @@ function subgraphMatch(subgraphOuter, subgraphInner, outerEdges, innerEdges, ver
       newMap[innerEdge.dst] = outerEdge.src;
     }
 
-    // shallow copy the outer/inner without the current match
+    // shallow copy the outer without the current match
     var newOuter = outerEdges.filter(function(e) { return e !== outerEdge; });
-    var newInner = innerEdges.filter(function(e) { return e !== innerEdge; });
 
     if(newInner.length === 0) {
       // base case
@@ -196,8 +200,6 @@ function subgraphMatch(subgraphOuter, subgraphInner, outerEdges, innerEdges, ver
 function filterOuter(subgraphOuter, subgraphInner, currEdge, innerEdge, vertexMap, inverseMap, unitOnly) {
   var srcMapped = (innerEdge.src in vertexMap);
   var dstMapped = (innerEdge.dst in vertexMap);
-  var innerSrcMatch = subgraphInner.getMatch(innerEdge.src);
-  var innerDstMatch = subgraphInner.getMatch(innerEdge.dst);
 
   if(innerEdge.link === currEdge.link.opposite) {
     // reverse edge
@@ -227,6 +229,9 @@ function filterOuter(subgraphOuter, subgraphInner, currEdge, innerEdge, vertexMa
     if(currEdge.dst in inverseMap)
       return false;
   }
+
+  var innerSrcMatch = subgraphInner.getMatch(innerEdge.src);
+  var innerDstMatch = subgraphInner.getMatch(innerEdge.dst);
 
   // find the target data we are interested
   var srcData = resolveMatchData(subgraphInner, innerEdge.src, innerSrcMatch, vertexMap, subgraphOuter);
