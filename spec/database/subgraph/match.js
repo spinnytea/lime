@@ -553,6 +553,8 @@ describe('subgraph', function() {
         expect(Object.keys(subgraph.match.units)).to.deep.equal(['initSubgraphMatchData', 'initializeVertexMap', 'subgraphMatch', 'filterOuter', 'resolveMatchData', 'vertexTransitionableAcceptable', 'vertexFixedMatch']);
       });
 
+      it.skip('initSubgraphMatchData');
+
       it.skip('initializeVertexMap');
 
       it.skip('subgraphMatch');
