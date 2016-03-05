@@ -250,9 +250,6 @@ function updateVertexMap(map, inv, innerEdge, outerEdge) {
 
 // in subgraphMatch, we need to find a list outer edges that match the current inner edge
 function filterOuter(subgraphMatchData, currEdge, innerEdge) {
-  var srcMapped = (innerEdge.src in subgraphMatchData.vertexMap);
-  var dstMapped = (innerEdge.dst in subgraphMatchData.vertexMap);
-
   if(innerEdge.link === currEdge.link.opposite) {
     // reverse edge
     currEdge = {
@@ -265,7 +262,7 @@ function filterOuter(subgraphMatchData, currEdge, innerEdge) {
     return false;
 
   // skip the vertices that are mapped to something different
-  if(srcMapped) {
+  if(innerEdge.src in subgraphMatchData.vertexMap) {
     if(subgraphMatchData.vertexMap[innerEdge.src] !== currEdge.src)
       return false;
   } else {
@@ -273,7 +270,7 @@ function filterOuter(subgraphMatchData, currEdge, innerEdge) {
     if(currEdge.src in subgraphMatchData.inverseMap)
       return false;
   }
-  if(dstMapped) {
+  if(innerEdge.dst in subgraphMatchData.vertexMap) {
     if(subgraphMatchData.vertexMap[innerEdge.dst] !== currEdge.dst)
       return false;
   } else {
