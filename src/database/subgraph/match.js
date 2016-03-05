@@ -23,8 +23,6 @@ var SG = require('../subgraph');
 // - can we try one solution, and start to nail down likely version
 //   (pin down, say, 6, and then try all 4! remaining options)
 // - how does the consume of this result decide which path to take since we don't explicitly list the options
-//
-// TODO make a state object that we can pass between functions instead of all these crazy arguments
 module.exports = function match(subgraphOuter, subgraphInner, unitOnly) {
   if(!subgraphOuter.concrete)
     throw new RangeError('the outer subgraph must be concrete before you can match against it');
@@ -52,21 +50,41 @@ module.exports = function match(subgraphOuter, subgraphInner, unitOnly) {
     return [];
   }
 
+  var subgraphMatchData = initSubgraphMatchData(subgraphOuter, subgraphInner, vertexMap, unitOnly);
+
   // with this information, fill out the map using the edges
   // (note: there may not yet be any edges specified)
-  return subgraphMatch(subgraphOuter, subgraphInner, subgraphOuter.allEdges(), subgraphInner.allEdges(), vertexMap, unitOnly, [])
+  return subgraphMatch(subgraphMatchData)
     .filter(function(map) {
       return Object.keys(map).length === subgraphInner._vertexCount;
     });
 }; // end exports.match
 
 Object.defineProperty(module.exports, 'units', { value: {} });
+module.exports.units.initSubgraphMatchData = initSubgraphMatchData;
 module.exports.units.initializeVertexMap = initializeVertexMap;
 module.exports.units.subgraphMatch = subgraphMatch;
 module.exports.units.filterOuter = filterOuter;
 module.exports.units.resolveMatchData = resolveMatchData;
 module.exports.units.vertexTransitionableAcceptable = vertexTransitionableAcceptable;
 module.exports.units.vertexFixedMatch = vertexFixedMatch;
+
+// compute all the caches/indexes for subgraph match
+// TODO make a state object that we can pass between functions instead of all these crazy arguments
+// - right now it's just collecting all the arguments into an object
+// - build inverseVertexMap
+// - build outerEdge index (remove the list) so we don't need to filter them
+function initSubgraphMatchData(subgraphOuter, subgraphInner, vertexMap, unitOnly) {
+  return {
+    outer: subgraphOuter,
+    inner: subgraphInner,
+    outerEdges: subgraphOuter.allEdges(),
+    innerEdges: subgraphInner.allEdges(),
+    vertexMap: vertexMap,
+    skipThisTime: [],
+    unitOnly: unitOnly
+  };
+}
 
 // build a reverse map (outer.idea.id -> outer.vertex_id)
 // <insert: arguments for indexing>
@@ -129,34 +147,34 @@ function initializeVertexMap(subgraphOuter, subgraphInner, unitOnly) {
 // map[inner.vertex_id] = outer.vertex_id;
 // we will typically use the inner subgraph to find the indices of the outer map
 // match all of the innerEdges to the outerEdges
-function subgraphMatch(subgraphOuter, subgraphInner, outerEdges, innerEdges, vertexMap, unitOnly, skipThisTime) {
+function subgraphMatch(subgraphMatchData) {
   // pick the best inner edge
   // (this should help us reduce the number of branches)
-  var innerEdge = innerEdges.reduce(function(prev, curr) {
-    if(prev === null || curr.options.pref > prev.options.pref && skipThisTime.indexOf(curr) === -1)
+  var innerEdge = subgraphMatchData.innerEdges.reduce(function(prev, curr) {
+    if(prev === null || curr.options.pref > prev.options.pref && subgraphMatchData.skipThisTime.indexOf(curr) === -1)
       return curr;
     return prev;
   }, null);
 
   // TODO instead of rebuilding the inverse on every [recursive] iteration, build it alongside vertexMap
-  var inverseMap = _.invert(vertexMap);
+  var inverseMap = _.invert(subgraphMatchData.vertexMap);
 
   // find all matching outer edges
-  var matches = outerEdges.filter(function(currEdge) {
-    return filterOuter(subgraphOuter, subgraphInner, currEdge, innerEdge, vertexMap, inverseMap, unitOnly);
+  var matches = subgraphMatchData.outerEdges.filter(function(currEdge) {
+    return filterOuter(subgraphMatchData, currEdge, innerEdge, inverseMap);
   });
 
   // recurse (on picking matchRef too soon)
   if(matches.length === 0) {
-    var innerSrcMatch = subgraphInner.getMatch(innerEdge.src);
-    var innerDstMatch = subgraphInner.getMatch(innerEdge.dst);
+    var innerSrcMatch = subgraphMatchData.inner.getMatch(innerEdge.src);
+    var innerDstMatch = subgraphMatchData.inner.getMatch(innerEdge.dst);
 
     // because of indirection, we may need to skip an edge and try the next best one
     // so if our current edge uses inderection, and there are other edges to try, then, well, try again
     // but next time, don't consider this edge
-    if((innerSrcMatch.options.matchRef || innerDstMatch.options.matchRef) && innerEdges.length > skipThisTime.length) {
-      skipThisTime.push(innerEdge);
-      return subgraphMatch(subgraphOuter, subgraphInner, outerEdges, innerEdges, vertexMap, unitOnly, skipThisTime);
+    if((innerSrcMatch.options.matchRef || innerDstMatch.options.matchRef) && subgraphMatchData.innerEdges.length > subgraphMatchData.skipThisTime.length) {
+      subgraphMatchData.skipThisTime.push(innerEdge);
+      return subgraphMatch(subgraphMatchData);
     }
 
     // no matches, and we've skipped everything
@@ -164,11 +182,12 @@ function subgraphMatch(subgraphOuter, subgraphInner, outerEdges, innerEdges, ver
   }
 
   // shallow copy the inner without the current match
-  var newInner = innerEdges.filter(function(e) { return e !== innerEdge; });
+  var newInner = subgraphMatchData.innerEdges.filter(function(e) { return e !== innerEdge; });
   // recurse (standard)
+  // TODO if matches.length === 1, then we don't need to copy everything, we can update in subgraphMatchData in place
   return matches.map(function(outerEdge) {
     // update the new matches
-    var newMap = _.clone(vertexMap);
+    var newMap = _.clone(subgraphMatchData.vertexMap);
     if(outerEdge.link === innerEdge.link) {
       newMap[innerEdge.src] = outerEdge.src;
       newMap[innerEdge.dst] = outerEdge.dst;
@@ -178,7 +197,7 @@ function subgraphMatch(subgraphOuter, subgraphInner, outerEdges, innerEdges, ver
     }
 
     // shallow copy the outer without the current match
-    var newOuter = outerEdges.filter(function(e) { return e !== outerEdge; });
+    var newOuter = subgraphMatchData.outerEdges.filter(function(e) { return e !== outerEdge; });
 
     if(newInner.length === 0) {
       // base case
@@ -187,7 +206,12 @@ function subgraphMatch(subgraphOuter, subgraphInner, outerEdges, innerEdges, ver
     } else {
       // recursive case
       // get a list of all matches from this branch
-      return subgraphMatch(subgraphOuter, subgraphInner, newOuter, newInner, newMap, unitOnly, []);
+      var newMatchData = _.clone(subgraphMatchData);
+      newMatchData.outerEdges = newOuter;
+      newMatchData.innerEdges = newInner;
+      newMatchData.vertexMap = newMap;
+      newMatchData.skipThisTime = [];
+      return subgraphMatch(newMatchData);
     }
   }).reduce(function(list, match) {
     // reduce all match lists into a single list
@@ -197,9 +221,9 @@ function subgraphMatch(subgraphOuter, subgraphInner, outerEdges, innerEdges, ver
 } // end subgraphMatch
 
 // in subgraphMatch, we need to find a list outer edges that match the current inner edge
-function filterOuter(subgraphOuter, subgraphInner, currEdge, innerEdge, vertexMap, inverseMap, unitOnly) {
-  var srcMapped = (innerEdge.src in vertexMap);
-  var dstMapped = (innerEdge.dst in vertexMap);
+function filterOuter(subgraphMatchData, currEdge, innerEdge, inverseMap) {
+  var srcMapped = (innerEdge.src in subgraphMatchData.vertexMap);
+  var dstMapped = (innerEdge.dst in subgraphMatchData.vertexMap);
 
   if(innerEdge.link === currEdge.link.opposite) {
     // reverse edge
@@ -214,7 +238,7 @@ function filterOuter(subgraphOuter, subgraphInner, currEdge, innerEdge, vertexMa
 
   // skip the vertices that are mapped to something different
   if(srcMapped) {
-    if(vertexMap[innerEdge.src] !== currEdge.src)
+    if(subgraphMatchData.vertexMap[innerEdge.src] !== currEdge.src)
       return false;
   } else {
     // currEdge src is mapped to a different inner id
@@ -222,7 +246,7 @@ function filterOuter(subgraphOuter, subgraphInner, currEdge, innerEdge, vertexMa
       return false;
   }
   if(dstMapped) {
-    if(vertexMap[innerEdge.dst] !== currEdge.dst)
+    if(subgraphMatchData.vertexMap[innerEdge.dst] !== currEdge.dst)
       return false;
   } else {
     // currEdge dst is mapped to a different inner id
@@ -230,39 +254,39 @@ function filterOuter(subgraphOuter, subgraphInner, currEdge, innerEdge, vertexMa
       return false;
   }
 
-  var innerSrcMatch = subgraphInner.getMatch(innerEdge.src);
-  var innerDstMatch = subgraphInner.getMatch(innerEdge.dst);
+  var innerSrcMatch = subgraphMatchData.inner.getMatch(innerEdge.src);
+  var innerDstMatch = subgraphMatchData.inner.getMatch(innerEdge.dst);
 
   // find the target data we are interested
-  var srcData = resolveMatchData(subgraphInner, innerEdge.src, innerSrcMatch, vertexMap, subgraphOuter);
+  var srcData = resolveMatchData(subgraphMatchData, innerEdge.src, innerSrcMatch);
   if(srcData === null)
     return false;
-  var dstData = resolveMatchData(subgraphInner, innerEdge.dst, innerDstMatch, vertexMap, subgraphOuter);
+  var dstData = resolveMatchData(subgraphMatchData, innerEdge.dst, innerDstMatch);
   if(dstData === null)
     return false;
 
   // check the transitionability of both src and dst
   if(!vertexTransitionableAcceptable(
-      subgraphOuter.getMatch(currEdge.src).options.transitionable,
-      subgraphOuter.getData(currEdge.src),
+      subgraphMatchData.outer.getMatch(currEdge.src).options.transitionable,
+      subgraphMatchData.outer.getData(currEdge.src),
       innerSrcMatch.options.transitionable,
       srcData,
-      unitOnly))
+      subgraphMatchData.unitOnly))
     return false;
   if(!vertexTransitionableAcceptable(
-      subgraphOuter.getMatch(currEdge.dst).options.transitionable,
-      subgraphOuter.getData(currEdge.dst),
+      subgraphMatchData.outer.getMatch(currEdge.dst).options.transitionable,
+      subgraphMatchData.outer.getData(currEdge.dst),
       innerDstMatch.options.transitionable,
       dstData,
-      unitOnly))
+      subgraphMatchData.unitOnly))
     return false;
 
-  if(!subgraphInner.getIdea(innerEdge.src)) {
-    if (!vertexFixedMatch(srcData, innerSrcMatch, subgraphOuter, currEdge.src, unitOnly))
+  if(!subgraphMatchData.inner.getIdea(innerEdge.src)) {
+    if (!vertexFixedMatch(srcData, innerSrcMatch, subgraphMatchData.outer, currEdge.src, subgraphMatchData.unitOnly))
       return false;
   }
-  if(!subgraphInner.getIdea(innerEdge.dst)) {
-    if(!vertexFixedMatch(dstData, innerDstMatch, subgraphOuter, currEdge.dst, unitOnly))
+  if(!subgraphMatchData.inner.getIdea(innerEdge.dst)) {
+    if(!vertexFixedMatch(dstData, innerDstMatch, subgraphMatchData.outer, currEdge.dst, subgraphMatchData.unitOnly))
       return false;
   }
 
@@ -277,21 +301,21 @@ function filterOuter(subgraphOuter, subgraphInner, currEdge, innerEdge, vertexMa
 // @param vertexMap: vertices that are already mapped
 // @param outer: outer subgraph
 // @return undefined, object are valid results; null is in invalid result (there should be no other types)
-function resolveMatchData(inner, innerVertexId, innerMatch, vertexMap, outer) {
+function resolveMatchData(subgraphMatchData, innerVertexId, innerMatch) {
   // this is pretty simple if the target is already associated with an idea
   // or if the vertex is !matchRef
-  if(inner.getIdea(innerVertexId) || !innerMatch.options.matchRef)
-    return inner.getData(innerVertexId);
+  if(subgraphMatchData.inner.getIdea(innerVertexId) || !innerMatch.options.matchRef)
+    return subgraphMatchData.inner.getData(innerVertexId);
 
   // if our inner graph has a value cached, use that
-  if(inner.getData(innerMatch.data))
-    return inner.getData(innerMatch.data);
+  if(subgraphMatchData.inner.getData(innerMatch.data))
+    return subgraphMatchData.inner.getData(innerMatch.data);
 
   // if we have already mapped the vertex in question (the matchRef target; match.data), then use the outer data
   // (mapped, but the inner hasn't been updated with the idea)
   // (note: we may not have mapped the matchRef target by this point, and that's okay)
-  if(innerMatch.data in vertexMap)
-    return outer.getData(vertexMap[innerMatch.data]);
+  if(innerMatch.data in subgraphMatchData.vertexMap)
+    return subgraphMatchData.outer.getData(subgraphMatchData.vertexMap[innerMatch.data]);
 
   // we can't find data to use
   return null;

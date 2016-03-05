@@ -550,7 +550,7 @@ describe('subgraph', function() {
     describe('units', function() {
       it('init', function() {
         // this is to ensure we test everything
-        expect(Object.keys(subgraph.match.units)).to.deep.equal(['initializeVertexMap', 'subgraphMatch', 'filterOuter', 'resolveMatchData', 'vertexTransitionableAcceptable', 'vertexFixedMatch']);
+        expect(Object.keys(subgraph.match.units)).to.deep.equal(['initSubgraphMatchData', 'initializeVertexMap', 'subgraphMatch', 'filterOuter', 'resolveMatchData', 'vertexTransitionableAcceptable', 'vertexFixedMatch']);
       });
 
       it.skip('initializeVertexMap');
@@ -565,6 +565,7 @@ describe('subgraph', function() {
         var idea;
         var inner, i, im;
         var outer, o;
+        var sgMD;
         beforeEach(function() {
           idea = ideas.create();
           inner = new subgraph.Subgraph();
@@ -572,13 +573,19 @@ describe('subgraph', function() {
           im = inner.addVertex(subgraph.matcher.filler, i, {matchRef:true});
           outer = new subgraph.Subgraph();
           o = outer.addVertex(subgraph.matcher.filler);
+
+          sgMD = {
+            inner: inner,
+            outer: outer,
+            vertexMap: {}
+          };
         });
 
         it('use inner data', function() {
           idea.update({loc:'data'});
           inner.setData(i, {loc:'cache'});
           var resolve = function() {
-            return subgraph.match.units.resolveMatchData(inner, i, inner.getMatch(i), {}, outer);
+            return subgraph.match.units.resolveMatchData(sgMD, i, inner.getMatch(i));
           };
 
           // !matchRef
@@ -595,7 +602,7 @@ describe('subgraph', function() {
           inner.setData(i, {loc:'cache'});
           inner.setData(im, {loc:'ref cache'});
           var resolve = function() {
-            return subgraph.match.units.resolveMatchData(inner, im, inner.getMatch(im), {}, outer);
+            return subgraph.match.units.resolveMatchData(sgMD, im, inner.getMatch(im));
           };
 
           // the local cache doesn't mean anything
@@ -624,7 +631,7 @@ describe('subgraph', function() {
         //  var resolve = function() {
         //    var vertexMap = {};
         //    vertexMap[i] = o;
-        //    return subgraph.match.units.resolveMatchData(inner, i, inner.getMatch(i), vertexMap, outer);
+        //    return subgraph.match.units.resolveMatchData(sgMD, i, inner.getMatch(i));
         //  };
         //
         //  expect(resolve()).to.deep.equal({loc:'cache'});
@@ -636,9 +643,8 @@ describe('subgraph', function() {
           outer.setData(o, {loc:'cache'});
           outer._idea[o] = idea;
           var resolve = function() {
-            var vertexMap = {};
-            vertexMap[i] = o;
-            return subgraph.match.units.resolveMatchData(inner, im, inner.getMatch(im), vertexMap, outer);
+            sgMD.vertexMap[i] = o;
+            return subgraph.match.units.resolveMatchData(sgMD, im, inner.getMatch(im));
           };
 
           // use the cached data
@@ -651,7 +657,7 @@ describe('subgraph', function() {
 
         it('no match', function() {
           var resolve = function() {
-            return subgraph.match.units.resolveMatchData(inner, im, inner.getMatch(im), {}, outer);
+            return subgraph.match.units.resolveMatchData(sgMD, im, inner.getMatch(im));
           };
 
           expect(resolve()).to.deep.equal(null);
