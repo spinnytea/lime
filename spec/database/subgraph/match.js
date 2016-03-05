@@ -550,10 +550,10 @@ describe('subgraph', function() {
     describe('units', function() {
       it('init', function() {
         // this is to ensure we test everything
-        expect(Object.keys(subgraph.match.units)).to.deep.equal(['initSubgraphMatchData', 'initializeVertexMap', 'subgraphMatch', 'filterOuter', 'resolveMatchData', 'vertexTransitionableAcceptable', 'vertexFixedMatch']);
+        expect(Object.keys(subgraph.match.units)).to.deep.equal(['SubgraphMatchData', 'initializeVertexMap', 'subgraphMatch', 'filterOuter', 'resolveMatchData', 'vertexTransitionableAcceptable', 'vertexFixedMatch']);
       });
 
-      it.skip('initSubgraphMatchData');
+      it.skip('SubgraphMatchData');
 
       it.skip('initializeVertexMap');
 

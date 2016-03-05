@@ -24,6 +24,10 @@ describe('links', function() {
 
       expect(function() { links.list.thought_description = 'stuff'; }).to.throw(Error);
       expect(function() { links.list.thought_description.name = 'stuff'; }).to.throw(Error);
+
+      expect(links.list.thought_description.isOpp).to.equal(false);
+      expect(links.list.thought_description.opposite.isOpp).to.equal(true);
+      expect(links.list.thought_description.opposite.opposite.isOpp).to.equal(false);
     });
 
     it('create undirected', function() {
@@ -31,6 +35,7 @@ describe('links', function() {
       expect(links.list[name].name).to.equal(name);
       expect(links.list[name].opposite.name).to.equal(name);
       expect(links.list[name].opposite).to.equal(links.list[name]);
+      expect(links.list[name].isOpp).to.equal(false);
     });
 
     it('options', function() {

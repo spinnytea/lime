@@ -24,9 +24,13 @@ exports.create = function(name, undirected, options) {
 
     Object.defineProperty(link, 'opposite', { get: function() { return opp; } });
     Object.defineProperty(opp, 'opposite', { get: function() { return link; } });
+
+    Object.defineProperty(link, 'isOpp', { value: false });
+    Object.defineProperty(opp, 'isOpp', { value: true });
   } else {
     Object.defineProperty(link, 'name', { get: function() { return name; } });
     Object.defineProperty(link, 'opposite', { get: function() { return link; } });
+    Object.defineProperty(link, 'isOpp', { value: false });
   }
 
   // add the link to the list

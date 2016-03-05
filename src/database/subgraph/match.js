@@ -50,7 +50,7 @@ module.exports = function match(subgraphOuter, subgraphInner, unitOnly) {
     return [];
   }
 
-  var subgraphMatchData = initSubgraphMatchData(subgraphOuter, subgraphInner, vertexMap, unitOnly);
+  var subgraphMatchData = new SubgraphMatchData(subgraphOuter, subgraphInner, vertexMap, unitOnly);
 
   // with this information, fill out the map using the edges
   // (note: there may not yet be any edges specified)
@@ -61,7 +61,7 @@ module.exports = function match(subgraphOuter, subgraphInner, unitOnly) {
 }; // end exports.match
 
 Object.defineProperty(module.exports, 'units', { value: {} });
-module.exports.units.initSubgraphMatchData = initSubgraphMatchData;
+module.exports.units.SubgraphMatchData = SubgraphMatchData;
 module.exports.units.initializeVertexMap = initializeVertexMap;
 module.exports.units.subgraphMatch = subgraphMatch;
 module.exports.units.filterOuter = filterOuter;
@@ -70,22 +70,48 @@ module.exports.units.vertexTransitionableAcceptable = vertexTransitionableAccept
 module.exports.units.vertexFixedMatch = vertexFixedMatch;
 
 // compute all the caches/indexes for subgraph match
-// TODO make a state object that we can pass between functions instead of all these crazy arguments
-// - right now it's just collecting all the arguments into an object
-// - build inverseVertexMap
-// - build outerEdge index (remove the list) so we don't need to filter them
-function initSubgraphMatchData(subgraphOuter, subgraphInner, vertexMap, unitOnly) {
-  return {
-    outer: subgraphOuter,
-    inner: subgraphInner,
-    outerEdges: subgraphOuter.allEdges(),
-    innerEdges: subgraphInner.allEdges(),
-    vertexMap: vertexMap,
-    inverseMap: _.invert(vertexMap),
-    skipThisTime: [],
-    unitOnly: unitOnly
-  };
+function SubgraphMatchData(subgraphOuter, subgraphInner, vertexMap, unitOnly) {
+  if(subgraphInner) {
+    this.outer = subgraphOuter;
+    this.inner = subgraphInner;
+    this.outerEdges = {};
+    this.innerEdges = subgraphInner.allEdges();
+    this.vertexMap = vertexMap;
+    this.inverseMap = _.invert(vertexMap);
+    this.skipThisTime = [];
+    this.unitOnly = unitOnly;
+
+    var that = this;
+    subgraphOuter.allEdges().forEach(function (edge) {
+      var link = edge.link;
+      if (link.isOpp) link = link.opposite;
+      that.outerEdges[link.name] = that.outerEdges[link.name] || [];
+      that.outerEdges[link.name].push(edge);
+    });
+  } else {
+    // clone an existing obj
+    var sgMD = subgraphOuter;
+    this.outer = sgMD.outer;
+    this.inner = sgMD.inner;
+    this.outerEdges = _.clone(sgMD.outerEdges);
+    //this.innerEdges = sgMD.innerEdges;
+    //this.vertexMap = sgMD.vertexMap;
+    //this.inverseMap = sgMD.inverseMap;
+    //this.skipThisTime = sgMD.skipThisTime;
+    this.unitOnly = sgMD.unitOnly;
+  }
 }
+SubgraphMatchData.prototype.getOuterEdges = function(innerEdge) {
+  var link = innerEdge.link;
+  if(link.isOpp) link = link.opposite;
+  return this.outerEdges[link.name] || [];
+};
+SubgraphMatchData.prototype.removeOuterEdge = function(edge) {
+  var link = edge.link;
+  if(link.isOpp) link = link.opposite;
+  this.outerEdges[link.name] = this.outerEdges[link.name].filter(function(e) { return e !== edge; });
+};
+
 
 // build a reverse map (outer.idea.id -> outer.vertex_id)
 // <insert: arguments for indexing>
@@ -158,7 +184,7 @@ function subgraphMatch(subgraphMatchData) {
   }, null);
 
   // find all matching outer edges
-  var matches = subgraphMatchData.outerEdges.filter(function(currEdge) {
+  var matches = subgraphMatchData.getOuterEdges(innerEdge).filter(function(currEdge) {
      return filterOuter(subgraphMatchData, currEdge, innerEdge);
   });
 
@@ -198,8 +224,7 @@ function subgraphMatch(subgraphMatchData) {
     if(newInner.length === 0) {
       return [subgraphMatchData.vertexMap];
     } else {
-      // shallow copy the outer without the current match
-      subgraphMatchData.outerEdges = subgraphMatchData.outerEdges.filter(function(e) { return e !== outerEdge; });
+      subgraphMatchData.removeOuterEdge(outerEdge);
       subgraphMatchData.innerEdges = newInner;
       subgraphMatchData.skipThisTime.length = 0;
       return subgraphMatch(subgraphMatchData);
@@ -218,13 +243,10 @@ function subgraphMatch(subgraphMatchData) {
       // if there are no more inner edges to match, then our vertex map is complete
       return [newMap];
     } else {
-      // shallow copy the outer without the current match
-      var newOuter = subgraphMatchData.outerEdges.filter(function(e) { return e !== outerEdge; });
-
       // recursive case
       // get a list of all matches from this branch
-      var newMatchData = _.clone(subgraphMatchData);
-      newMatchData.outerEdges = newOuter;
+      var newMatchData = new SubgraphMatchData(subgraphMatchData);
+      newMatchData.removeOuterEdge(outerEdge);
       newMatchData.innerEdges = newInner;
       newMatchData.vertexMap = newMap;
       newMatchData.inverseMap = newInv;
