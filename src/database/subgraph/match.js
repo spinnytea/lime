@@ -113,29 +113,36 @@ SubgraphMatchData.prototype.removeOuterEdge = function(edge) {
 };
 
 
-// build a reverse map (outer.idea.id -> outer.vertex_id)
-// <insert: arguments for indexing>
-// < ((ni+no)*log(no) vs (ni*no)) >
-function buildInverseOuterMap(subgraphOuter) {
-  return _.reduce(subgraphOuter.allIdeas(), function(map, vo_idea, vo_key) {
-    map[vo_idea.id] = vo_key;
-    return map;
-  }, {});
-}
-
 // pre-fill a vertex map with identified thoughts
-// TODO write up two ways of calculating this
-// - one for the n
-// - xlnx / (x-lnx); if ni is greater than that thing, use the index
 function initializeVertexMap(subgraphOuter, subgraphInner, unitOnly) {
   var vertexMap = {};
+  var innerIdeas = subgraphInner.allIdeas();
+  var getOuterVertexId;
 
-  var inverseOuterMap = buildInverseOuterMap(subgraphOuter);
+  // assumption: objects are hash maps
+  // ((ni+no)*log(no) vs (ni*no))
+  // xlnx / (x-lnx); if ni is greater than that thing, use the index
+  // otherwise, it's faster to simply search for the elements
+  var x = subgraphOuter._vertexCount;
+  var l2x = Math.log2(x);
+  if(innerIdeas.length > x*l2x / (x-l2x)) {
+    // build a reverse map (outer.idea.id -> outer.vertex_id)
+    var inverseOuterMap = _.reduce(subgraphOuter.allIdeas(), function(map, vo_idea, vo_key) {
+      map[vo_idea.id] = vo_key;
+      return map;
+    }, {});
+    getOuterVertexId = function(id) { return inverseOuterMap[id]; };
+  } else {
+    var list = subgraphOuter.allIdeas();
+    getOuterVertexId = function(id) { return _.findKey(list, function(i) { return id === i.id; }); };
+  }
+
+
   // if the match is not possible, then exit early and return []
   var possible = true;
 
-  _.forEach(subgraphInner.allIdeas(), function(vi_idea, vi_key) {
-    var vo_key = inverseOuterMap[vi_idea.id];
+  _.forEach(innerIdeas, function(vi_idea, vi_key) {
+    var vo_key = getOuterVertexId(vi_idea.id);
     if(vo_key) {
       vertexMap[vi_key] = vo_key;
       // vi.idea has been identified
