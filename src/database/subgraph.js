@@ -190,6 +190,8 @@ Subgraph.prototype.addVertex = function(matcher, data, options) {
 // @param options.pref: higher prefs will be considered first (default: 0)
 // @param options.transitive: the same as link.transitive; will search in a transitive manner TODO does subgraph.match need to support this?
 //
+// TODO should the edges be stored in a normalized form <if(link.isOpp) then(swap)> so we don't need to account for it while searching/matching?
+//
 // - rejected options
 // @param options.byIdeaLink: during subgraph.match, instead of matching subgraph edges uses the existing idea link TODO come up with a better key name
 // - we can't do this because the subgraph represents our imagination, we can't plan ahead if we don't let the subgraph contain ALL the information

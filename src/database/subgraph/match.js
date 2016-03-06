@@ -123,6 +123,7 @@ function initializeVertexMap(subgraphOuter, subgraphInner, unitOnly) {
   // ((ni+no)*log(no) vs (ni*no))
   // xlnx / (x-lnx); if ni is greater than that thing, use the index
   // otherwise, it's faster to simply search for the elements
+  // this turns out to be a really small number, but ni is typically even smaller
   var x = subgraphOuter._vertexCount;
   var l2x = Math.log2(x);
   if(innerIdeas.length > x*l2x / (x-l2x)) {
@@ -286,9 +287,12 @@ function filterOuter(subgraphMatchData, currEdge, innerEdge) {
       link: currEdge.link.opposite,
       dst: currEdge.src
     };
-  } else if(innerEdge.link !== currEdge.link)
-  // the edges don't match
-    return false;
+  }
+
+  // now that the edges are indexed by link type, this won't happend
+  //else if(innerEdge.link !== currEdge.link)
+  //// the edges don't match
+  //  return false;
 
   // skip the vertices that are mapped to something different
   if(innerEdge.src in subgraphMatchData.vertexMap) {
