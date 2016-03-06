@@ -1,6 +1,5 @@
 'use strict';
 // node_modules/.bin/gulp --harmony mocha
-var config = require('./src/config');
 var gulp = require('gulp');
 var istanbul = require('gulp-istanbul');
 var jshint = require('gulp-jshint');
@@ -47,7 +46,7 @@ if(reporter === 'skipped') {
 }
 
 
-var files = ['config.js', 'spec/**/*.js', 'src/**/*.js'];
+var files = ['spec/**/*.js', 'src/**/*.js'];
 
 gulp.task('mocha', ['jshint'], function() {
   return gulp.src(['spec/**/*.js'], {read: false})
