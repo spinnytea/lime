@@ -358,7 +358,7 @@ function filterOuter(subgraphMatchData, currEdge, innerEdge) {
 function resolveMatchData(subgraphMatchData, innerVertexId, innerMatch) {
   // this is pretty simple if the target is already associated with an idea
   // or if the vertex is !matchRef
-  if(subgraphMatchData.inner.getIdea(innerVertexId) || !innerMatch.options.matchRef)
+  if(!innerMatch.options.matchRef || subgraphMatchData.inner.getIdea(innerVertexId))
     return subgraphMatchData.inner.getData(innerVertexId);
 
   // if our inner graph has a value cached, use that

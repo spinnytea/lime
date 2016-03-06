@@ -722,6 +722,8 @@ describe('subgraph', function() {
 
           // if the units match, then the data must still be a number or discrete
           expect(acceptable(true, {unit: 'a'}, true, {unit: 'a'}, true)).to.equal(false);
+          expect(acceptable(true, {value:number.value(0),unit:'a'}, true, {unit: 'a'}, true)).to.equal(false);
+          expect(acceptable(true, {unit: 'a'}, true, {value:number.value(0),unit:'a'}, true)).to.equal(false);
 
           expect(acceptable(true, {value:number.value(0),unit:'a'}, true, {value:number.value(1),unit:'a'}, true)).to.equal(true);
           expect(acceptable(true, {value:false,unit:bool}, true, {value:true,unit:bool}, true)).to.equal(true);
@@ -743,16 +745,87 @@ describe('subgraph', function() {
       }); // end vertexTransitionableAcceptable
 
       describe('vertexFixedMatch', function() {
+        // check the matcher function against the outer data
+        // this should only be called if the inner idea has not been identified
+        //
+        // if it's not transitionable, then the outer data needs to match
+        // if we aren't only checking for units, then the outer needs to match now
+
+        // vertexFixedMatch(subgraphInner.getData(vi_key), subgraphInner.getMatch(vi_key), subgraphOuter, vo_key, unitOnly);
+        // vertexFixedMatch(srcData, innerSrcMatch, subgraphMatchData.outer, currEdge.src, subgraphMatchData.unitOnly);
+        var vertexFixedMatch = subgraph.match.units.vertexFixedMatch;
+
+        it('matchRef', function() {
+          // Note: resolveMatchData will resolve innerData as getData(ref)
+          var a_num = ideas.create(number.cast({value: number.value(1), unit: '0'}));
+          var outer = new subgraph.Subgraph();
+          var vo_key = outer.addVertex(subgraph.matcher.id, a_num);
+          var inner = new subgraph.Subgraph();
+          var ref = inner.addVertex(subgraph.matcher.id, a_num);
+          var vi_key = inner.addVertex(subgraph.matcher.number, ref, { matchRef: true });
+
+          expect(vertexFixedMatch(inner.getData(ref), inner.getMatch(vi_key), outer, vo_key, false)).to.equal(true);
+
+          // if the matchRef obj doesn't have the right data, then it should't pass
+          var b_num = ideas.create(number.cast({value: number.value(100), unit: '0'}));
+          var bref = inner.addVertex(subgraph.matcher.id, b_num);
+          var bvi_key = inner.addVertex(subgraph.matcher.number, bref, { matchRef: true });
+
+          expect(vertexFixedMatch(inner.getData(bref), inner.getMatch(bvi_key), outer, vo_key, false)).to.equal(false);
+        });
+
         // we don't need to test all the matchers
         // but there are distinctly two categories we want to ensure work
-        it.skip('against matcher.id');
+        it('against matcher.id', function() {
+          var a_num = ideas.create(number.cast({value: number.value(1), unit: '0'}));
+          var b_num = ideas.create(number.cast({value: number.value(1), unit: '0'}));
+          var outer = new subgraph.Subgraph();
+          var vo_key = outer.addVertex(subgraph.matcher.id, a_num);
+          var inner = new subgraph.Subgraph();
+          var vi_key = inner.addVertex(subgraph.matcher.id, a_num);
+          var bvi_key = inner.addVertex(subgraph.matcher.id, b_num);
 
-        it.skip('against data');
-
-        it.skip('pass-through', function() {
-          // unitOnly && transitionable
+          expect(vertexFixedMatch(inner.getData(vi_key), inner.getMatch(vi_key), outer, vo_key, false)).to.equal(true);
+          expect(vertexFixedMatch(inner.getData(bvi_key), inner.getMatch(bvi_key), outer, vo_key, false)).to.equal(false);
         });
-      }); // end vertexNonTransitionableMatch
+
+        it('against matcher(not id)', function() {
+          var a_num = ideas.create(number.cast({value: number.value(1), unit: '0'}));
+          var outer = new subgraph.Subgraph();
+          var vo_key = outer.addVertex(subgraph.matcher.id, a_num);
+          var inner = new subgraph.Subgraph();
+          var vi_key = inner.addVertex(subgraph.matcher.number, number.cast({value: number.value(0, 2), unit: '0'}));
+          var bvi_key = inner.addVertex(subgraph.matcher.number, number.cast({value: number.value(2), unit: '0'}));
+
+          expect(vertexFixedMatch(inner.getData(vi_key), inner.getMatch(vi_key), outer, vo_key, false)).to.equal(true);
+          expect(vertexFixedMatch(inner.getData(bvi_key), inner.getMatch(bvi_key), outer, vo_key, false)).to.equal(false);
+        });
+
+        it('pass-through', function() {
+          var a_num = ideas.create(number.cast({value: number.value(1), unit: '0'}));
+          var outer = new subgraph.Subgraph();
+          var vo_key = outer.addVertex(subgraph.matcher.id, a_num);
+          var inner = new subgraph.Subgraph();
+          var vi_key = inner.addVertex(subgraph.matcher.number, number.cast({value: number.value(2), unit: '0'}), { transitionable: true });
+
+          // unitOnly && transitionable
+          expect(vertexFixedMatch(inner.getData(vi_key), inner.getMatch(vi_key), outer, vo_key, true)).to.equal(true);
+
+          //
+          // (note that the data does not match)
+          //
+
+          // if unit only is false, then so is this
+          expect(vertexFixedMatch(inner.getData(vi_key), inner.getMatch(vi_key), outer, vo_key, false)).to.equal(false);
+
+          // if transitionable is false, then so is this
+          inner.getMatch(vi_key).options.transitionable = false;
+          expect(vertexFixedMatch(inner.getData(vi_key), inner.getMatch(vi_key), outer, vo_key, true)).to.equal(false);
+
+          // neither
+          expect(vertexFixedMatch(inner.getData(vi_key), inner.getMatch(vi_key), outer, vo_key, false)).to.equal(false);
+        });
+      }); // end vertexFixedMatch
     }); // end units
   }); // end match (part 2)
 }); // end subgraph
