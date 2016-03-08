@@ -201,8 +201,8 @@ exports.context = function(name) {
   }
 };
 
+/* istanbul ignore next */
 config.onInit(function() {
-  /* istanbul ignore if */
   if(!config.data.ideas) {
     config.data.ideas = {
       context: {}

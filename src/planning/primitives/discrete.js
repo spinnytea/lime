@@ -128,12 +128,12 @@ exports.definitions.create = function(states, differenceFnName) {
 //
 // setup some stock discrete definitions
 //
+/* istanbul ignore next */
 config.onInit(function() {
-  /* istanbul ignore if */
   if(!config.data.discrete) {
     config.data.discrete = {};
   }
-  /* istanbul ignore if */
+
   if(!config.data.discrete.boolean) {
     var idea = exports.definitions.create([true, false]);
     config.data.discrete.boolean = idea.id;
