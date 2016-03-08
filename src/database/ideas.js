@@ -207,7 +207,6 @@ config.onInit(function() {
     config.data.ideas = {
       context: {}
     };
-    config.save();
 
     if(config.settings.in_memory) {
       exports.units.boundaries.saveObj = memorySave;

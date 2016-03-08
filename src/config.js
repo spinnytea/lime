@@ -22,7 +22,10 @@ var hasInit = false;
 var onInit = [];
 exports.onInit = function(fn) {
   onInit.push(fn);
-  if(hasInit) fn();
+  if(hasInit) {
+    fn();
+    exports.save();
+  }
 };
 exports.init = function(projectConfig) {
   if(projectConfig.location) delete exports.settings.location;
@@ -43,6 +46,7 @@ exports.init = function(projectConfig) {
 
   hasInit = true;
   onInit.forEach(function(fn) { fn(); });
+  exports.save();
 };
 
 // TODO save on exit

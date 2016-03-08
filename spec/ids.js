@@ -3,70 +3,111 @@ var expect = require('chai').expect;
 var config = require('../src/config');
 var ids = require('../src/ids');
 
-// copied from the src
-var tokens = [
-	'0', '1', '2', '3', '4', '5', '6', '7', '8', '9', // numbers
-	'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n', 'o', 'p', 'q', 'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z' // lower case letters
-];
-
 describe('ids', function() {
   it('init', function() {
-    // this is assumed by ids; we can't really do anything but ensure it's existence
+    expect(Object.keys(ids)).to.deep.equal(['anonymous', 'next']);
+    expect(Object.keys(ids.units)).to.deep.equal(['tokens', 'replaceAt', 'increment']);
+
     expect(config.data.ids).to.be.an('object');
-
-    expect(ids.next).to.be.a('function');
-    expect(ids.next.anonymous).to.be.a('function');
   });
-
-  it('increment', function() {
-    // the value should not be defined
-    expect(config.data.ids.testing).to.equal(undefined);
-
-    // an id must be supplied to next
-    expect(function() { ids.next(); }).to.throw(TypeError);
-    
-		// set of single digits
-		tokens.slice(1).forEach(function(token) {
-			expect(ids.next('testing')).to.equal(token);
-		});
-
-    expect(config.data.ids.testing).to.equal('z');
-
-		// set of double digits
-		tokens.slice(1).forEach(function(i) {
-      tokens.forEach(function(j) {
-        expect(ids.next('testing')).to.equal(i+j);
-      });
-		});
-
-    expect(config.data.ids.testing).to.equal('zz');
-
-		// set of triple digits
-		tokens.slice(1).forEach(function(i) {
-      tokens.forEach(function(j) {
-        tokens.forEach(function(k) {
-          expect(ids.next('testing')).to.equal(i+j+k);
-        });
-      });
-		});
-
-    expect(config.data.ids.testing).to.equal('zzz');
-    expect(ids.next('testing')).to.equal('1000');
-    expect(config.data.ids.testing).to.equal('1000');
-
-    delete config.data.ids.testing;
-    expect(config.data.ids.testing).to.equal(undefined);
-    expect(config.data.ids).to.not.equal(undefined);
-  }); // end increment
 
   it('anonymous', function() {
+    expect(ids.anonymous('')).to.equal('1');
+    expect(ids.anonymous('12')).to.equal('13');
+    expect(ids.anonymous('az')).to.equal('b0');
+    expect(ids.anonymous(ids.anonymous(''))).to.equal('2');
+  });
+
+  it('anonymous does not store keys', function() {
     var keysBefore = Object.keys(config.data.ids);
-
-    var id = ids.next.anonymous();
-    expect(id).to.equal(tokens[1]);
-    id = ids.next.anonymous(id);
-    expect(id).to.equal(tokens[2]);
-
+    ids.anonymous('12');
     expect(Object.keys(config.data.ids)).to.deep.equal(keysBefore);
   });
-});
+
+  it('next', function() {
+    var key = '_test_';
+    expect(config.data.ids).not.to.have.property(key);
+
+    expect(ids.next(key)).to.equal('1');
+    expect(ids.next(key)).to.equal('2');
+    expect(ids.next(key)).to.equal('3');
+
+    expect(config.data.ids).to.have.property(key);
+
+    // cleanup
+    delete config.data.ids[key];
+    expect(config.data.ids).not.to.have.property(key);
+  });
+
+  it('next only accepts keys', function() {
+    expect(function() { ids.next(undefined); }).to.throw('key must be a string');
+    expect(function() { ids.next(null); }).to.throw('key must be a string');
+    expect(function() { ids.next(0); }).to.throw('key must be a string');
+    expect(function() { ids.next({}); }).to.throw('key must be a string');
+    expect(function() { ids.next({key: 'things'}); }).to.throw('key must be a string');
+    expect(function() { ids.next(''); }).to.throw('key must be a string');
+  });
+
+  describe('units', function() {
+    it('tokens', function() {
+      var tokens = ids.units.tokens;
+
+      // 36 doesn't really matter, but it's good to know
+      expect(tokens.length).to.equal(36);
+
+      // not file systems are case sensitive
+      // since our primary way of storing data will be to write files, we need to limit our character set
+      expect(tokens.map(function(s) { return s.toLowerCase(); })).to.deep.equal(tokens);
+
+      // I like to use underscores for special IDs, so we need to make sure the normally generated IDs can't overlap with them
+      expect(tokens.indexOf('a')).to.not.equal(-1); // make sure our search works
+      expect(tokens.indexOf('_')).to.equal(-1); // perform the test
+    });
+
+    it('replaceAt', function() {
+      var replaceAt = ids.units.replaceAt;
+
+      expect(replaceAt('1234', 0, 'a')).to.equal('a234');
+      expect(replaceAt('1234', 1, 'a')).to.equal('1a34');
+      expect(replaceAt('1234', 2, 'a')).to.equal('12a4');
+      expect(replaceAt('1234', 3, 'a')).to.equal('123a');
+    });
+
+    describe('increment', function() {
+      var tokens_bak;
+      var increment = ids.units.increment;
+      before(function() {
+        tokens_bak = ids.units.tokens;
+        ids.units.tokens = ['0', '1', '2'];
+      });
+      after(function() {
+        ids.units.tokens = tokens_bak;
+      });
+
+      it('initial', function() {
+        expect(increment('')).to.equal('1');
+      });
+
+      it('normal', function() {
+        expect(increment('0')).to.equal('1');
+        expect(increment('1')).to.equal('2');
+        expect(increment('10')).to.equal('11');
+        expect(increment('11')).to.equal('12');
+      });
+
+      it('rollover', function() {
+        expect(increment('2')).to.equal('10');
+        expect(increment('22')).to.equal('100');
+        expect(increment('222')).to.equal('1000');
+        expect(increment('2222')).to.equal('10000');
+      });
+    }); // end increment
+
+    describe('unsupported', function() {
+      it('increment: invalid characters', function() {
+        expect(ids.units.increment('%')).to.equal('0');
+        expect(ids.units.increment('2%z', 1)).to.equal('200');
+      });
+    }); // end unsupported
+  }); // end units
+}); // end ids
