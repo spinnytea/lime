@@ -14,10 +14,10 @@ exports.next = function(key) {
 
   // load the id saved in settings
   // or create it if it doesn't exist
-  var nextID = config.data.ids[key] || exports.units.tokens[0];
+  var nextID = config.data.ids[key] || '';
 
   // save and return the new id
-  return (config.data.ids[key] = increment(nextID, nextID.length - 1));
+  return (config.data.ids[key] = increment(nextID));
 };
 
 
@@ -44,6 +44,7 @@ function increment(nextID) {
     } else {
       // get the next token index
       var idx = tokens.indexOf(nextID.charAt(index)) + 1;
+      if(idx === 0) throw new Error('invalid character in id');
 
       // if we can't increase that anymore, then increase the next value
       if(idx === tokens.length) {

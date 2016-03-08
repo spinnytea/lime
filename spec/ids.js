@@ -14,14 +14,8 @@ describe('ids', function() {
   it('anonymous', function() {
     expect(ids.anonymous('')).to.equal('1');
     expect(ids.anonymous('12')).to.equal('13');
-    expect(ids.anonymous('az')).to.equal('b0');
+    expect(ids.anonymous('aa')).to.equal('ab');
     expect(ids.anonymous(ids.anonymous(''))).to.equal('2');
-  });
-
-  it('anonymous does not store keys', function() {
-    var keysBefore = Object.keys(config.data.ids);
-    ids.anonymous('12');
-    expect(Object.keys(config.data.ids)).to.deep.equal(keysBefore);
   });
 
   it('next', function() {
@@ -39,14 +33,22 @@ describe('ids', function() {
     expect(config.data.ids).not.to.have.property(key);
   });
 
-  it('next only accepts keys', function() {
-    expect(function() { ids.next(undefined); }).to.throw('key must be a string');
-    expect(function() { ids.next(null); }).to.throw('key must be a string');
-    expect(function() { ids.next(0); }).to.throw('key must be a string');
-    expect(function() { ids.next({}); }).to.throw('key must be a string');
-    expect(function() { ids.next({key: 'things'}); }).to.throw('key must be a string');
-    expect(function() { ids.next(''); }).to.throw('key must be a string');
-  });
+  describe('error checks', function() {
+    it('anonymous does not store keys', function() {
+      var keysBefore = Object.keys(config.data.ids);
+      ids.anonymous('12');
+      expect(Object.keys(config.data.ids)).to.deep.equal(keysBefore);
+    });
+
+    it('next only accepts keys', function() {
+      expect(function() { ids.next(undefined); }).to.throw('key must be a string');
+      expect(function() { ids.next(null); }).to.throw('key must be a string');
+      expect(function() { ids.next(0); }).to.throw('key must be a string');
+      expect(function() { ids.next({}); }).to.throw('key must be a string');
+      expect(function() { ids.next({key: 'things'}); }).to.throw('key must be a string');
+      expect(function() { ids.next(''); }).to.throw('key must be a string');
+    });
+  }); // end error checks
 
   describe('units', function() {
     it('tokens', function() {
@@ -74,15 +76,7 @@ describe('ids', function() {
     });
 
     describe('increment', function() {
-      var tokens_bak;
       var increment = ids.units.increment;
-      before(function() {
-        tokens_bak = ids.units.tokens;
-        ids.units.tokens = ['0', '1', '2'];
-      });
-      after(function() {
-        ids.units.tokens = tokens_bak;
-      });
 
       it('initial', function() {
         expect(increment('')).to.equal('1');
@@ -96,18 +90,18 @@ describe('ids', function() {
       });
 
       it('rollover', function() {
-        expect(increment('2')).to.equal('10');
-        expect(increment('22')).to.equal('100');
-        expect(increment('222')).to.equal('1000');
-        expect(increment('2222')).to.equal('10000');
+        expect(increment('z')).to.equal('10');
+        expect(increment('zz')).to.equal('100');
+        expect(increment('zzz')).to.equal('1000');
+      });
+
+      it('invalid characters', function() {
+        expect(function() { increment('%'); }).to.throw('invalid character in id');
+        expect(function() { increment('2%z'); }).to.throw('invalid character in id');
+
+        // not supported, but I proof that we are not checking the whole string
+        expect(increment('2%a')).to.equal('2%b');
       });
     }); // end increment
-
-    describe('unsupported', function() {
-      it('increment: invalid characters', function() {
-        expect(ids.units.increment('%')).to.equal('0');
-        expect(ids.units.increment('2%z', 1)).to.equal('200');
-      });
-    }); // end unsupported
   }); // end units
 }); // end ids
