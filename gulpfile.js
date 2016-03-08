@@ -1,23 +1,11 @@
 'use strict';
 // node_modules/.bin/gulp --harmony mocha
+var _ = require('lodash');
 var gulp = require('gulp');
 var istanbul = require('gulp-istanbul');
 var jshint = require('gulp-jshint');
 var mocha = require('gulp-mocha');
 var rm = require('gulp-rm');
-
-// some aliases
-gulp.task('c', ['clean:db']);
-gulp.task('m', ['mocha']);
-
-gulp.task('clean:db', function() {
-  config.init({
-    location: '/Volumes/RAM Disk'
-  });
-
-  return gulp.src(config.settings.location + '/**/*', { read: false })
-    .pipe(rm());
-});
 
 // define which report we will use for the test
 // 'nyan' is the best, so that is the default
@@ -46,38 +34,49 @@ if(reporter === 'skipped') {
 }
 
 
-var files = ['spec/**/*.js', 'src/**/*.js'];
+var source = ['src/**/*.js'];
+var tests = ['spec/**/*.js', 'unit/**/*.js'];
+var files = _.flatten([source, tests]);
 
-gulp.task('mocha', ['jshint'], function() {
-  return gulp.src(['spec/**/*.js'], {read: false})
-    .pipe(mocha({reporter: reporter}));
-});
-
-gulp.task('jshint', [], function () {
+gulp.task('lint', [], function () {
   return gulp.src(files).pipe(jshint())
     .pipe(jshint.reporter('jshint-stylish'))
     .pipe(jshint.reporter('fail'));
 });
 
+gulp.task('spec', ['lint'], function() {
+  return gulp.src('spec/**/*.js', {read: false})
+    .pipe(mocha({reporter: reporter}));
+});
+gulp.task('unit', ['lint'], function() {
+  return gulp.src('unit/**/*.js', {read: false})
+    .pipe(mocha({reporter: reporter}));
+});
+gulp.task('ALL TESTS', ['lint'], function() {
+  return gulp.src(tests, {read: false})
+    .pipe(mocha({reporter: reporter}));
+});
+
+gulp.task('unitd', [], function() {
+  gulp.watch(files, ['unit']);
+  gulp.start('unit');
+});
 gulp.task('test', [], function() {
-  gulp.watch(files, ['mocha']);
-  gulp.start('mocha');
+  gulp.watch(files, ['ALL TESTS']);
+  gulp.start('ALL TESTS');
 });
 
 gulp.task('coverage', [], function (cb) {
-  gulp.src(['src/**/*.js'])
+  // TODO add a flag for which tests we should run (spec vs units)
+  gulp.src(source)
     .pipe(istanbul({
       includeUntested: true
     })) // Covering files
     .pipe(istanbul.hookRequire()) // Force `require` to return covered files
     .on('finish', function () {
-      return gulp.src(['spec/**/*.js'], { read: false })
-        .pipe(mocha({
-          reporter: 'list'
-        }))
-        .pipe(istanbul.writeReports({
-          reporters: ['html']
-        }))
+      return gulp.src(tests, { read: false })
+        .pipe(mocha({reporter: 'list'}))
+        .pipe(istanbul.writeReports({reporters: ['html']}))
         .on('end', cb);
     });
 });
