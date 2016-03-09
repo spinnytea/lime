@@ -10,8 +10,6 @@
 //   }
 //   unit: idea.id
 // }
-var ideas = require('../../database/ideas');
-
 var typeName = 'lime_number';
 
 exports.isNumber = function(obj) {
@@ -142,8 +140,10 @@ exports.difference = function(n1, n2) {
   return 0;
 };
 
+
 Object.defineProperty(exports, 'boundaries', { value: {} });
 exports.boundaries.getScale = getScale;
+var ideas = require('../../database/ideas');
 
 function getScale(unit) {
   var data = ideas.load(unit).data();

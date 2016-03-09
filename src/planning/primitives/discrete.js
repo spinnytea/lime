@@ -5,9 +5,6 @@
 // what is a color? a collection of numbers? sensor data?
 // but that's the point; we want to categorize it so it's "easier" to work with, or more human to work with at least
 
-var config = require('../../config');
-var ideas = require('../../database/ideas');
-
 //
 // the discrete value
 //
@@ -33,11 +30,11 @@ exports.isDiscrete = function(obj) {
   if(typeof obj.unit !== 'string')
     return false;
 
-  var unit = ideas.load(obj.unit);
-  if(unit.data().type !== definitionTypeName)
+  var unit = exports.boundaries.getUnitData(obj.unit);
+  if(unit.type !== definitionTypeName)
     return false;
 
-  if(unit.data().states.indexOf(obj.value) === -1)
+  if(unit.states.indexOf(obj.value) === -1)
     return false;
 
   obj.type = typeName;
@@ -57,7 +54,7 @@ exports.difference = function(d1, d2) {
   if(d1.unit !== d2.unit)
     return undefined;
 
-  var differenceFnName = ideas.load(d1.unit).data().difference || 'default';
+  var differenceFnName = exports.boundaries.getUnitData(d1.unit).difference || 'default';
 
   return exports.definitions.difference[differenceFnName](d1, d2);
 };
@@ -86,7 +83,7 @@ exports.definitions.difference = {
     return 1;
   },
   cycle: function(d1, d2) {
-    var states = ideas.load(d1.unit).data().states;
+    var states = exports.boundaries.getUnitData(d1.unit).states;
     var i1 = states.indexOf(d1.value);
     var i2 = states.indexOf(d2.value);
 
@@ -121,19 +118,32 @@ exports.definitions.create = function(states, differenceFnName) {
     data.difference = differenceFnName;
   }
 
-  return ideas.create(data);
+  return exports.boundaries.createUnitData(data);
 };
 
 
-//
-// setup some stock discrete definitions
-//
+Object.defineProperty(exports, 'boundaries', { value: {} });
+exports.boundaries.createUnitData = createUnitData;
+exports.boundaries.getUnitData = getUnitData;
+var config = require('../../config');
+var ideas = require('../../database/ideas');
+
+function createUnitData(data) {
+  return ideas.create(data);
+}
+
+function getUnitData(unit) {
+  return ideas.load(unit).data();
+}
+
+
 /* istanbul ignore next */
 config.onInit(function() {
   if(!config.data.discrete) {
     config.data.discrete = {};
   }
 
+  // setup some stock discrete definitions
   if(!config.data.discrete.boolean) {
     var idea = exports.definitions.create([true, false]);
     config.data.discrete.boolean = idea.id;
