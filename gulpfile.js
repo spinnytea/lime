@@ -78,6 +78,7 @@ gulp.task('coverage-unit', ['lint'], function (cb) {
     .on('finish', function () {
       return gulp.src(unit, { read: false })
         .pipe(mocha({reporter: 'nyan'}))
+        .on('error', function() { this.emit('end'); })
         .pipe(istanbul.writeReports({reporters: ['html']}))
         .on('end', cb);
     });
