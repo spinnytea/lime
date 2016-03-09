@@ -2,7 +2,20 @@
 var expect = require('chai').expect;
 var number = require('../../../src/planning/primitives/number');
 
+var wrongUnit = num(1);
+wrongUnit.unit = '_mismatch';
+function num() {
+  return {
+    type: 'lime_number',
+    value: number.value.apply({}, arguments),
+    unit: '_test'
+  };
+}
+
 describe('number', function() {
+  var getScale_bak = number.boundaries.getScale;
+  afterEach(function() { number.boundaries.getScale = getScale_bak; });
+
   it('init', function() {
     expect(Object.keys(number)).to.deep.equal(['isNumber', 'cast', 'value', 'combine', 'remove', 'difference']);
   });
@@ -71,9 +84,57 @@ describe('number', function() {
     expect(number.value(-Infinity, Infinity, true, true)).to.deep.equal({ bl: false, l: -Infinity, r: Infinity, br: false });
   });
 
-  it.skip('combine');
+  it('combine', function() {
+    expect(number.combine()).to.equal(undefined);
+    expect(number.combine(num(1))).to.equal(undefined);
+    expect(number.combine(num(1), wrongUnit)).to.equal(undefined);
 
-  it.skip('remove');
+    expect(number.combine(num(1), num(1))).to.deep.equal(num(2));
 
-  it.skip('difference');
+    expect(number.combine(num(0), num(3, 4, true, false))).to.deep.equal(num(3, 4, true, false));
+    expect(number.combine(num(1), num(4, 5, false, true))).to.deep.equal(num(5, 6, false, true));
+    expect(number.combine(num(1, 2, true, false), num(3, 4, false, true))).to.deep.equal(num(4, 6, false));
+  });
+
+  it('remove', function() {
+    expect(number.remove()).to.equal(undefined);
+    expect(number.remove(num(1))).to.equal(undefined);
+    expect(number.remove(num(1), wrongUnit)).to.equal(undefined);
+
+    expect(number.remove(num(3), num(2))).to.deep.equal(num(1));
+
+    expect(number.remove(num(0), num(3, 4, true, false))).to.deep.equal(num(-4, -3, true, false));
+    expect(number.remove(num(1), num(4, 5, false, true))).to.deep.equal(num(-4, -3, false, true));
+    expect(number.remove(num(1, 2, true, false), num(3, 4, false, true))).to.deep.equal(num(-2, true));
+  });
+
+  it('difference', function() {
+    number.boundaries.getScale = function() { return 1; };
+
+    expect(number.difference()).to.equal(undefined);
+    expect(number.difference(num(1))).to.equal(undefined);
+    expect(number.difference(num(1), wrongUnit)).to.equal(undefined);
+
+    expect(number.difference(num(1), num(1))).to.equal(0);
+    expect(number.difference(num(3), num(1))).to.equal(2);
+    expect(number.difference(num(1), num(10))).to.equal(9);
+
+    expect(number.difference(num(1, 3), num(-1))).to.equal(2);
+    expect(number.difference(num(1, 3), num(0))).to.equal(1);
+    expect(number.difference(num(1, 3), num(1))).to.equal(0);
+    expect(number.difference(num(1, 3), num(2))).to.equal(0);
+    expect(number.difference(num(1, 3), num(3))).to.equal(0);
+    expect(number.difference(num(1, 3), num(4))).to.equal(1);
+    expect(number.difference(num(1, 3), num(5))).to.equal(2);
+
+    number.boundaries.getScale = function() { return 3; };
+
+    expect(number.difference(num(1), num(3))).to.deep.equal(6);
+    expect(number.difference(num(1), num(11))).to.deep.equal(30);
+
+    number.boundaries.getScale = function() { return 0.5; };
+
+    expect(number.difference(num(1), num(3))).to.deep.equal(1);
+    expect(number.difference(num(1), num(11))).to.deep.equal(5);
+  });
 }); // end number

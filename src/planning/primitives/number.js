@@ -128,10 +128,7 @@ exports.difference = function(n1, n2) {
   if(n1.unit !== n2.unit)
     return undefined;
 
-  var data = ideas.load(n1.unit).data();
-  var scale = 1;
-  if(data && data.hasOwnProperty('scale'))
-    scale = +data.scale;
+  var scale = exports.boundaries.getScale(n1.unit);
 
   // if n2 is entirely larger than n1
   if(n1.value.r < n2.value.l)
@@ -144,3 +141,14 @@ exports.difference = function(n1, n2) {
   // the effective difference is zero
   return 0;
 };
+
+Object.defineProperty(exports, 'boundaries', { value: {} });
+exports.boundaries.getScale = getScale;
+
+function getScale(unit) {
+  var data = ideas.load(unit).data();
+  var scale = 1;
+  if(data && data.hasOwnProperty('scale'))
+    scale = +data.scale;
+  return scale;
+}
