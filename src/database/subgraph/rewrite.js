@@ -78,7 +78,7 @@ function checkVertex(subgraph, t) {
 
   // verify the transition data
   if(t.replace) {
-    if(!data.unit || !t.replace.unit || data.unit !== t.replace.unit)
+    if(data.unit && t.replace.unit && data.unit !== t.replace.unit)
       return false;
   } else if(t.hasOwnProperty('replace_id')) {
     var rdata = subgraph.getData(t.replace_id);

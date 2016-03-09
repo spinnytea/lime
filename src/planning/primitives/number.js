@@ -2,15 +2,18 @@
 // this represents how much there is of something
 // e.g. '13.5 meters' or '22.3124 psi'
 // all numbers are a range of possible values
-
+//
+// obj: {
+//   value: {
+//     bl, br: is the number bounded left or right? true = '[', false = '('
+//     l, r: the min/max of the value
+//   }
+//   unit: idea.id
+// }
 var ideas = require('../../database/ideas');
 
 var typeName = 'lime_number';
 
-// value:
-//   bl, br: is the number bounded left or right? true = '[', false = '('
-//   l, r: the min/max of the value
-// unit: idea.id
 exports.isNumber = function(obj) {
   if(typeof obj !== 'object')
     return false;
@@ -40,6 +43,9 @@ exports.isNumber = function(obj) {
     obj.value.l = -Infinity;
   if(obj.value.r === null)
     obj.value.r = Infinity;
+
+  if(obj.value.l === obj.value.r && (!obj.value.bl || !obj.value.br))
+    return false;
 
   obj.type = typeName;
   return true;
@@ -100,13 +106,16 @@ exports.remove = function(n1, n2) {
   if(n1.unit !== n2.unit)
     return undefined;
 
+  var l = n1.value.l - n2.value.l;
+  var r = n1.value.r - n2.value.r;
+
   return {
     type: typeName,
     value: {
-      bl: (n1.value.bl && n2.value.bl),
-      l: (n1.value.l - n2.value.l),
-      r: (n1.value.r - n2.value.r),
-      br: (n1.value.br && n2.value.br)
+      bl: (n1.value.bl && n2.value.bl || l === r),
+      l: Math.min(l, r),
+      r: Math.max(l, r),
+      br: (n1.value.br && n2.value.br || l === r)
     },
     unit: n1.unit
   };

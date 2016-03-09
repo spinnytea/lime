@@ -53,10 +53,12 @@ describe('subgraph', function() {
       });
 
       it('replace', function() {
+        // can replace any data
+        // only need to check the units when they mismatch
         sg.setData(b, 'no unit');
-        expect(checkVertex(sg, { vertex_id: b, replace: { value: number.value(20), unit: '_test' } })).to.equal(false);
+        expect(checkVertex(sg, { vertex_id: b, replace: { value: number.value(20), unit: '_test' } })).to.equal(true);
         sg.setData(b, { value: number.value(10), unit: '_test' });
-        expect(checkVertex(sg, { vertex_id: b, replace: {} })).to.equal(false);
+        expect(checkVertex(sg, { vertex_id: b, replace: {} })).to.equal(true);
         expect(checkVertex(sg, { vertex_id: b, replace: { value: number.value(20), unit: '_mismatch' } })).to.equal(false);
         expect(checkVertex(sg, { vertex_id: b, replace: { value: number.value(20), unit: '_test' } })).to.equal(true);
       });

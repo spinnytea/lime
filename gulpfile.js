@@ -54,6 +54,15 @@ gulp.task('unit', ['lint'], function() {
   return gulp.src(unit, {read: false})
     .pipe(mocha({reporter: reporter}));
 });
+gulp.task('all tests', ['lint'], function() {
+  return gulp.src(tests, {read: false})
+    .pipe(mocha({reporter: reporter}));
+});
+
+gulp.task('test', [], function() {
+  gulp.watch(files, ['all tests']);
+  gulp.start('all tests');
+});
 
 gulp.task('coverage', [], function (cb) {
   gulp.src(source)
