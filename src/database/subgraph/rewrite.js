@@ -34,9 +34,7 @@ module.exports = function rewrite(subgraph, transitions, actual) {
   // validate transitions
   // TODO do we really need to validate the transitions?
   if(!transitions.every(function(t) {
-      if(t.hasOwnProperty('vertex_id')) return checkVertex(subgraph, t);
-      else if(t.hasOwnProperty('edge_id')) return checkEdge(subgraph, t);
-      else return false;
+      return checkVertex(subgraph, t) ||  checkEdge(subgraph, t);
     })) return undefined; // if not all of the transitions are correct, return undefined
 
   // apply transitions
@@ -56,6 +54,9 @@ module.exports.units.transitionEdge = transitionEdge;
 
 // return true if the vertex transition is valid
 function checkVertex(subgraph, t) {
+  if(!t || !t.hasOwnProperty('vertex_id'))
+    return false;
+
   // if a transition hasn't been specified, there is nothing to do
   if(!(t.replace || t.combine || t.hasOwnProperty('replace_id') || t.cycle))
     return false;
@@ -77,7 +78,7 @@ function checkVertex(subgraph, t) {
 
   // verify the transition data
   if(t.replace) {
-    if(data.unit && t.replace.unit && data.unit !== t.replace.unit)
+    if(!data.unit || !t.replace.unit || data.unit !== t.replace.unit)
       return false;
   } else if(t.hasOwnProperty('replace_id')) {
     var rdata = subgraph.getData(t.replace_id);

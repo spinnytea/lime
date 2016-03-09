@@ -359,24 +359,6 @@ describe('subgraph', function() {
         expect(Object.keys(subgraph.rewrite.units)).to.deep.equal(['checkVertex', 'transitionVertex', 'checkEdge', 'transitionEdge']);
       });
 
-      describe('checkVertex', function() {
-        it.skip('invalid transition');
-
-        it.skip('vertex does not exist');
-
-        it.skip('not transitionable');
-
-        it.skip('no data to transition');
-
-        it.skip('replace');
-
-        it.skip('replace_id');
-
-        it.skip('cycle');
-
-        it.skip('combine');
-      }); // end checkVertex
-
       it.skip('transitionVertex');
 
       describe('checkEdge', function() {
