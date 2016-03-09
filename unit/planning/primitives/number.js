@@ -2,8 +2,13 @@
 var expect = require('chai').expect;
 var number = require('../../../src/planning/primitives/number');
 
-var wrongUnit = num(1);
-wrongUnit.unit = '_mismatch';
+exports.mock = function() {
+  var getScale_bak = number.boundaries.getScale;
+  var getScale_one = function() { return 1; };
+  beforeEach(function() { number.boundaries.getScale = getScale_one; });
+  afterEach(function() { number.boundaries.getScale = getScale_bak; });
+};
+
 function num() {
   return {
     type: 'lime_number',
@@ -13,8 +18,7 @@ function num() {
 }
 
 describe('number', function() {
-  var getScale_bak = number.boundaries.getScale;
-  afterEach(function() { number.boundaries.getScale = getScale_bak; });
+  exports.mock();
 
   it('init', function() {
     expect(Object.keys(number)).to.deep.equal(['isNumber', 'cast', 'value', 'combine', 'remove', 'difference']);
@@ -33,7 +37,7 @@ describe('number', function() {
   });
 
   it('isNumber; stringified', function() {
-    var val = { value: number.value(-Infinity, Infinity), unit: '_test' };
+    var val = num(-Infinity, Infinity);
     expect(val.value.l).to.equal(-Infinity);
     expect(val.value.r).to.equal(Infinity);
 
@@ -87,7 +91,7 @@ describe('number', function() {
   it('combine', function() {
     expect(number.combine()).to.equal(undefined);
     expect(number.combine(num(1))).to.equal(undefined);
-    expect(number.combine(num(1), wrongUnit)).to.equal(undefined);
+    expect(number.combine(num(1), { value: number.value(1), unit: '_mismatch' })).to.equal(undefined);
 
     expect(number.combine(num(1), num(1))).to.deep.equal(num(2));
 
@@ -99,7 +103,7 @@ describe('number', function() {
   it('remove', function() {
     expect(number.remove()).to.equal(undefined);
     expect(number.remove(num(1))).to.equal(undefined);
-    expect(number.remove(num(1), wrongUnit)).to.equal(undefined);
+    expect(number.remove(num(1), { value: number.value(1), unit: '_mismatch' })).to.equal(undefined);
 
     expect(number.remove(num(3), num(2))).to.deep.equal(num(1));
 
@@ -109,11 +113,9 @@ describe('number', function() {
   });
 
   it('difference', function() {
-    number.boundaries.getScale = function() { return 1; };
-
     expect(number.difference()).to.equal(undefined);
     expect(number.difference(num(1))).to.equal(undefined);
-    expect(number.difference(num(1), wrongUnit)).to.equal(undefined);
+    expect(number.difference(num(1), { value: number.value(1), unit: '_mismatch' })).to.equal(undefined);
 
     expect(number.difference(num(1), num(1))).to.equal(0);
     expect(number.difference(num(3), num(1))).to.equal(2);
