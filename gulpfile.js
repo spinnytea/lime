@@ -34,8 +34,10 @@ if(reporter === 'skipped') {
 }
 
 
+var spec = ['spec/**/*.js'];
 var source = ['src/**/*.js'];
-var tests = ['spec/**/*.js', 'unit/**/*.js'];
+var unit = ['unit/**/*.js'];
+var tests = _.flatten([spec, unit]);
 var files = _.flatten([source, tests]);
 
 gulp.task('lint', [], function () {
@@ -45,29 +47,15 @@ gulp.task('lint', [], function () {
 });
 
 gulp.task('spec', ['lint'], function() {
-  return gulp.src('spec/**/*.js', {read: false})
+  return gulp.src(spec, {read: false})
     .pipe(mocha({reporter: reporter}));
 });
 gulp.task('unit', ['lint'], function() {
-  return gulp.src('unit/**/*.js', {read: false})
+  return gulp.src(unit, {read: false})
     .pipe(mocha({reporter: reporter}));
-});
-gulp.task('ALL TESTS', ['lint'], function() {
-  return gulp.src(tests, {read: false})
-    .pipe(mocha({reporter: reporter}));
-});
-
-gulp.task('unitd', [], function() {
-  gulp.watch(files, ['unit']);
-  gulp.start('unit');
-});
-gulp.task('test', [], function() {
-  gulp.watch(files, ['ALL TESTS']);
-  gulp.start('ALL TESTS');
 });
 
 gulp.task('coverage', [], function (cb) {
-  // TODO add a flag for which tests we should run (spec vs units)
   gulp.src(source)
     .pipe(istanbul({
       includeUntested: true
@@ -79,4 +67,22 @@ gulp.task('coverage', [], function (cb) {
         .pipe(istanbul.writeReports({reporters: ['html']}))
         .on('end', cb);
     });
+});
+
+gulp.task('coverage-unit', ['lint'], function (cb) {
+  gulp.src(source)
+    .pipe(istanbul({
+      includeUntested: true
+    })) // Covering files
+    .pipe(istanbul.hookRequire()) // Force `require` to return covered files
+    .on('finish', function () {
+      return gulp.src(unit, { read: false })
+        .pipe(mocha({reporter: 'nyan'}))
+        .pipe(istanbul.writeReports({reporters: ['html']}))
+        .on('end', cb);
+    });
+});
+gulp.task('unitd', [], function() {
+  gulp.watch(files, ['coverage-unit']);
+  gulp.start('coverage-unit');
 });
