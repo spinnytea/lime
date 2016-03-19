@@ -5,48 +5,30 @@ var links = require('../../src/database/links');
 describe('links', function() {
   it('init', function() {
     // this is to ensure we test everything
-    expect(Object.keys(links)).to.deep.equal(['link', 'create', 'list']);
+    expect(Object.keys(links)).to.deep.equal(['Link', 'create', 'list']);
     expect(Object.keys(links.list).length).to.be.gt(0); // the keys don't matter, just so long as they are enumerable
   });
 
-  describe('link', function() {
-    it('uhm, new?', function() {
-      // links should have a minimal footprint on the filesystem if there is no data
-      expect(new links.link()).to.deep.equal({});
-    });
-  }); // skip link
+  it('Link', function() {
+    expect(new links.Link()).to.deep.equal({});
+  });
 
-  describe('create/list', function() {
-    it('basic', function() {
-      expect(links.list.thought_description.name).to.equal('thought_description');
-      expect(links.list.thought_description.opposite).to.not.equal(links.list.thought_description);
-      expect(links.list.thought_description.opposite.opposite).to.equal(links.list.thought_description);
+  it('create', function() {
+    var key = '_some__test__key_';
+    expect(links.list[key]).to.equal(undefined);
 
-      expect(function() { links.list.thought_description = 'stuff'; }).to.throw(Error);
-      expect(function() { links.list.thought_description.name = 'stuff'; }).to.throw(Error);
+    links.create(key);
 
-      expect(links.list.thought_description.isOpp).to.equal(false);
-      expect(links.list.thought_description.opposite.isOpp).to.equal(true);
-      expect(links.list.thought_description.opposite.opposite.isOpp).to.equal(false);
-    });
+    expect(links.list[key]).to.be.an('Object');
+    expect(links.list[key].name).to.equal(key);
 
-    it('create undirected', function() {
-      var name = '_test__undirected_';
-      expect(links.list[name].name).to.equal(name);
-      expect(links.list[name].opposite.name).to.equal(name);
-      expect(links.list[name].opposite).to.equal(links.list[name]);
-      expect(links.list[name].isOpp).to.equal(false);
-    });
+    // XXX we can't delete the property as the links are currently defined
+    // delete links.list[key];
+    // expect(links.list[key]).to.equal(undefined);
+  });
 
-    it('options', function() {
-      expect(links.list.thought_description.transitive).to.equal(false);
-      expect(links.list.type_of.transitive).to.equal(true);
-    });
-  }); // end create/list
-
-  // XXX links needs a type_of hierarchy
-  // - when we get the list of links, it should go up the chain
-  //describe('type_of', function() {
-  //  it.skip('hierarchy');
-  //}); // end type_of
+  it('list', function() {
+    expect(links.list.thought_description).to.be.an('Object');
+    expect(links.list.type_of).to.be.an('Object');
+  });
 }); // end links

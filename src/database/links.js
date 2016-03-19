@@ -3,10 +3,11 @@ var _ = require('lodash');
 // link ideas together
 // these are the edges of the graph
 
-exports.link = function() {
+function Link() {
   // some links may have data eventually
   // things like probabilities or extra info
-};
+}
+exports.Link = Link;
 
 exports.create = function(name, undirected, options) {
   options = _.merge({

@@ -106,8 +106,8 @@ ProxyIdea.prototype.link = function(link, idea) {
 
     // ensure the links for this type has been created
     // add the id to the list
-    (memory[this.id].links[link.name] = memory[this.id].links[link.name] || {})[id] = new links.link();
-    (memory[id].links[link.opposite.name] = memory[id].links[link.opposite.name] || {})[this.id] = new links.link();
+    (memory[this.id].links[link.name] = memory[this.id].links[link.name] || {})[id] = new links.Link();
+    (memory[id].links[link.opposite.name] = memory[id].links[link.opposite.name] || {})[this.id] = new links.Link();
   } else {
     exports.load(this.id);
     return Object.keys(memory[this.id].links[link.name] || {})

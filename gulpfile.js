@@ -54,14 +54,13 @@ gulp.task('unit', ['lint'], function() {
   return gulp.src(unit, {read: false})
     .pipe(mocha({reporter: reporter}));
 });
-gulp.task('all tests', ['lint'], function() {
+gulp.task('test', ['lint'], function() {
   return gulp.src(tests, {read: false})
     .pipe(mocha({reporter: reporter}));
 });
-
-gulp.task('test', [], function() {
-  gulp.watch(files, ['all tests']);
-  gulp.start('all tests');
+gulp.task('testd', [], function() {
+  gulp.watch(files, ['test']);
+  gulp.start('test');
 });
 
 gulp.task('coverage', [], function (cb) {

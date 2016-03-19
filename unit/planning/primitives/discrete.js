@@ -1,5 +1,5 @@
 'use strict';
 
-describe.only('discrete', function() {
+describe('discrete', function() {
   it('init');
 }); // end discrete
