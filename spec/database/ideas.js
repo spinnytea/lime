@@ -8,26 +8,23 @@ var ideas = require('../../src/database/ideas');
 var links = require('../../src/database/links');
 
 exports.mock = function() {
-  var bak = {};
+  var bakSave;
+  var bakLoad;
   before(function() {
-    bak.saveObj = ideas.units.boundaries.saveObj;
-    bak.loadObj = ideas.units.boundaries.loadObj;
-    ideas.units.boundaries.saveObj = sinon.spy();
-    ideas.units.boundaries.loadObj = sinon.stub();
+    bakSave = ideas.boundaries.saveObj;
+    bakLoad = ideas.boundaries.loadObj;
   });
   beforeEach(function() {
     // create a new spy for every test
-    ideas.units.boundaries.saveObj = sinon.spy();
-    ideas.units.boundaries.loadObj = sinon.stub();
+    ideas.boundaries.saveObj = sinon.spy();
+    ideas.boundaries.loadObj = sinon.stub();
+
     // this is a stock object that we use a lot for tests
-    ideas.units.boundaries.loadObj.withArgs(discrete.definitions.list.boolean, 'data').returns({ type: 'lime_discrete_definition', states: [ true, false ] });
-    // TODO make the default operation of loadObj should throw an error
-    // - only defined calls should return something different
-    // - this will help control unit test results
+    ideas.boundaries.loadObj.withArgs(discrete.definitions.list.boolean, 'data').returns({ type: 'lime_discrete_definition', states: [ true, false ] });
   });
   after(function() {
-    ideas.units.boundaries.saveObj = bak.saveObj;
-    ideas.units.boundaries.loadObj = bak.loadObj;
+    ideas.boundaries.saveObj = bakSave;
+    ideas.boundaries.loadObj = bakLoad;
   });
 };
 
@@ -52,8 +49,8 @@ describe('ideas', function() {
       expect(idea.data).to.be.a('function');
       expect(JSON.parse(JSON.stringify(idea))).to.deep.equal({id:'_test_'});
 
-      expect(ideas.units.boundaries.saveObj).to.have.callCount(0);
-      expect(ideas.units.boundaries.loadObj).to.have.callCount(0);
+      expect(ideas.boundaries.saveObj).to.have.callCount(0);
+      expect(ideas.boundaries.loadObj).to.have.callCount(0);
     });
 
     it('update', function() {
@@ -72,8 +69,8 @@ describe('ideas', function() {
       expect(idea.data()).to.not.equal(data);
       expect(ideas.units.memory[idea.id].data).to.not.equal(data);
 
-      expect(ideas.units.boundaries.saveObj).to.have.callCount(0);
-      expect(ideas.units.boundaries.loadObj).to.have.callCount(0);
+      expect(ideas.boundaries.saveObj).to.have.callCount(0);
+      expect(ideas.boundaries.loadObj).to.have.callCount(0);
     });
 
     it('update closed', function() {
@@ -96,8 +93,8 @@ describe('ideas', function() {
       expect(ideas.units.memory).to.have.property(idea.id);
       expect(idea.data()).to.deep.equal({ 'objects': 2.7 });
 
-      expect(ideas.units.boundaries.saveObj).to.have.callCount(4);
-      expect(ideas.units.boundaries.loadObj).to.have.callCount(4);
+      expect(ideas.boundaries.saveObj).to.have.callCount(4);
+      expect(ideas.boundaries.loadObj).to.have.callCount(4);
     });
 
     it('data closed', function() {
@@ -109,14 +106,14 @@ describe('ideas', function() {
       ideas.close(idea);
       expect(ideas.units.memory).to.not.have.property(idea.id);
 
-      expect(ideas.units.boundaries.loadObj).to.have.callCount(0);
-      ideas.units.boundaries.loadObj.withArgs(idea.id, 'data').returns(data);
+      expect(ideas.boundaries.loadObj).to.have.callCount(0);
+      ideas.boundaries.loadObj.withArgs(idea.id, 'data').returns(data);
 
       expect(idea.data()).to.deep.equal(data);
       expect(ideas.units.memory).to.have.property(idea.id);
 
-      expect(ideas.units.boundaries.saveObj).to.have.callCount(4);
-      expect(ideas.units.boundaries.loadObj).to.have.callCount(2);
+      expect(ideas.boundaries.saveObj).to.have.callCount(4);
+      expect(ideas.boundaries.loadObj).to.have.callCount(2);
     });
 
     describe('link', function() {
@@ -128,20 +125,20 @@ describe('ideas', function() {
         ideas.close(ideaA);
         ideas.close(ideaB);
 
-        expect(ideas.units.boundaries.saveObj).to.have.callCount(4);
-        expect(ideas.units.boundaries.loadObj).to.have.callCount(0);
+        expect(ideas.boundaries.saveObj).to.have.callCount(4);
+        expect(ideas.boundaries.loadObj).to.have.callCount(0);
 
         // links are closed; this link still work
         ideaA.link(links.list.thought_description, ideaB); // link be idea
 
-        expect(ideas.units.boundaries.saveObj).to.have.callCount(4);
-        expect(ideas.units.boundaries.loadObj).to.have.callCount(4);
+        expect(ideas.boundaries.saveObj).to.have.callCount(4);
+        expect(ideas.boundaries.loadObj).to.have.callCount(4);
 
         expect(_.map(ideaA.link(links.list.thought_description), 'id')).to.deep.equal([ideaB.id]);
         expect(_.map(ideaB.link(links.list.thought_description.opposite), 'id')).to.deep.equal([ideaA.id]);
 
-        ideas.units.boundaries.saveObj.reset();
-        expect(ideas.units.boundaries.saveObj).to.have.callCount(0);
+        ideas.boundaries.saveObj.reset();
+        expect(ideas.boundaries.saveObj).to.have.callCount(0);
 
         ideas.save(ideaA);
         ideas.save(ideaB);
@@ -149,11 +146,11 @@ describe('ideas', function() {
         // XXX since I can't set a dynamic key during object construction, we need to create the object beforehand
         var linkA = { 'thought_description': {} }; linkA['thought_description'][ideaB.id] = {};
         var linkB = { 'thought_description-opp': {} }; linkB['thought_description-opp'][ideaA.id] = {};
-        expect(ideas.units.boundaries.saveObj).to.have.callCount(4);
-        expect(ideas.units.boundaries.saveObj).to.have.been.calledWith(ideaA.id, 'data', {});
-        expect(ideas.units.boundaries.saveObj).to.have.been.calledWith(ideaA.id, 'links', linkA);
-        expect(ideas.units.boundaries.saveObj).to.have.been.calledWith(ideaB.id, 'data', {});
-        expect(ideas.units.boundaries.saveObj).to.have.been.calledWith(ideaB.id, 'links', linkB);
+        expect(ideas.boundaries.saveObj).to.have.callCount(4);
+        expect(ideas.boundaries.saveObj).to.have.been.calledWith(ideaA.id, 'data', {});
+        expect(ideas.boundaries.saveObj).to.have.been.calledWith(ideaA.id, 'links', linkA);
+        expect(ideas.boundaries.saveObj).to.have.been.calledWith(ideaB.id, 'data', {});
+        expect(ideas.boundaries.saveObj).to.have.been.calledWith(ideaB.id, 'links', linkB);
       });
 
       it('remove', function() {
@@ -200,8 +197,8 @@ describe('ideas', function() {
         expect(ideas.units.memory[ideaA.id].links).to.deep.equal({});
         expect(ideas.units.memory[ideaB.id].links).to.deep.equal({});
 
-        expect(ideas.units.boundaries.saveObj).to.have.callCount(0);
-        expect(ideas.units.boundaries.loadObj).to.have.callCount(0);
+        expect(ideas.boundaries.saveObj).to.have.callCount(0);
+        expect(ideas.boundaries.loadObj).to.have.callCount(0);
       });
 
       it('add undirected', function() {
@@ -257,99 +254,99 @@ describe('ideas', function() {
 
         ideas.save(idea);
 
-        expect(ideas.units.boundaries.saveObj).to.have.callCount(2);
-        expect(ideas.units.boundaries.loadObj).to.have.callCount(0);
-        expect(ideas.units.boundaries.saveObj).to.have.calledWith(idea.id, 'data', {});
-        expect(ideas.units.boundaries.saveObj).to.have.calledWith(idea.id, 'links', {});
-        ideas.units.boundaries.saveObj.reset();
+        expect(ideas.boundaries.saveObj).to.have.callCount(2);
+        expect(ideas.boundaries.loadObj).to.have.callCount(0);
+        expect(ideas.boundaries.saveObj).to.have.calledWith(idea.id, 'data', {});
+        expect(ideas.boundaries.saveObj).to.have.calledWith(idea.id, 'links', {});
+        ideas.boundaries.saveObj.reset();
 
         expect(ideas.units.memory[idea.id].data).to.deep.equal({});
         ideas.close(idea);
         expect(ideas.units.memory[idea.id]).to.equal(undefined);
 
-        expect(ideas.units.boundaries.saveObj).to.have.callCount(2);
-        expect(ideas.units.boundaries.loadObj).to.have.callCount(0);
-        expect(ideas.units.boundaries.saveObj).to.have.calledWith(idea.id, 'data', {});
-        expect(ideas.units.boundaries.saveObj).to.have.calledWith(idea.id, 'links', {});
-        ideas.units.boundaries.saveObj.reset();
+        expect(ideas.boundaries.saveObj).to.have.callCount(2);
+        expect(ideas.boundaries.loadObj).to.have.callCount(0);
+        expect(ideas.boundaries.saveObj).to.have.calledWith(idea.id, 'data', {});
+        expect(ideas.boundaries.saveObj).to.have.calledWith(idea.id, 'links', {});
+        ideas.boundaries.saveObj.reset();
 
-        ideas.units.boundaries.loadObj.withArgs(idea.id, 'data').returns({});
-        ideas.units.boundaries.loadObj.withArgs(idea.id, 'links').returns({});
+        ideas.boundaries.loadObj.withArgs(idea.id, 'data').returns({});
+        ideas.boundaries.loadObj.withArgs(idea.id, 'links').returns({});
         expect(idea.data()).to.deep.equal({});
         expect(ideas.units.memory[idea.id].data).to.deep.equal({});
 
-        expect(ideas.units.boundaries.saveObj).to.have.callCount(0);
-        expect(ideas.units.boundaries.loadObj).to.have.callCount(2);
-        expect(ideas.units.boundaries.loadObj).to.have.calledWith(idea.id, 'data');
-        expect(ideas.units.boundaries.loadObj).to.have.calledWith(idea.id, 'links');
+        expect(ideas.boundaries.saveObj).to.have.callCount(0);
+        expect(ideas.boundaries.loadObj).to.have.callCount(2);
+        expect(ideas.boundaries.loadObj).to.have.calledWith(idea.id, 'data');
+        expect(ideas.boundaries.loadObj).to.have.calledWith(idea.id, 'links');
       });
 
       it('with data', function() {
         var data = { 'things': -1 };
         var idea = ideas.create(data);
 
-        expect(ideas.units.boundaries.saveObj).to.have.callCount(2);
-        expect(ideas.units.boundaries.loadObj).to.have.callCount(0);
-        expect(ideas.units.boundaries.saveObj).to.have.calledWith(idea.id, 'data', data);
-        expect(ideas.units.boundaries.saveObj).to.have.calledWith(idea.id, 'links', {});
-        ideas.units.boundaries.saveObj.reset();
+        expect(ideas.boundaries.saveObj).to.have.callCount(2);
+        expect(ideas.boundaries.loadObj).to.have.callCount(0);
+        expect(ideas.boundaries.saveObj).to.have.calledWith(idea.id, 'data', data);
+        expect(ideas.boundaries.saveObj).to.have.calledWith(idea.id, 'links', {});
+        ideas.boundaries.saveObj.reset();
 
         ideas.save(idea);
 
-        expect(ideas.units.boundaries.saveObj).to.have.callCount(2);
-        expect(ideas.units.boundaries.loadObj).to.have.callCount(0);
-        expect(ideas.units.boundaries.saveObj).to.have.calledWith(idea.id, 'data', data);
-        expect(ideas.units.boundaries.saveObj).to.have.calledWith(idea.id, 'links', {});
-        ideas.units.boundaries.saveObj.reset();
+        expect(ideas.boundaries.saveObj).to.have.callCount(2);
+        expect(ideas.boundaries.loadObj).to.have.callCount(0);
+        expect(ideas.boundaries.saveObj).to.have.calledWith(idea.id, 'data', data);
+        expect(ideas.boundaries.saveObj).to.have.calledWith(idea.id, 'links', {});
+        ideas.boundaries.saveObj.reset();
 
         expect(ideas.units.memory[idea.id].data).to.deep.equal(data);
         ideas.close(idea);
         expect(ideas.units.memory[idea.id]).to.equal(undefined);
 
-        expect(ideas.units.boundaries.saveObj).to.have.callCount(2);
-        expect(ideas.units.boundaries.loadObj).to.have.callCount(0);
-        expect(ideas.units.boundaries.saveObj).to.have.calledWith(idea.id, 'data', data);
-        expect(ideas.units.boundaries.saveObj).to.have.calledWith(idea.id, 'links', {});
-        ideas.units.boundaries.saveObj.reset();
+        expect(ideas.boundaries.saveObj).to.have.callCount(2);
+        expect(ideas.boundaries.loadObj).to.have.callCount(0);
+        expect(ideas.boundaries.saveObj).to.have.calledWith(idea.id, 'data', data);
+        expect(ideas.boundaries.saveObj).to.have.calledWith(idea.id, 'links', {});
+        ideas.boundaries.saveObj.reset();
 
-        ideas.units.boundaries.loadObj.withArgs(idea.id, 'data').returns(data);
-        ideas.units.boundaries.loadObj.withArgs(idea.id, 'links').returns({});
+        ideas.boundaries.loadObj.withArgs(idea.id, 'data').returns(data);
+        ideas.boundaries.loadObj.withArgs(idea.id, 'links').returns({});
         expect(idea.data()).to.deep.equal(data);
         expect(ideas.units.memory[idea.id].data).to.deep.equal(data);
 
-        expect(ideas.units.boundaries.saveObj).to.have.callCount(0);
-        expect(ideas.units.boundaries.loadObj).to.have.callCount(2);
-        expect(ideas.units.boundaries.loadObj).to.have.calledWith(idea.id, 'data');
-        expect(ideas.units.boundaries.loadObj).to.have.calledWith(idea.id, 'links');
+        expect(ideas.boundaries.saveObj).to.have.callCount(0);
+        expect(ideas.boundaries.loadObj).to.have.callCount(2);
+        expect(ideas.boundaries.loadObj).to.have.calledWith(idea.id, 'data');
+        expect(ideas.boundaries.loadObj).to.have.calledWith(idea.id, 'links');
       });
 
       it('save: unloaded', function() {
         var idea = ideas.create({ 'things': 42 });
-        expect(ideas.units.boundaries.saveObj).to.have.callCount(2);
-        expect(ideas.units.boundaries.loadObj).to.have.callCount(0);
+        expect(ideas.boundaries.saveObj).to.have.callCount(2);
+        expect(ideas.boundaries.loadObj).to.have.callCount(0);
         ideas.close(idea);
-        expect(ideas.units.boundaries.saveObj).to.have.callCount(4);
-        expect(ideas.units.boundaries.loadObj).to.have.callCount(0);
+        expect(ideas.boundaries.saveObj).to.have.callCount(4);
+        expect(ideas.boundaries.loadObj).to.have.callCount(0);
         ideas.save(idea);
-        expect(ideas.units.boundaries.saveObj).to.have.callCount(4);
-        expect(ideas.units.boundaries.loadObj).to.have.callCount(0);
+        expect(ideas.boundaries.saveObj).to.have.callCount(4);
+        expect(ideas.boundaries.loadObj).to.have.callCount(0);
         ideas.save(idea);
         ideas.save(idea);
-        expect(ideas.units.boundaries.saveObj).to.have.callCount(4);
-        expect(ideas.units.boundaries.loadObj).to.have.callCount(0);
+        expect(ideas.boundaries.saveObj).to.have.callCount(4);
+        expect(ideas.boundaries.loadObj).to.have.callCount(0);
       });
 
       it('load: loaded', function() {
         var idea = ideas.create();
-        expect(ideas.units.boundaries.saveObj).to.have.callCount(0);
-        expect(ideas.units.boundaries.loadObj).to.have.callCount(0);
+        expect(ideas.boundaries.saveObj).to.have.callCount(0);
+        expect(ideas.boundaries.loadObj).to.have.callCount(0);
         ideas.load(idea);
-        expect(ideas.units.boundaries.saveObj).to.have.callCount(0);
-        expect(ideas.units.boundaries.loadObj).to.have.callCount(0);
+        expect(ideas.boundaries.saveObj).to.have.callCount(0);
+        expect(ideas.boundaries.loadObj).to.have.callCount(0);
         ideas.load(idea);
         ideas.load(idea);
-        expect(ideas.units.boundaries.saveObj).to.have.callCount(0);
-        expect(ideas.units.boundaries.loadObj).to.have.callCount(0);
+        expect(ideas.boundaries.saveObj).to.have.callCount(0);
+        expect(ideas.boundaries.loadObj).to.have.callCount(0);
       });
 
       it('invalid arg', function() {
@@ -360,8 +357,8 @@ describe('ideas', function() {
         expect(function() { ideas.load(); }).to.throw();
         expect(function() { ideas.load(1); }).to.throw();
 
-        expect(ideas.units.boundaries.saveObj).to.have.callCount(0);
-        expect(ideas.units.boundaries.loadObj).to.have.callCount(0);
+        expect(ideas.boundaries.saveObj).to.have.callCount(0);
+        expect(ideas.boundaries.loadObj).to.have.callCount(0);
       });
     }); // end save / load
 
@@ -369,19 +366,19 @@ describe('ideas', function() {
       expect(function() { ideas.close(); }).to.throw();
       expect(function() { ideas.close(10); }).to.throw();
       expect(function() { ideas.close({ foo: '1 smoothie lifetime' }); }).to.throw();
-      expect(ideas.units.boundaries.saveObj).to.have.callCount(0);
-      expect(ideas.units.boundaries.loadObj).to.have.callCount(0);
+      expect(ideas.boundaries.saveObj).to.have.callCount(0);
+      expect(ideas.boundaries.loadObj).to.have.callCount(0);
 
       var idea = ideas.create();
       expect(ideas.units.memory).to.have.property(idea.id);
       expect(function() { ideas.close(idea); }).to.not.throw();
-      expect(ideas.units.boundaries.saveObj).to.have.callCount(2);
-      expect(ideas.units.boundaries.loadObj).to.have.callCount(0);
+      expect(ideas.boundaries.saveObj).to.have.callCount(2);
+      expect(ideas.boundaries.loadObj).to.have.callCount(0);
 
       expect(ideas.units.memory).to.not.have.property('_test_');
       expect(function() { ideas.close('_test_'); }).to.not.throw();
-      expect(ideas.units.boundaries.saveObj).to.have.callCount(2); // no change since that thought doesn't exist
-      expect(ideas.units.boundaries.loadObj).to.have.callCount(0);
+      expect(ideas.boundaries.saveObj).to.have.callCount(2); // no change since that thought doesn't exist
+      expect(ideas.boundaries.loadObj).to.have.callCount(0);
     });
   }); // end crud
 
@@ -391,8 +388,8 @@ describe('ideas', function() {
     afterEach(function() {
       // just verify
       // it's not really a question, so it doesn't need to be in each test
-      expect(ideas.units.boundaries.saveObj).to.have.callCount(0);
-      expect(ideas.units.boundaries.loadObj).to.have.callCount(0);
+      expect(ideas.boundaries.saveObj).to.have.callCount(0);
+      expect(ideas.boundaries.loadObj).to.have.callCount(0);
     });
 
     it('should throw errors', function() {
@@ -443,39 +440,18 @@ describe('ideas', function() {
     });
   }); // end context
 
-  describe('units', function() {
+  describe('boundaries', function() {
     it('init', function() {
       // this is to ensure we test everything
-      expect(Object.keys(ideas.units)).to.deep.equal(['memory', 'filepath', 'filename', 'boundaries']);
-      // memory is a data structure, so it doesn't need to be tested directly
+      expect(Object.keys(ideas.boundaries)).to.deep.equal(['saveObj', 'loadObj', 'fileSave', 'fileLoad', 'memorySave', 'memoryLoad', 'database']);
     });
 
-    it('filepath', function() {
-      expect(ideas.units.filepath('')).to.equal(config.settings.location + '');
-      expect(ideas.units.filepath('1')).to.equal(config.settings.location + '');
-      expect(ideas.units.filepath('12')).to.equal(config.settings.location + '');
-      expect(ideas.units.filepath('123')).to.equal(config.settings.location + '/12');
-      expect(ideas.units.filepath('1234')).to.equal(config.settings.location + '/12');
-      expect(ideas.units.filepath('12345')).to.equal(config.settings.location + '/12/34');
-      expect(ideas.units.filepath('123456')).to.equal(config.settings.location + '/12/34');
-      expect(ideas.units.filepath('1234567')).to.equal(config.settings.location + '/12/34/56');
-    });
+    it.skip('fileSave');
 
-    it('filename', function() {
-      expect(ideas.units.filename('1', 'data')).to.equal(config.settings.location + '/1_data.json');
-      expect(ideas.units.filename('123', 'links')).to.equal(config.settings.location + '/12/123_links.json');
-    });
+    it.skip('fileLoad');
 
-    //// integration test
-    //// TODO where should I perform these tests?
-    //describe('boundaries', function() {
-    //  it.skip('saveObj');
-    //
-    //  it.skip('loadObj');
-    //
-    //  it.skip('path doesn\'t exist, w/ location');
-    //
-    //  it.skip('path doesn\'t exist, w/o location');
-    //}); // end boundaries
-  }); // end units
+    it.skip('memorySave');
+
+    it.skip('memoryLoad');
+  }); // end boundaries
 }); // end ideas

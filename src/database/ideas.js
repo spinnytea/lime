@@ -9,63 +9,10 @@ var config = require('../config');
 var ids = require('../ids');
 var links = require('./links');
 
-// we need some way of accessing function so we can unit test them
-// nothing inside exports.unit should need to be called or substituted
-Object.defineProperty(exports, 'units', { value: {} });
 
 var NEXT_ID = 'ideas';
-var memory = exports.units.memory = {};
+var memory = {};
 
-// create a path/filename for an idea
-exports.units.filepath = function(id) {
-  var suffix = '';
-  if(id.length > 2)
-    suffix = '/' + id
-      .substr(0, (id.length-2+(id.length%2)))
-      .match(/../g)
-      .join('/');
-  return config.settings.location + suffix;
-};
-exports.units.filename = function(id, which) {
-  return exports.units.filepath(id) + '/' + id + '_' + which + '.json';
-};
-
-exports.units.boundaries = {
-  saveObj: fileSave,
-  loadObj: fileLoad,
-};
-
-/* istanbul ignore next */
-function fileSave(id, which, obj) {
-  //void(which, obj, mkdirp); if(id !== '2') throw new Error('Not during unit tests');
-  var path = exports.units.filepath(id);
-  if(!fs.existsSync(path)) {
-    // we don't want to recreate the whole directory root
-    // i.e. this is a check to make sure our drive is mounted
-    if(fs.existsSync(config.settings.location)) {
-      mkdirp.sync(path);
-    }
-  }
-
-  var filename = exports.units.filename(id, which);
-  if(!_.isEmpty(obj))
-    fs.writeFileSync(filename, JSON.stringify(obj), {encoding:'utf8'});
-  else if(fs.existsSync(filename))
-    fs.unlink(filename);
-}
-/* istanbul ignore next */
-function fileLoad(id, which) {
-  var filename = exports.units.filename(id, which);
-  if(fs.existsSync(filename))
-    return JSON.parse(fs.readFileSync(filename, {encoding:'utf8'}));
-  return undefined;
-}
-function memorySave(id, which, obj) {
-  exports.units.boundaries.database[which][id] = obj;
-}
-function memoryLoad(id, which) {
-  return exports.units.boundaries.database[which][id];
-}
 
 /*
  * this is the singleton that we will keep an internal reference to
@@ -156,8 +103,8 @@ exports.save = function(idea) {
 
   var core = memory[id];
   if(core) {
-    exports.units.boundaries.saveObj(id, 'data', core.data);
-    exports.units.boundaries.saveObj(id, 'links', core.links);
+    exports.boundaries.saveObj(id, 'data', core.data);
+    exports.boundaries.saveObj(id, 'links', core.links);
   }
 };
 exports.load = function(idea) {
@@ -166,8 +113,8 @@ exports.load = function(idea) {
     throw new TypeError('can only load ideas');
 
   if(!(id in memory)) {
-    var data = exports.units.boundaries.loadObj(id, 'data');
-    var links = exports.units.boundaries.loadObj(id, 'links');
+    var data = exports.boundaries.loadObj(id, 'data');
+    var links = exports.boundaries.loadObj(id, 'links');
     memory[id] = new CoreIdea(id, data, links);
   }
 
@@ -201,6 +148,66 @@ exports.context = function(name) {
   }
 };
 
+
+Object.defineProperty(exports, 'units', { value: {} });
+exports.units.memory = memory;
+exports.units.filepath = filepath;
+exports.units.filename = filename;
+
+// create a path/filename for an idea
+function filepath(id) {
+  var suffix = '';
+  if(id.length > 2)
+    suffix = '/' + id
+        .substr(0, (id.length-2+(id.length%2)))
+        .match(/../g)
+        .join('/');
+  return config.settings.location + suffix;
+}
+function filename(id, which) {
+  return filepath(id) + '/' + id + '_' + which + '.json';
+}
+
+
+Object.defineProperty(exports, 'boundaries', { value: {} });
+exports.boundaries.saveObj = undefined;
+exports.boundaries.loadObj = undefined;
+exports.boundaries.fileSave = undefined;
+exports.boundaries.fileLoad = undefined;
+exports.boundaries.memorySave = undefined;
+exports.boundaries.memoryLoad = undefined;
+
+function fileSave(id, which, obj) {
+  //void(which, obj, mkdirp); if(id !== '2') throw new Error('Not during unit tests');
+  var path = exports.units.filepath(id);
+  if(!fs.existsSync(path)) {
+    // we don't want to recreate the whole directory root
+    // i.e. this is a check to make sure our drive is mounted
+    if(fs.existsSync(config.settings.location)) {
+      mkdirp.sync(path);
+    }
+  }
+
+  var filename = exports.units.filename(id, which);
+  if(!_.isEmpty(obj))
+    fs.writeFileSync(filename, JSON.stringify(obj), {encoding:'utf8'});
+  else if(fs.existsSync(filename))
+    fs.unlink(filename);
+}
+function fileLoad(id, which) {
+  var filename = exports.units.filename(id, which);
+  if(fs.existsSync(filename))
+    return JSON.parse(fs.readFileSync(filename, {encoding:'utf8'}));
+  return undefined;
+}
+function memorySave(id, which, obj) {
+  exports.boundaries.database[which][id] = obj;
+}
+function memoryLoad(id, which) {
+  return exports.boundaries.database[which][id];
+}
+
+
 /* istanbul ignore next */
 config.onInit(function() {
   if(!config.data.ideas) {
@@ -208,10 +215,14 @@ config.onInit(function() {
       context: {}
     };
 
+    delete exports.boundaries.database;
     if(config.settings.in_memory) {
-      exports.units.boundaries.saveObj = memorySave;
-      exports.units.boundaries.loadObj = memoryLoad;
-      exports.units.boundaries.database = { data: {}, links: {} };
+      exports.boundaries.saveObj = memorySave;
+      exports.boundaries.loadObj = memoryLoad;
+      exports.boundaries.database = { data: {}, links: {} };
+    } else {
+      exports.boundaries.saveObj = fileSave;
+      exports.boundaries.loadObj = fileLoad;
     }
   }
 });
