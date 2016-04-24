@@ -65,9 +65,7 @@ gulp.task('testd', [], function() {
 
 gulp.task('coverage', [], function (cb) {
   gulp.src(source)
-    .pipe(istanbul({
-      includeUntested: true
-    })) // Covering files
+    .pipe(istanbul({ includeUntested: true })) // Covering files
     .pipe(istanbul.hookRequire()) // Force `require` to return covered files
     .on('finish', function () {
       return gulp.src(tests, { read: false })
@@ -86,7 +84,7 @@ gulp.task('coverage-unit', ['lint'], function (cb) {
     .on('finish', function () {
       return gulp.src(unit, { read: false })
         .pipe(mocha({reporter: 'nyan'}))
-        .on('error', function() { this.emit('end'); })
+        .on('error', function() { /* gutil.log(arguments); */ this.emit('end'); })
         .pipe(istanbul.writeReports({reporters: ['html']}))
         .on('end', cb);
     });
