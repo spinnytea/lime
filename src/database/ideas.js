@@ -172,10 +172,10 @@ function filename(id, which) {
 Object.defineProperty(exports, 'boundaries', { value: {} });
 exports.boundaries.saveObj = undefined;
 exports.boundaries.loadObj = undefined;
-exports.boundaries.fileSave = undefined;
-exports.boundaries.fileLoad = undefined;
-exports.boundaries.memorySave = undefined;
-exports.boundaries.memoryLoad = undefined;
+exports.boundaries.fileSave = fileSave;
+exports.boundaries.fileLoad = fileLoad;
+exports.boundaries.memorySave = memorySave;
+exports.boundaries.memoryLoad = memoryLoad;
 
 function fileSave(id, which, obj) {
   //void(which, obj, mkdirp); if(id !== '2') throw new Error('Not during unit tests');
@@ -214,15 +214,15 @@ config.onInit(function() {
     config.data.ideas = {
       context: {}
     };
+  }
 
-    delete exports.boundaries.database;
-    if(config.settings.in_memory) {
-      exports.boundaries.saveObj = memorySave;
-      exports.boundaries.loadObj = memoryLoad;
-      exports.boundaries.database = { data: {}, links: {} };
-    } else {
-      exports.boundaries.saveObj = fileSave;
-      exports.boundaries.loadObj = fileLoad;
-    }
+  delete exports.boundaries.database;
+  if(config.settings.in_memory) {
+    exports.boundaries.saveObj = memorySave;
+    exports.boundaries.loadObj = memoryLoad;
+    exports.boundaries.database = { data: {}, links: {} };
+  } else {
+    exports.boundaries.saveObj = fileSave;
+    exports.boundaries.loadObj = fileLoad;
   }
 });
