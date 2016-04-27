@@ -131,16 +131,16 @@ function copyParentyThing(old, copy, key) {
 //
 // @param matcher: exports.matcher or equivalent
 // @param matchData: passed to the matcher
-// // TODO should matchData be inside options?
-// // - if(matcher !== filler && options.matchData === undefined) throw new Error('matchData must be defined');
+// TODO should matchData be inside options?
+// - if(matcher !== filler && options.matchData === undefined) throw new Error('matchData must be defined');
 // @param options: {
 //   transitionable: boolean, // if true, this part of a transition (subgraph.rewrite, blueprints, etc; subgraph.rewrite(transitions);)
 //                            // it means that we are intending to change the value
 //   matchRef: boolean, // if true, this should use a different object for the matchData
 //                      // specifically, use vertex[matchData].data instead of matchData
 //                      // (it doesn't make sense to use this with matcher.filler)
-// // TODO add support for matchRef in blueprints; look for any case where we use vertex.data
 // }
+// TODO add support for matchRef in blueprints; look for any case where we use vertex.data
 Subgraph.prototype.addVertex = function(matcher, data, options) {
   options = _.merge({
     // TODO do these NEED to be specified? can we leave them undefined?
