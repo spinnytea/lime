@@ -122,6 +122,9 @@ function findEdgeToExpand(subgraph) {
   return selected;
 }
 
+// TODO this is a depth-first algorithm that doesn't keep track of where it's been
+// - it can easily infinite loop
+// - it could at LEAST be breadth first, but even then it could spiral out of control
 function searchForTransitiveLink(srcIdea, link, dstIdea) {
   return srcIdea.link(link).some(function(idea) {
     if(idea.id === dstIdea.id) return true;
