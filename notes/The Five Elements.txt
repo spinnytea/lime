@@ -1,6 +1,8 @@
 Pattern
   This operates on senses and context sequences.
   It mines labels/rules from raw experience.
+  Current Approaches
+    Neural Network
 
 Experience
   Direct observations about the world.
@@ -28,14 +30,23 @@ Experience
   This seems like experience can be some serialized variable that isn't linked ... but there will probably be some dependent relationships that show up.
    - What if the raw input is determined to be "malfunctional"?
    - What if identifying an apple influences identifying a pear (oops, that's a nose)
+  Current Approaches
+    Tons of raw sensor data, like instrumented websites, collecting data on self driving cars
 
 Action
   Actuators onto the world.
   Turns knowledge into something that affects the world/state.
+  Current Approaches
+    Workflow engine
+    Any program ever
+    Wolfram Alpha
 
 Knowledge
   Internal representation of the world.
   Always dealing in the indefinite (i.e. object concepts) ("an apple" "some money")
+  Current Approaches
+    Any database ever
+    Wikipedia
 
 Context
   "Current Experience" or "what is with me now"

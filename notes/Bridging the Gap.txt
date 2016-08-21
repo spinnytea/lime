@@ -9,6 +9,8 @@ Internal vs External
   Knowledge is the data we use after the Experiences have been processed. It will be
 
 (K + S -> C) + A -> E
+E + P -> K
+K + K -> K
   Context is the "current situation" the "relevant real world objects that exist"
     We know things about the world (we know how to interact with apples)
     We use our sensors to identify that we have an apple in hand.
@@ -19,3 +21,4 @@ Internal vs External
   E(C(S, K), A)
     Experience is a function of Context and Action
     Context is a function of Sensors and Knowledge
+  Do These three equations describe Reinforcement Learning, is that all that it does, or is there more to it?

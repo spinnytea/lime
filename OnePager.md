@@ -1,8 +1,8 @@
 Learning Machine
 ================
-(lm, lime, lemon, love machine...)
+(lm, lime, lemon, plum, love machine...)
 
-Explaining the goal is all about getting the terms right.
+Explaining the goal of this project is all about getting the terms right.
 People generally assume one of two camps when you say "Artificial Intelligence".
 They either think of a machine that has the spark of life and independent free will (strong AI),
 or they think of what I consider to be smart algorithms that are quick at solving specialized tasks (weak AI).

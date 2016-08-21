@@ -142,18 +142,9 @@ function expandEdge(subgraph, selected) {
     var match = subgraph.getMatch(vertex_id);
     var matchData = match.options.matchRef?subgraph.getData(match.data):match.data;
 
-    // XXX following the transitions to the end requires a more complex pre match thing
-//    var matchData = vertex.matchData;
-//    if(vertex.options.matchRef) {
-//      var tv = vertex;
-//      while(tv.options.matchRef)
-//        tv = subgraph.vertices[tv.matchData];
-//      matchData = tv.data;
-//    }
-
     var matchedBranches = selected.branches.filter(function(idea) {
       if(match.matcher === SG.matcher.id)
-      // XXX this should never happen here
+      // this can occur if we are using matchRef
         return match.matcher(idea, matchData);
       else
         return match.matcher(idea.data(), matchData);
