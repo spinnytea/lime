@@ -124,6 +124,8 @@ function initializeVertexMap(subgraphOuter, subgraphInner, unitOnly) {
   // xlnx / (x-lnx); if ni is greater than that thing, use the index
   // otherwise, it's faster to simply search for the elements
   // this turns out to be a really small number, but ni is typically even smaller
+  // plot ((x+a)*log2(a)) vs (x*a) where a = 100 for x from 0 to 10
+  // plot a*log(a) / (a * log(2) - log(a)) for a from 2 to 100
   var x = subgraphOuter._vertexCount;
   var l2x = Math.log2(x);
   if(innerIdeas.length > x*l2x / (x-l2x)) {
