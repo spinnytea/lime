@@ -40,6 +40,8 @@ Action
     Workflow engine
     Any program ever
     Wolfram Alpha
+  --
+  In this implementation, it's primarily first-order-logic.
 
 Knowledge
   Internal representation of the world.
@@ -47,6 +49,9 @@ Knowledge
   Current Approaches
     Any database ever
     Wikipedia
+  --
+  Graphs, Graph Theory
+  The core data is in an infinite graph. Context will pull out a specific section of it.
 
 Context
   "Current Experience" or "what is with me now"
