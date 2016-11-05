@@ -11,7 +11,9 @@ var number = require('../../planning/primitives/number');
 //  - { vertex_id: id, combine: number }
 //  - { vertex_id: id, replace: discrete }
 //  - { vertex_id: id, cycle: { value: javascript number, unit: idea.id } } // the value is the number of steps to cycle
-//  - { vertex_id: id, replace_id: id } // (both are vertex_id's)
+//  - { vertex_id: id, replace_id: id } // both are vertex_id's
+//  - { edge_id: id, replace_src: id } // both are edge_id's
+//  - { edge_id: id, replace_dst: id } // both are edge_id's
 //  - AC: actuator.runBlueprint depends on this structure
 //  - AC: actuator.runBlueprint does a _.clone() on each object, and replaces vertex_id
 // @param actual: boolean (default: false)
@@ -34,7 +36,7 @@ module.exports = function rewrite(subgraph, transitions, actual) {
   // validate transitions
   // TODO do we really need to validate the transitions?
   if(!transitions.every(function(t) {
-      return checkVertex(subgraph, t) ||  checkEdge(subgraph, t);
+      return checkVertex(subgraph, t) || checkEdge(subgraph, t);
     })) return undefined; // if not all of the transitions are correct, return undefined
 
   // apply transitions
