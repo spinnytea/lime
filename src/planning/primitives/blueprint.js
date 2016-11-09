@@ -104,7 +104,7 @@ BlueprintAction.prototype.scheduleBlueprint = function(state, glue) { /* jshint 
 // path.Actions.cost
 BlueprintAction.prototype.cost = function(from, to) {
   if(subgraph.match(from.state, this.requirements).length === 0)
-    return Infinity;
+    return DISTANCE_ERROR;
   return from.distance(to) + this.runCost();
 };
 

@@ -23,6 +23,8 @@ exports.create = function(start, goal) {
   }
 };
 
+// create a plan that has a single goal
+//
 // @return {
 //   action: the Action we have found
 //   state: the last State of the path (if we need to chain
@@ -76,6 +78,7 @@ function createSingle(start, goal) {
   return { action: new serialplan.Action(path.actions), state: path.last };
 }
 
+// create a plan that goes through multiple goes
 function createMultiple(start, goals) {
   // if every plan succeeds, then return a new serial action
   // if one of the plans fails, then the whole thing fails

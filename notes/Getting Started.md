@@ -15,6 +15,15 @@ What's in the Source
 TBD
 For now, see The Five Elements.txt
 
+planning
+--------
+* blueprint is the abstract idea of a plan
+    * actuator is an individual action
+    * serial plan is a set of plans to do one after another
+    * stub is treated as an actuator with no body, and will be turned into a serial plan as needed
+* planner is an entry point to kick of plan searches
+    * path is used by astar to auto-build serial plans
+
 
 How the Source should Flow
 ==========================
